@@ -1,0 +1,13 @@
+/**
+ * Utility functions for the application
+ */
+
+/**
+ * Generates a unique ID for country visits
+ * Uses timestamp and random string for uniqueness
+ *
+ * @returns A unique identifier string
+ */
+export function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+}

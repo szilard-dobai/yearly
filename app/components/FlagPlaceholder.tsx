@@ -15,8 +15,10 @@ export default function FlagPlaceholder({ countryCode }: FlagPlaceholderProps) {
 
   if (!country) {
     return (
-      <div className="w-full h-full bg-linear-to-br from-red-400 to-red-600 rounded-sm flex items-center justify-center">
-        <span className="text-white text-[8px] font-mono">{countryCode}</span>
+      <div className="w-full h-full bg-linear-to-br from-red-400 to-red-600 rounded flex items-center justify-center shadow-sm">
+        <span className="text-white text-[8px] font-semibold font-mono drop-shadow">
+          {countryCode}
+        </span>
       </div>
     )
   }
@@ -28,11 +30,15 @@ export default function FlagPlaceholder({ countryCode }: FlagPlaceholderProps) {
 
   if (!FlagComponent) {
     return (
-      <div className="w-full h-full bg-linear-to-br from-blue-400 to-blue-600 rounded-sm flex items-center justify-center">
-        <span className="text-white text-[8px] font-mono">{countryCode}</span>
+      <div className="w-full h-full bg-linear-to-br from-blue-400 to-blue-600 rounded flex items-center justify-center shadow-sm">
+        <span className="text-white text-[8px] font-semibold font-mono drop-shadow">
+          {countryCode}
+        </span>
       </div>
     )
   }
 
-  return <FlagComponent className="w-full h-full rounded-sm object-cover" />
+  return (
+    <FlagComponent className="w-full h-full rounded object-cover shadow-sm border border-gray-200/50 dark:border-gray-700/50" />
+  )
 }

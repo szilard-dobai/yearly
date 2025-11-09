@@ -16,8 +16,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+} from '@/app/components/ui/select'
+import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card'
 
 function getInitialData(): CalendarData {
   if (typeof window === 'undefined') {

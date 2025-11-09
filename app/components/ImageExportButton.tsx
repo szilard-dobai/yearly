@@ -1,6 +1,6 @@
 import { useState, RefObject } from 'react'
 import { toJpeg } from 'html-to-image'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/app/components/ui/button'
 import { Image, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
 interface ImageExportButtonProps {

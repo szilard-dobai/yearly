@@ -5,9 +5,9 @@ import type { CalendarData, Country } from '../lib/types'
 import { searchCountries } from '../lib/countries'
 import { expandDateRange, canAddVisitToDate } from '../lib/calendar'
 import { generateId } from '../lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/app/components/ui/button'
+import { Input } from '@/app/components/ui/input'
+import { Label } from '@/app/components/ui/label'
 import { Plus } from 'lucide-react'
 
 interface CountryInputProps {

@@ -5,7 +5,7 @@ import {
   calculateTotalCountriesVisited,
   calculateTotalVisits,
 } from '../lib/statistics'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/app/components/ui/button'
 import { Upload, CheckCircle2, XCircle } from 'lucide-react'
 
 interface ImportButtonProps {

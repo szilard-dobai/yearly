@@ -2,6 +2,7 @@ import { memo } from 'react'
 import type { CountryVisit } from '../lib/types'
 import { getVisitsForDate, isToday } from '../lib/calendar'
 import { getCountryByCode } from '../lib/countries'
+import FlagPlaceholder from './FlagPlaceholder'
 
 interface DateCellProps {
   date: Date | null
@@ -114,42 +115,6 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
   }
 
   return null
-}
-
-function FlagPlaceholder({ countryCode }: { countryCode: string }) {
-  const country = getCountryByCode(countryCode)
-
-  if (!country) {
-    return (
-      <div className="w-full h-full bg-linear-to-br from-red-400 to-red-600 rounded-sm flex items-center justify-center">
-        <span className="text-white text-[8px] font-mono">{countryCode}</span>
-      </div>
-    )
-  }
-
-  let FlagComponent
-
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    FlagComponent = require(`country-flag-icons/react/3x2/${countryCode}`).default
-  } catch {
-    FlagComponent = null
-  }
-
-  if (!FlagComponent) {
-    return (
-      <div className="w-full h-full bg-linear-to-br from-blue-400 to-blue-600 rounded-sm flex items-center justify-center">
-        <span className="text-white text-[8px] font-mono">{countryCode}</span>
-      </div>
-    )
-  }
-
-  return (
-    <FlagComponent
-      className="w-full h-full rounded-sm object-cover"
-      title={country.name}
-    />
-  )
 }
 
 export default memo(DateCell)

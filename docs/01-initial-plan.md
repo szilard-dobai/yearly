@@ -90,7 +90,7 @@ interface CalendarData {
 ### Key Libraries to Consider
 - **dayjs**: Lightweight date manipulation and range utilities (2KB alternative to date-fns)
 - **html-to-image**: JPEG export from DOM (supports JPEG quality settings)
-- **country-flag-emoji** or built-in emoji support: Flag emoji mapping
+- **country-flag-icons**: SVG/PNG flag icons for all countries
 - Native HTML5 datepicker or **react-datepicker**: Date range selection
 
 ## Implementation Phases

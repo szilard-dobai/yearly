@@ -88,7 +88,7 @@ interface CalendarData {
 ```
 
 ### Key Libraries to Consider
-- **date-fns**: Date manipulation and range utilities
+- **dayjs**: Lightweight date manipulation and range utilities (2KB alternative to date-fns)
 - **html-to-image**: JPEG export from DOM (supports JPEG quality settings)
 - **country-flag-emoji** or built-in emoji support: Flag emoji mapping
 - Native HTML5 datepicker or **react-datepicker**: Date range selection
@@ -180,7 +180,7 @@ interface CalendarData {
 ## Next Steps
 
 1. ✓ Finalize design decisions
-2. Install required dependencies (date-fns, html-to-image)
+2. Install required dependencies (dayjs, html-to-image)
 3. Set up project structure (components, lib directories)
 4. Begin Phase 1: Foundation and data structures
 5. Implement Phase 2-5 sequentially with testing

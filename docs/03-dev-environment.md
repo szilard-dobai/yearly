@@ -19,7 +19,7 @@ This document summarizes the development environment setup for the countries-in-
 - **eslint-plugin-prettier** - Run Prettier as an ESLint rule
 
 ### Project Dependencies (To be installed when needed)
-- **date-fns** - Date manipulation library (pending)
+- **dayjs** - Lightweight date manipulation library (2KB, pending)
 - **html-to-image** - JPEG export functionality (pending)
 
 ## Configuration Files Created
@@ -162,7 +162,7 @@ countries-in-year/
 
 Now that the development environment is ready, we can proceed with:
 
-1. **Install project dependencies** (date-fns, html-to-image) when needed
+1. **Install project dependencies** (dayjs, html-to-image) when needed
 2. **Set up project structure** (app/components, app/lib directories)
 3. **Begin Phase 1**: TypeScript types, country data, and basic layout
 4. **Implement features** following the plan in `01-initial-plan.md`

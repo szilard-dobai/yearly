@@ -62,16 +62,38 @@ function isNextDay(date1: Date, date2: Date): boolean {
 }
 
 /**
- * Calculates visit counts by country
+ * Calculates visit counts by country (continuous stays only)
+ * Each continuous stay in a country counts as 1 visit
  */
 export function calculateVisitsByCountry(
   visits: CountryVisit[]
 ): Map<string, number> {
+  if (visits.length === 0) return new Map()
+
   const countMap = new Map<string, number>()
 
-  for (const visit of visits) {
-    const currentCount = countMap.get(visit.countryCode) || 0
-    countMap.set(visit.countryCode, currentCount + 1)
+  // Sort visits by date
+  const sortedVisits = [...visits].sort(
+    (a, b) => a.date.getTime() - b.date.getTime()
+  )
+
+  let currentCountry: string | null = null
+  let lastDate: Date | null = null
+
+  for (const visit of sortedVisits) {
+    const isConsecutiveDay =
+      lastDate &&
+      currentCountry === visit.countryCode &&
+      isNextDay(lastDate, visit.date)
+
+    if (!isConsecutiveDay) {
+      // Start a new visit for this country
+      const currentCount = countMap.get(visit.countryCode) || 0
+      countMap.set(visit.countryCode, currentCount + 1)
+      currentCountry = visit.countryCode
+    }
+
+    lastDate = visit.date
   }
 
   return countMap
@@ -139,7 +161,8 @@ export function calculateMonthlyBreakdown(
 }
 
 /**
- * Calculates average visits per country
+ * Calculates average visits per country (using continuous stay logic)
+ * Average = total visits (continuous stays) / unique countries visited
  */
 export function calculateAverageVisitsPerCountry(
   visits: CountryVisit[]
@@ -147,7 +170,8 @@ export function calculateAverageVisitsPerCountry(
   const totalCountries = calculateTotalCountriesVisited(visits)
   if (totalCountries === 0) return 0
 
-  return visits.length / totalCountries
+  const totalVisits = calculateTotalVisits(visits)
+  return totalVisits / totalCountries
 }
 
 /**

@@ -320,9 +320,11 @@ describe('statistics', () => {
     it('handles non-integer averages', () => {
       const visits: CountryVisit[] = [
         { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
-        { id: '2', countryCode: 'US', date: new Date(2024, 0, 16) },
+        { id: '2', countryCode: 'US', date: new Date(2024, 0, 16) }, // consecutive
         { id: '3', countryCode: 'FR', date: new Date(2024, 0, 17) },
+        { id: '4', countryCode: 'FR', date: new Date(2024, 0, 19) }, // gap, new visit
       ]
+      // US Jan 15-16 (1 visit) + FR Jan 17 (1 visit) + FR Jan 19 (1 visit) = 3 visits
       // 3 visits across 2 countries = 1.5 average
       expect(calculateAverageVisitsPerCountry(visits)).toBe(1.5)
     })

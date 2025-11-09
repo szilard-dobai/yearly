@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import type { CalendarData } from './lib/types'
 import { loadCalendarData, saveCalendarData } from './lib/storage'
 import CalendarGrid from './components/CalendarGrid'
 import CountryInput from './components/CountryInput'
 import ExportButton from './components/ExportButton'
 import ImportButton from './components/ImportButton'
+import ImageExportButton from './components/ImageExportButton'
 import Statistics from './components/Statistics'
 import DeveloperMode from './components/DeveloperMode'
 
@@ -20,6 +21,7 @@ function getInitialData(): CalendarData {
 export default function Home() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
+  const calendarRef = useRef<HTMLDivElement>(null)
 
   const handleDataChange = (newData: CalendarData) => {
     setCalendarData(newData)
@@ -64,6 +66,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
           <div className="space-y-6">
             <CalendarGrid
+              ref={calendarRef}
               year={selectedYear}
               calendarData={calendarData}
               onRemoveVisit={handleRemoveVisit}
@@ -94,6 +97,11 @@ export default function Home() {
                 <ImportButton
                   currentData={calendarData}
                   onImport={handleDataChange}
+                />
+                <ImageExportButton
+                  calendarRef={calendarRef}
+                  year={selectedYear}
+                  hasData={calendarData.visits.length > 0}
                 />
               </div>
             </div>

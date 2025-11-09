@@ -1,5 +1,6 @@
 'use client'
 
+import { forwardRef } from 'react'
 import type { CalendarData } from '../lib/types'
 import MonthGrid from './MonthGrid'
 
@@ -9,26 +10,33 @@ interface CalendarGridProps {
   onRemoveVisit: (visitId: string) => void
 }
 
-export default function CalendarGrid({
-  year,
-  calendarData,
-  onRemoveVisit,
-}: CalendarGridProps) {
-  const visits = calendarData.visits
+const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
+  ({ year, calendarData, onRemoveVisit }, ref) => {
+    const visits = calendarData.visits
 
-  return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {Array.from({ length: 12 }, (_, month) => (
-          <MonthGrid
-            key={month}
-            year={year}
-            month={month}
-            visits={visits}
-            onRemoveVisit={onRemoveVisit}
-          />
-        ))}
+    return (
+      <div ref={ref} className="space-y-8" data-export-target="calendar">
+        <div className="mb-6">
+          <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white">
+            {year}
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {Array.from({ length: 12 }, (_, month) => (
+            <MonthGrid
+              key={month}
+              year={year}
+              month={month}
+              visits={visits}
+              onRemoveVisit={onRemoveVisit}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+)
+
+CalendarGrid.displayName = 'CalendarGrid'
+
+export default CalendarGrid

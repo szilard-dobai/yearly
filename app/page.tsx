@@ -10,6 +10,7 @@ import ImportButton from './components/ImportButton'
 import ImageExportButton from './components/ImageExportButton'
 import Statistics from './components/Statistics'
 import DeveloperMode from './components/DeveloperMode'
+import Settings, { type FlagDisplayMode } from './components/Settings'
 import {
   Select,
   SelectContent,
@@ -29,6 +30,7 @@ function getInitialData(): CalendarData {
 export default function Home() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
+  const [flagDisplayMode, setFlagDisplayMode] = useState<FlagDisplayMode>('emoji')
   const calendarRef = useRef<HTMLDivElement>(null)
 
   const handleDataChange = (newData: CalendarData) => {
@@ -87,6 +89,7 @@ export default function Home() {
               year={selectedYear}
               calendarData={calendarData}
               onRemoveVisit={handleRemoveVisit}
+              flagDisplayMode={flagDisplayMode}
             />
           </div>
 
@@ -100,6 +103,21 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <Statistics calendarData={calendarData} year={selectedYear} />
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <span className="text-2xl">⚙️</span>
+                  Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Settings
+                  flagDisplayMode={flagDisplayMode}
+                  onFlagDisplayModeChange={setFlagDisplayMode}
+                />
               </CardContent>
             </Card>
 

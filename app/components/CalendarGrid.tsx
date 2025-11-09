@@ -3,25 +3,27 @@
 import { forwardRef } from 'react'
 import type { CalendarData } from '../lib/types'
 import MonthGrid from './MonthGrid'
+import type { FlagDisplayMode } from './Settings'
 
 interface CalendarGridProps {
   year: number
   calendarData: CalendarData
   onRemoveVisit: (visitId: string) => void
+  flagDisplayMode: FlagDisplayMode
 }
 
 const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
-  ({ year, calendarData, onRemoveVisit }, ref) => {
+  ({ year, calendarData, onRemoveVisit, flagDisplayMode }, ref) => {
     const visits = calendarData.visits
 
     return (
-      <div ref={ref} className="space-y-8" data-export-target="calendar">
-        <div className="mb-6 text-center">
-          <h2 className="text-5xl font-extrabold bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+      <div ref={ref} className="space-y-6 bg-white dark:bg-zinc-900 p-6" data-export-target="calendar">
+        <div className="mb-4">
+          <h2 className="text-6xl font-bold text-red-500">
             {year}
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-3 gap-x-8 gap-y-6">
           {Array.from({ length: 12 }, (_, month) => (
             <MonthGrid
               key={month}
@@ -29,6 +31,7 @@ const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
               month={month}
               visits={visits}
               onRemoveVisit={onRemoveVisit}
+              flagDisplayMode={flagDisplayMode}
             />
           ))}
         </div>

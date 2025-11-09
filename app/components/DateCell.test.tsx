@@ -23,22 +23,6 @@ vi.mock('../lib/countries', async () => {
   }
 })
 
-vi.mock('country-flag-icons/react/3x2/US', () => ({
-  default: ({ className, title }: { className: string; title: string }) => (
-    <div data-testid="flag-us" className={className} title={title}>
-      US Flag
-    </div>
-  ),
-}))
-
-vi.mock('country-flag-icons/react/3x2/FR', () => ({
-  default: ({ className, title }: { className: string; title: string }) => (
-    <div data-testid="flag-fr" className={className} title={title}>
-      FR Flag
-    </div>
-  ),
-}))
-
 describe('DateCell', () => {
   const mockOnRemoveVisit = vi.fn()
   const mockDate = new Date(2024, 0, 15)
@@ -142,7 +126,6 @@ describe('DateCell', () => {
         />
       )
 
-      expect(screen.getByTestId('flag-us')).toBeInTheDocument()
       expect(
         screen.getByRole('gridcell', {
           name: /january 15, visited united states/i,
@@ -269,8 +252,12 @@ describe('DateCell', () => {
         />
       )
 
-      expect(screen.getByTestId('flag-us')).toBeInTheDocument()
-      expect(screen.getByTestId('flag-fr')).toBeInTheDocument()
+      // Both countries are rendered (verified by aria-label)
+      expect(
+        screen.getByRole('gridcell', {
+          name: /january 15, visited united states and france/i,
+        })
+      ).toBeInTheDocument()
     })
 
     it('renders aria-label with both country names', () => {

@@ -571,7 +571,9 @@ describe('CountryInput', () => {
     it('clears error after successful submission', async () => {
       const user = userEvent.setup()
       vi.mocked(countries.searchCountries).mockReturnValue(mockCountries)
-      vi.mocked(calendar.expandDateRange).mockReturnValue([new Date(2024, 0, 15)])
+      vi.mocked(calendar.expandDateRange)
+        .mockReturnValueOnce([new Date(2024, 0, 15)])
+        .mockReturnValueOnce([new Date(2024, 0, 16)])
       vi.mocked(calendar.canAddVisitToDate).mockReturnValueOnce(false).mockReturnValue(true)
 
       render(
@@ -596,6 +598,7 @@ describe('CountryInput', () => {
         expect(screen.getByText(/maximum 2 countries per day exceeded/i)).toBeInTheDocument()
       })
 
+      await user.clear(startDateInput)
       await user.type(startDateInput, '2024-01-16')
       await user.click(submitButton)
 

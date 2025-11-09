@@ -24,6 +24,13 @@ export default function Home() {
     saveCalendarData(newData)
   }
 
+  const handleRemoveVisit = (visitId: string) => {
+    const newData = {
+      visits: calendarData.visits.filter((visit) => visit.id !== visitId),
+    }
+    handleDataChange(newData)
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       <header className="border-b border-gray-200 dark:border-gray-800">
@@ -54,7 +61,11 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
           <div className="space-y-6">
-            <CalendarGrid year={selectedYear} calendarData={calendarData} />
+            <CalendarGrid
+              year={selectedYear}
+              calendarData={calendarData}
+              onRemoveVisit={handleRemoveVisit}
+            />
           </div>
 
           <aside className="space-y-6">

@@ -6,6 +6,7 @@ interface MonthGridProps {
   year: number
   month: number
   visits: CountryVisit[]
+  onRemoveVisit: (visitId: string) => void
 }
 
 const MONTH_NAMES = [
@@ -25,7 +26,12 @@ const MONTH_NAMES = [
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-export default function MonthGrid({ year, month, visits }: MonthGridProps) {
+export default function MonthGrid({
+  year,
+  month,
+  visits,
+  onRemoveVisit,
+}: MonthGridProps) {
   const weeks = getMonthData(year, month)
 
   return (
@@ -64,6 +70,7 @@ export default function MonthGrid({ year, month, visits }: MonthGridProps) {
                 key={dayIndex}
                 date={date}
                 visits={visits}
+                onRemoveVisit={onRemoveVisit}
               />
             ))}
           </div>

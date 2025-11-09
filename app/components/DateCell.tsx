@@ -5,9 +5,10 @@ import { getCountryByCode } from '../lib/countries'
 interface DateCellProps {
   date: Date | null
   visits: CountryVisit[]
+  onRemoveVisit: (visitId: string) => void
 }
 
-export default function DateCell({ date, visits }: DateCellProps) {
+export default function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
   if (!date) {
     return <div className="aspect-square" role="gridcell" aria-hidden="true" />
   }
@@ -44,7 +45,7 @@ export default function DateCell({ date, visits }: DateCellProps) {
     })
     return (
       <div
-        className={`${baseClasses} ${todayClasses} bg-gray-50 dark:bg-gray-900`}
+        className={`${baseClasses} ${todayClasses} bg-gray-50 dark:bg-gray-900 group relative`}
         role="gridcell"
         aria-label={`${dateLabel}, visited ${country?.name || cellVisits[0].countryCode}`}
       >
@@ -56,6 +57,13 @@ export default function DateCell({ date, visits }: DateCellProps) {
             </span>
           )}
         </div>
+        <button
+          onClick={() => onRemoveVisit(cellVisits[0].id)}
+          className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[10px] hover:bg-red-700"
+          aria-label={`Remove ${country?.name || cellVisits[0].countryCode} visit`}
+        >
+          ×
+        </button>
       </div>
     )
   }
@@ -69,16 +77,30 @@ export default function DateCell({ date, visits }: DateCellProps) {
     })
     return (
       <div
-        className={`${baseClasses} ${todayClasses} bg-gray-50 dark:bg-gray-900`}
+        className={`${baseClasses} ${todayClasses} bg-gray-50 dark:bg-gray-900 group relative`}
         role="gridcell"
         aria-label={`${dateLabel}, visited ${country1?.name || cellVisits[0].countryCode} and ${country2?.name || cellVisits[1].countryCode}`}
       >
         <div className="flex flex-col gap-0.5 w-12">
-          <div className="h-4 relative">
+          <div className="h-4 relative group/flag1">
             <FlagPlaceholder countryCode={cellVisits[0].countryCode} />
+            <button
+              onClick={() => onRemoveVisit(cellVisits[0].id)}
+              className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover/flag1:opacity-100 transition-opacity text-[8px] hover:bg-red-700"
+              aria-label={`Remove ${country1?.name || cellVisits[0].countryCode} visit`}
+            >
+              ×
+            </button>
           </div>
-          <div className="h-4 relative">
+          <div className="h-4 relative group/flag2">
             <FlagPlaceholder countryCode={cellVisits[1].countryCode} />
+            <button
+              onClick={() => onRemoveVisit(cellVisits[1].id)}
+              className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover/flag2:opacity-100 transition-opacity text-[8px] hover:bg-red-700"
+              aria-label={`Remove ${country2?.name || cellVisits[1].countryCode} visit`}
+            >
+              ×
+            </button>
           </div>
           {country1 && country2 && (
             <span className="sr-only">

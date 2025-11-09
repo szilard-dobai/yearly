@@ -7,6 +7,7 @@ A Next.js web application that generates a visual calendar showing which countri
 ## Core Features
 
 ### 1. Data Input
+
 - Allow users to add country visits with:
   - Country selection (with autocomplete/dropdown)
   - Date range picker (user selects start and end date)
@@ -17,6 +18,7 @@ A Next.js web application that generates a visual calendar showing which countri
 - Developer mode toggle to view/copy raw JSON data
 
 ### 2. Calendar Generation
+
 - Display full year calendar (12 months) with iOS calendar-inspired minimal design
 - Replace date numbers with country flag emojis (one emoji per date cell)
 - Handle two countries per day: display vertically stacked like ½ symbol (first country on top, second on bottom)
@@ -27,6 +29,7 @@ A Next.js web application that generates a visual calendar showing which countri
   - Two countries: show flags stacked vertically (top/bottom)
 
 ### 3. Image Export
+
 - Generate high-quality JPEG image of the calendar
 - Use html-to-image library with JPEG format
 - Downloadable via "Export" button
@@ -34,6 +37,7 @@ A Next.js web application that generates a visual calendar showing which countri
 - Calendar preview shown before/during export
 
 ### 4. User Experience
+
 - Clean, minimal iOS calendar-inspired interface
 - Mobile-responsive design
 - Year selector (default to current year)
@@ -46,13 +50,15 @@ A Next.js web application that generates a visual calendar showing which countri
 ## Technical Architecture
 
 ### Tech Stack (Already Defined)
+
 - **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
 - **React**: 19.2.0
 
 ### Proposed File Structure
-```
+
+````
 /app
   /page.tsx                 - Main landing/calendar view
   /layout.tsx              - Root layout (existing)
@@ -85,9 +91,10 @@ interface CalendarData {
   year: number;
   visits: CountryVisit[];
 }
-```
+````
 
 ### Key Libraries to Consider
+
 - **dayjs**: Lightweight date manipulation and range utilities (2KB alternative to date-fns)
 - **html-to-image**: JPEG export from DOM (supports JPEG quality settings)
 - **country-flag-icons**: SVG/PNG flag icons for all countries
@@ -96,12 +103,14 @@ interface CalendarData {
 ## Implementation Phases
 
 ### Phase 1: Foundation (Setup & Data Structure)
+
 - Set up project structure
 - Define TypeScript interfaces
 - Create country data source (with flag emojis)
 - Build basic UI layout
 
 ### Phase 2: Calendar Display
+
 - Create calendar grid component (iOS-inspired minimal design)
 - Implement month/year logic
 - Build date cell component with three states:
@@ -111,6 +120,7 @@ interface CalendarData {
 - Add flag emoji rendering with proper sizing
 
 ### Phase 3: Data Input
+
 - Build country input form with date range picker
 - Implement validation (max 2 countries per day)
 - Add/edit/delete visit functionality
@@ -118,11 +128,13 @@ interface CalendarData {
 - Auto-save to local storage
 
 ### Phase 4: Image Export
+
 - Implement JPEG image generation using html-to-image
 - Add export button with download functionality
 - Optimize calendar styling for high-quality JPEG export
 
 ### Phase 5: Polish & Enhancement
+
 - Responsive design refinement
 - Developer mode with JSON viewer and copy-to-clipboard
 - Error handling and validation
@@ -133,6 +145,7 @@ interface CalendarData {
 ## Design Considerations
 
 ### Calendar Layout
+
 - **iOS-inspired minimal design**: Clean, spacious, easy to read
 - **Grid Layout**: 3x4 or 4x3 grid (optimize for screen size)
 - Subtle borders and spacing
@@ -140,6 +153,7 @@ interface CalendarData {
 - Highlight current day subtly (if viewing current year)
 
 ### Flag Display (Finalized)
+
 - **Empty date**: Show date number in light gray
 - **Single country**: Show flag emoji centered in cell
 - **Two countries**: Stack vertically like ½ symbol:
@@ -148,6 +162,7 @@ interface CalendarData {
   - Use flexbox or grid for vertical stacking
 
 ### Color Scheme
+
 - Minimal, clean palette similar to iOS Calendar
 - Soft grays for borders and empty dates
 - White/dark backgrounds depending on theme

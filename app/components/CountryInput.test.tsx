@@ -184,9 +184,9 @@ describe('CountryInput', () => {
       await user.type(input, 'country')
 
       await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: /country/i })).toHaveLength(
-          10
-        )
+        expect(
+          screen.getAllByRole('button', { name: /country/i })
+        ).toHaveLength(10)
       })
     })
 
@@ -262,7 +262,9 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       await waitFor(() => {
-        expect(screen.queryByRole('button', { name: 'France' })).not.toBeInTheDocument()
+        expect(
+          screen.queryByRole('button', { name: 'France' })
+        ).not.toBeInTheDocument()
       })
     })
 
@@ -277,7 +279,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
 
       const usaButton = screen.getByRole('button', { name: 'United States' })
@@ -286,7 +290,9 @@ describe('CountryInput', () => {
       const startDateInput = screen.getByLabelText(/start date/i)
       await user.type(startDateInput, '2024-01-15')
 
-      expect(screen.getByRole('button', { name: /add visit/i })).not.toBeDisabled()
+      expect(
+        screen.getByRole('button', { name: /add visit/i })
+      ).not.toBeDisabled()
     })
 
     it('clears selected country when search query changes', async () => {
@@ -354,7 +360,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -378,7 +386,9 @@ describe('CountryInput', () => {
     it('shows error when maximum 2 countries per day exceeded', async () => {
       const user = userEvent.setup()
       vi.mocked(countries.searchCountries).mockReturnValue(mockCountries)
-      vi.mocked(calendar.expandDateRange).mockReturnValue([new Date(2024, 0, 15)])
+      vi.mocked(calendar.expandDateRange).mockReturnValue([
+        new Date(2024, 0, 15),
+      ])
       vi.mocked(calendar.canAddVisitToDate).mockReturnValue(false)
 
       render(
@@ -388,7 +398,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -422,7 +434,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -455,7 +469,8 @@ describe('CountryInput', () => {
         new Date(2024, 0, 17),
       ]
       vi.mocked(calendar.expandDateRange).mockReturnValue(mockDates)
-      vi.mocked(utils.generateId).mockReturnValueOnce('visit-1')
+      vi.mocked(utils.generateId)
+        .mockReturnValueOnce('visit-1')
         .mockReturnValueOnce('visit-2')
         .mockReturnValueOnce('visit-3')
 
@@ -466,7 +481,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -514,7 +531,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -542,7 +561,9 @@ describe('CountryInput', () => {
     it('resets form after successful submission', async () => {
       const user = userEvent.setup()
       vi.mocked(countries.searchCountries).mockReturnValue(mockCountries)
-      vi.mocked(calendar.expandDateRange).mockReturnValue([new Date(2024, 0, 15)])
+      vi.mocked(calendar.expandDateRange).mockReturnValue([
+        new Date(2024, 0, 15),
+      ])
 
       render(
         <CountryInput
@@ -551,7 +572,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -574,7 +597,9 @@ describe('CountryInput', () => {
       vi.mocked(calendar.expandDateRange)
         .mockReturnValueOnce([new Date(2024, 0, 15)])
         .mockReturnValueOnce([new Date(2024, 0, 16)])
-      vi.mocked(calendar.canAddVisitToDate).mockReturnValueOnce(false).mockReturnValue(true)
+      vi.mocked(calendar.canAddVisitToDate)
+        .mockReturnValueOnce(false)
+        .mockReturnValue(true)
 
       render(
         <CountryInput
@@ -583,7 +608,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -595,7 +622,9 @@ describe('CountryInput', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText(/maximum 2 countries per day exceeded/i)).toBeInTheDocument()
+        expect(
+          screen.getByText(/maximum 2 countries per day exceeded/i)
+        ).toBeInTheDocument()
       })
 
       await user.clear(startDateInput)
@@ -603,7 +632,9 @@ describe('CountryInput', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.queryByText(/maximum 2 countries per day exceeded/i)).not.toBeInTheDocument()
+        expect(
+          screen.queryByText(/maximum 2 countries per day exceeded/i)
+        ).not.toBeInTheDocument()
       })
     })
   })
@@ -620,7 +651,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       await user.type(countryInput, 'uni')
       const usaButton = screen.getByRole('button', { name: 'United States' })
       await user.click(usaButton)
@@ -635,7 +668,9 @@ describe('CountryInput', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        const errorMessage = screen.getByText(/end date cannot be before start date/i)
+        const errorMessage = screen.getByText(
+          /end date cannot be before start date/i
+        )
         expect(errorMessage).toHaveClass('text-red-600')
       })
     })
@@ -674,10 +709,9 @@ describe('CountryInput', () => {
         />
       )
 
-      expect(screen.getByRole('button', { name: /add visit/i })).toHaveAttribute(
-        'type',
-        'submit'
-      )
+      expect(
+        screen.getByRole('button', { name: /add visit/i })
+      ).toHaveAttribute('type', 'submit')
     })
 
     it('country dropdown buttons have proper type', async () => {
@@ -708,7 +742,9 @@ describe('CountryInput', () => {
         />
       )
 
-      const countryInput = screen.getByLabelText(/country/i, { selector: 'input' })
+      const countryInput = screen.getByLabelText(/country/i, {
+        selector: 'input',
+      })
       expect(countryInput).toHaveClass('border')
       expect(countryInput).toHaveClass('rounded-lg')
     })

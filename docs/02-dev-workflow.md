@@ -27,15 +27,18 @@ This document explains the slash commands, hooks, and quality checks set up for 
 Slash commands are shortcuts that trigger specific workflows when working with Claude Code.
 
 ### `/check`
+
 **Purpose**: Run quick quality checks before committing code
 
 **What it does**:
+
 - Runs ESLint
 - Runs TypeScript type checking
 
 **When to use**: Before committing changes or when you want a quick validation
 
 **Example**:
+
 ```
 /check
 ```
@@ -43,9 +46,11 @@ Slash commands are shortcuts that trigger specific workflows when working with C
 ---
 
 ### `/review`
+
 **Purpose**: Comprehensive code review
 
 **What it does**:
+
 - Checks TypeScript type safety
 - Reviews React best practices
 - Checks accessibility (a11y)
@@ -55,6 +60,7 @@ Slash commands are shortcuts that trigger specific workflows when working with C
 **When to use**: After implementing a feature or making significant changes
 
 **Example**:
+
 ```
 /review
 ```
@@ -62,14 +68,17 @@ Slash commands are shortcuts that trigger specific workflows when working with C
 ---
 
 ### `/test`
+
 **Purpose**: Run tests in watch mode
 
 **What it does**:
+
 - Starts Vitest in watch mode for interactive testing
 
 **When to use**: During development when writing or debugging tests
 
 **Example**:
+
 ```
 /test
 ```
@@ -77,15 +86,18 @@ Slash commands are shortcuts that trigger specific workflows when working with C
 ---
 
 ### `/fix`
+
 **Purpose**: Auto-fix code quality issues
 
 **What it does**:
+
 - Runs ESLint with auto-fix
 - Runs Prettier to format code
 
 **When to use**: When you have linting or formatting issues to fix quickly
 
 **Example**:
+
 ```
 /fix
 ```
@@ -93,15 +105,18 @@ Slash commands are shortcuts that trigger specific workflows when working with C
 ---
 
 ### `/build`
+
 **Purpose**: Verify production build
 
 **What it does**:
+
 - Runs `npm run build` to create a production build
 - Catches build-time errors
 
 **When to use**: Before deploying or when you want to ensure the app builds correctly
 
 **Example**:
+
 ```
 /build
 ```
@@ -109,14 +124,17 @@ Slash commands are shortcuts that trigger specific workflows when working with C
 ---
 
 ### `/type-check`
+
 **Purpose**: Run TypeScript type checking only
 
 **What it does**:
+
 - Runs `tsc --noEmit` to check types without building
 
 **When to use**: When you want to focus on type errors specifically
 
 **Example**:
+
 ```
 /type-check
 ```
@@ -126,6 +144,7 @@ Slash commands are shortcuts that trigger specific workflows when working with C
 Hooks automatically run commands at specific points in the development workflow.
 
 ### Post-Edit Hook
+
 **Trigger**: After editing files
 **Command**: `npm run lint:fix`
 **Purpose**: Auto-fix linting and formatting issues immediately after edits
@@ -136,6 +155,7 @@ This ensures code stays consistently formatted and catches simple issues early.
 ---
 
 ### Pre-Commit Hook
+
 **Trigger**: Before git commits
 **Command**: `npm run check`
 **Purpose**: Prevent committing code with lint or type errors
@@ -146,6 +166,7 @@ This acts as a safety net to ensure quality standards before changes are committ
 ---
 
 ### Post-Write Hook
+
 **Trigger**: After creating new files
 **Command**: `npm run lint:fix`
 **Purpose**: Format new files according to project standards
@@ -156,6 +177,7 @@ This ensures new files follow the same formatting conventions from the start.
 ## Workflow Recommendations
 
 ### 1. During Development
+
 ```
 1. Make changes to code
 2. Post-edit hook auto-fixes formatting
@@ -163,6 +185,7 @@ This ensures new files follow the same formatting conventions from the start.
 ```
 
 ### 2. After Implementing a Feature
+
 ```
 1. Run /test to verify tests pass
 2. Run /review for comprehensive code review
@@ -171,6 +194,7 @@ This ensures new files follow the same formatting conventions from the start.
 ```
 
 ### 3. Before Committing
+
 ```
 1. Run /check:full (or npm run check:full) to run all checks
 2. Pre-commit hook will run automatically
@@ -178,6 +202,7 @@ This ensures new files follow the same formatting conventions from the start.
 ```
 
 ### 4. Before Deploying
+
 ```
 1. Run /build to ensure production build works
 2. Run npm run test:coverage to check test coverage
@@ -187,6 +212,7 @@ This ensures new files follow the same formatting conventions from the start.
 ## Configuration
 
 ### Hook Configuration
+
 Hooks are configured in `.claude/config.json`:
 
 ```json
@@ -200,6 +226,7 @@ Hooks are configured in `.claude/config.json`:
 ```
 
 ### Disabling Hooks
+
 To temporarily disable a hook, set `"enabled": false` in the config:
 
 ```json
@@ -216,18 +243,23 @@ To temporarily disable a hook, set `"enabled": false` in the config:
 ## Troubleshooting
 
 ### Hooks Not Running
+
 1. Check that `.claude/config.json` exists
 2. Verify hook `"enabled"` is set to `true`
 3. Check that the command is valid (e.g., `npm run lint:fix` works in terminal)
 
 ### Slow Performance
+
 If hooks are slowing down your workflow:
+
 1. Increase timeout values
 2. Disable resource-intensive hooks temporarily
 3. Use lighter commands (e.g., `npm run lint` instead of `npm run check:full`)
 
 ### False Positives
+
 If hooks are reporting errors incorrectly:
+
 1. Run the command manually to verify: `npm run [command]`
 2. Fix configuration issues in eslint or tsconfig
 3. Adjust hook commands if needed
@@ -244,6 +276,7 @@ If hooks are reporting errors incorrectly:
 ## Next Steps
 
 When setting up CI/CD, mirror these checks in your pipeline:
+
 ```yaml
 # Example GitHub Actions workflow
 - run: npm run lint

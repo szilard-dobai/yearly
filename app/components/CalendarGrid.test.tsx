@@ -210,11 +210,14 @@ describe('CalendarGrid', () => {
     })
 
     it('handles large number of visits', () => {
-      const manyVisits: CountryVisit[] = Array.from({ length: 100 }, (_, i) => ({
-        id: `visit-${i}`,
-        countryCode: 'US',
-        date: new Date(2024, i % 12, (i % 28) + 1),
-      }))
+      const manyVisits: CountryVisit[] = Array.from(
+        { length: 100 },
+        (_, i) => ({
+          id: `visit-${i}`,
+          countryCode: 'US',
+          date: new Date(2024, i % 12, (i % 28) + 1),
+        })
+      )
 
       const largeCalendarData: CalendarData = {
         visits: manyVisits,
@@ -265,7 +268,9 @@ describe('CalendarGrid', () => {
         />
       )
 
-      const monthGrids = container.querySelectorAll('[data-testid^="month-grid-"]')
+      const monthGrids = container.querySelectorAll(
+        '[data-testid^="month-grid-"]'
+      )
       const monthNumbers = Array.from(monthGrids).map((grid) =>
         parseInt(grid.getAttribute('data-month') || '0')
       )
@@ -282,8 +287,8 @@ describe('CalendarGrid', () => {
         />
       )
 
-      const firstRenderMonths = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((m) =>
-        screen.getByTestId(`month-grid-${m}`)
+      const firstRenderMonths = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(
+        (m) => screen.getByTestId(`month-grid-${m}`)
       )
 
       rerender(
@@ -294,8 +299,8 @@ describe('CalendarGrid', () => {
         />
       )
 
-      const secondRenderMonths = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((m) =>
-        screen.getByTestId(`month-grid-${m}`)
+      const secondRenderMonths = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(
+        (m) => screen.getByTestId(`month-grid-${m}`)
       )
 
       expect(firstRenderMonths).toHaveLength(secondRenderMonths.length)
@@ -432,7 +437,9 @@ describe('CalendarGrid', () => {
         />
       )
 
-      const monthGrids = container.querySelectorAll('[data-testid^="month-grid-"]')
+      const monthGrids = container.querySelectorAll(
+        '[data-testid^="month-grid-"]'
+      )
       expect(monthGrids).toHaveLength(12)
     })
   })

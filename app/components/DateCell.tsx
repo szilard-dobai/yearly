@@ -21,9 +21,7 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
 
   const baseClasses =
     'aspect-square flex items-center justify-center border border-gray-200 dark:border-gray-800 rounded-lg transition-colors'
-  const todayClasses = today
-    ? 'ring-2 ring-blue-500 dark:ring-blue-400'
-    : ''
+  const todayClasses = today ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
 
   if (cellVisits.length === 0) {
     return (

@@ -1,7 +1,10 @@
 import { useState, useRef } from 'react'
 import type { CalendarData } from '../lib/types'
 import { importFromJSON } from '../lib/storage'
-import { calculateTotalCountriesVisited, calculateTotalVisits } from '../lib/statistics'
+import {
+  calculateTotalCountriesVisited,
+  calculateTotalVisits,
+} from '../lib/statistics'
 
 interface ImportButtonProps {
   currentData: CalendarData
@@ -22,7 +25,9 @@ export default function ImportButton({
   const [mergeStrategy, setMergeStrategy] = useState<MergeStrategy>('merge')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -80,7 +85,9 @@ export default function ImportButton({
       setTimeout(() => setStatus('idle'), 3000)
 
       if (onError) {
-        onError(error instanceof Error ? error : new Error('Import merge failed'))
+        onError(
+          error instanceof Error ? error : new Error('Import merge failed')
+        )
       }
     }
   }
@@ -221,7 +228,9 @@ function ImportConfirmationModal({
                 name="merge-strategy"
                 value="merge"
                 checked={mergeStrategy === 'merge'}
-                onChange={(e) => onStrategyChange(e.target.value as MergeStrategy)}
+                onChange={(e) =>
+                  onStrategyChange(e.target.value as MergeStrategy)
+                }
                 className="mt-0.5"
               />
               <div className="flex-1">
@@ -243,7 +252,9 @@ function ImportConfirmationModal({
                 name="merge-strategy"
                 value="replace"
                 checked={mergeStrategy === 'replace'}
-                onChange={(e) => onStrategyChange(e.target.value as MergeStrategy)}
+                onChange={(e) =>
+                  onStrategyChange(e.target.value as MergeStrategy)
+                }
                 className="mt-0.5"
               />
               <div className="flex-1">

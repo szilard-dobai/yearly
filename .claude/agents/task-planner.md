@@ -89,6 +89,7 @@ Present your task breakdown in this structure:
 ```
 
 **Quality Standards**:
+
 - Ensure task granularity is appropriate - not too broad, not atomically small
 - Make acceptance criteria measurable and unambiguous
 - Anticipate edge cases and include them in criteria
@@ -97,6 +98,7 @@ Present your task breakdown in this structure:
 - Use technical terminology accurately but remain accessible
 
 **Self-Verification Checklist** (review before finalizing):
+
 1. Can each task be assigned to a single developer?
 2. Are all acceptance criteria testable?
 3. Are dependencies clearly mapped?

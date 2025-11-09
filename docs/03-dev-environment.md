@@ -5,6 +5,7 @@ This document summarizes the development environment setup for the countries-in-
 ## Installed Dependencies
 
 ### Testing Framework
+
 - **vitest** (v4.0.8) - Fast unit test framework
 - **@vitest/ui** - Visual UI for test results
 - **@vitejs/plugin-react** - React support for Vitest
@@ -14,20 +15,24 @@ This document summarizes the development environment setup for the countries-in-
 - **jsdom** - DOM implementation for Node.js
 
 ### Code Quality
+
 - **prettier** - Code formatter
 - **eslint-config-prettier** - Disable ESLint rules that conflict with Prettier
 - **eslint-plugin-prettier** - Run Prettier as an ESLint rule
 
 ### Project Dependencies (To be installed when needed)
+
 - **dayjs** - Lightweight date manipulation library (2KB, pending)
 - **html-to-image** - JPEG export functionality (pending)
 
 ## Configuration Files Created
 
 ### 1. Vitest Configuration
+
 **File**: `vitest.config.ts`
 
 Features:
+
 - React plugin enabled
 - jsdom environment for browser APIs
 - Global test utilities
@@ -36,11 +41,14 @@ Features:
 - Path alias support (`@/` → root)
 
 ### 2. Prettier Configuration
+
 **Files**:
+
 - `.prettierrc.json` - Formatter rules
 - `.prettierignore` - Ignored paths
 
 Settings:
+
 - No semicolons
 - Single quotes for strings
 - 2-space indentation
@@ -49,15 +57,18 @@ Settings:
 - LF line endings
 
 ### 3. Test Setup
+
 **File**: `test/setup.ts`
 
 Provides:
+
 - Auto cleanup after each test
 - `window.matchMedia` mock for responsive tests
 - localStorage mock for storage tests
 - @testing-library/jest-dom matchers
 
 ### 4. Example Test
+
 **File**: `test/example.test.ts`
 
 Simple test to verify setup works correctly.
@@ -65,6 +76,7 @@ Simple test to verify setup works correctly.
 ## NPM Scripts Available
 
 ### Development
+
 ```bash
 npm run dev          # Start dev server
 npm run build        # Production build
@@ -72,6 +84,7 @@ npm run start        # Start production server
 ```
 
 ### Testing
+
 ```bash
 npm run test              # Run tests once
 npm run test:watch        # Watch mode
@@ -79,6 +92,7 @@ npm run test:coverage     # With coverage report
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint              # Check code quality
 npm run lint:fix          # Auto-fix issues
@@ -87,6 +101,7 @@ npm run format            # Format with Prettier
 ```
 
 ### Combined Checks
+
 ```bash
 npm run check             # Quick: lint + type-check
 npm run check:full        # Full: lint + type-check + test + build
@@ -95,6 +110,7 @@ npm run check:full        # Full: lint + type-check + test + build
 ## Slash Commands
 
 Available in Claude Code:
+
 - `/check` - Quick quality checks
 - `/review` - Comprehensive code review
 - `/test` - Run tests in watch mode
@@ -107,6 +123,7 @@ Available in Claude Code:
 **File**: `.claude/config.json`
 
 Active hooks:
+
 - **post_edit** - Auto-fixes formatting after edits
 - **pre_commit** - Validates before commits
 - **post_write** - Formats new files
@@ -116,6 +133,7 @@ Active hooks:
 All systems verified and working:
 
 ### Tests Pass
+
 ```
 Test Files  1 passed (1)
 Tests       3 passed (3)
@@ -123,12 +141,14 @@ Duration    628ms
 ```
 
 ### Type Checking Works
+
 ```
 tsc --noEmit
 (No errors)
 ```
 
 ### Build System Ready
+
 Next.js 16 with App Router configured and ready.
 
 ## Project Structure

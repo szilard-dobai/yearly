@@ -61,7 +61,9 @@ export default function ExportButton({
               ? 'bg-red-600 text-white'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
       }`}
-      aria-label={hasData ? 'Export calendar data as JSON' : 'No data to export'}
+      aria-label={
+        hasData ? 'Export calendar data as JSON' : 'No data to export'
+      }
     >
       {buttonText}
     </button>

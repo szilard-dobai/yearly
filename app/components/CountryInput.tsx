@@ -22,7 +22,8 @@ export default function CountryInput({
   const [error, setError] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
 
-  const filteredCountries = searchQuery.length > 0 ? searchCountries(searchQuery) : []
+  const filteredCountries =
+    searchQuery.length > 0 ? searchCountries(searchQuery) : []
 
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country)

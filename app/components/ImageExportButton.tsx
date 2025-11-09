@@ -12,9 +12,9 @@ export default function ImageExportButton({
   year,
   hasData,
 }: ImageExportButtonProps) {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
-    'idle'
-  )
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle')
 
   const handleExport = async () => {
     if (!calendarRef.current) {

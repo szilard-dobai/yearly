@@ -35,10 +35,7 @@ export default function MonthGrid({
   const weeks = getMonthData(year, month)
 
   return (
-    <section
-      className="space-y-2"
-      aria-labelledby={`month-${year}-${month}`}
-    >
+    <section className="space-y-2" aria-labelledby={`month-${year}-${month}`}>
       <h3
         id={`month-${year}-${month}`}
         className="text-sm font-medium text-gray-900 dark:text-white"

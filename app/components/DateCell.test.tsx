@@ -393,9 +393,9 @@ describe('DateCell', () => {
       expect(
         screen.getByText(/united states and france on 15/i)
       ).toBeInTheDocument()
-      expect(
-        screen.getByText(/united states and france on 15/i)
-      ).toHaveClass('sr-only')
+      expect(screen.getByText(/united states and france on 15/i)).toHaveClass(
+        'sr-only'
+      )
     })
   })
 

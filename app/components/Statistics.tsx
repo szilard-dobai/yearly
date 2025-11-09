@@ -20,7 +20,9 @@ export default function Statistics({ calendarData, year }: StatisticsProps) {
   const visits = useMemo(
     () =>
       year
-        ? calendarData.visits.filter((visit) => visit.date.getFullYear() === year)
+        ? calendarData.visits.filter(
+            (visit) => visit.date.getFullYear() === year
+          )
         : calendarData.visits,
     [calendarData.visits, year]
   )

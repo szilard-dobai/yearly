@@ -73,10 +73,7 @@ export function getVisitsForDate(
  * @param visits - Array of all existing visits
  * @returns True if visit can be added, false if limit reached
  */
-export function canAddVisitToDate(
-  date: Date,
-  visits: CountryVisit[]
-): boolean {
+export function canAddVisitToDate(date: Date, visits: CountryVisit[]): boolean {
   const visitsOnDate = getVisitsForDate(date, visits)
   return visitsOnDate.length < 2
 }

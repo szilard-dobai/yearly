@@ -24,7 +24,9 @@ export default function FlagPlaceholder({ countryCode }: FlagPlaceholderProps) {
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    FlagComponent = require(`country-flag-icons/react/3x2/${countryCode}`).default
+    FlagComponent = require(
+      `country-flag-icons/react/3x2/${countryCode}`
+    ).default
   } catch {
     FlagComponent = null
   }

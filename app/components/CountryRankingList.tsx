@@ -66,11 +66,11 @@ export default function CountryRankingList({
             key={item.countryCode}
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
           >
-            <div className="flex-shrink-0 w-6 flex items-center justify-center">
+            <div className="shrink-0 w-6 flex items-center justify-center">
               {getRankBadge(item.rank)}
             </div>
 
-            <div className="flex-shrink-0 w-8 h-6 flex items-center">
+            <div className="shrink-0 w-8 h-6 flex items-center">
               <FlagPlaceholder countryCode={item.countryCode} />
             </div>
 
@@ -80,7 +80,7 @@ export default function CountryRankingList({
               </span>
             </div>
 
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                 {item.count} {item.count === 1 ? 'visit' : 'visits'}
               </span>

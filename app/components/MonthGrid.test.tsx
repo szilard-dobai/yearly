@@ -119,9 +119,33 @@ describe('MonthGrid', () => {
 
     it('renders correct number of weeks', () => {
       const mockWeeks = [
-        [null, new Date(2024, 0, 1), new Date(2024, 0, 2), null, null, null, null],
-        [new Date(2024, 0, 7), new Date(2024, 0, 8), null, null, null, null, null],
-        [new Date(2024, 0, 14), new Date(2024, 0, 15), null, null, null, null, null],
+        [
+          null,
+          new Date(2024, 0, 1),
+          new Date(2024, 0, 2),
+          null,
+          null,
+          null,
+          null,
+        ],
+        [
+          new Date(2024, 0, 7),
+          new Date(2024, 0, 8),
+          null,
+          null,
+          null,
+          null,
+          null,
+        ],
+        [
+          new Date(2024, 0, 14),
+          new Date(2024, 0, 15),
+          null,
+          null,
+          null,
+          null,
+          null,
+        ],
       ]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 

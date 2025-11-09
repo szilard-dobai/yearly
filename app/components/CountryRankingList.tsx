@@ -1,4 +1,5 @@
 import { getCountryByCode } from '../lib/countries'
+import FlagPlaceholder from './FlagPlaceholder'
 
 export interface CountryRankingItem {
   countryCode: string
@@ -88,41 +89,5 @@ export default function CountryRankingList({
         )
       })}
     </div>
-  )
-}
-
-function FlagPlaceholder({ countryCode }: { countryCode: string }) {
-  const country = getCountryByCode(countryCode)
-
-  if (!country) {
-    return (
-      <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-800 rounded-sm flex items-center justify-center">
-        <span className="text-white text-[6px] font-mono">{countryCode}</span>
-      </div>
-    )
-  }
-
-  let FlagComponent
-
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    FlagComponent = require(`country-flag-icons/react/3x2/${countryCode}`).default
-  } catch {
-    FlagComponent = null
-  }
-
-  if (!FlagComponent) {
-    return (
-      <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 rounded-sm flex items-center justify-center">
-        <span className="text-white text-[6px] font-mono">{countryCode}</span>
-      </div>
-    )
-  }
-
-  return (
-    <FlagComponent
-      className="w-full h-full rounded-sm object-cover"
-      title={country.name}
-    />
   )
 }

@@ -81,16 +81,21 @@ export default function ImageExportButton({
         if (htmlEl.classList.contains('text-[10px]')) {
           htmlEl.style.fontSize = '1rem' // Make day numbers much larger (text-base)
         }
-        // Make flag emojis larger (for single country cells)
-        if (htmlEl.classList.contains('text-lg')) {
-          htmlEl.style.fontSize = '2rem' // Larger flag emojis (text-3xl equivalent)
-        }
-        // Make diagonal split flag emojis larger
+        // Make diagonal split flag emojis larger (have fixed-size containers)
         if (
-          htmlEl.classList.contains('text-base') &&
-          htmlEl.classList.contains('leading-none')
+          (htmlEl.classList.contains('text-lg') || htmlEl.classList.contains('text-xl')) &&
+          htmlEl.classList.contains('leading-none') &&
+          (htmlEl.classList.contains('w-6') || htmlEl.classList.contains('w-8'))
         ) {
           htmlEl.style.fontSize = '1.5rem' // Larger diagonal split flags (text-2xl equivalent)
+        }
+        // Make single flag emojis larger (no fixed-size container, just text-lg)
+        else if (
+          htmlEl.classList.contains('text-lg') &&
+          !htmlEl.classList.contains('w-6') &&
+          !htmlEl.classList.contains('w-8')
+        ) {
+          htmlEl.style.fontSize = '2rem' // Larger flag emojis (text-3xl equivalent)
         }
         // Make flag icons larger
         if (htmlEl.classList.contains('w-6')) {

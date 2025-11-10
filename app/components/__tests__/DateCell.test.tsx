@@ -156,8 +156,8 @@ describe('DateCell', () => {
       const flagContainers = container.querySelectorAll('.absolute.inset-0')
       expect(flagContainers.length).toBeGreaterThanOrEqual(2)
 
-      // Check for both flags
-      const flags = container.querySelectorAll('.text-base, .text-xl')
+      // Check for both flags (now with fixed-size containers)
+      const flags = container.querySelectorAll('.text-lg, .text-xl')
       expect(flags.length).toBeGreaterThanOrEqual(2)
       expect(flags[0]).toHaveTextContent('🇱🇻') // Latvia (top-left)
       expect(flags[1]).toHaveTextContent('🇻🇦') // Vatican City (bottom-right)
@@ -194,9 +194,13 @@ describe('DateCell', () => {
         />
       )
 
-      // Diagonal split flags should use text-base or text-xl
-      const flags = container.querySelectorAll('.text-base, .text-xl')
+      // Diagonal split flags should use text-lg or text-xl with fixed containers
+      const flags = container.querySelectorAll('.text-lg, .text-xl')
       expect(flags.length).toBeGreaterThanOrEqual(2)
+
+      // Check for fixed-size containers matching icon dimensions
+      const fixedContainers = container.querySelectorAll('.w-6, .w-8')
+      expect(fixedContainers.length).toBeGreaterThanOrEqual(2)
 
       // Check that they're positioned absolutely for the diagonal split
       const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
@@ -378,8 +382,12 @@ describe('DateCell', () => {
       )
       expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
 
-      const flags = container.querySelectorAll('.text-base, .text-xl')
+      const flags = container.querySelectorAll('.text-lg, .text-xl')
       expect(flags.length).toBeGreaterThanOrEqual(2)
+
+      // Check for fixed-size containers
+      const fixedContainers = container.querySelectorAll('.w-6, .w-8')
+      expect(fixedContainers.length).toBeGreaterThanOrEqual(2)
     })
 
     it('should use absolute positioning for diagonal split triangles', () => {

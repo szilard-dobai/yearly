@@ -70,16 +70,27 @@ export default function ImageExportButton({
         ) {
           htmlEl.style.rowGap = '0.5rem' // sm:space-y-2 equivalent
         }
-        if (htmlEl.classList.contains('text-base')) {
+        // Make month names larger (distinguish from flags by checking parent class)
+        if (
+          htmlEl.classList.contains('text-base') &&
+          htmlEl.classList.contains('font-bold')
+        ) {
           htmlEl.style.fontSize = '1.5rem' // Larger month names (text-2xl equivalent)
         }
         // Make day numbers larger
         if (htmlEl.classList.contains('text-[10px]')) {
           htmlEl.style.fontSize = '1rem' // Make day numbers much larger (text-base)
         }
-        // Make flag emojis larger
+        // Make flag emojis larger (for single country cells)
         if (htmlEl.classList.contains('text-lg')) {
           htmlEl.style.fontSize = '2rem' // Larger flag emojis (text-3xl equivalent)
+        }
+        // Make diagonal split flag emojis larger
+        if (
+          htmlEl.classList.contains('text-base') &&
+          htmlEl.classList.contains('leading-none')
+        ) {
+          htmlEl.style.fontSize = '1.5rem' // Larger diagonal split flags (text-2xl equivalent)
         }
         // Make flag icons larger
         if (htmlEl.classList.contains('w-6')) {

@@ -64,22 +64,37 @@ function DateCell({ date, visits, onRemoveVisit, flagDisplayMode }: DateCellProp
         {hasVisits ? (
           <>
             {hasTwoCountries ? (
-              // Two countries: stack vertically like ½ symbol
-              <div className="flex flex-col items-center justify-center gap-0 w-full h-full">
-                <div className="flex-1 flex items-center justify-center w-full">
+              // Two countries: diagonal split like ½ symbol
+              <div className="relative w-full h-full">
+                {/* Top-left half (first country) */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center overflow-hidden"
+                  style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
+                >
                   {flagDisplayMode === 'icon' ? (
-                    getFlagIcon(cellVisits[0].countryCode)
+                    <div className="scale-75">{getFlagIcon(cellVisits[0].countryCode)}</div>
                   ) : (
-                    <div className="text-sm sm:text-lg leading-none">{getFlagEmoji(cellVisits[0].countryCode)}</div>
+                    <div className="text-base sm:text-xl leading-none">{getFlagEmoji(cellVisits[0].countryCode)}</div>
                   )}
                 </div>
-                <div className="flex-1 flex items-center justify-center w-full">
+                {/* Bottom-right half (second country) */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center overflow-hidden"
+                  style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
+                >
                   {flagDisplayMode === 'icon' ? (
-                    getFlagIcon(cellVisits[1].countryCode)
+                    <div className="scale-75">{getFlagIcon(cellVisits[1].countryCode)}</div>
                   ) : (
-                    <div className="text-sm sm:text-lg leading-none">{getFlagEmoji(cellVisits[1].countryCode)}</div>
+                    <div className="text-base sm:text-xl leading-none">{getFlagEmoji(cellVisits[1].countryCode)}</div>
                   )}
                 </div>
+                {/* Diagonal line separator */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(to bottom right, transparent calc(50% - 0.5px), rgba(0,0,0,0.1) calc(50% - 0.5px), rgba(0,0,0,0.1) calc(50% + 0.5px), transparent calc(50% + 0.5px))'
+                  }}
+                />
               </div>
             ) : (
               // Single country: centered

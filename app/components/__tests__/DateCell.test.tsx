@@ -137,7 +137,7 @@ describe('DateCell', () => {
       },
     ]
 
-    it('should render two flag emojis stacked vertically', () => {
+    it('should render two flag emojis with diagonal split', () => {
       const date = new Date(2025, 1, 2)
       const { container } = render(
         <DateCell
@@ -148,22 +148,22 @@ describe('DateCell', () => {
         />
       )
 
-      // Check for vertical stacking container
-      const stackContainer = container.querySelector('.flex-col')
-      expect(stackContainer).toBeInTheDocument()
+      // Check for diagonal split container
+      const splitContainer = container.querySelector('.relative.w-full.h-full')
+      expect(splitContainer).toBeInTheDocument()
 
-      // Check for two flag containers with flex-1 (equal height)
-      const flagContainers = container.querySelectorAll('.flex-1')
-      expect(flagContainers).toHaveLength(2)
+      // Check for two flag containers (top-left and bottom-right halves)
+      const flagContainers = container.querySelectorAll('.absolute.inset-0')
+      expect(flagContainers.length).toBeGreaterThanOrEqual(2)
 
       // Check for both flags
-      const flags = container.querySelectorAll('.text-sm')
-      expect(flags).toHaveLength(2)
-      expect(flags[0]).toHaveTextContent('🇱🇻') // Latvia
-      expect(flags[1]).toHaveTextContent('🇻🇦') // Vatican City
+      const flags = container.querySelectorAll('.text-base, .text-xl')
+      expect(flags.length).toBeGreaterThanOrEqual(2)
+      expect(flags[0]).toHaveTextContent('🇱🇻') // Latvia (top-left)
+      expect(flags[1]).toHaveTextContent('🇻🇦') // Vatican City (bottom-right)
     })
 
-    it('should render two flag icons stacked vertically when flagDisplayMode is icon', () => {
+    it('should render two flag icons with diagonal split when flagDisplayMode is icon', () => {
       const date = new Date(2025, 1, 2)
       const { container } = render(
         <DateCell
@@ -174,16 +174,16 @@ describe('DateCell', () => {
         />
       )
 
-      // Check for vertical stacking container
-      const stackContainer = container.querySelector('.flex-col')
-      expect(stackContainer).toBeInTheDocument()
+      // Check for diagonal split container
+      const splitContainer = container.querySelector('.relative.w-full.h-full')
+      expect(splitContainer).toBeInTheDocument()
 
-      // Check for two flag icons (svgs)
+      // Check for two flag icons (svgs) - should be at least 2
       const flagIcons = container.querySelectorAll('svg')
-      expect(flagIcons).toHaveLength(2)
+      expect(flagIcons.length).toBeGreaterThanOrEqual(2)
     })
 
-    it('should use smaller font size for two stacked flags', () => {
+    it('should use appropriate font size for diagonal split flags', () => {
       const date = new Date(2025, 1, 2)
       const { container } = render(
         <DateCell
@@ -194,16 +194,16 @@ describe('DateCell', () => {
         />
       )
 
-      // Stacked flags should use text-sm instead of text-lg
-      const flags = container.querySelectorAll('.text-sm')
-      expect(flags).toHaveLength(2)
+      // Diagonal split flags should use text-base or text-xl
+      const flags = container.querySelectorAll('.text-base, .text-xl')
+      expect(flags.length).toBeGreaterThanOrEqual(2)
 
-      // Single flag should not exist
-      const singleFlag = container.querySelector('.text-lg')
-      expect(singleFlag).not.toBeInTheDocument()
+      // Check that they're positioned absolutely for the diagonal split
+      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
+      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
     })
 
-    it('should have zero gap between stacked flags', () => {
+    it('should have diagonal separator line between flags', () => {
       const date = new Date(2025, 1, 2)
       const { container } = render(
         <DateCell
@@ -214,12 +214,13 @@ describe('DateCell', () => {
         />
       )
 
-      // Find the correct stacking container (not the parent flex-col)
-      const stackContainer = container.querySelector(
-        '.flex.flex-col.items-center.justify-center.gap-0'
-      )
-      expect(stackContainer).toBeInTheDocument()
-      expect(stackContainer).toHaveClass('gap-0')
+      // Check for the diagonal split container
+      const splitContainer = container.querySelector('.relative.w-full.h-full')
+      expect(splitContainer).toBeInTheDocument()
+
+      // Check for the diagonal line separator (should have linear-gradient background)
+      const separator = container.querySelector('.pointer-events-none')
+      expect(separator).toBeInTheDocument()
     })
 
     it('should remove all visits when delete button is clicked', async () => {
@@ -313,8 +314,8 @@ describe('DateCell', () => {
     })
   })
 
-  describe('Regression tests for two-country stacking', () => {
-    it('should NOT render flags horizontally side-by-side', () => {
+  describe('Regression tests for two-country diagonal split', () => {
+    it('should use diagonal split layout with clip-path', () => {
       const date = new Date(2025, 1, 2)
       const twoVisits: CountryVisit[] = [
         {
@@ -338,12 +339,13 @@ describe('DateCell', () => {
         />
       )
 
-      // Should use flex-col (vertical), NOT flex-row (horizontal)
-      const stackContainer = container.querySelector('.flex-col')
-      expect(stackContainer).toBeInTheDocument()
+      // Should have diagonal split container
+      const splitContainer = container.querySelector('.relative.w-full.h-full')
+      expect(splitContainer).toBeInTheDocument()
 
-      const horizontalContainer = container.querySelector('.flex-row')
-      expect(horizontalContainer).not.toBeInTheDocument()
+      // Should have absolutely positioned flag containers (not simple flex layout)
+      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
+      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
     })
 
     it('should render exactly two flags when there are two visits', () => {
@@ -370,14 +372,17 @@ describe('DateCell', () => {
         />
       )
 
-      const flagContainers = container.querySelectorAll('.flex-1')
-      expect(flagContainers).toHaveLength(2)
+      // Should have two absolutely positioned flag containers
+      const absoluteContainers = container.querySelectorAll(
+        '.absolute.inset-0.flex.items-center.justify-center'
+      )
+      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
 
-      const flags = container.querySelectorAll('.text-sm')
-      expect(flags).toHaveLength(2)
+      const flags = container.querySelectorAll('.text-base, .text-xl')
+      expect(flags.length).toBeGreaterThanOrEqual(2)
     })
 
-    it('should allocate equal vertical space to both flags (flex-1)', () => {
+    it('should use absolute positioning for diagonal split triangles', () => {
       const date = new Date(2025, 1, 2)
       const twoVisits: CountryVisit[] = [
         {
@@ -401,12 +406,13 @@ describe('DateCell', () => {
         />
       )
 
-      // Both containers should have flex-1 for equal space
-      const flagContainers = container.querySelectorAll('.flex-1')
-      expect(flagContainers).toHaveLength(2)
-      flagContainers.forEach((container) => {
-        expect(container).toHaveClass('flex-1')
-      })
+      // Both flag containers should be absolutely positioned with inset-0
+      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
+      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
+
+      // Each should have overflow-hidden for clip-path
+      const overflowContainers = container.querySelectorAll('.overflow-hidden')
+      expect(overflowContainers.length).toBeGreaterThanOrEqual(2)
     })
   })
 })

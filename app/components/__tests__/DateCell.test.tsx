@@ -157,7 +157,7 @@ describe('DateCell', () => {
       expect(flagContainers.length).toBeGreaterThanOrEqual(2)
 
       // Check for both flags (now with fixed-size containers)
-      const flags = container.querySelectorAll('.text-lg, .text-xl')
+      const flags = container.querySelectorAll('.text-xl, .text-2xl')
       expect(flags.length).toBeGreaterThanOrEqual(2)
       expect(flags[0]).toHaveTextContent('🇱🇻') // Latvia (top-left)
       expect(flags[1]).toHaveTextContent('🇻🇦') // Vatican City (bottom-right)
@@ -194,8 +194,8 @@ describe('DateCell', () => {
         />
       )
 
-      // Diagonal split flags should use text-lg or text-xl with fixed containers
-      const flags = container.querySelectorAll('.text-lg, .text-xl')
+      // Diagonal split flags should use text-xl or text-2xl with fixed containers
+      const flags = container.querySelectorAll('.text-xl, .text-2xl')
       expect(flags.length).toBeGreaterThanOrEqual(2)
 
       // Check for fixed-size containers matching icon dimensions
@@ -382,7 +382,7 @@ describe('DateCell', () => {
       )
       expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
 
-      const flags = container.querySelectorAll('.text-lg, .text-xl')
+      const flags = container.querySelectorAll('.text-xl, .text-2xl')
       expect(flags.length).toBeGreaterThanOrEqual(2)
 
       // Check for fixed-size containers

@@ -74,7 +74,7 @@ function DateCell({ date, visits, onRemoveVisit, flagDisplayMode }: DateCellProp
                   {flagDisplayMode === 'icon' ? (
                     getFlagIcon(cellVisits[0].countryCode)
                   ) : (
-                    <div className="w-6 h-4 sm:w-8 sm:h-6 flex items-center justify-center text-lg sm:text-xl leading-none">{getFlagEmoji(cellVisits[0].countryCode)}</div>
+                    <div className="w-6 h-4 sm:w-8 sm:h-6 flex items-center justify-center text-xl sm:text-2xl leading-none">{getFlagEmoji(cellVisits[0].countryCode)}</div>
                   )}
                 </div>
                 {/* Bottom-right half (second country) */}
@@ -85,7 +85,7 @@ function DateCell({ date, visits, onRemoveVisit, flagDisplayMode }: DateCellProp
                   {flagDisplayMode === 'icon' ? (
                     getFlagIcon(cellVisits[1].countryCode)
                   ) : (
-                    <div className="w-6 h-4 sm:w-8 sm:h-6 flex items-center justify-center text-lg sm:text-xl leading-none">{getFlagEmoji(cellVisits[1].countryCode)}</div>
+                    <div className="w-6 h-4 sm:w-8 sm:h-6 flex items-center justify-center text-xl sm:text-2xl leading-none">{getFlagEmoji(cellVisits[1].countryCode)}</div>
                   )}
                 </div>
               </div>

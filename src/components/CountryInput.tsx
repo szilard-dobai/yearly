@@ -200,7 +200,7 @@ export default function CountryInput({
               startMonth={new Date(year, 0)}
               endMonth={new Date(year, 11)}
               onSelect={handleDateSelect}
-              numberOfMonths={2}
+              numberOfMonths={1}
               weekStartsOn={weekStartsOn}
             />
           </PopoverContent>

@@ -22,7 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { loadCalendarData, saveCalendarData } from '@/lib/storage'
+import {
+  loadCalendarData,
+  saveCalendarData,
+  loadSettings,
+  saveSettings,
+} from '@/lib/storage'
 import type { CalendarData } from '@/lib/types'
 import { useRef, useState } from 'react'
 import { YearlyLogo } from '@/components/YearlyLogo'
@@ -34,14 +39,24 @@ function getInitialData(): CalendarData {
   return loadCalendarData() || { visits: [] }
 }
 
+function getInitialSettings() {
+  if (typeof window === 'undefined') {
+    return { flagDisplayMode: 'emoji' as FlagDisplayMode, weekStartsOn: 0 as WeekStartsOn }
+  }
+  return loadSettings()
+}
+
 export default function Create() {
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
+  const initialSettings = getInitialSettings()
   const [flagDisplayMode, setFlagDisplayMode] =
-    useState<FlagDisplayMode>('emoji')
-  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(0)
+    useState<FlagDisplayMode>(initialSettings.flagDisplayMode)
+  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(
+    initialSettings.weekStartsOn
+  )
   const calendarRef = useRef<HTMLDivElement>(null)
 
   const handleDataChange = (newData: CalendarData) => {
@@ -54,6 +69,16 @@ export default function Create() {
       visits: calendarData.visits.filter((visit) => visit.id !== visitId),
     }
     handleDataChange(newData)
+  }
+
+  const handleFlagDisplayModeChange = (mode: FlagDisplayMode) => {
+    setFlagDisplayMode(mode)
+    saveSettings({ flagDisplayMode: mode, weekStartsOn })
+  }
+
+  const handleWeekStartsOnChange = (day: WeekStartsOn) => {
+    setWeekStartsOn(day)
+    saveSettings({ flagDisplayMode, weekStartsOn: day })
   }
 
   return (
@@ -159,9 +184,9 @@ export default function Create() {
               <CardContent>
                 <Settings
                   flagDisplayMode={flagDisplayMode}
-                  onFlagDisplayModeChange={setFlagDisplayMode}
+                  onFlagDisplayModeChange={handleFlagDisplayModeChange}
                   weekStartsOn={weekStartsOn}
-                  onWeekStartsOnChange={setWeekStartsOn}
+                  onWeekStartsOnChange={handleWeekStartsOnChange}
                 />
               </CardContent>
             </Card>

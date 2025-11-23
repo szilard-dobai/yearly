@@ -13,9 +13,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Countries in Year',
-  description:
-    "Visual calendar showing countries you've visited throughout the year with flag icons",
+  title: 'Yearly',
+  description: 'Your year, at a glance',
 }
 
 export default function RootLayout({

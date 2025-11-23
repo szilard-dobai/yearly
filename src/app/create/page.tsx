@@ -57,38 +57,33 @@ export default function Create() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
+    <div className="min-h-screen bg-linear-to-br from-stone-50 via-white to-zinc-50">
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <YearlyLogo />
-
-          {/* <header className="border-b border-gray-200/50 dark:border-gray-800/50 backdrop-blur-xl bg-white/80 dark:bg-zinc-950/80 sticky top-0 z-10"> */}
-          {/* <div className="container mx-auto px-4 py-4"> */}
-          <div className="flex items-center justify-between">
-            <Select
-              value={selectedYear.toString()}
-              onValueChange={(value) => setSelectedYear(Number(value))}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={(new Date().getFullYear() - 1).toString()}>
-                  {new Date().getFullYear() - 1}
-                </SelectItem>
-                <SelectItem value={new Date().getFullYear().toString()}>
-                  {new Date().getFullYear()}
-                </SelectItem>
-                <SelectItem value={(new Date().getFullYear() + 1).toString()}>
-                  {new Date().getFullYear() + 1}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={(value) => setSelectedYear(Number(value))}
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={(new Date().getFullYear() - 1).toString()}>
+                {new Date().getFullYear() - 1}
+              </SelectItem>
+              <SelectItem value={new Date().getFullYear().toString()}>
+                {new Date().getFullYear()}
+              </SelectItem>
+              <SelectItem value={(new Date().getFullYear() + 1).toString()}>
+                {new Date().getFullYear() + 1}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
           <div className="space-y-6">
             <CalendarGrid
@@ -102,9 +97,9 @@ export default function Create() {
           </div>
 
           <aside className="space-y-4">
-            <Card className="border-0 shadow-lg">
+            <Card className="shadow-sm border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2 text-gray-900" style={{ fontWeight: '500' }}>
                   <span className="text-2xl">✈️</span>
                   Add Visit
                 </CardTitle>
@@ -120,16 +115,16 @@ export default function Create() {
             </Card>
 
             {calendarData.visits.length > 0 && (
-              <Card className="border-0 shadow-xl bg-linear-to-br from-blue-500 to-purple-600 text-white">
+              <Card className="shadow-sm border-0 bg-black text-white">
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="text-lg flex items-center gap-2" style={{ fontWeight: '500' }}>
                     <span className="text-2xl">📸</span>
                     Export Your Calendar
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p className="text-sm text-white/90 font-normal">
+                    <p className="text-gray-300" style={{ lineHeight: '1.7' }}>
                       Download a high-quality image of your travel calendar
                     </p>
                     <ImageExportButton
@@ -142,9 +137,9 @@ export default function Create() {
               </Card>
             )}
 
-            <Card className="border-0 shadow-lg bg-linear-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+            <Card className="shadow-sm border border-gray-200 bg-linear-to-br from-gray-50 to-stone-50">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2 text-gray-900" style={{ fontWeight: '500' }}>
                   <span className="text-2xl">📊</span>
                   Statistics
                 </CardTitle>
@@ -154,9 +149,9 @@ export default function Create() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg">
+            <Card className="shadow-sm border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2 text-gray-900" style={{ fontWeight: '500' }}>
                   <span className="text-2xl">⚙️</span>
                   Settings
                 </CardTitle>
@@ -174,10 +169,10 @@ export default function Create() {
         </div>
       </main>
 
-      <footer className="container mx-auto px-4 py-8">
-        <Card className="border-0 shadow-lg">
+      <footer className="container mx-auto px-6 py-8">
+        <Card className="shadow-sm border border-gray-200 bg-white">
           <details>
-            <summary className="px-6 py-4 cursor-pointer font-medium text-sm hover:bg-accent/50 transition-colors rounded-lg list-none flex items-center gap-2">
+            <summary className="px-6 py-4 cursor-pointer text-gray-900 text-sm hover:bg-gray-50 transition-colors rounded-lg list-none flex items-center gap-2" style={{ fontWeight: '500' }}>
               <span className="text-lg">🔧</span>
               Developer Mode
             </summary>

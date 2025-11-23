@@ -158,13 +158,13 @@ export default function ImageExportButton({
     <Button
       onClick={handleExport}
       disabled={isDisabled}
-      className="w-full text-lg py-6 font-semibold shadow-lg hover:shadow-xl transition-all"
+      className="w-full text-lg py-6 font-semibold shadow-lg hover:shadow-xl transition-all bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:bg-gray-100 disabled:text-gray-400"
       variant={
         status === 'success'
           ? 'default'
           : status === 'error'
             ? 'destructive'
-            : 'default'
+            : 'ghost'
       }
       size="lg"
       aria-label={

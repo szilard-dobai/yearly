@@ -37,7 +37,7 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString('default', { month: 'short' }),
+          date.toLocaleString('default', { month: 'long' }),
         ...formatters,
       }}
       classNames={{
@@ -66,22 +66,22 @@ function Calendar({
           defaultClassNames.month_caption
         ),
         dropdowns: cn(
-          'w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-1.5',
+          'w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-2',
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          'relative has-focus:border-ring border border-input shadow-xs has-focus:ring-ring/50 has-focus:ring-[3px] rounded-md',
+          'relative has-focus:border-ring border border-input bg-background shadow-sm hover:bg-accent/50 transition-colors has-focus:ring-ring/50 has-focus:ring-[3px] rounded-lg px-3 py-1.5',
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
-          'absolute bg-popover inset-0 opacity-0',
+          'absolute bg-popover inset-0 opacity-0 cursor-pointer',
           defaultClassNames.dropdown
         ),
         caption_label: cn(
           'select-none font-medium',
           captionLayout === 'label'
             ? 'text-sm'
-            : 'rounded-md pl-2 pr-1 flex items-center gap-1 text-sm h-8 [&>svg]:text-muted-foreground [&>svg]:size-3.5',
+            : 'rounded-lg px-3 py-1.5 flex items-center gap-1.5 text-sm min-h-8 hover:bg-accent/50 transition-colors [&>svg]:text-muted-foreground [&>svg]:size-4',
           defaultClassNames.caption_label
         ),
         table: 'w-full border-collapse',

@@ -34,28 +34,19 @@ function getInitialData(): CalendarData {
   return loadCalendarData() || { visits: [] }
 }
 
-function getInitialSettings() {
-  if (typeof window === 'undefined') {
-    return {
-      flagDisplayMode: 'emoji',
-      weekStartsOn: 0,
-    } as const
-  }
-  return loadSettings()
-}
-
 export default function Create() {
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
-  const initialSettings = getInitialSettings()
-  const [flagDisplayMode, setFlagDisplayMode] = useState<FlagDisplayMode>(
-    initialSettings.flagDisplayMode
-  )
-  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(
-    initialSettings.weekStartsOn
-  )
+  const [flagDisplayMode, setFlagDisplayMode] = useState<FlagDisplayMode>(() => {
+    if (typeof window === 'undefined') return 'emoji'
+    return loadSettings().flagDisplayMode
+  })
+  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(() => {
+    if (typeof window === 'undefined') return 0
+    return loadSettings().weekStartsOn
+  })
   const calendarRef = useRef<HTMLDivElement>(null)
 
   const handleDataChange = (newData: CalendarData) => {

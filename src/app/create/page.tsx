@@ -9,12 +9,7 @@ import Settings, {
   type WeekStartsOn,
 } from '@/components/Settings'
 import Statistics from '@/components/Statistics'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -22,15 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { YearlyLogo } from '@/components/YearlyLogo'
 import {
   loadCalendarData,
-  saveCalendarData,
   loadSettings,
+  saveCalendarData,
   saveSettings,
 } from '@/lib/storage'
 import type { CalendarData } from '@/lib/types'
 import { useRef, useState } from 'react'
-import { YearlyLogo } from '@/components/YearlyLogo'
 
 function getInitialData(): CalendarData {
   if (typeof window === 'undefined') {
@@ -41,7 +36,10 @@ function getInitialData(): CalendarData {
 
 function getInitialSettings() {
   if (typeof window === 'undefined') {
-    return { flagDisplayMode: 'emoji' as FlagDisplayMode, weekStartsOn: 0 as WeekStartsOn }
+    return {
+      flagDisplayMode: 'emoji',
+      weekStartsOn: 0,
+    } as const
   }
   return loadSettings()
 }
@@ -52,8 +50,9 @@ export default function Create() {
   )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
   const initialSettings = getInitialSettings()
-  const [flagDisplayMode, setFlagDisplayMode] =
-    useState<FlagDisplayMode>(initialSettings.flagDisplayMode)
+  const [flagDisplayMode, setFlagDisplayMode] = useState<FlagDisplayMode>(
+    initialSettings.flagDisplayMode
+  )
   const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(
     initialSettings.weekStartsOn
   )
@@ -124,7 +123,10 @@ export default function Create() {
           <aside className="space-y-4">
             <Card className="shadow-sm border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2 text-gray-900" style={{ fontWeight: '500' }}>
+                <CardTitle
+                  className="text-lg flex items-center gap-2 text-gray-900"
+                  style={{ fontWeight: '500' }}
+                >
                   <span className="text-2xl">✈️</span>
                   Add Visit
                 </CardTitle>
@@ -142,7 +144,10 @@ export default function Create() {
             {calendarData.visits.length > 0 && (
               <Card className="shadow-sm border-0 bg-black text-white">
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2" style={{ fontWeight: '500' }}>
+                  <CardTitle
+                    className="text-lg flex items-center gap-2"
+                    style={{ fontWeight: '500' }}
+                  >
                     <span className="text-2xl">📸</span>
                     Export Your Calendar
                   </CardTitle>
@@ -164,7 +169,10 @@ export default function Create() {
 
             <Card className="shadow-sm border border-gray-200 bg-linear-to-br from-gray-50 to-stone-50">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2 text-gray-900" style={{ fontWeight: '500' }}>
+                <CardTitle
+                  className="text-lg flex items-center gap-2 text-gray-900"
+                  style={{ fontWeight: '500' }}
+                >
                   <span className="text-2xl">📊</span>
                   Statistics
                 </CardTitle>
@@ -176,7 +184,10 @@ export default function Create() {
 
             <Card className="shadow-sm border border-gray-200 bg-white">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2 text-gray-900" style={{ fontWeight: '500' }}>
+                <CardTitle
+                  className="text-lg flex items-center gap-2 text-gray-900"
+                  style={{ fontWeight: '500' }}
+                >
                   <span className="text-2xl">⚙️</span>
                   Settings
                 </CardTitle>
@@ -197,7 +208,10 @@ export default function Create() {
       <footer className="container mx-auto px-6 py-8">
         <Card className="shadow-sm border border-gray-200 bg-white">
           <details>
-            <summary className="px-6 py-4 cursor-pointer text-gray-900 text-sm hover:bg-gray-50 transition-colors rounded-lg list-none flex items-center gap-2" style={{ fontWeight: '500' }}>
+            <summary
+              className="px-6 py-4 cursor-pointer text-gray-900 text-sm hover:bg-gray-50 transition-colors rounded-lg list-none flex items-center gap-2"
+              style={{ fontWeight: '500' }}
+            >
               <span className="text-lg">🔧</span>
               Developer Mode
             </summary>

@@ -45,8 +45,8 @@ export default function Home() {
             className="text-gray-600 mb-12 max-w-2xl mx-auto"
             style={{ fontSize: '1.25rem', lineHeight: '1.7' }}
           >
-            A clean, visual summary of your year. Select your days, choose your
-            flags, and export a polished, calendar-style snapshot of everywhere
+            A clean, visual summary of your year. Add your countries and travel
+            dates, and export a polished, calendar-style snapshot of everywhere
             you travelled.
           </p>
 
@@ -110,8 +110,8 @@ export default function Home() {
               Flags replace dates
             </h3>
             <p className="text-gray-600" style={{ lineHeight: '1.7' }}>
-              Country flags automatically appear on your travel dates, turning
-              trips into visual stories.
+              Country flags automatically appear on your dates when you add
+              visits, turning your trips into visual stories.
             </p>
           </motion.div>
 
@@ -132,8 +132,8 @@ export default function Home() {
               Share anywhere
             </h3>
             <p className="text-gray-600" style={{ lineHeight: '1.7' }}>
-              Export instantly and share your year-in-review on Instagram,
-              TikTok, or anywhere else.
+              Download your calendar as a high-quality image and share your
+              year-in-review on Instagram, TikTok, or anywhere else.
             </p>
           </motion.div>
         </div>
@@ -159,21 +159,21 @@ export default function Home() {
             {[
               {
                 step: '01',
-                title: 'Select your travel dates',
+                title: 'Select a country and dates',
                 description:
-                  'Click the days you travelled throughout the year.',
+                  'Choose a country from the dropdown, then pick a date or date range for your visit.',
               },
               {
                 step: '02',
-                title: 'Choose country flags',
+                title: 'Add all your trips',
                 description:
-                  'Pick the flag for each destination—we will place them on the calendar.',
+                  'Keep adding countries and dates. Flags automatically appear on your calendar as you go.',
               },
               {
                 step: '03',
                 title: 'Export and share',
                 description:
-                  'Download your Yearly as a high-quality image, ready to post.',
+                  'Download your Yearly as a high-quality JPEG image, ready to post anywhere.',
               },
             ].map((item, idx) => (
               <motion.div

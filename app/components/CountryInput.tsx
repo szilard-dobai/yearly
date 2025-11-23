@@ -27,11 +27,13 @@ import { cn } from '@/app/lib/utils'
 import type { DateRange } from 'react-day-picker'
 
 interface CountryInputProps {
+  year: number
   calendarData: CalendarData
   onDataChange: (data: CalendarData) => void
 }
 
 export default function CountryInput({
+  year,
   calendarData,
   onDataChange,
 }: CountryInputProps) {
@@ -190,7 +192,10 @@ export default function CountryInput({
             </div>
             <Calendar
               mode="range"
+              captionLayout="label"
               selected={dateRange}
+              startMonth={new Date(year, 0)}
+              endMonth={new Date(year, 11)}
               onSelect={handleDateSelect}
               numberOfMonths={2}
             />
@@ -198,9 +203,7 @@ export default function CountryInput({
         </Popover>
       </div>
 
-      {error && (
-        <div className="text-sm text-destructive">{error}</div>
-      )}
+      {error && <div className="text-sm text-destructive">{error}</div>}
 
       <Button
         type="submit"

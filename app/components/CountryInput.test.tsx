@@ -1,11 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import CountryInput from './CountryInput'
-import type { CalendarData, Country } from '../lib/types'
-import * as countries from '../lib/countries'
+import type { DateRange } from 'react-day-picker'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as calendar from '../lib/calendar'
+import * as countries from '../lib/countries'
+import type { CalendarData, Country } from '../lib/types'
 import * as utils from '../lib/utils'
+import CountryInput from './CountryInput'
 
 vi.mock('../lib/countries', async () => {
   const actual = await vi.importActual('../lib/countries')
@@ -35,12 +36,11 @@ vi.mock('../lib/utils', async () => {
 vi.mock('@/app/components/ui/calendar', () => ({
   Calendar: ({
     mode,
-    selected,
     onSelect,
   }: {
     mode: string
-    selected: any
-    onSelect: (range: any) => void
+    selected: DateRange
+    onSelect: (range: DateRange) => void
   }) => (
     <div data-testid="mock-calendar">
       <button
@@ -75,6 +75,7 @@ describe('CountryInput', () => {
   const mockCalendarData: CalendarData = {
     visits: [],
   }
+  const year = new Date().getFullYear()
 
   const mockCountries: Country[] = [
     { code: 'US', name: 'United States' },
@@ -95,6 +96,7 @@ describe('CountryInput', () => {
     it('renders country search input', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -111,6 +113,7 @@ describe('CountryInput', () => {
     it('renders date range picker', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -123,6 +126,7 @@ describe('CountryInput', () => {
     it('renders calendar popover trigger button', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -136,6 +140,7 @@ describe('CountryInput', () => {
     it('renders submit button', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -149,6 +154,7 @@ describe('CountryInput', () => {
     it('submit button is disabled by default', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -165,6 +171,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -182,6 +189,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -206,6 +214,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -224,6 +233,7 @@ describe('CountryInput', () => {
     it('does not show dropdown when search is empty', async () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -238,6 +248,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -261,6 +272,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -281,6 +293,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -305,6 +318,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -319,11 +333,15 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Click the date picker button to open it
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
 
       // Select a date from the mock calendar
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       await waitFor(() => {
@@ -339,6 +357,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -359,11 +378,10 @@ describe('CountryInput', () => {
   })
 
   describe('form validation', () => {
-    it('shows error when submitting without country', async () => {
-      const user = userEvent.setup()
-
+    it('shows error when submitting without country', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -373,11 +391,10 @@ describe('CountryInput', () => {
       expect(submitButton).toBeDisabled()
     })
 
-    it('shows error when submitting without date', async () => {
-      const user = userEvent.setup()
-
+    it('shows error when submitting without date', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -393,6 +410,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -406,11 +424,15 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Click the date picker button
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
 
       // Select a date
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       await waitFor(() => {
@@ -430,6 +452,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -443,9 +466,13 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Open calendar and select date
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       const submitButton = screen.getByRole('button', { name: /add visit/i })
@@ -469,6 +496,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -482,9 +510,13 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Open calendar and select date
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       const submitButton = screen.getByRole('button', { name: /add visit/i })
@@ -519,6 +551,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -532,9 +565,13 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Open calendar and select date range
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       const submitButton = screen.getByRole('button', { name: /add visit/i })
@@ -569,6 +606,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={dataWithVisits}
           onDataChange={mockOnDataChange}
         />
@@ -582,9 +620,13 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Open calendar and select date
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       const submitButton = screen.getByRole('button', { name: /add visit/i })
@@ -613,6 +655,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -626,9 +669,13 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Open calendar and select date
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       const submitButton = screen.getByRole('button', { name: /add visit/i })
@@ -652,6 +699,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -665,7 +713,9 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Select first date
-      let datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      let datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
       let selectDateButton = screen.getByRole('button', { name: 'Select Date' })
       await user.click(selectDateButton)
@@ -698,11 +748,14 @@ describe('CountryInput', () => {
     it('displays error messages in red', async () => {
       const user = userEvent.setup()
       vi.mocked(countries.searchCountries).mockReturnValue(mockCountries)
-      vi.mocked(calendar.expandDateRange).mockReturnValue([new Date(2024, 0, 15)])
+      vi.mocked(calendar.expandDateRange).mockReturnValue([
+        new Date(2024, 0, 15),
+      ])
       vi.mocked(calendar.canAddVisitToDate).mockReturnValue(false)
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -716,9 +769,13 @@ describe('CountryInput', () => {
       await user.click(usaButton)
 
       // Open calendar and select date
-      const datePickerButton = screen.getByRole('button', { name: /pick a date/i })
+      const datePickerButton = screen.getByRole('button', {
+        name: /pick a date/i,
+      })
       await user.click(datePickerButton)
-      const selectDateButton = screen.getByRole('button', { name: 'Select Date' })
+      const selectDateButton = screen.getByRole('button', {
+        name: 'Select Date',
+      })
       await user.click(selectDateButton)
 
       const submitButton = screen.getByRole('button', { name: /add visit/i })
@@ -735,6 +792,7 @@ describe('CountryInput', () => {
     it('does not display error initially', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -748,6 +806,7 @@ describe('CountryInput', () => {
     it('has proper labels for all inputs', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -760,6 +819,7 @@ describe('CountryInput', () => {
     it('submit button has proper type', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -776,6 +836,7 @@ describe('CountryInput', () => {
 
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -793,6 +854,7 @@ describe('CountryInput', () => {
     it('applies correct styles to inputs', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />
@@ -808,6 +870,7 @@ describe('CountryInput', () => {
     it('submit button shows disabled state', () => {
       render(
         <CountryInput
+          year={year}
           calendarData={mockCalendarData}
           onDataChange={mockOnDataChange}
         />

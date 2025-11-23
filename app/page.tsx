@@ -33,7 +33,9 @@ function getInitialData(): CalendarData {
 }
 
 export default function Home() {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
   const [flagDisplayMode, setFlagDisplayMode] =
     useState<FlagDisplayMode>('emoji')
@@ -109,6 +111,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <CountryInput
+                  year={selectedYear}
                   calendarData={calendarData}
                   onDataChange={handleDataChange}
                 />

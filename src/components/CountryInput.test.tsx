@@ -1,11 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import type { DateRange } from 'react-day-picker'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as calendar from '@/lib/calendar'
 import * as countries from '@/lib/countries'
 import type { CalendarData } from '@/lib/types'
 import * as utils from '@/lib/utils'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import type { DateRange } from 'react-day-picker'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import CountryInput from './CountryInput'
 
 vi.mock('../lib/countries', async () => {
@@ -33,14 +33,14 @@ vi.mock('../lib/utils', async () => {
   }
 })
 
-vi.mock('@/app/components/ui/calendar', () => ({
+vi.mock('@/components/ui/calendar', () => ({
   Calendar: ({
     mode,
     onSelect,
   }: {
     mode: string
     selected: DateRange
-    onSelect: (range: DateRange) => void
+    onSelect: (range: DateRange | undefined) => void
   }) => (
     <div data-testid="mock-calendar">
       <button
@@ -161,7 +161,8 @@ describe('CountryInput', () => {
       await user.click(combobox)
 
       // The search input should appear
-      const searchInput = await screen.findByPlaceholderText(/search countries/i)
+      const searchInput =
+        await screen.findByPlaceholderText(/search countries/i)
       await user.type(searchInput, 'uni')
 
       expect(searchInput).toHaveValue('uni')
@@ -270,7 +271,9 @@ describe('CountryInput', () => {
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
 
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       await waitFor(() => {
@@ -297,11 +300,15 @@ describe('CountryInput', () => {
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
 
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       await waitFor(() => {
-        expect(screen.queryByRole('option', { name: 'France' })).not.toBeInTheDocument()
+        expect(
+          screen.queryByRole('option', { name: 'France' })
+        ).not.toBeInTheDocument()
       })
     })
 
@@ -322,7 +329,9 @@ describe('CountryInput', () => {
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
 
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -391,7 +400,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -431,7 +442,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -474,7 +487,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -528,7 +543,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -582,7 +599,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -630,7 +649,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -673,7 +694,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       let datePickerButton = screen.getByRole('button', {
@@ -727,7 +750,9 @@ describe('CountryInput', () => {
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       await user.click(usaOption)
 
       const datePickerButton = screen.getByRole('button', {
@@ -759,7 +784,9 @@ describe('CountryInput', () => {
         />
       )
 
-      expect(screen.queryByText(/maximum 2 countries per day exceeded/i)).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(/maximum 2 countries per day exceeded/i)
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -808,7 +835,9 @@ describe('CountryInput', () => {
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
 
-      const usaOption = await screen.findByRole('option', { name: 'United States' })
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
       expect(usaOption).toBeInTheDocument()
     })
   })

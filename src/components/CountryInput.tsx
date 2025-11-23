@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
+import dayjs from 'dayjs'
 import { CalendarIcon, Check, ChevronsUpDown, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
@@ -60,9 +60,9 @@ export default function CountryInput({
       return 'Pick a date'
     }
     if (dateRange.to) {
-      return `${format(dateRange.from, 'MMM d, yyyy')} - ${format(dateRange.to, 'MMM d, yyyy')}`
+      return `${dayjs(dateRange.from).format('MMM D, YYYY')} - ${dayjs(dateRange.to).format('MMM D, YYYY')}`
     }
-    return format(dateRange.from, 'MMM d, yyyy')
+    return dayjs(dateRange.from).format('MMM D, YYYY')
   }
 
   const handleSubmit = (e: React.FormEvent) => {

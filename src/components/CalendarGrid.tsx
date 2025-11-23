@@ -1,7 +1,7 @@
 'use client'
 
+import type { CalendarData } from '@/lib/types'
 import { forwardRef } from 'react'
-import type { CalendarData } from '../lib/types'
 import MonthGrid from './MonthGrid'
 import type { FlagDisplayMode, WeekStartsOn } from './Settings'
 
@@ -14,12 +14,19 @@ interface CalendarGridProps {
 }
 
 const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
-  ({ year, calendarData, onRemoveVisit, flagDisplayMode, weekStartsOn }, ref) => {
+  (
+    { year, calendarData, onRemoveVisit, flagDisplayMode, weekStartsOn },
+    ref
+  ) => {
     const visits = calendarData.visits
 
     return (
-      <div ref={ref} className="space-y-6 bg-white dark:bg-zinc-900 p-4 sm:p-6" data-export-target="calendar">
-        <div className="mb-4">
+      <div
+        ref={ref}
+        className="space-y-6 bg-white dark:bg-zinc-900 p-4 sm:p-6"
+        data-export-target="calendar"
+      >
+        <div className="mb-4 border-b pb-4">
           <h2 className="text-4xl sm:text-6xl font-bold text-red-500">
             {year}
           </h2>

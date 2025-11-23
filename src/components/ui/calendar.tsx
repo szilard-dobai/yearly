@@ -6,10 +6,95 @@ import {
   ChevronRightIcon,
 } from 'lucide-react'
 import * as React from 'react'
-import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker'
+import {
+  DayButton,
+  DayPicker,
+  getDefaultClassNames,
+} from 'react-day-picker'
 
 import { Button, buttonVariants } from '@/components/ui/button'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+
+function MonthsDropdown(props: React.SelectHTMLAttributes<HTMLSelectElement> & {
+  options?: Array<{ value: number; label: string; disabled?: boolean }>
+}) {
+  const [open, setOpen] = React.useState(false)
+
+  // Extract current month from the options
+  const currentValue = props.value ? Number(props.value) : new Date().getMonth()
+
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ]
+
+  const currentMonthName = months[currentValue]
+
+  const handleMonthSelect = (monthIndex: number) => {
+    if (props.onChange) {
+      const event = {
+        target: { value: monthIndex.toString() },
+      } as React.ChangeEvent<HTMLSelectElement>
+      props.onChange(event)
+    }
+    setOpen(false)
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-sm font-medium hover:bg-accent/50"
+        >
+          {currentMonthName}
+          <ChevronDownIcon className="size-4 text-muted-foreground" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-2" align="start">
+        <div className="grid grid-cols-3 gap-1">
+          {months.map((month, index) => {
+            const isSelected = index === currentValue
+            const option = props.options?.find(opt => opt.value === index)
+            const isDisabled = option?.disabled
+
+            return (
+              <Button
+                key={month}
+                variant="ghost"
+                size="sm"
+                disabled={isDisabled}
+                onClick={() => handleMonthSelect(index)}
+                className={cn(
+                  'h-9 text-sm font-normal hover:bg-accent hover:text-accent-foreground',
+                  isSelected && 'bg-accent font-medium'
+                )}
+              >
+                {month}
+              </Button>
+            )
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 function Calendar({
   className,
@@ -168,6 +253,7 @@ function Calendar({
             </td>
           )
         },
+        MonthsDropdown: captionLayout === 'dropdown-months' ? MonthsDropdown : undefined,
         ...components,
       }}
       {...props}

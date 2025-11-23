@@ -1,18 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import type { CalendarData, Country } from '../lib/types'
-import { searchCountries } from '../lib/countries'
-import { expandDateRange, canAddVisitToDate } from '../lib/calendar'
-import { generateId } from '../lib/utils'
-import { Button } from '@/app/components/ui/button'
-import { Label } from '@/app/components/ui/label'
-import { Calendar } from '@/app/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/app/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Command,
   CommandEmpty,
@@ -20,11 +9,22 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/app/components/ui/command'
-import { Plus, CalendarIcon, X, Check, ChevronsUpDown } from 'lucide-react'
+} from '@/components/ui/command'
+import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
-import { cn } from '@/app/lib/utils'
+import { CalendarIcon, Check, ChevronsUpDown, Plus, X } from 'lucide-react'
+import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
+import { canAddVisitToDate, expandDateRange } from '../lib/calendar'
+import { searchCountries } from '../lib/countries'
+import type { CalendarData, Country } from '../lib/types'
+import { generateId } from '../lib/utils'
 import type { WeekStartsOn } from './Settings'
 
 interface CountryInputProps {

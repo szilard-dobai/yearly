@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { CalendarData } from '../lib/types'
 import { exportToJSON } from '../lib/storage'
-import { Button } from '@/app/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Download, CheckCircle2, XCircle } from 'lucide-react'
 
 interface ExportButtonProps {

@@ -1,7 +1,7 @@
 'use client'
 
-import { CalendarMockup } from '@/app/components/CalendarMockup'
-import { YearlyLogo } from '@/app/components/YearlyLogo'
+import { CalendarMockup } from '@/components/CalendarMockup'
+import { YearlyLogo } from '@/components/YearlyLogo'
 import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'

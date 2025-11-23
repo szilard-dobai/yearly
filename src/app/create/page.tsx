@@ -1,31 +1,31 @@
 'use client'
 
-import CalendarGrid from '@/app/components/CalendarGrid'
-import CountryInput from '@/app/components/CountryInput'
-import DeveloperMode from '@/app/components/DeveloperMode'
-import ImageExportButton from '@/app/components/ImageExportButton'
+import CalendarGrid from '@/components/CalendarGrid'
+import CountryInput from '@/components/CountryInput'
+import DeveloperMode from '@/components/DeveloperMode'
+import ImageExportButton from '@/components/ImageExportButton'
 import Settings, {
   type FlagDisplayMode,
   type WeekStartsOn,
-} from '@/app/components/Settings'
-import Statistics from '@/app/components/Statistics'
+} from '@/components/Settings'
+import Statistics from '@/components/Statistics'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/app/components/ui/card'
+} from '@/components/ui/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/app/components/ui/select'
-import { loadCalendarData, saveCalendarData } from '@/app/lib/storage'
-import type { CalendarData } from '@/app/lib/types'
+} from '@/components/ui/select'
+import { loadCalendarData, saveCalendarData } from '@/lib/storage'
+import type { CalendarData } from '@/lib/types'
 import { useRef, useState } from 'react'
-import { YearlyLogo } from '@/app/components/YearlyLogo'
+import { YearlyLogo } from '@/components/YearlyLogo'
 
 function getInitialData(): CalendarData {
   if (typeof window === 'undefined') {

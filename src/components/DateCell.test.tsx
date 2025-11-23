@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import DateCell from '../DateCell'
-import type { CountryVisit } from '../../lib/types'
+import DateCell from './DateCell'
+import type { CountryVisit } from '@/lib/types'
 
 describe('DateCell', () => {
   const mockOnRemoveVisit = vi.fn()

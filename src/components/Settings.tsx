@@ -1,14 +1,14 @@
 'use client'
 
-import { Label } from '@/app/components/ui/label'
-import { Switch } from '@/app/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/app/components/ui/select'
+} from '@/components/ui/select'
 
 export type FlagDisplayMode = 'emoji' | 'icon'
 export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { loadCalendarData } from '../lib/storage'
+import { loadCalendarData } from '@/lib/storage'
 import ExportButton from './ExportButton'
 import ImportButton from './ImportButton'
-import type { CalendarData } from '../lib/types'
+import type { CalendarData } from '@/lib/types'
 
 /**
  * DeveloperMode Component

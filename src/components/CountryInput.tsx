@@ -195,7 +195,7 @@ export default function CountryInput({
             </div>
             <Calendar
               mode="range"
-              captionLayout="dropdown"
+              captionLayout="dropdown-months"
               selected={dateRange}
               startMonth={new Date(year, 0)}
               endMonth={new Date(year, 11)}

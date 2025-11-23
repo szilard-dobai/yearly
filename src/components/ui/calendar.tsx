@@ -70,18 +70,18 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          'relative has-focus:border-ring border border-input bg-background shadow-sm hover:bg-accent/50 transition-colors has-focus:ring-ring/50 has-focus:ring-[3px] rounded-lg px-3 py-1.5',
+          'relative has-focus:border-ring border border-input bg-background shadow-sm hover:bg-accent/50 transition-colors has-focus:ring-ring/50 has-focus:ring-[3px] rounded-lg px-2 py-1.5',
           defaultClassNames.dropdown_root
         ),
         dropdown: cn(
-          'absolute bg-popover inset-0 opacity-0 cursor-pointer',
+          'absolute bg-popover inset-0 opacity-0 cursor-pointer text-sm [&>option]:py-2 [&>option]:px-3 [&>option]:bg-background [&>option]:text-foreground',
           defaultClassNames.dropdown
         ),
         caption_label: cn(
           'select-none font-medium',
           captionLayout === 'label'
             ? 'text-sm'
-            : 'rounded-lg px-3 py-1.5 flex items-center gap-1.5 text-sm min-h-8 hover:bg-accent/50 transition-colors [&>svg]:text-muted-foreground [&>svg]:size-4',
+            : 'rounded-lg px-2 py-1.5 flex items-center gap-1.5 text-sm min-h-8 hover:bg-accent/50 transition-colors [&>svg]:text-muted-foreground [&>svg]:size-4',
           defaultClassNames.caption_label
         ),
         table: 'w-full border-collapse',

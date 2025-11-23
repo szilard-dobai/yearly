@@ -1,197 +1,269 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import type { CalendarData } from './lib/types'
-import { loadCalendarData, saveCalendarData } from './lib/storage'
-import CalendarGrid from './components/CalendarGrid'
-import CountryInput from './components/CountryInput'
-import ImageExportButton from './components/ImageExportButton'
-import Statistics from './components/Statistics'
-import DeveloperMode from './components/DeveloperMode'
-import Settings, {
-  type FlagDisplayMode,
-  type WeekStartsOn,
-} from './components/Settings'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/app/components/ui/select'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/app/components/ui/card'
-
-function getInitialData(): CalendarData {
-  if (typeof window === 'undefined') {
-    return { visits: [] }
-  }
-  return loadCalendarData() || { visits: [] }
-}
+import { CalendarMockup } from '@/app/components/CalendarMockup'
+import { YearlyLogo } from '@/app/components/YearlyLogo'
+import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
+import { motion } from 'motion/react'
+import Link from 'next/link'
 
 export default function Home() {
-  const [selectedYear, setSelectedYear] = useState<number>(
-    new Date().getFullYear()
-  )
-  const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
-  const [flagDisplayMode, setFlagDisplayMode] =
-    useState<FlagDisplayMode>('emoji')
-  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(0)
-  const calendarRef = useRef<HTMLDivElement>(null)
-
-  const handleDataChange = (newData: CalendarData) => {
-    setCalendarData(newData)
-    saveCalendarData(newData)
-  }
-
-  const handleRemoveVisit = (visitId: string) => {
-    const newData = {
-      visits: calendarData.visits.filter((visit) => visit.id !== visitId),
-    }
-    handleDataChange(newData)
-  }
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
-      <header className="border-b border-gray-200/50 dark:border-gray-800/50 backdrop-blur-xl bg-white/80 dark:bg-zinc-950/80 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold bg-linear-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-                Countries in Year
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Track your travel adventures
-              </p>
-            </div>
-            <Select
-              value={selectedYear.toString()}
-              onValueChange={(value) => setSelectedYear(Number(value))}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={(new Date().getFullYear() - 1).toString()}>
-                  {new Date().getFullYear() - 1}
-                </SelectItem>
-                <SelectItem value={new Date().getFullYear().toString()}>
-                  {new Date().getFullYear()}
-                </SelectItem>
-                <SelectItem value={(new Date().getFullYear() + 1).toString()}>
-                  {new Date().getFullYear() + 1}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="min-h-screen bg-linear-to-br from-stone-50 via-white to-zinc-50">
+      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <YearlyLogo />
+          <Link
+            href="/create"
+            className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+          >
+            Try it now
+          </Link>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
-          <div className="space-y-6">
-            <CalendarGrid
-              ref={calendarRef}
-              year={selectedYear}
-              calendarData={calendarData}
-              onRemoveVisit={handleRemoveVisit}
-              flagDisplayMode={flagDisplayMode}
-              weekStartsOn={weekStartsOn}
-            />
+      <section className="container mx-auto px-6 pt-24 pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-4xl mx-auto"
+        >
+          <h1
+            className="mb-6 text-gray-900"
+            style={{
+              fontSize: '4.5rem',
+              fontFamily: 'Newsreader, serif',
+              fontWeight: '400',
+              lineHeight: '1.1',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Your year, at a glance.
+          </h1>
+
+          <p
+            className="text-gray-600 mb-12 max-w-2xl mx-auto"
+            style={{ fontSize: '1.25rem', lineHeight: '1.7' }}
+          >
+            A clean, visual summary of your year. Select your days, choose your
+            flags, and export a polished, calendar-style snapshot of everywhere
+            you travelled.
+          </p>
+
+          <div className="flex gap-4 justify-center items-center flex-wrap">
+            <Link
+              href="/create"
+              className="px-8 py-4 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
+            >
+              Create your Yearly
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+            {/* <button className="px-8 py-4 bg-white text-gray-700 rounded-full hover:bg-gray-50 transition-all border border-gray-300">
+              See example
+            </button> */}
           </div>
+        </motion.div>
 
-          <aside className="space-y-4">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span className="text-2xl">✈️</span>
-                  Add Visit
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CountryInput
-                  year={selectedYear}
-                  calendarData={calendarData}
-                  onDataChange={handleDataChange}
-                  weekStartsOn={weekStartsOn}
-                />
-              </CardContent>
-            </Card>
-
-            {calendarData.visits.length > 0 && (
-              <Card className="border-0 shadow-xl bg-linear-to-br from-blue-500 to-purple-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <span className="text-2xl">📸</span>
-                    Export Your Calendar
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <p className="text-sm text-white/90 font-normal">
-                      Download a high-quality image of your travel calendar
-                    </p>
-                    <ImageExportButton
-                      calendarRef={calendarRef}
-                      year={selectedYear}
-                      hasData={calendarData.visits.length > 0}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card className="border-0 shadow-lg bg-linear-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span className="text-2xl">📊</span>
-                  Statistics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Statistics calendarData={calendarData} year={selectedYear} />
-              </CardContent>
-            </Card>
-
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span className="text-2xl">⚙️</span>
-                  Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Settings
-                  flagDisplayMode={flagDisplayMode}
-                  onFlagDisplayModeChange={setFlagDisplayMode}
-                  weekStartsOn={weekStartsOn}
-                  onWeekStartsOnChange={setWeekStartsOn}
-                />
-              </CardContent>
-            </Card>
-          </aside>
+        <div className="mt-20">
+          <CalendarMockup />
         </div>
-      </main>
+      </section>
 
-      <footer className="container mx-auto px-4 py-8">
-        <Card className="border-0 shadow-lg">
-          <details>
-            <summary className="px-6 py-4 cursor-pointer font-medium text-sm hover:bg-accent/50 transition-colors rounded-lg list-none flex items-center gap-2">
-              <span className="text-lg">🔧</span>
-              Developer Mode
-            </summary>
-            <div className="px-6 pb-4 pt-2">
-              <DeveloperMode
-                calendarData={calendarData}
-                onDataChange={handleDataChange}
-              />
+      <section className="container mx-auto px-6 py-24">
+        <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
+          >
+            <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Calendar className="w-7 h-7 text-white" />
             </div>
-          </details>
-        </Card>
+            <h3
+              className="mb-3 text-gray-900"
+              style={{ fontSize: '1.25rem', fontWeight: '500' }}
+            >
+              Clean calendar view
+            </h3>
+            <p className="text-gray-600" style={{ lineHeight: '1.7' }}>
+              Your entire year displayed in a beautiful 3×4 grid—all 12 months
+              at once.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-center"
+          >
+            <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <h3
+              className="mb-3 text-gray-900"
+              style={{ fontSize: '1.25rem', fontWeight: '500' }}
+            >
+              Flags replace dates
+            </h3>
+            <p className="text-gray-600" style={{ lineHeight: '1.7' }}>
+              Country flags automatically appear on your travel dates, turning
+              trips into visual stories.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-center"
+          >
+            <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Share2 className="w-7 h-7 text-white" />
+            </div>
+            <h3
+              className="mb-3 text-gray-900"
+              style={{ fontSize: '1.25rem', fontWeight: '500' }}
+            >
+              Share anywhere
+            </h3>
+            <p className="text-gray-600" style={{ lineHeight: '1.7' }}>
+              Export instantly and share your year-in-review on Instagram,
+              TikTok, or anywhere else.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-24 bg-linear-to-br from-gray-50 to-stone-50">
+        <div className="max-w-3xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16 text-gray-900"
+            style={{
+              fontSize: '2.5rem',
+              fontFamily: 'Newsreader, serif',
+              fontWeight: '400',
+            }}
+          >
+            Build it in seconds
+          </motion.h2>
+
+          <div className="space-y-8">
+            {[
+              {
+                step: '01',
+                title: 'Select your travel dates',
+                description:
+                  'Click the days you travelled throughout the year.',
+              },
+              {
+                step: '02',
+                title: 'Choose country flags',
+                description:
+                  'Pick the flag for each destination—we will place them on the calendar.',
+              },
+              {
+                step: '03',
+                title: 'Export and share',
+                description:
+                  'Download your Yearly as a high-quality image, ready to post.',
+              },
+            ].map((item, idx) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="flex gap-6 items-start bg-white p-8 rounded-2xl shadow-sm border border-gray-200"
+              >
+                <div
+                  className="text-gray-300"
+                  style={{
+                    fontSize: '3rem',
+                    fontFamily: 'Newsreader, serif',
+                    fontWeight: '300',
+                    lineHeight: '1',
+                  }}
+                >
+                  {item.step}
+                </div>
+                <div className="flex-1">
+                  <h3
+                    className="mb-2 text-gray-900"
+                    style={{ fontSize: '1.25rem', fontWeight: '500' }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-600" style={{ lineHeight: '1.7' }}>
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-3xl mx-auto text-center bg-black text-white rounded-3xl p-16 shadow-2xl"
+        >
+          <h2
+            className="mb-6"
+            style={{
+              fontSize: '2.5rem',
+              fontFamily: 'Newsreader, serif',
+              fontWeight: '400',
+            }}
+          >
+            Ready to create yours?
+          </h2>
+          <p
+            className="mb-8 text-gray-300"
+            style={{ fontSize: '1.125rem', lineHeight: '1.7' }}
+          >
+            Transform your 2025 travels into a shareable calendar in minutes.
+          </p>
+          <Link
+            href="/create"
+            className="px-10 py-4 bg-white text-black rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
+          >
+            Get started for free
+          </Link>
+        </motion.div>
+      </section>
+
+      <footer className="border-t border-gray-200 bg-white">
+        <div className="container mx-auto px-6 py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <YearlyLogo />
+            <div className="flex gap-8 text-gray-600">
+              <a href="#" className="hover:text-gray-900 transition-colors">
+                About
+              </a>
+              <a href="#" className="hover:text-gray-900 transition-colors">
+                Help
+              </a>
+              <a href="#" className="hover:text-gray-900 transition-colors">
+                Contact
+              </a>
+            </div>
+          </div>
+          <div className="text-center mt-8 text-gray-500">
+            © 2025 Yearly. All rights reserved.
+          </div>
+        </div>
       </footer>
     </div>
   )

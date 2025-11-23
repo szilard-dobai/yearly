@@ -221,6 +221,56 @@ describe('calendar utilities', () => {
       const allDays = weeks.flat().filter((day) => day !== null)
       expect(allDays).toHaveLength(29)
     })
+
+    describe('with custom week start day', () => {
+      it('should start week on Monday (weekStartsOn=1)', () => {
+        // January 2024 starts on Monday
+        const weeks = getMonthData(2024, 0, 1)
+        const firstWeek = weeks[0]
+        // First day should be January 1st with no padding
+        expect(firstWeek[0]).not.toBeNull()
+        expect(firstWeek[0]?.getDate()).toBe(1)
+      })
+
+      it('should start week on Sunday (weekStartsOn=0, default)', () => {
+        // January 2024 starts on Monday, so Sunday start should have 1 null padding
+        const weeks = getMonthData(2024, 0, 0)
+        const firstWeek = weeks[0]
+        // First position should be null (Sunday)
+        expect(firstWeek[0]).toBeNull()
+        // Second position should be January 1st (Monday)
+        expect(firstWeek[1]).not.toBeNull()
+        expect(firstWeek[1]?.getDate()).toBe(1)
+      })
+
+      it('should start week on Saturday (weekStartsOn=6)', () => {
+        // January 2024 starts on Monday, so Saturday start should have 2 nulls
+        const weeks = getMonthData(2024, 0, 6)
+        const firstWeek = weeks[0]
+        // First two positions should be null (Saturday, Sunday)
+        expect(firstWeek[0]).toBeNull()
+        expect(firstWeek[1]).toBeNull()
+        // Third position should be January 1st (Monday)
+        expect(firstWeek[2]).not.toBeNull()
+        expect(firstWeek[2]?.getDate()).toBe(1)
+      })
+
+      it('should maintain correct day count regardless of week start', () => {
+        const weekStarts = [0, 1, 2, 3, 4, 5, 6]
+        weekStarts.forEach((weekStart) => {
+          const weeks = getMonthData(2024, 0, weekStart)
+          const allDays = weeks.flat().filter((day) => day !== null)
+          expect(allDays).toHaveLength(31) // January has 31 days
+        })
+      })
+
+      it('should have all weeks with 7 days', () => {
+        const weeks = getMonthData(2024, 0, 1)
+        weeks.forEach((week) => {
+          expect(week).toHaveLength(7)
+        })
+      })
+    })
   })
 
   describe('getYear', () => {

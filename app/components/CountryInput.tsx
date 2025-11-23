@@ -25,17 +25,20 @@ import { Plus, CalendarIcon, X, Check, ChevronsUpDown } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/app/lib/utils'
 import type { DateRange } from 'react-day-picker'
+import type { WeekStartsOn } from './Settings'
 
 interface CountryInputProps {
   year: number
   calendarData: CalendarData
   onDataChange: (data: CalendarData) => void
+  weekStartsOn?: WeekStartsOn
 }
 
 export default function CountryInput({
   year,
   calendarData,
   onDataChange,
+  weekStartsOn = 0,
 }: CountryInputProps) {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
@@ -198,6 +201,7 @@ export default function CountryInput({
               endMonth={new Date(year, 11)}
               onSelect={handleDateSelect}
               numberOfMonths={2}
+              weekStartsOn={weekStartsOn}
             />
           </PopoverContent>
         </Popover>

@@ -222,7 +222,7 @@ describe('MonthGrid', () => {
       expect(mockOnRemoveVisit).toHaveBeenCalledWith('test-id')
     })
 
-    it('calls getMonthData with correct year and month', () => {
+    it('calls getMonthData with correct year, month, and weekStartsOn', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       render(
@@ -235,7 +235,7 @@ describe('MonthGrid', () => {
         />
       )
 
-      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5)
+      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 0)
     })
   })
 
@@ -375,6 +375,62 @@ describe('MonthGrid', () => {
 
       const weekRow = container.querySelectorAll('.grid-cols-7')[0]
       expect(weekRow).toBeInTheDocument()
+    })
+  })
+
+  describe('weekStartsOn prop', () => {
+    it('should pass weekStartsOn to getMonthData when provided', () => {
+      vi.mocked(calendar.getMonthData).mockReturnValue([])
+
+      render(
+        <MonthGrid
+          flagDisplayMode="emoji"
+          year={2024}
+          month={5}
+          visits={mockVisits}
+          onRemoveVisit={mockOnRemoveVisit}
+          weekStartsOn={1}
+        />
+      )
+
+      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 1)
+    })
+
+    it('should use default weekStartsOn=0 when not provided', () => {
+      vi.mocked(calendar.getMonthData).mockReturnValue([])
+
+      render(
+        <MonthGrid
+          flagDisplayMode="emoji"
+          year={2024}
+          month={5}
+          visits={mockVisits}
+          onRemoveVisit={mockOnRemoveVisit}
+        />
+      )
+
+      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 0)
+    })
+
+    it('should accept all valid weekStartsOn values', () => {
+      const weekStarts = [0, 1, 2, 3, 4, 5, 6] as const
+
+      weekStarts.forEach((weekStart) => {
+        vi.mocked(calendar.getMonthData).mockReturnValue([])
+        const { unmount } = render(
+          <MonthGrid
+            flagDisplayMode="emoji"
+            year={2024}
+            month={5}
+            visits={mockVisits}
+            onRemoveVisit={mockOnRemoveVisit}
+            weekStartsOn={weekStart}
+          />
+        )
+
+        expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, weekStart)
+        unmount()
+      })
     })
   })
 

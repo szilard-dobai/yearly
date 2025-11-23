@@ -83,9 +83,14 @@ export function canAddVisitToDate(date: Date, visits: CountryVisit[]): boolean {
  * Returns a 2D array where each sub-array represents a week
  * @param year - The year
  * @param month - The month (0-11, where 0 = January)
+ * @param weekStartsOn - Day of week to start on (0 = Sunday, 1 = Monday, etc.)
  * @returns 2D array of dates, with null for days outside the month
  */
-export function getMonthData(year: number, month: number): (Date | null)[][] {
+export function getMonthData(
+  year: number,
+  month: number,
+  weekStartsOn: number = 0
+): (Date | null)[][] {
   const firstDay = dayjs(`${year}-${String(month + 1).padStart(2, '0')}-01`)
   const daysInMonth = firstDay.daysInMonth()
   const startDayOfWeek = firstDay.day() // 0 = Sunday, 6 = Saturday
@@ -93,8 +98,14 @@ export function getMonthData(year: number, month: number): (Date | null)[][] {
   const weeks: (Date | null)[][] = []
   let currentWeek: (Date | null)[] = []
 
+  // Calculate offset based on week start day
+  let offset = startDayOfWeek - weekStartsOn
+  if (offset < 0) {
+    offset += 7
+  }
+
   // Add empty cells for days before the month starts
-  for (let i = 0; i < startDayOfWeek; i++) {
+  for (let i = 0; i < offset; i++) {
     currentWeek.push(null)
   }
 

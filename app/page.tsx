@@ -10,7 +10,7 @@ import ImportButton from './components/ImportButton'
 import ImageExportButton from './components/ImageExportButton'
 import Statistics from './components/Statistics'
 import DeveloperMode from './components/DeveloperMode'
-import Settings, { type FlagDisplayMode } from './components/Settings'
+import Settings, { type FlagDisplayMode, type WeekStartsOn } from './components/Settings'
 import {
   Select,
   SelectContent,
@@ -39,6 +39,7 @@ export default function Home() {
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
   const [flagDisplayMode, setFlagDisplayMode] =
     useState<FlagDisplayMode>('emoji')
+  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(0)
   const calendarRef = useRef<HTMLDivElement>(null)
 
   const handleDataChange = (newData: CalendarData) => {
@@ -98,6 +99,7 @@ export default function Home() {
               calendarData={calendarData}
               onRemoveVisit={handleRemoveVisit}
               flagDisplayMode={flagDisplayMode}
+              weekStartsOn={weekStartsOn}
             />
           </div>
 
@@ -114,6 +116,7 @@ export default function Home() {
                   year={selectedYear}
                   calendarData={calendarData}
                   onDataChange={handleDataChange}
+                  weekStartsOn={weekStartsOn}
                 />
               </CardContent>
             </Card>
@@ -162,6 +165,8 @@ export default function Home() {
                 <Settings
                   flagDisplayMode={flagDisplayMode}
                   onFlagDisplayModeChange={setFlagDisplayMode}
+                  weekStartsOn={weekStartsOn}
+                  onWeekStartsOnChange={setWeekStartsOn}
                 />
               </CardContent>
             </Card>

@@ -53,3 +53,8 @@ global.ResizeObserver = class ResizeObserver {
 
 // Mock scrollIntoView (for shadcn Command component)
 Element.prototype.scrollIntoView = () => {}
+
+// Mock hasPointerCapture (for shadcn Select component)
+Element.prototype.hasPointerCapture = () => false
+Element.prototype.setPointerCapture = () => {}
+Element.prototype.releasePointerCapture = () => {}

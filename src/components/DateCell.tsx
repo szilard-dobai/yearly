@@ -1,4 +1,6 @@
-import { memo } from 'react'
+'use client'
+
+import { memo, useState, useEffect } from 'react'
 import type { CountryVisit } from '../lib/types'
 import { getVisitsForDate, isToday } from '../lib/calendar'
 import { getCountryByCode } from '../lib/countries'
@@ -13,12 +15,21 @@ interface DateCellProps {
 }
 
 function DateCell({ date, visits, onRemoveVisit, flagDisplayMode }: DateCellProps) {
+  // Use state to track if this is "today" - starts as false to avoid hydration mismatch
+  const [today, setToday] = useState(false)
+
+  // Check if today on mount (client-side only)
+  useEffect(() => {
+    if (date) {
+      setToday(isToday(date))
+    }
+  }, [date])
+
   if (!date) {
     return <div className="aspect-square p-1" role="gridcell" aria-hidden="true" />
   }
 
   const cellVisits = getVisitsForDate(date, visits)
-  const today = isToday(date)
   const dayNumber = date.getDate()
   const hasVisits = cellVisits.length > 0
 

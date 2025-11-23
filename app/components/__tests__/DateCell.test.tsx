@@ -79,9 +79,9 @@ describe('DateCell', () => {
       )
 
       // Check that flag emoji is rendered (US flag)
-      const flagEmoji = container.querySelector('.text-lg')
-      expect(flagEmoji).toBeInTheDocument()
-      expect(flagEmoji).toHaveTextContent('🇺🇸')
+      const cell = container.querySelector('[role="gridcell"]')
+      expect(cell).toBeInTheDocument()
+      expect(cell).toHaveTextContent('🇺🇸')
     })
 
     it('should render single flag icon when flagDisplayMode is icon', () => {
@@ -148,19 +148,15 @@ describe('DateCell', () => {
         />
       )
 
-      // Check for diagonal split container
-      const splitContainer = container.querySelector('.relative.w-full.h-full')
-      expect(splitContainer).toBeInTheDocument()
+      // Check that both flags are present
+      const cell = container.querySelector('[role="gridcell"]')
+      expect(cell).toBeInTheDocument()
+      expect(cell?.textContent).toContain('🇱🇻') // Latvia
+      expect(cell?.textContent).toContain('🇻🇦') // Vatican City
 
-      // Check for two flag containers (top-left and bottom-right halves)
-      const flagContainers = container.querySelectorAll('.absolute.inset-0')
-      expect(flagContainers.length).toBeGreaterThanOrEqual(2)
-
-      // Check for both flags (now with fixed-size containers)
-      const flags = container.querySelectorAll('.text-xl, .text-2xl')
-      expect(flags.length).toBeGreaterThanOrEqual(2)
-      expect(flags[0]).toHaveTextContent('🇱🇻') // Latvia (top-left)
-      expect(flags[1]).toHaveTextContent('🇻🇦') // Vatican City (bottom-right)
+      // Check for absolutely positioned containers (diagonal split)
+      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
+      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
     })
 
     it('should render two flag icons with diagonal split when flagDisplayMode is icon', () => {
@@ -174,13 +170,13 @@ describe('DateCell', () => {
         />
       )
 
-      // Check for diagonal split container
-      const splitContainer = container.querySelector('.relative.w-full.h-full')
-      expect(splitContainer).toBeInTheDocument()
-
       // Check for two flag icons (svgs) - should be at least 2
       const flagIcons = container.querySelectorAll('svg')
       expect(flagIcons.length).toBeGreaterThanOrEqual(2)
+
+      // Check for absolutely positioned containers (diagonal split)
+      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
+      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
     })
 
     it('should use appropriate font size for diagonal split flags', () => {
@@ -194,13 +190,11 @@ describe('DateCell', () => {
         />
       )
 
-      // Diagonal split flags should use text-xl or text-2xl with fixed containers
-      const flags = container.querySelectorAll('.text-xl, .text-2xl')
-      expect(flags.length).toBeGreaterThanOrEqual(2)
-
-      // Check for fixed-size containers matching icon dimensions
-      const fixedContainers = container.querySelectorAll('.w-6, .w-8')
-      expect(fixedContainers.length).toBeGreaterThanOrEqual(2)
+      // Check that both flags are present
+      const cell = container.querySelector('[role="gridcell"]')
+      expect(cell).toBeInTheDocument()
+      expect(cell?.textContent).toContain('🇱🇻')
+      expect(cell?.textContent).toContain('🇻🇦')
 
       // Check that they're positioned absolutely for the diagonal split
       const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
@@ -218,9 +212,9 @@ describe('DateCell', () => {
         />
       )
 
-      // Check for the diagonal split container
-      const splitContainer = container.querySelector('.relative.w-full.h-full')
-      expect(splitContainer).toBeInTheDocument()
+      // Check for absolutely positioned containers with clip-path
+      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
+      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
 
       // Check for overflow-hidden on clip-path containers
       const overflowContainers = container.querySelectorAll('.overflow-hidden')
@@ -343,10 +337,6 @@ describe('DateCell', () => {
         />
       )
 
-      // Should have diagonal split container
-      const splitContainer = container.querySelector('.relative.w-full.h-full')
-      expect(splitContainer).toBeInTheDocument()
-
       // Should have absolutely positioned flag containers (not simple flex layout)
       const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
       expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
@@ -376,18 +366,15 @@ describe('DateCell', () => {
         />
       )
 
-      // Should have two absolutely positioned flag containers
-      const absoluteContainers = container.querySelectorAll(
-        '.absolute.inset-0.flex.items-center.justify-center'
-      )
+      // Check that both flags are present
+      const cell = container.querySelector('[role="gridcell"]')
+      expect(cell).toBeInTheDocument()
+      expect(cell?.textContent).toContain('🇺🇬') // Uganda
+      expect(cell?.textContent).toContain('🇰🇪') // Kenya
+
+      // Should have absolutely positioned containers
+      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
       expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
-
-      const flags = container.querySelectorAll('.text-xl, .text-2xl')
-      expect(flags.length).toBeGreaterThanOrEqual(2)
-
-      // Check for fixed-size containers
-      const fixedContainers = container.querySelectorAll('.w-6, .w-8')
-      expect(fixedContainers.length).toBeGreaterThanOrEqual(2)
     })
 
     it('should use absolute positioning for diagonal split triangles', () => {

@@ -105,8 +105,12 @@ describe('CalendarGrid', () => {
       )
 
       const gridContainer = container.querySelector('.grid')
-      expect(gridContainer).toHaveClass('gap-4')
-      expect(gridContainer).toHaveClass('sm:gap-6')
+      // Component uses responsive gap spacing: gap-x-4 sm:gap-x-6 lg:gap-x-8 gap-y-4 sm:gap-y-6
+      expect(gridContainer).toHaveClass('gap-x-4')
+      expect(gridContainer).toHaveClass('sm:gap-x-6')
+      expect(gridContainer).toHaveClass('lg:gap-x-8')
+      expect(gridContainer).toHaveClass('gap-y-4')
+      expect(gridContainer).toHaveClass('sm:gap-y-6')
     })
   })
 
@@ -308,7 +312,7 @@ describe('CalendarGrid', () => {
   })
 
   describe('layout structure', () => {
-    it('has outer wrapper with space-y-8', () => {
+    it('has outer wrapper with space-y-6', () => {
       const { container } = render(
         <CalendarGrid
           year={2024}
@@ -317,7 +321,7 @@ describe('CalendarGrid', () => {
         />
       )
 
-      const outerWrapper = container.querySelector('.space-y-8')
+      const outerWrapper = container.querySelector('.space-y-6')
       expect(outerWrapper).toBeInTheDocument()
     })
 

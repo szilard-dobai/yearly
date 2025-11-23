@@ -43,3 +43,13 @@ const localStorageMock = (() => {
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 })
+
+// Mock ResizeObserver (for shadcn Command component)
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+// Mock scrollIntoView (for shadcn Command component)
+Element.prototype.scrollIntoView = () => {}

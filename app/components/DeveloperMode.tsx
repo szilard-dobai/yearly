@@ -2,12 +2,23 @@
 
 import { useState } from 'react'
 import { loadCalendarData } from '../lib/storage'
+import ExportButton from './ExportButton'
+import ImportButton from './ImportButton'
+import type { CalendarData } from '../lib/types'
 
 /**
  * DeveloperMode Component
  * JSON viewer with copy-to-clipboard functionality for debugging and data inspection
  */
-export default function DeveloperMode() {
+interface DeveloperModeProps {
+  calendarData: CalendarData
+  onDataChange: (data: CalendarData) => void
+}
+
+export default function DeveloperMode({
+  calendarData,
+  onDataChange,
+}: DeveloperModeProps) {
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>(
     'idle'
   )
@@ -49,23 +60,41 @@ export default function DeveloperMode() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          <span className="font-medium">{visitCount}</span> visit
-          {visitCount !== 1 ? 's' : ''} in local storage
+      <div className="space-y-2 pb-4 border-b border-gray-200 dark:border-gray-800">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          Data Management
+        </h3>
+        <p className="text-xs text-gray-600 dark:text-gray-400">
+          Export or import your calendar data as JSON
+        </p>
+        <div className="flex gap-2">
+          <ExportButton calendarData={calendarData} />
+          <ImportButton
+            currentData={calendarData}
+            onImport={onDataChange}
+          />
         </div>
-        <button
-          onClick={handleCopyToClipboard}
-          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer ${buttonClassName}`}
-          aria-label="Copy JSON data to clipboard"
-        >
-          {buttonText}
-        </button>
       </div>
-      <div className="relative">
-        <pre className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 overflow-x-auto text-xs font-mono text-gray-800 dark:text-gray-200 max-h-96 overflow-y-auto">
-          {jsonString}
-        </pre>
+
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="font-medium">{visitCount}</span> visit
+            {visitCount !== 1 ? 's' : ''} in local storage
+          </div>
+          <button
+            onClick={handleCopyToClipboard}
+            className={`px-3 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer ${buttonClassName}`}
+            aria-label="Copy JSON data to clipboard"
+          >
+            {buttonText}
+          </button>
+        </div>
+        <div className="relative">
+          <pre className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 overflow-x-auto text-xs font-mono text-gray-800 dark:text-gray-200 max-h-96 overflow-y-auto">
+            {jsonString}
+          </pre>
+        </div>
       </div>
     </div>
   )

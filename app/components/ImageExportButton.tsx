@@ -158,38 +158,39 @@ export default function ImageExportButton({
     <Button
       onClick={handleExport}
       disabled={isDisabled}
-      className="w-full"
+      className="w-full text-lg py-6 font-semibold shadow-lg hover:shadow-xl transition-all"
       variant={
         status === 'success'
           ? 'default'
           : status === 'error'
             ? 'destructive'
-            : 'secondary'
+            : 'default'
       }
+      size="lg"
       aria-label={
         hasData ? 'Export calendar as JPEG image' : 'No data to export'
       }
     >
       {status === 'loading' ? (
         <>
-          <Loader2 className="size-4 animate-spin" />
-          Generating...
+          <Loader2 className="size-5 animate-spin" />
+          Generating Image...
         </>
       ) : status === 'success' ? (
         <>
-          <CheckCircle2 className="size-4" />
+          <CheckCircle2 className="size-5" />
           Downloaded!
         </>
       ) : status === 'error' ? (
         <>
-          <XCircle className="size-4" />
-          Export failed
+          <XCircle className="size-5" />
+          Export Failed
         </>
       ) : (
         <>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <Image className="size-4" />
-          Export as Image
+          <Image className="size-5" />
+          Download as Image
         </>
       )}
     </Button>

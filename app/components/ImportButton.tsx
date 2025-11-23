@@ -114,7 +114,6 @@ export default function ImportButton({
       <Button
         onClick={() => fileInputRef.current?.click()}
         disabled={status !== 'idle'}
-        className="w-full"
         variant={
           status === 'success'
             ? 'default'

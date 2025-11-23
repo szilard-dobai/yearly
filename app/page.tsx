@@ -5,8 +5,6 @@ import type { CalendarData } from './lib/types'
 import { loadCalendarData, saveCalendarData } from './lib/storage'
 import CalendarGrid from './components/CalendarGrid'
 import CountryInput from './components/CountryInput'
-import ExportButton from './components/ExportButton'
-import ImportButton from './components/ImportButton'
 import ImageExportButton from './components/ImageExportButton'
 import Statistics from './components/Statistics'
 import DeveloperMode from './components/DeveloperMode'
@@ -133,26 +131,26 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span className="text-2xl">💾</span>
-                  Data Management
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <ExportButton calendarData={calendarData} />
-                <ImportButton
-                  currentData={calendarData}
-                  onImport={handleDataChange}
-                />
-                <ImageExportButton
-                  calendarRef={calendarRef}
-                  year={selectedYear}
-                  hasData={calendarData.visits.length > 0}
-                />
-              </CardContent>
-            </Card>
+            {calendarData.visits.length > 0 && (
+              <Card className="border-0 shadow-xl bg-linear-to-br from-blue-500 to-purple-600 text-white">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <span className="text-2xl">📸</span>
+                    Export Your Calendar
+                  </CardTitle>
+                  <p className="text-sm text-white/90 font-normal">
+                    Download a high-quality image of your travel calendar
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ImageExportButton
+                    calendarRef={calendarRef}
+                    year={selectedYear}
+                    hasData={calendarData.visits.length > 0}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
             <Card className="border-0 shadow-lg">
               <CardHeader className="pb-3">
@@ -182,7 +180,10 @@ export default function Home() {
               Developer Mode
             </summary>
             <div className="px-6 pb-4 pt-2">
-              <DeveloperMode />
+              <DeveloperMode
+                calendarData={calendarData}
+                onDataChange={handleDataChange}
+              />
             </div>
           </details>
         </Card>

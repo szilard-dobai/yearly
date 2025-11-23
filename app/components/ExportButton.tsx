@@ -48,7 +48,6 @@ export default function ExportButton({
     <Button
       onClick={handleExport}
       disabled={!hasData || status !== 'idle'}
-      className="w-full"
       variant={
         status === 'success'
           ? 'default'

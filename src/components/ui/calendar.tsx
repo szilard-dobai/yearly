@@ -9,6 +9,7 @@ import * as React from 'react'
 import {
   DayButton,
   DayPicker,
+  DropdownProps,
   getDefaultClassNames,
 } from 'react-day-picker'
 
@@ -20,9 +21,7 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
-function MonthsDropdown(props: React.SelectHTMLAttributes<HTMLSelectElement> & {
-  options?: Array<{ value: number; label: string; disabled?: boolean }>
-}) {
+function MonthsDropdown(props: DropdownProps) {
   const [open, setOpen] = React.useState(false)
 
   // Extract current month from the options
@@ -61,7 +60,7 @@ function MonthsDropdown(props: React.SelectHTMLAttributes<HTMLSelectElement> & {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5 text-sm font-medium hover:bg-accent/50"
+          className="h-8 gap-1.5 text-sm font-medium hover:bg-accent/50 relative"
         >
           {currentMonthName}
           <ChevronDownIcon className="size-4 text-muted-foreground" />
@@ -71,7 +70,7 @@ function MonthsDropdown(props: React.SelectHTMLAttributes<HTMLSelectElement> & {
         <div className="grid grid-cols-3 gap-1">
           {months.map((month, index) => {
             const isSelected = index === currentValue
-            const option = props.options?.find(opt => opt.value === index)
+            const option = props.options?.find((opt) => opt.value === index)
             const isDisabled = option?.disabled
 
             return (
@@ -99,7 +98,7 @@ function MonthsDropdown(props: React.SelectHTMLAttributes<HTMLSelectElement> & {
 function Calendar({
   className,
   classNames,
-  showOutsideDays = true,
+  showOutsideDays = false,
   captionLayout = 'label',
   buttonVariant = 'ghost',
   formatters,
@@ -128,22 +127,22 @@ function Calendar({
       classNames={{
         root: cn('w-fit', defaultClassNames.root),
         months: cn(
-          'flex gap-4 flex-col md:flex-row relative',
+          'flex gap-4 w-full absolute top-0 flex-col md:flex-row relative',
           defaultClassNames.months
         ),
         month: cn('flex flex-col w-full gap-4', defaultClassNames.month),
         nav: cn(
-          'flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between',
+          'flex items-center gap-1 w-full absolute top-0 z-1 inset-x-0 justify-between pointer-events-none',
           defaultClassNames.nav
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none',
+          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none pointer-events-auto',
           defaultClassNames.button_previous
         ),
         button_next: cn(
           buttonVariants({ variant: buttonVariant }),
-          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none',
+          'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none pointer-events-auto',
           defaultClassNames.button_next
         ),
         month_caption: cn(
@@ -151,7 +150,7 @@ function Calendar({
           defaultClassNames.month_caption
         ),
         dropdowns: cn(
-          'w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-2',
+          'w-full absolute top-0 flex items-center text-sm font-medium justify-center h-(--cell-size) gap-2',
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
@@ -253,7 +252,8 @@ function Calendar({
             </td>
           )
         },
-        MonthsDropdown: captionLayout === 'dropdown-months' ? MonthsDropdown : undefined,
+        MonthsDropdown:
+          captionLayout === 'dropdown-months' ? MonthsDropdown : undefined,
         ...components,
       }}
       {...props}

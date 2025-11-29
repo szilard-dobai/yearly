@@ -9,8 +9,6 @@ type Props = {
   countryCode: string
   displayMode?: FlagDisplayMode
   size?: FlagSize
-  /** When true, flag fills container and shows placeholder on missing flag */
-  fill?: boolean
 }
 
 const FLAG_TEXT_SIZES: Record<FlagSize, string> = {
@@ -34,19 +32,16 @@ const Flag = ({
   countryCode,
   displayMode = 'emoji',
   size = 'md',
-  fill = false,
 }: Props) => {
   const code = countryCode.toUpperCase()
   const Icon = FlagIcons[code as keyof typeof FlagIcons]
 
-  if (displayMode === 'icon' || fill) {
+  if (displayMode === 'icon') {
     if (!Icon) {
-      return fill ? <FlagPlaceholder countryCode={countryCode} /> : null
+      return <FlagPlaceholder countryCode={countryCode} />
     }
 
-    const iconClassName = fill
-      ? 'w-full h-full rounded object-cover shadow-sm border border-gray-200/50 dark:border-gray-700/50'
-      : FLAG_SIZES[size]
+    const iconClassName = FLAG_SIZES[size]
 
     return <Icon className={cn(iconClassName, className)} />
   }

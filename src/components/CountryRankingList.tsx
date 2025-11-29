@@ -1,4 +1,5 @@
 import { getCountryByCode } from '../lib/countries'
+import { useSettings } from '@/lib/contexts/SettingsContext'
 import Flag from './Flag'
 import { Badge } from '@/components/ui/badge'
 
@@ -17,6 +18,7 @@ export default function CountryRankingList({
   items,
   maxItems = 10,
 }: CountryRankingListProps) {
+  const { settings } = useSettings()
   const displayItems = maxItems > 0 ? items.slice(0, maxItems) : items
 
   if (displayItems.length === 0) {
@@ -72,7 +74,10 @@ export default function CountryRankingList({
             </div>
 
             <div className="shrink-0 w-8 h-6 flex items-center">
-              <Flag countryCode={item.countryCode} fill />
+              <Flag
+                countryCode={item.countryCode}
+                displayMode={settings.flagDisplayMode}
+              />
             </div>
 
             <div className="flex-1 min-w-0">

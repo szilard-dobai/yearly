@@ -39,10 +39,12 @@ export default function Create() {
     new Date().getFullYear()
   )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
-  const [flagDisplayMode, setFlagDisplayMode] = useState<FlagDisplayMode>(() => {
-    if (typeof window === 'undefined') return 'emoji'
-    return loadSettings().flagDisplayMode
-  })
+  const [flagDisplayMode, setFlagDisplayMode] = useState<FlagDisplayMode>(
+    () => {
+      if (typeof window === 'undefined') return 'emoji'
+      return loadSettings().flagDisplayMode
+    }
+  )
   const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(() => {
     if (typeof window === 'undefined') return 0
     return loadSettings().weekStartsOn
@@ -98,17 +100,21 @@ export default function Create() {
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-3 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
           <div className="space-y-6">
-            <CalendarGrid
-              ref={calendarRef}
-              year={selectedYear}
-              calendarData={calendarData}
-              onRemoveVisit={handleRemoveVisit}
-              flagDisplayMode={flagDisplayMode}
-              weekStartsOn={weekStartsOn}
-            />
+            <Card className="shadow-sm border border-gray-200 bg-white">
+              <CardContent>
+                <CalendarGrid
+                  ref={calendarRef}
+                  year={selectedYear}
+                  calendarData={calendarData}
+                  onRemoveVisit={handleRemoveVisit}
+                  flagDisplayMode={flagDisplayMode}
+                  weekStartsOn={weekStartsOn}
+                />
+              </CardContent>
+            </Card>
           </div>
 
           <aside className="space-y-4">

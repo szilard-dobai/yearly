@@ -9,7 +9,12 @@ import Settings, {
   type WeekStartsOn,
 } from '@/components/Settings'
 import Statistics from '@/components/Statistics'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  StandardCard,
+  DarkCard,
+  GradientCard,
+} from '@/components/ui/card-variants'
 import {
   Select,
   SelectContent,
@@ -103,7 +108,7 @@ export default function Create() {
       <main className="container mx-auto px-3 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
           <div className="space-y-6">
-            <Card className="shadow-sm border border-gray-200 bg-white">
+            <StandardCard>
               <CardContent>
                 <CalendarGrid
                   ref={calendarRef}
@@ -114,11 +119,11 @@ export default function Create() {
                   weekStartsOn={weekStartsOn}
                 />
               </CardContent>
-            </Card>
+            </StandardCard>
           </div>
 
           <aside className="space-y-4">
-            <Card className="shadow-sm border border-gray-200 bg-white">
+            <StandardCard>
               <CardHeader>
                 <CardTitle
                   className="text-lg flex items-center gap-2 text-gray-900"
@@ -136,10 +141,10 @@ export default function Create() {
                   weekStartsOn={weekStartsOn}
                 />
               </CardContent>
-            </Card>
+            </StandardCard>
 
             {calendarData.visits.length > 0 && (
-              <Card className="shadow-sm border-0 bg-black text-white">
+              <DarkCard>
                 <CardHeader>
                   <CardTitle
                     className="text-lg flex items-center gap-2"
@@ -161,10 +166,10 @@ export default function Create() {
                     />
                   </div>
                 </CardContent>
-              </Card>
+              </DarkCard>
             )}
 
-            <Card className="shadow-sm border border-gray-200 bg-linear-to-br from-gray-50 to-stone-50">
+            <GradientCard>
               <CardHeader>
                 <CardTitle
                   className="text-lg flex items-center gap-2 text-gray-900"
@@ -177,9 +182,9 @@ export default function Create() {
               <CardContent>
                 <Statistics calendarData={calendarData} year={selectedYear} />
               </CardContent>
-            </Card>
+            </GradientCard>
 
-            <Card className="shadow-sm border border-gray-200 bg-white">
+            <StandardCard>
               <CardHeader>
                 <CardTitle
                   className="text-lg flex items-center gap-2 text-gray-900"
@@ -197,13 +202,13 @@ export default function Create() {
                   onWeekStartsOnChange={handleWeekStartsOnChange}
                 />
               </CardContent>
-            </Card>
+            </StandardCard>
           </aside>
         </div>
       </main>
 
       <footer className="container mx-auto px-3 py-8">
-        <Card className="shadow-sm border border-gray-200 bg-white">
+        <StandardCard>
           <details>
             <summary
               className="px-6 py-4 cursor-pointer text-gray-900 text-sm hover:bg-gray-50 transition-colors rounded-lg list-none flex items-center gap-2"
@@ -219,7 +224,7 @@ export default function Create() {
               />
             </div>
           </details>
-        </Card>
+        </StandardCard>
       </footer>
     </div>
   )

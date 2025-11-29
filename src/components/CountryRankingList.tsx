@@ -1,5 +1,5 @@
 import { getCountryByCode } from '../lib/countries'
-import FlagPlaceholder from './FlagPlaceholder'
+import Flag from './Flag'
 import { Badge } from '@/components/ui/badge'
 
 export interface CountryRankingItem {
@@ -72,7 +72,7 @@ export default function CountryRankingList({
             </div>
 
             <div className="shrink-0 w-8 h-6 flex items-center">
-              <FlagPlaceholder countryCode={item.countryCode} />
+              <Flag countryCode={item.countryCode} fill />
             </div>
 
             <div className="flex-1 min-w-0">

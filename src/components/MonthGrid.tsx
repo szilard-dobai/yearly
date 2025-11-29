@@ -44,7 +44,7 @@ export default function MonthGrid({
     >
       <h3
         id={`month-${year}-${month}`}
-        className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2 ps-1"
+        className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2 ps-1 sm:ps-3"
       >
         {MONTH_NAMES[month]}
       </h3>

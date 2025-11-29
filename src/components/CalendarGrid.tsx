@@ -16,7 +16,7 @@ const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
 
     return (
       <div ref={ref} data-export-target="calendar">
-        <div className="mb-4 border-b pb-4">
+        <div className="mb-4 border-b border-gray-200 dark:border-white/10 pb-4">
           <h2 className="text-4xl sm:text-6xl font-bold text-red-500">
             {year}
           </h2>

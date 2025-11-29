@@ -48,7 +48,7 @@ export default function ImagePreviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[80vh] p-0 gap-0 overflow-scroll bg-white border-0">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[80vh] p-0 gap-0 overflow-scroll bg-white dark:bg-black border-0">
         <DialogTitle className="sr-only">
           Export Your Yearly Calendar
         </DialogTitle>
@@ -57,7 +57,7 @@ export default function ImagePreviewModal({
         </DialogDescription>
 
         <div className="grid md:grid-cols-2 gap-0">
-          <div className="bg-linear-to-br from-gray-50 to-stone-50 p-8 md:p-12 flex items-center justify-center">
+          <div className="bg-linear-to-br from-gray-50 to-stone-50 dark:bg-none dark:bg-neutral-900 p-8 md:p-12 flex items-center justify-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -83,7 +83,7 @@ export default function ImagePreviewModal({
             >
               <div className="mb-8">
                 <h2
-                  className="text-gray-900 mb-3"
+                  className="text-gray-900 dark:text-white mb-3"
                   style={{
                     fontSize: '2rem',
                     fontFamily: 'Newsreader, serif',
@@ -93,7 +93,10 @@ export default function ImagePreviewModal({
                 >
                   Your Yearly is ready! 🎉
                 </h2>
-                <p className="text-gray-600" style={{ lineHeight: '1.7' }}>
+                <p
+                  className="text-gray-600 dark:text-gray-400"
+                  style={{ lineHeight: '1.7' }}
+                >
                   Share your year-in-review with the world. Download the
                   high-quality image or share directly to your favorite social
                   platforms.
@@ -103,16 +106,19 @@ export default function ImagePreviewModal({
               <Button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full px-6 py-4 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-3 mb-4 shadow-lg"
+                className="w-full mb-4"
                 onClick={handleDownload}
               >
                 <Download className="w-5 h-5" />
                 <span style={{ fontWeight: '500' }}>Download Image</span>
               </Button>
 
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <p className="text-sm text-gray-600">
-                  <span style={{ fontWeight: '500' }} className="text-gray-900">
+              <div className="bg-gray-50 dark:bg-neutral-900 rounded-lg p-4 border border-gray-200 dark:border-white/10">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <span
+                    style={{ fontWeight: '500' }}
+                    className="text-gray-900 dark:text-white"
+                  >
                     Pro tip:
                   </span>{' '}
                   Tag us{' '}

@@ -7,7 +7,7 @@ type CardVariantProps = React.ComponentProps<typeof Card>
 export function StandardCard({ className, ...props }: CardVariantProps) {
   return (
     <Card
-      className={cn('shadow-sm border border-gray-200 bg-white', className)}
+      className={cn('shadow-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-black', className)}
       {...props}
     />
   )
@@ -26,7 +26,7 @@ export function GradientCard({ className, ...props }: CardVariantProps) {
   return (
     <Card
       className={cn(
-        'shadow-sm border border-gray-200 bg-linear-to-br from-gray-50 to-stone-50',
+        'shadow-sm border border-gray-200 dark:border-white/10 bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950',
         className
       )}
       {...props}

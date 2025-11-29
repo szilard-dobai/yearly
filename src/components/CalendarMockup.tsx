@@ -12,7 +12,7 @@ export function CalendarMockup() {
       transition={{ duration: 0.6, delay: 0.2 }}
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 p-8">
+      <div className="bg-white dark:bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-white/10 p-8">
         <ImageWithFallback
           src="/example.jpg"
           alt="Yearly calendar showing 2025 with country flags marking travel dates"
@@ -25,7 +25,7 @@ export function CalendarMockup() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.4 }}
-        className="text-center mt-6 text-gray-600"
+        className="text-center mt-6 text-gray-600 dark:text-gray-400"
       >
         Your entire year of travels in one beautiful image
       </motion.p>
@@ -51,7 +51,7 @@ function ImageWithFallback({
 
   return didError ? (
     <div
-      className={`inline-block bg-gray-100 text-center align-middle ${className ?? ''}`}
+      className={`inline-block bg-gray-100 dark:bg-gray-700 text-center align-middle ${className ?? ''}`}
       style={style}
     >
       <div className="flex items-center justify-center w-full h-full">

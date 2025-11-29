@@ -3,6 +3,7 @@ import { toJpeg } from 'html-to-image'
 import { Button } from '@/components/ui/button'
 import { Image as ImageIcon, XCircle, Loader2 } from 'lucide-react'
 import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
+import { useSettings } from '@/lib/contexts/SettingsContext'
 import ImagePreviewModal from './ImagePreviewModal'
 
 interface ImageExportButtonProps {
@@ -17,10 +18,19 @@ export default function ImageExportButton({
   hasData,
 }: ImageExportButtonProps) {
   const { status, setLoading, setIdle, setError } = useStatusFeedback()
+  const { settings } = useSettings()
   const [previewOpen, setPreviewOpen] = useState(false)
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
 
   const filename = `my-year-${year}.jpg`
+
+  // Determine if dark mode is active
+  const isDarkMode = () => {
+    if (settings.colorScheme === 'dark') return true
+    if (settings.colorScheme === 'light') return false
+    // System preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
 
   const handleExport = async () => {
     if (!calendarRef.current) {
@@ -50,7 +60,14 @@ export default function ImageExportButton({
       clonedElement.style.opacity = '0'
       clonedElement.style.padding = '2rem 1rem'
       clonedElement.style.borderRadius = '1rem'
-      clonedElement.style.backgroundColor = 'white'
+
+      const darkMode = isDarkMode()
+      clonedElement.style.backgroundColor = darkMode ? '#000000' : '#ffffff'
+
+      // Set text color for dark mode
+      if (darkMode) {
+        clonedElement.style.color = '#ffffff'
+      }
 
       // Force desktop grid layout (3 columns) for export
       // Find the grid container and override its classes
@@ -122,7 +139,7 @@ export default function ImageExportButton({
       const dataUrl = await toJpeg(clonedElement, {
         quality: 0.95,
         pixelRatio: 2, // High DPI for quality
-        backgroundColor: '#ffffff', // Force white background
+        backgroundColor: darkMode ? '#000000' : '#ffffff',
         cacheBust: true,
         width: 1200,
         style: {

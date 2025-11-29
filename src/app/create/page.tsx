@@ -6,12 +6,9 @@ import DeveloperMode from '@/components/DeveloperMode'
 import ImageExportButton from '@/components/ImageExportButton'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
+import ThemeToggle from '@/components/ThemeToggle'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  DarkCard,
-  GradientCard,
-  StandardCard,
-} from '@/components/ui/card-variants'
+import { DarkCard, StandardCard } from '@/components/ui/card-variants'
 import {
   Select,
   SelectContent,
@@ -52,8 +49,8 @@ function CreateContent() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-stone-50 via-white to-zinc-50">
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950">
+      <header className="border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <YearlyLogo />
           <Select
@@ -97,7 +94,7 @@ function CreateContent() {
             <StandardCard>
               <CardHeader>
                 <CardTitle
-                  className="text-lg flex items-center gap-2 text-gray-900"
+                  className="text-lg flex items-center gap-2 text-gray-900 dark:text-white"
                   style={{ fontWeight: '500' }}
                 >
                   <span className="text-2xl">✈️</span>
@@ -139,10 +136,10 @@ function CreateContent() {
               </DarkCard>
             )}
 
-            <GradientCard>
+            <StandardCard>
               <CardHeader>
                 <CardTitle
-                  className="text-lg flex items-center gap-2 text-gray-900"
+                  className="text-lg flex items-center gap-2 text-gray-900 dark:text-white"
                   style={{ fontWeight: '500' }}
                 >
                   <span className="text-2xl">📊</span>
@@ -152,12 +149,12 @@ function CreateContent() {
               <CardContent>
                 <Statistics calendarData={calendarData} year={selectedYear} />
               </CardContent>
-            </GradientCard>
+            </StandardCard>
 
             <StandardCard>
               <CardHeader>
                 <CardTitle
-                  className="text-lg flex items-center gap-2 text-gray-900"
+                  className="text-lg flex items-center gap-2 text-gray-900 dark:text-white"
                   style={{ fontWeight: '500' }}
                 >
                   <span className="text-2xl">⚙️</span>
@@ -172,11 +169,11 @@ function CreateContent() {
         </div>
       </main>
 
-      <footer className="container mx-auto px-3 py-8">
+      <footer className="container mx-auto px-3 py-8 space-y-4">
         <StandardCard>
           <details>
             <summary
-              className="px-6 py-4 cursor-pointer text-gray-900 text-sm hover:bg-gray-50 transition-colors rounded-lg list-none flex items-center gap-2"
+              className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2"
               style={{ fontWeight: '500' }}
             >
               <span className="text-lg">🔧</span>
@@ -190,6 +187,9 @@ function CreateContent() {
             </div>
           </details>
         </StandardCard>
+        <div className="flex justify-center">
+          <ThemeToggle />
+        </div>
       </footer>
     </div>
   )

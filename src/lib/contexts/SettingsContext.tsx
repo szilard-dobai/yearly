@@ -11,10 +11,12 @@ import React, {
 
 export type FlagDisplayMode = 'emoji' | 'icon'
 export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6
+export type ColorScheme = 'light' | 'dark' | 'system'
 
 export interface Settings {
   flagDisplayMode: FlagDisplayMode
   weekStartsOn: WeekStartsOn
+  colorScheme: ColorScheme
 }
 
 const SETTINGS_STORAGE_KEY = 'countries-in-year-settings'
@@ -22,6 +24,7 @@ const SETTINGS_STORAGE_KEY = 'countries-in-year-settings'
 const DEFAULT_SETTINGS: Settings = {
   flagDisplayMode: 'emoji',
   weekStartsOn: 0,
+  colorScheme: 'system',
 }
 
 function saveSettingsToStorage(settings: Settings): void {
@@ -38,13 +41,16 @@ function loadSettingsFromStorage(): Settings {
     const json = localStorage.getItem(SETTINGS_STORAGE_KEY)
     if (!json) return DEFAULT_SETTINGS
 
-    const settings = JSON.parse(json) as Settings
+    const parsed = JSON.parse(json)
 
-    if (!settings.flagDisplayMode || !Number.isInteger(settings.weekStartsOn)) {
-      return DEFAULT_SETTINGS
+    return {
+      flagDisplayMode: parsed.flagDisplayMode || DEFAULT_SETTINGS.flagDisplayMode,
+      weekStartsOn:
+        typeof parsed.weekStartsOn === 'number'
+          ? parsed.weekStartsOn
+          : DEFAULT_SETTINGS.weekStartsOn,
+      colorScheme: parsed.colorScheme || DEFAULT_SETTINGS.colorScheme,
     }
-
-    return settings
   } catch (error) {
     console.error('Failed to load settings:', error)
     return DEFAULT_SETTINGS
@@ -62,6 +68,7 @@ export function clearSettings(): void {
 type SettingsAction =
   | { type: 'SET_FLAG_DISPLAY_MODE'; payload: FlagDisplayMode }
   | { type: 'SET_WEEK_STARTS_ON'; payload: WeekStartsOn }
+  | { type: 'SET_COLOR_SCHEME'; payload: ColorScheme }
   | { type: 'UPDATE_SETTINGS'; payload: Partial<Settings> }
   | { type: 'RESET_SETTINGS' }
   | { type: 'LOAD_SETTINGS'; payload: Settings }
@@ -72,6 +79,8 @@ function settingsReducer(state: Settings, action: SettingsAction): Settings {
       return { ...state, flagDisplayMode: action.payload }
     case 'SET_WEEK_STARTS_ON':
       return { ...state, weekStartsOn: action.payload }
+    case 'SET_COLOR_SCHEME':
+      return { ...state, colorScheme: action.payload }
     case 'UPDATE_SETTINGS':
       return { ...state, ...action.payload }
     case 'RESET_SETTINGS':
@@ -86,6 +95,7 @@ function settingsReducer(state: Settings, action: SettingsAction): Settings {
 interface SettingsActions {
   setFlagDisplayMode: (mode: FlagDisplayMode) => void
   setWeekStartsOn: (day: WeekStartsOn) => void
+  setColorScheme: (scheme: ColorScheme) => void
   updateSettings: (updates: Partial<Settings>) => void
   resetSettings: () => void
 }
@@ -118,12 +128,41 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
   }, [settings, isLoaded])
 
+  useEffect(() => {
+    if (!isLoaded) return
+
+    const root = document.documentElement
+
+    if (settings.colorScheme === 'system') {
+      const prefersDark = window.matchMedia(
+        '(prefers-color-scheme: dark)'
+      ).matches
+      root.classList.toggle('dark', prefersDark)
+    } else {
+      root.classList.toggle('dark', settings.colorScheme === 'dark')
+    }
+  }, [settings.colorScheme, isLoaded])
+
+  useEffect(() => {
+    if (!isLoaded || settings.colorScheme !== 'system') return
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = (e: MediaQueryListEvent) => {
+      document.documentElement.classList.toggle('dark', e.matches)
+    }
+
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [settings.colorScheme, isLoaded])
+
   const actions = useMemo<SettingsActions>(
     () => ({
       setFlagDisplayMode: (mode) =>
         dispatch({ type: 'SET_FLAG_DISPLAY_MODE', payload: mode }),
       setWeekStartsOn: (day) =>
         dispatch({ type: 'SET_WEEK_STARTS_ON', payload: day }),
+      setColorScheme: (scheme) =>
+        dispatch({ type: 'SET_COLOR_SCHEME', payload: scheme }),
       updateSettings: (updates) =>
         dispatch({ type: 'UPDATE_SETTINGS', payload: updates }),
       resetSettings: () => dispatch({ type: 'RESET_SETTINGS' }),

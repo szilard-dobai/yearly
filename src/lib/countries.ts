@@ -1,9 +1,3 @@
-/**
- * Comprehensive country data with ISO codes and names
- * Based on ISO 3166-1 alpha-2 standard
- * Only includes countries supported by country-flag-icons package
- */
-
 import { countries as flagCountries } from 'country-flag-icons'
 import type { Country } from './types'
 
@@ -244,4 +238,17 @@ export function searchCountries(query: string): Country[] {
   return COUNTRIES.filter((country) =>
     country.name.toLowerCase().includes(lowerQuery)
   )
+}
+
+/**
+ * Convert country code to flag emoji
+ * @param countryCode - ISO 3166-1 alpha-2 country code
+ * @returns Emoji
+ */
+export const getFlagEmoji = (countryCode: string) => {
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map((char) => 127397 + char.charCodeAt(0))
+  return String.fromCodePoint(...codePoints)
 }

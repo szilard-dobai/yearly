@@ -1,6 +1,7 @@
 'use client'
 
 import { CalendarMockup } from '@/components/CalendarMockup'
+import { FeatureIcon } from '@/components/FeatureIcon'
 import { YearlyLogo } from '@/components/YearlyLogo'
 import {
   fadeInUp,
@@ -73,9 +74,7 @@ export default function Home() {
       <section className="container mx-auto px-6 py-24">
         <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
           <motion.div {...fadeInUpOnView} className="text-center">
-            <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Calendar className="w-7 h-7 text-white" />
-            </div>
+            <FeatureIcon icon={<Calendar className="w-7 h-7 text-white" />} />
             <h3
               className="mb-3 text-gray-900"
               style={{ fontSize: '1.25rem', fontWeight: '500' }}
@@ -92,9 +91,7 @@ export default function Home() {
             {...fadeInUpOnViewWithDelay(0.1)}
             className="text-center"
           >
-            <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
+            <FeatureIcon icon={<Sparkles className="w-7 h-7 text-white" />} />
             <h3
               className="mb-3 text-gray-900"
               style={{ fontSize: '1.25rem', fontWeight: '500' }}
@@ -111,9 +108,7 @@ export default function Home() {
             {...fadeInUpOnViewWithDelay(0.2)}
             className="text-center"
           >
-            <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Share2 className="w-7 h-7 text-white" />
-            </div>
+            <FeatureIcon icon={<Share2 className="w-7 h-7 text-white" />} />
             <h3
               className="mb-3 text-gray-900"
               style={{ fontSize: '1.25rem', fontWeight: '500' }}

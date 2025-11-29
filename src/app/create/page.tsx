@@ -202,7 +202,7 @@ export default function Create() {
         </div>
       </main>
 
-      <footer className="container mx-auto px-6 py-8">
+      <footer className="container mx-auto px-3 py-8">
         <Card className="shadow-sm border border-gray-200 bg-white">
           <details>
             <summary

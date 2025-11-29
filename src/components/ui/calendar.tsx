@@ -13,7 +13,7 @@ import {
   getDefaultClassNames,
 } from 'react-day-picker'
 
-import { Button, buttonVariants } from '@/components/ui/button'
+import { BaseButton, Button, buttonVariants } from '@/components/ui/button'
 import {
   Popover,
   PopoverContent,
@@ -275,7 +275,7 @@ function CalendarDayButton({
   }, [modifiers.focused])
 
   return (
-    <Button
+    <BaseButton
       ref={ref}
       variant="ghost"
       size="icon"

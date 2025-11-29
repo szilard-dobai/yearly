@@ -1,5 +1,6 @@
 import { getCountryByCode } from '../lib/countries'
 import FlagPlaceholder from './FlagPlaceholder'
+import { Badge } from '@/components/ui/badge'
 
 export interface CountryRankingItem {
   countryCode: string
@@ -81,9 +82,9 @@ export default function CountryRankingList({
             </div>
 
             <div className="shrink-0">
-              <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+              <Badge variant="primary">
                 {item.count} {item.count === 1 ? 'visit' : 'visits'}
-              </span>
+              </Badge>
             </div>
           </div>
         )

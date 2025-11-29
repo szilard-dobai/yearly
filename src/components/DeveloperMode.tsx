@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { loadCalendarData } from '@/lib/storage'
+import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import ExportButton from './ExportButton'
 import ImportButton from './ImportButton'
 import type { CalendarData } from '@/lib/types'
@@ -19,9 +19,7 @@ export default function DeveloperMode({
   calendarData,
   onDataChange,
 }: DeveloperModeProps) {
-  const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>(
-    'idle'
-  )
+  const { status: copyStatus, setSuccess, setError } = useStatusFeedback()
 
   const handleCopyToClipboard = async () => {
     try {
@@ -29,12 +27,10 @@ export default function DeveloperMode({
       const jsonString = JSON.stringify(data, null, 2)
 
       await navigator.clipboard.writeText(jsonString)
-      setCopyStatus('success')
-      setTimeout(() => setCopyStatus('idle'), 3000)
+      setSuccess()
     } catch (error) {
       console.error('Failed to copy to clipboard:', error)
-      setCopyStatus('error')
-      setTimeout(() => setCopyStatus('idle'), 3000)
+      setError()
     }
   }
 

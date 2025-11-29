@@ -2,6 +2,7 @@ import { useState, RefObject } from 'react'
 import { toJpeg } from 'html-to-image'
 import { Button } from '@/components/ui/button'
 import { Image as ImageIcon, XCircle, Loader2 } from 'lucide-react'
+import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import ImagePreviewModal from './ImagePreviewModal'
 
 interface ImageExportButtonProps {
@@ -15,7 +16,7 @@ export default function ImageExportButton({
   year,
   hasData,
 }: ImageExportButtonProps) {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const { status, setLoading, setIdle, setError } = useStatusFeedback()
   const [previewOpen, setPreviewOpen] = useState(false)
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
 
@@ -23,12 +24,11 @@ export default function ImageExportButton({
 
   const handleExport = async () => {
     if (!calendarRef.current) {
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
+      setError()
       return
     }
 
-    setStatus('loading')
+    setLoading()
 
     let clonedElement: HTMLDivElement | null = null
 
@@ -139,7 +139,7 @@ export default function ImageExportButton({
       // Store the data URL and open preview modal
       setImageDataUrl(dataUrl)
       setPreviewOpen(true)
-      setStatus('idle')
+      setIdle()
     } catch (error) {
       console.error('Image export failed:', error)
 
@@ -148,8 +148,7 @@ export default function ImageExportButton({
         document.body.removeChild(clonedElement)
       }
 
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
+      setError()
     }
   }
 

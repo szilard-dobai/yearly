@@ -5,6 +5,7 @@ import {
   calculateTotalCountriesVisited,
   calculateTotalVisits,
 } from '../lib/statistics'
+import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import { Button } from '@/components/ui/button'
 import { Upload, CheckCircle2, XCircle } from 'lucide-react'
 
@@ -21,7 +22,7 @@ export default function ImportButton({
   onImport,
   onError,
 }: ImportButtonProps) {
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const { status, setSuccess, setError, isIdle } = useStatusFeedback()
   const [showModal, setShowModal] = useState(false)
   const [importedData, setImportedData] = useState<CalendarData | null>(null)
   const [mergeStrategy, setMergeStrategy] = useState<MergeStrategy>('merge')
@@ -45,8 +46,7 @@ export default function ImportButton({
       setShowModal(true)
     } catch (error) {
       console.error('Import failed:', error)
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
+      setError()
 
       if (onError) {
         onError(error instanceof Error ? error : new Error('Import failed'))
@@ -77,14 +77,12 @@ export default function ImportButton({
         onImport(mergedData)
       }
 
-      setStatus('success')
-      setTimeout(() => setStatus('idle'), 3000)
+      setSuccess()
       setShowModal(false)
       setImportedData(null)
     } catch (error) {
       console.error('Import merge failed:', error)
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
+      setError()
 
       if (onError) {
         onError(
@@ -113,7 +111,7 @@ export default function ImportButton({
 
       <Button
         onClick={() => fileInputRef.current?.click()}
-        disabled={status !== 'idle'}
+        disabled={!isIdle}
         variant={
           status === 'success'
             ? 'default'

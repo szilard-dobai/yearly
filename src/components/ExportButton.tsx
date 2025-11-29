@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import type { CalendarData } from '../lib/types'
 import { exportToJSON } from '../lib/storage'
+import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import { Button } from '@/components/ui/button'
 import { Download, CheckCircle2, XCircle } from 'lucide-react'
 
@@ -13,7 +13,7 @@ export default function ExportButton({
   calendarData,
   filename,
 }: ExportButtonProps) {
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const { status, setSuccess, setError } = useStatusFeedback()
 
   const handleExport = () => {
     try {
@@ -33,12 +33,10 @@ export default function ExportButton({
 
       URL.revokeObjectURL(url)
 
-      setStatus('success')
-      setTimeout(() => setStatus('idle'), 3000)
+      setSuccess()
     } catch (error) {
       console.error('Export failed:', error)
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
+      setError()
     }
   }
 

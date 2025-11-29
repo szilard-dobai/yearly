@@ -49,7 +49,7 @@ function CreateContent() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950">
+    <>
       <header className="border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <YearlyLogo />
@@ -93,10 +93,7 @@ function CreateContent() {
           <aside className="space-y-4">
             <StandardCard>
               <CardHeader>
-                <CardTitle
-                  className="text-lg flex items-center gap-2 text-gray-900 dark:text-white"
-                  style={{ fontWeight: '500' }}
-                >
+                <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
                   <span className="text-2xl">✈️</span>
                   Add Visit
                 </CardTitle>
@@ -113,17 +110,14 @@ function CreateContent() {
             {calendarData.visits.length > 0 && (
               <DarkCard>
                 <CardHeader>
-                  <CardTitle
-                    className="text-lg flex items-center gap-2"
-                    style={{ fontWeight: '500' }}
-                  >
+                  <CardTitle className="text-lg font-medium flex items-center gap-2">
                     <span className="text-2xl">📸</span>
                     Export Your Calendar
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p className="text-gray-300" style={{ lineHeight: '1.7' }}>
+                    <p className="text-gray-300 leading-relaxed">
                       Download a high-quality image of your travel calendar
                     </p>
                     <ImageExportButton
@@ -138,10 +132,7 @@ function CreateContent() {
 
             <StandardCard>
               <CardHeader>
-                <CardTitle
-                  className="text-lg flex items-center gap-2 text-gray-900 dark:text-white"
-                  style={{ fontWeight: '500' }}
-                >
+                <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
                   <span className="text-2xl">📊</span>
                   Statistics
                 </CardTitle>
@@ -153,10 +144,7 @@ function CreateContent() {
 
             <StandardCard>
               <CardHeader>
-                <CardTitle
-                  className="text-lg flex items-center gap-2 text-gray-900 dark:text-white"
-                  style={{ fontWeight: '500' }}
-                >
+                <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
                   <span className="text-2xl">⚙️</span>
                   Settings
                 </CardTitle>
@@ -172,10 +160,7 @@ function CreateContent() {
       <footer className="container mx-auto px-3 py-8 space-y-4">
         <StandardCard>
           <details>
-            <summary
-              className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2"
-              style={{ fontWeight: '500' }}
-            >
+            <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2">
               <span className="text-lg">🔧</span>
               Developer Mode
             </summary>
@@ -191,7 +176,7 @@ function CreateContent() {
           <ThemeToggle />
         </div>
       </footer>
-    </div>
+    </>
   )
 }
 

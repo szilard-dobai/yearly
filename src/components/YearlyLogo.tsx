@@ -48,14 +48,7 @@ export function YearlyLogo({ className = '' }: { className?: string }) {
         </svg>
       </div>
 
-      <span
-        className="tracking-tight"
-        style={{
-          fontSize: '1.75rem',
-          fontFamily: 'Newsreader, serif',
-          fontWeight: '400',
-        }}
-      >
+      <span className="text-3xl font-serif font-normal tracking-tight">
         Yearly
       </span>
     </Link>

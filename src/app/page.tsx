@@ -17,7 +17,7 @@ import Link from 'next/link'
 
 function HomeContent() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950">
+    <>
       <header className="border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <YearlyLogo />
@@ -32,23 +32,11 @@ function HomeContent() {
 
       <section className="container mx-auto px-6 pt-24 pb-16">
         <motion.div {...fadeInUp} className="text-center max-w-4xl mx-auto">
-          <h1
-            className="mb-6 text-gray-900 dark:text-white"
-            style={{
-              fontSize: '4.5rem',
-              fontFamily: 'Newsreader, serif',
-              fontWeight: '400',
-              lineHeight: '1.1',
-              letterSpacing: '-0.02em',
-            }}
-          >
+          <h1 className="mb-6 text-gray-900 dark:text-white text-7xl font-serif font-normal leading-tight tracking-tight">
             Your year, at a glance.
           </h1>
 
-          <p
-            className="text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto"
-            style={{ fontSize: '1.25rem', lineHeight: '1.7' }}
-          >
+          <p className="text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto text-xl leading-relaxed">
             A clean, visual summary of your year. Add your countries and travel
             dates, and export a polished, calendar-style snapshot of everywhere
             you travelled.
@@ -77,16 +65,10 @@ function HomeContent() {
         <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
           <motion.div {...fadeInUpOnView} className="text-center">
             <FeatureIcon icon={<Calendar className="w-7 h-7 text-white" />} />
-            <h3
-              className="mb-3 text-gray-900 dark:text-white"
-              style={{ fontSize: '1.25rem', fontWeight: '500' }}
-            >
+            <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
               Clean calendar view
             </h3>
-            <p
-              className="text-gray-600 dark:text-gray-400"
-              style={{ lineHeight: '1.7' }}
-            >
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               Your entire year displayed in a beautiful 3×4 grid—all 12 months
               at once.
             </p>
@@ -94,16 +76,10 @@ function HomeContent() {
 
           <motion.div {...fadeInUpOnViewWithDelay(0.1)} className="text-center">
             <FeatureIcon icon={<Sparkles className="w-7 h-7 text-white" />} />
-            <h3
-              className="mb-3 text-gray-900 dark:text-white"
-              style={{ fontSize: '1.25rem', fontWeight: '500' }}
-            >
+            <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
               Flags replace dates
             </h3>
-            <p
-              className="text-gray-600 dark:text-gray-400"
-              style={{ lineHeight: '1.7' }}
-            >
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               Country flags automatically appear on your dates when you add
               visits, turning your trips into visual stories.
             </p>
@@ -111,16 +87,10 @@ function HomeContent() {
 
           <motion.div {...fadeInUpOnViewWithDelay(0.2)} className="text-center">
             <FeatureIcon icon={<Share2 className="w-7 h-7 text-white" />} />
-            <h3
-              className="mb-3 text-gray-900 dark:text-white"
-              style={{ fontSize: '1.25rem', fontWeight: '500' }}
-            >
+            <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
               Share anywhere
             </h3>
-            <p
-              className="text-gray-600 dark:text-gray-400"
-              style={{ lineHeight: '1.7' }}
-            >
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               Download your calendar as a high-quality image and share your
               year-in-review on Instagram, TikTok, or anywhere else.
             </p>
@@ -132,12 +102,7 @@ function HomeContent() {
         <div className="max-w-3xl mx-auto">
           <motion.h2
             {...fadeInUpOnView}
-            className="text-center mb-16 text-gray-900 dark:text-white"
-            style={{
-              fontSize: '2.5rem',
-              fontFamily: 'Newsreader, serif',
-              fontWeight: '400',
-            }}
+            className="text-center mb-16 text-gray-900 dark:text-white text-4xl font-serif font-normal"
           >
             Build it in seconds
           </motion.h2>
@@ -168,28 +133,14 @@ function HomeContent() {
                 {...fadeInLeftOnViewWithDelay(idx * 0.1)}
                 className="flex gap-6 items-start bg-white dark:bg-neutral-950 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/10"
               >
-                <div
-                  className="text-gray-300 dark:text-gray-400"
-                  style={{
-                    fontSize: '3rem',
-                    fontFamily: 'Newsreader, serif',
-                    fontWeight: '300',
-                    lineHeight: '1',
-                  }}
-                >
+                <div className="text-gray-300 dark:text-gray-400 text-5xl font-serif font-light leading-none">
                   {item.step}
                 </div>
                 <div className="flex-1">
-                  <h3
-                    className="mb-2 text-gray-900 dark:text-white"
-                    style={{ fontSize: '1.25rem', fontWeight: '500' }}
-                  >
+                  <h3 className="mb-2 text-gray-900 dark:text-white text-xl font-medium">
                     {item.title}
                   </h3>
-                  <p
-                    className="text-gray-600 dark:text-gray-400"
-                    style={{ lineHeight: '1.7' }}
-                  >
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -204,20 +155,10 @@ function HomeContent() {
           {...fadeInUpOnView}
           className="max-w-3xl mx-auto text-center bg-black text-white dark:bg-white dark:text-black rounded-3xl p-16 shadow-2xl"
         >
-          <h2
-            className="mb-6"
-            style={{
-              fontSize: '2.5rem',
-              fontFamily: 'Newsreader, serif',
-              fontWeight: '400',
-            }}
-          >
+          <h2 className="mb-6 text-4xl font-serif font-normal">
             Ready to create yours?
           </h2>
-          <p
-            className="mb-8 text-gray-300 dark:text-gray-700"
-            style={{ fontSize: '1.125rem', lineHeight: '1.7' }}
-          >
+          <p className="mb-8 text-gray-300 dark:text-gray-700 text-lg leading-relaxed">
             Transform your 2025 travels into a shareable calendar in minutes.
           </p>
           <Link
@@ -260,7 +201,7 @@ function HomeContent() {
           </div>
         </div>
       </footer>
-    </div>
+    </>
   )
 }
 

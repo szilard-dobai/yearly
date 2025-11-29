@@ -27,7 +27,10 @@ export default function ImagePreviewModal({
   const handleDownload = async () => {
     if (!imageDataUrl) return
 
-    if (navigator.share) {
+    const isMobileOrTablet = /Mobi|Android|iPad|iPhone|iPod/i.test(
+      navigator.userAgent
+    )
+    if (isMobileOrTablet && !!navigator.share) {
       const blob = await fetch(imageDataUrl).then((r) => r.blob())
       const file = new File([blob], filename, { type: blob.type })
 
@@ -82,21 +85,10 @@ export default function ImagePreviewModal({
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <div className="mb-8">
-                <h2
-                  className="text-gray-900 dark:text-white mb-3"
-                  style={{
-                    fontSize: '2rem',
-                    fontFamily: 'Newsreader, serif',
-                    fontWeight: '400',
-                    lineHeight: '1.2',
-                  }}
-                >
+                <h2 className="text-gray-900 dark:text-white mb-3 text-3xl font-serif font-normal leading-tight">
                   Your Yearly is ready! 🎉
                 </h2>
-                <p
-                  className="text-gray-600 dark:text-gray-400"
-                  style={{ lineHeight: '1.7' }}
-                >
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                   Share your year-in-review with the world. Download the
                   high-quality image or share directly to your favorite social
                   platforms.
@@ -110,15 +102,12 @@ export default function ImagePreviewModal({
                 onClick={handleDownload}
               >
                 <Download className="w-5 h-5" />
-                <span style={{ fontWeight: '500' }}>Download Image</span>
+                <span className="font-medium">Download Image</span>
               </Button>
 
               <div className="bg-gray-50 dark:bg-neutral-900 rounded-lg p-4 border border-gray-200 dark:border-white/10">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span
-                    style={{ fontWeight: '500' }}
-                    className="text-gray-900 dark:text-white"
-                  >
+                  <span className="font-medium text-gray-900 dark:text-white">
                     Pro tip:
                   </span>{' '}
                   Tag us{' '}

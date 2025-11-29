@@ -100,6 +100,21 @@ export function calculateVisitsByCountry(
 }
 
 /**
+ * Sorts country visit counts by the specified order
+ */
+function sortCountriesByCount(
+  countMap: Map<string, number>,
+  order: 'asc' | 'desc',
+  limit?: number
+): Array<{ countryCode: string; count: number }> {
+  const sorted = Array.from(countMap.entries())
+    .map(([countryCode, count]) => ({ countryCode, count }))
+    .sort((a, b) => (order === 'desc' ? b.count - a.count : a.count - b.count))
+
+  return limit && limit > 0 ? sorted.slice(0, limit) : sorted
+}
+
+/**
  * Calculates the most visited countries, sorted by visit count descending
  */
 export function calculateMostVisitedCountries(
@@ -107,12 +122,7 @@ export function calculateMostVisitedCountries(
   limit = 5
 ): Array<{ countryCode: string; count: number }> {
   const countMap = calculateVisitsByCountry(visits)
-
-  const sorted = Array.from(countMap.entries())
-    .map(([countryCode, count]) => ({ countryCode, count }))
-    .sort((a, b) => b.count - a.count)
-
-  return limit > 0 ? sorted.slice(0, limit) : sorted
+  return sortCountriesByCount(countMap, 'desc', limit)
 }
 
 /**
@@ -123,12 +133,7 @@ export function calculateLeastVisitedCountries(
   limit = 5
 ): Array<{ countryCode: string; count: number }> {
   const countMap = calculateVisitsByCountry(visits)
-
-  const sorted = Array.from(countMap.entries())
-    .map(([countryCode, count]) => ({ countryCode, count }))
-    .sort((a, b) => a.count - b.count)
-
-  return limit > 0 ? sorted.slice(0, limit) : sorted
+  return sortCountriesByCount(countMap, 'asc', limit)
 }
 
 /**

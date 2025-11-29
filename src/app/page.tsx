@@ -2,6 +2,12 @@
 
 import { CalendarMockup } from '@/components/CalendarMockup'
 import { YearlyLogo } from '@/components/YearlyLogo'
+import {
+  fadeInUp,
+  fadeInUpOnView,
+  fadeInUpOnViewWithDelay,
+  fadeInLeftOnViewWithDelay,
+} from '@/lib/animations'
 import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
@@ -22,12 +28,7 @@ export default function Home() {
       </header>
 
       <section className="container mx-auto px-6 pt-24 pb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center max-w-4xl mx-auto"
-        >
+        <motion.div {...fadeInUp} className="text-center max-w-4xl mx-auto">
           <h1
             className="mb-6 text-gray-900"
             style={{
@@ -71,13 +72,7 @@ export default function Home() {
 
       <section className="container mx-auto px-6 py-24">
         <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
+          <motion.div {...fadeInUpOnView} className="text-center">
             <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Calendar className="w-7 h-7 text-white" />
             </div>
@@ -94,10 +89,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            {...fadeInUpOnViewWithDelay(0.1)}
             className="text-center"
           >
             <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -116,10 +108,7 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            {...fadeInUpOnViewWithDelay(0.2)}
             className="text-center"
           >
             <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -142,9 +131,7 @@ export default function Home() {
       <section className="container mx-auto px-6 py-24 bg-linear-to-br from-gray-50 to-stone-50">
         <div className="max-w-3xl mx-auto">
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            {...fadeInUpOnView}
             className="text-center mb-16 text-gray-900"
             style={{
               fontSize: '2.5rem',
@@ -178,10 +165,7 @@ export default function Home() {
             ].map((item, idx) => (
               <motion.div
                 key={item.step}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                {...fadeInLeftOnViewWithDelay(idx * 0.1)}
                 className="flex gap-6 items-start bg-white p-8 rounded-2xl shadow-sm border border-gray-200"
               >
                 <div
@@ -214,9 +198,7 @@ export default function Home() {
 
       <section className="container mx-auto px-6 py-24">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          {...fadeInUpOnView}
           className="max-w-3xl mx-auto text-center bg-black text-white rounded-3xl p-16 shadow-2xl"
         >
           <h2

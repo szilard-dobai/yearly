@@ -48,7 +48,7 @@ export default function ImagePreviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[90vh] p-0 gap-0 overflow-scroll bg-white border-0">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[80vh] p-0 gap-0 overflow-scroll bg-white border-0">
         <DialogTitle className="sr-only">
           Export Your Yearly Calendar
         </DialogTitle>

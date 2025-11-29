@@ -1,7 +1,8 @@
 import { useState, RefObject } from 'react'
 import { toJpeg } from 'html-to-image'
 import { Button } from '@/components/ui/button'
-import { Image, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
+import { Image, XCircle, Loader2 } from 'lucide-react'
+import ImagePreviewModal from './ImagePreviewModal'
 
 interface ImageExportButtonProps {
   calendarRef: RefObject<HTMLDivElement | null>
@@ -14,9 +15,11 @@ export default function ImageExportButton({
   year,
   hasData,
 }: ImageExportButtonProps) {
-  const [status, setStatus] = useState<
-    'idle' | 'loading' | 'success' | 'error'
-  >('idle')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
+
+  const filename = `my-year-${year}.jpg`
 
   const handleExport = async () => {
     if (!calendarRef.current) {
@@ -45,6 +48,9 @@ export default function ImageExportButton({
       clonedElement.style.zIndex = '-1000'
       clonedElement.style.pointerEvents = 'none'
       clonedElement.style.opacity = '0'
+      clonedElement.style.padding = '2rem 1rem'
+      clonedElement.style.borderRadius = '1rem'
+      clonedElement.style.backgroundColor = 'white'
 
       // Force desktop grid layout (3 columns) for export
       // Find the grid container and override its classes
@@ -83,7 +89,8 @@ export default function ImageExportButton({
         }
         // Make diagonal split flag emojis larger (have fixed-size containers)
         if (
-          (htmlEl.classList.contains('text-xl') || htmlEl.classList.contains('text-2xl')) &&
+          (htmlEl.classList.contains('text-xl') ||
+            htmlEl.classList.contains('text-2xl')) &&
           htmlEl.classList.contains('leading-none') &&
           (htmlEl.classList.contains('w-6') || htmlEl.classList.contains('w-8'))
         ) {
@@ -129,16 +136,10 @@ export default function ImageExportButton({
       document.body.removeChild(clonedElement)
       clonedElement = null
 
-      // Create download link
-      const link = document.createElement('a')
-      link.download = `countries-in-year-${year}.jpg`
-      link.href = dataUrl
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
-      setStatus('success')
-      setTimeout(() => setStatus('idle'), 3000)
+      // Store the data URL and open preview modal
+      setImageDataUrl(dataUrl)
+      setPreviewOpen(true)
+      setStatus('idle')
     } catch (error) {
       console.error('Image export failed:', error)
 
@@ -155,44 +156,42 @@ export default function ImageExportButton({
   const isDisabled = !hasData || status === 'loading'
 
   return (
-    <Button
-      onClick={handleExport}
-      disabled={isDisabled}
-      className="w-full text-lg py-6 font-semibold shadow-lg hover:shadow-xl transition-all bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:bg-gray-100 disabled:text-gray-400"
-      variant={
-        status === 'success'
-          ? 'default'
-          : status === 'error'
-            ? 'destructive'
-            : 'ghost'
-      }
-      size="lg"
-      aria-label={
-        hasData ? 'Export calendar as JPEG image' : 'No data to export'
-      }
-    >
-      {status === 'loading' ? (
-        <>
-          <Loader2 className="size-5 animate-spin" />
-          Generating Image...
-        </>
-      ) : status === 'success' ? (
-        <>
-          <CheckCircle2 className="size-5" />
-          Downloaded!
-        </>
-      ) : status === 'error' ? (
-        <>
-          <XCircle className="size-5" />
-          Export Failed
-        </>
-      ) : (
-        <>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <Image className="size-5" />
-          Download as Image
-        </>
-      )}
-    </Button>
+    <>
+      <Button
+        onClick={handleExport}
+        disabled={isDisabled}
+        className="w-full text-lg py-6 font-semibold shadow-lg hover:shadow-xl transition-all bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 disabled:bg-gray-100 disabled:text-gray-400"
+        variant={status === 'error' ? 'destructive' : 'ghost'}
+        size="lg"
+        aria-label={
+          hasData ? 'Export calendar as JPEG image' : 'No data to export'
+        }
+      >
+        {status === 'loading' ? (
+          <>
+            <Loader2 className="size-5 animate-spin" />
+            Generating Image...
+          </>
+        ) : status === 'error' ? (
+          <>
+            <XCircle className="size-5" />
+            Export Failed
+          </>
+        ) : (
+          <>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image className="size-5" />
+            Download as Image
+          </>
+        )}
+      </Button>
+
+      <ImagePreviewModal
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        imageDataUrl={imageDataUrl}
+        filename={filename}
+      />
+    </>
   )
 }

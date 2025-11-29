@@ -2,7 +2,7 @@ import { getFlagEmoji } from '@/lib/countries'
 import { FLAG_SIZES, type FlagSize } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import * as FlagIcons from 'country-flag-icons/react/3x2'
-import { FlagDisplayMode } from './Settings'
+import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 
 type Props = {
   className?: string

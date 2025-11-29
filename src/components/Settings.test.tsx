@@ -1,169 +1,78 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { renderWithSettings } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import Settings from './Settings'
 
 describe('Settings', () => {
-  const mockOnFlagDisplayModeChange = vi.fn()
-  const mockOnWeekStartsOnChange = vi.fn()
-
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   describe('Flag display mode', () => {
     it('should render flag display mode switch', () => {
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+      renderWithSettings(<Settings />)
 
       expect(
         screen.getByRole('switch', { name: /use flag icons/i })
       ).toBeInTheDocument()
     })
 
-    it('should show switch as unchecked when mode is emoji', () => {
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+    it('should show switch as unchecked when mode is emoji (default)', () => {
+      renderWithSettings(<Settings />)
 
       const switchElement = screen.getByRole('switch')
       expect(switchElement).not.toBeChecked()
     })
 
-    it('should show switch as checked when mode is icon', () => {
-      render(
-        <Settings
-          flagDisplayMode="icon"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+    it('should toggle switch when clicked', async () => {
+      const user = userEvent.setup()
+      renderWithSettings(<Settings />)
 
       const switchElement = screen.getByRole('switch')
+      expect(switchElement).not.toBeChecked()
+
+      await user.click(switchElement)
       expect(switchElement).toBeChecked()
-    })
 
-    it('should call onFlagDisplayModeChange with icon when switch is enabled', async () => {
-      const user = userEvent.setup()
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
-
-      const switchElement = screen.getByRole('switch')
       await user.click(switchElement)
-
-      expect(mockOnFlagDisplayModeChange).toHaveBeenCalledWith('icon')
-      expect(mockOnFlagDisplayModeChange).toHaveBeenCalledTimes(1)
-    })
-
-    it('should call onFlagDisplayModeChange with emoji when switch is disabled', async () => {
-      const user = userEvent.setup()
-      render(
-        <Settings
-          flagDisplayMode="icon"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
-
-      const switchElement = screen.getByRole('switch')
-      await user.click(switchElement)
-
-      expect(mockOnFlagDisplayModeChange).toHaveBeenCalledWith('emoji')
-      expect(mockOnFlagDisplayModeChange).toHaveBeenCalledTimes(1)
+      expect(switchElement).not.toBeChecked()
     })
   })
 
   describe('Week starts on', () => {
     it('should render week starts on dropdown', () => {
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+      renderWithSettings(<Settings />)
 
       expect(screen.getByText('Week starts on')).toBeInTheDocument()
       expect(screen.getByRole('combobox')).toBeInTheDocument()
     })
 
-    it('should show Sunday when weekStartsOn is 0', () => {
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+    it('should show Sunday when weekStartsOn is 0 (default)', () => {
+      renderWithSettings(<Settings />)
 
       expect(screen.getByRole('combobox')).toHaveTextContent('Sunday')
     })
 
-    it('should show Monday when weekStartsOn is 1', () => {
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={1}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
-
-      expect(screen.getByRole('combobox')).toHaveTextContent('Monday')
-    })
-
-    it('should call onWeekStartsOnChange when day is selected', async () => {
+    it('should allow changing the week start day', async () => {
       const user = userEvent.setup()
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+      renderWithSettings(<Settings />)
 
       const combobox = screen.getByRole('combobox')
+      expect(combobox).toHaveTextContent('Sunday')
+
       await user.click(combobox)
 
       const mondayOption = await screen.findByRole('option', { name: 'Monday' })
       await user.click(mondayOption)
 
-      expect(mockOnWeekStartsOnChange).toHaveBeenCalledWith(1)
-      expect(mockOnWeekStartsOnChange).toHaveBeenCalledTimes(1)
+      // After selection, the combobox should show Monday
+      expect(combobox).toHaveTextContent('Monday')
     })
 
     it('should render all 7 days of the week in dropdown', async () => {
       const user = userEvent.setup()
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+      renderWithSettings(<Settings />)
 
       const combobox = screen.getByRole('combobox')
       await user.click(combobox)
@@ -186,14 +95,7 @@ describe('Settings', () => {
 
   describe('Labels and descriptions', () => {
     it('should have label for flag display mode', () => {
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+      renderWithSettings(<Settings />)
 
       expect(screen.getByText('Use flag icons')).toBeInTheDocument()
       expect(
@@ -202,14 +104,7 @@ describe('Settings', () => {
     })
 
     it('should have label for week starts on', () => {
-      render(
-        <Settings
-          flagDisplayMode="emoji"
-          onFlagDisplayModeChange={mockOnFlagDisplayModeChange}
-          weekStartsOn={0}
-          onWeekStartsOnChange={mockOnWeekStartsOnChange}
-        />
-      )
+      renderWithSettings(<Settings />)
 
       expect(screen.getByText('Week starts on')).toBeInTheDocument()
     })

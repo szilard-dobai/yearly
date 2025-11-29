@@ -3,21 +3,15 @@
 import type { CalendarData } from '@/lib/types'
 import { forwardRef } from 'react'
 import MonthGrid from './MonthGrid'
-import type { FlagDisplayMode, WeekStartsOn } from './Settings'
 
 interface CalendarGridProps {
   year: number
   calendarData: CalendarData
   onRemoveVisit: (visitId: string) => void
-  flagDisplayMode: FlagDisplayMode
-  weekStartsOn?: WeekStartsOn
 }
 
 const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
-  (
-    { year, calendarData, onRemoveVisit, flagDisplayMode, weekStartsOn },
-    ref
-  ) => {
+  ({ year, calendarData, onRemoveVisit }, ref) => {
     const visits = calendarData.visits
 
     return (
@@ -35,8 +29,6 @@ const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
               month={month}
               visits={visits}
               onRemoveVisit={onRemoveVisit}
-              flagDisplayMode={flagDisplayMode}
-              weekStartsOn={weekStartsOn}
             />
           ))}
         </div>

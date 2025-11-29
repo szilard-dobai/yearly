@@ -4,16 +4,13 @@ import CalendarGrid from '@/components/CalendarGrid'
 import CountryInput from '@/components/CountryInput'
 import DeveloperMode from '@/components/DeveloperMode'
 import ImageExportButton from '@/components/ImageExportButton'
-import Settings, {
-  type FlagDisplayMode,
-  type WeekStartsOn,
-} from '@/components/Settings'
+import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  StandardCard,
   DarkCard,
   GradientCard,
+  StandardCard,
 } from '@/components/ui/card-variants'
 import {
   Select,
@@ -23,12 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { YearlyLogo } from '@/components/YearlyLogo'
-import {
-  loadCalendarData,
-  loadSettings,
-  saveCalendarData,
-  saveSettings,
-} from '@/lib/storage'
+import { SettingsProvider } from '@/lib/contexts/SettingsContext'
+import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import type { CalendarData } from '@/lib/types'
 import { useRef, useState } from 'react'
 
@@ -39,21 +32,11 @@ function getInitialData(): CalendarData {
   return loadCalendarData() || { visits: [] }
 }
 
-export default function Create() {
+function CreateContent() {
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
-  const [flagDisplayMode, setFlagDisplayMode] = useState<FlagDisplayMode>(
-    () => {
-      if (typeof window === 'undefined') return 'emoji'
-      return loadSettings().flagDisplayMode
-    }
-  )
-  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(() => {
-    if (typeof window === 'undefined') return 0
-    return loadSettings().weekStartsOn
-  })
   const calendarRef = useRef<HTMLDivElement>(null)
 
   const handleDataChange = (newData: CalendarData) => {
@@ -66,16 +49,6 @@ export default function Create() {
       visits: calendarData.visits.filter((visit) => visit.id !== visitId),
     }
     handleDataChange(newData)
-  }
-
-  const handleFlagDisplayModeChange = (mode: FlagDisplayMode) => {
-    setFlagDisplayMode(mode)
-    saveSettings({ flagDisplayMode: mode, weekStartsOn })
-  }
-
-  const handleWeekStartsOnChange = (day: WeekStartsOn) => {
-    setWeekStartsOn(day)
-    saveSettings({ flagDisplayMode, weekStartsOn: day })
   }
 
   return (
@@ -115,8 +88,6 @@ export default function Create() {
                   year={selectedYear}
                   calendarData={calendarData}
                   onRemoveVisit={handleRemoveVisit}
-                  flagDisplayMode={flagDisplayMode}
-                  weekStartsOn={weekStartsOn}
                 />
               </CardContent>
             </StandardCard>
@@ -138,7 +109,6 @@ export default function Create() {
                   year={selectedYear}
                   calendarData={calendarData}
                   onDataChange={handleDataChange}
-                  weekStartsOn={weekStartsOn}
                 />
               </CardContent>
             </StandardCard>
@@ -195,12 +165,7 @@ export default function Create() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Settings
-                  flagDisplayMode={flagDisplayMode}
-                  onFlagDisplayModeChange={handleFlagDisplayModeChange}
-                  weekStartsOn={weekStartsOn}
-                  onWeekStartsOnChange={handleWeekStartsOnChange}
-                />
+                <Settings />
               </CardContent>
             </StandardCard>
           </aside>
@@ -227,5 +192,13 @@ export default function Create() {
         </StandardCard>
       </footer>
     </div>
+  )
+}
+
+export default function Create() {
+  return (
+    <SettingsProvider>
+      <CreateContent />
+    </SettingsProvider>
   )
 }

@@ -1,20 +1,6 @@
-/**
- * Local storage helper functions for persisting calendar data and settings
- */
-
 import type { CalendarData, SerializedCalendarData } from './types'
-import type { FlagDisplayMode, WeekStartsOn } from '@/components/Settings'
 
-const STORAGE_KEY_PREFIX = 'countries-in-year'
-const SETTINGS_STORAGE_KEY = `${STORAGE_KEY_PREFIX}-settings`
-
-/**
- * Get the storage key for all calendar data
- * @returns Storage key string
- */
-function getAllDataStorageKey(): string {
-  return STORAGE_KEY_PREFIX
-}
+const STORAGE_KEY = 'countries-in-year'
 
 /**
  * Serialize calendar data for storage
@@ -54,7 +40,7 @@ export function saveCalendarData(data: CalendarData): void {
   try {
     const serialized = serializeCalendarData(data)
     const json = JSON.stringify(serialized)
-    localStorage.setItem(getAllDataStorageKey(), json)
+    localStorage.setItem(STORAGE_KEY, json)
   } catch (error) {
     console.error('Failed to save calendar data:', error)
     throw new Error('Failed to save calendar data to local storage')
@@ -67,7 +53,7 @@ export function saveCalendarData(data: CalendarData): void {
  */
 export function loadCalendarData(): CalendarData | null {
   try {
-    const json = localStorage.getItem(getAllDataStorageKey())
+    const json = localStorage.getItem(STORAGE_KEY)
     if (!json) return null
 
     const serialized = JSON.parse(json) as SerializedCalendarData
@@ -83,7 +69,7 @@ export function loadCalendarData(): CalendarData | null {
  */
 export function clearCalendarData(): void {
   try {
-    localStorage.removeItem(getAllDataStorageKey())
+    localStorage.removeItem(STORAGE_KEY)
   } catch (error) {
     console.error('Failed to clear calendar data:', error)
   }
@@ -144,68 +130,5 @@ export function isLocalStorageAvailable(): boolean {
     return true
   } catch {
     return false
-  }
-}
-
-/**
- * User settings interface
- */
-export interface UserSettings {
-  flagDisplayMode: FlagDisplayMode
-  weekStartsOn: WeekStartsOn
-}
-
-/**
- * Default settings
- */
-const DEFAULT_SETTINGS: UserSettings = {
-  flagDisplayMode: 'emoji',
-  weekStartsOn: 0,
-}
-
-/**
- * Save user settings to local storage
- * @param settings - User settings to save
- */
-export function saveSettings(settings: UserSettings): void {
-  try {
-    const json = JSON.stringify(settings)
-    localStorage.setItem(SETTINGS_STORAGE_KEY, json)
-  } catch (error) {
-    console.error('Failed to save settings:', error)
-  }
-}
-
-/**
- * Load user settings from local storage
- * @returns User settings or default settings if not found
- */
-export function loadSettings(): UserSettings {
-  try {
-    const json = localStorage.getItem(SETTINGS_STORAGE_KEY)
-    if (!json) return DEFAULT_SETTINGS
-
-    const settings = JSON.parse(json) as UserSettings
-
-    // Validate settings
-    if (!settings.flagDisplayMode || !Number.isInteger(settings.weekStartsOn)) {
-      return DEFAULT_SETTINGS
-    }
-
-    return settings
-  } catch (error) {
-    console.error('Failed to load settings:', error)
-    return DEFAULT_SETTINGS
-  }
-}
-
-/**
- * Clear user settings from local storage
- */
-export function clearSettings(): void {
-  try {
-    localStorage.removeItem(SETTINGS_STORAGE_KEY)
-  } catch (error) {
-    console.error('Failed to clear settings:', error)
   }
 }

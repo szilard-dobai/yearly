@@ -3,23 +3,18 @@
 import { memo } from 'react'
 import { getVisitsForDate, isToday } from '../lib/calendar'
 import { getCountryByCode } from '../lib/countries'
+import { useSettings } from '@/lib/contexts/SettingsContext'
 import type { CountryVisit } from '../lib/types'
 import Flag from './Flag'
-import type { FlagDisplayMode } from './Settings'
 
 interface DateCellProps {
   date: Date | null
   visits: CountryVisit[]
-  flagDisplayMode: FlagDisplayMode
   onRemoveVisit: (visitId: string) => void
 }
 
-function DateCell({
-  date,
-  visits,
-  flagDisplayMode,
-  onRemoveVisit,
-}: DateCellProps) {
+function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
+  const { settings } = useSettings()
   if (!date) {
     return (
       <div className="aspect-square p-1" role="gridcell" aria-hidden="true" />
@@ -64,7 +59,7 @@ function DateCell({
                 >
                   <Flag
                     countryCode={cellVisits[0].countryCode}
-                    displayMode={flagDisplayMode}
+                    displayMode={settings.flagDisplayMode}
                   />
                 </div>
                 <div
@@ -73,14 +68,14 @@ function DateCell({
                 >
                   <Flag
                     countryCode={cellVisits[1].countryCode}
-                    displayMode={flagDisplayMode}
+                    displayMode={settings.flagDisplayMode}
                   />
                 </div>
               </div>
             ) : (
               // Single country: centered
               <Flag
-                displayMode={flagDisplayMode}
+                displayMode={settings.flagDisplayMode}
                 countryCode={cellVisits[0].countryCode}
               />
             )}

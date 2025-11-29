@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+import { useSettings } from '@/lib/contexts/SettingsContext'
 import dayjs from 'dayjs'
 import { CalendarIcon, Check, ChevronsUpDown, Plus, X } from 'lucide-react'
 import { useState } from 'react'
@@ -25,21 +26,19 @@ import { canAddVisitToDate, expandDateRange } from '../lib/calendar'
 import { searchCountries } from '../lib/countries'
 import type { CalendarData, Country } from '../lib/types'
 import { generateId } from '../lib/utils'
-import type { WeekStartsOn } from './Settings'
 
 interface CountryInputProps {
   year: number
   calendarData: CalendarData
   onDataChange: (data: CalendarData) => void
-  weekStartsOn?: WeekStartsOn
 }
 
 export default function CountryInput({
   year,
   calendarData,
   onDataChange,
-  weekStartsOn = 0,
 }: CountryInputProps) {
+  const { settings } = useSettings()
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const [error, setError] = useState('')
@@ -201,7 +200,7 @@ export default function CountryInput({
               endMonth={new Date(year, 11)}
               onSelect={handleDateSelect}
               numberOfMonths={1}
-              weekStartsOn={weekStartsOn}
+              weekStartsOn={settings.weekStartsOn}
             />
           </PopoverContent>
         </Popover>

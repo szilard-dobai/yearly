@@ -2,7 +2,8 @@ import * as calendar from '@/lib/calendar'
 import * as countries from '@/lib/countries'
 import type { CalendarData } from '@/lib/types'
 import * as utils from '@/lib/utils'
-import { render, screen, waitFor } from '@testing-library/react'
+import { renderWithSettings } from '@/test/test-utils'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { DateRange } from 'react-day-picker'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -75,7 +76,7 @@ describe('CountryInput', () => {
 
   describe('form rendering', () => {
     it('renders country search input', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -88,7 +89,7 @@ describe('CountryInput', () => {
     })
 
     it('renders date range picker', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -101,7 +102,7 @@ describe('CountryInput', () => {
     })
 
     it('renders calendar popover trigger button', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -114,7 +115,7 @@ describe('CountryInput', () => {
     })
 
     it('renders submit button', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -128,7 +129,7 @@ describe('CountryInput', () => {
     })
 
     it('submit button is disabled by default', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -148,7 +149,7 @@ describe('CountryInput', () => {
         { code: 'GB', name: 'United Kingdom' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -175,7 +176,7 @@ describe('CountryInput', () => {
         { code: 'GB', name: 'United Kingdom' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -200,7 +201,7 @@ describe('CountryInput', () => {
       }))
       vi.mocked(countries.searchCountries).mockReturnValue(manyCountries)
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -219,7 +220,7 @@ describe('CountryInput', () => {
     })
 
     it('does not show dropdown when search is empty', async () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -236,7 +237,7 @@ describe('CountryInput', () => {
         { code: 'US', name: 'United States' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -260,7 +261,7 @@ describe('CountryInput', () => {
         { code: 'US', name: 'United States' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -289,7 +290,7 @@ describe('CountryInput', () => {
         { code: 'FR', name: 'France' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -318,7 +319,7 @@ describe('CountryInput', () => {
         { code: 'US', name: 'United States' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -359,7 +360,7 @@ describe('CountryInput', () => {
 
   describe('form validation', () => {
     it('shows error when submitting without country', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -372,7 +373,7 @@ describe('CountryInput', () => {
     })
 
     it('shows error when submitting without date', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -390,7 +391,7 @@ describe('CountryInput', () => {
         { code: 'US', name: 'United States' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -432,7 +433,7 @@ describe('CountryInput', () => {
       ])
       vi.mocked(calendar.canAddVisitToDate).mockReturnValue(false)
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -477,7 +478,7 @@ describe('CountryInput', () => {
       vi.mocked(calendar.expandDateRange).mockReturnValue([mockDate])
       vi.mocked(utils.generateId).mockReturnValue('visit-123')
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -533,7 +534,7 @@ describe('CountryInput', () => {
         .mockReturnValueOnce('visit-2')
         .mockReturnValueOnce('visit-3')
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -589,7 +590,7 @@ describe('CountryInput', () => {
       vi.mocked(calendar.expandDateRange).mockReturnValue([mockDate])
       vi.mocked(utils.generateId).mockReturnValue('visit-123')
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={dataWithVisits}
@@ -639,7 +640,7 @@ describe('CountryInput', () => {
         new Date(2024, 0, 15),
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -684,7 +685,7 @@ describe('CountryInput', () => {
         .mockReturnValueOnce(false)
         .mockReturnValue(true)
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -740,7 +741,7 @@ describe('CountryInput', () => {
       ])
       vi.mocked(calendar.canAddVisitToDate).mockReturnValue(false)
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -776,7 +777,7 @@ describe('CountryInput', () => {
     })
 
     it('does not display error initially', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -792,7 +793,7 @@ describe('CountryInput', () => {
 
   describe('accessibility', () => {
     it('has proper labels for all inputs', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -805,7 +806,7 @@ describe('CountryInput', () => {
     })
 
     it('submit button has proper type', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -824,7 +825,7 @@ describe('CountryInput', () => {
         { code: 'US', name: 'United States' },
       ])
 
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -844,7 +845,7 @@ describe('CountryInput', () => {
 
   describe('form styling', () => {
     it('applies correct styles to inputs', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}
@@ -857,7 +858,7 @@ describe('CountryInput', () => {
     })
 
     it('submit button shows disabled state', () => {
-      render(
+      renderWithSettings(
         <CountryInput
           year={year}
           calendarData={mockCalendarData}

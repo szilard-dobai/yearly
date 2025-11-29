@@ -1,16 +1,14 @@
 import type { CountryVisit } from '../lib/types'
 import { getMonthData } from '../lib/calendar'
 import { MONTH_NAMES_SHORT } from '../lib/constants'
+import { useSettings } from '@/lib/contexts/SettingsContext'
 import DateCell from './DateCell'
-import type { FlagDisplayMode, WeekStartsOn } from './Settings'
 
 interface MonthGridProps {
   year: number
   month: number
   visits: CountryVisit[]
   onRemoveVisit: (visitId: string) => void
-  flagDisplayMode: FlagDisplayMode
-  weekStartsOn?: WeekStartsOn
 }
 
 export default function MonthGrid({
@@ -18,10 +16,9 @@ export default function MonthGrid({
   month,
   visits,
   onRemoveVisit,
-  flagDisplayMode,
-  weekStartsOn = 0,
 }: MonthGridProps) {
-  const weeks = getMonthData(year, month, weekStartsOn)
+  const { settings } = useSettings()
+  const weeks = getMonthData(year, month, settings.weekStartsOn)
 
   return (
     <section
@@ -48,7 +45,6 @@ export default function MonthGrid({
                 date={date}
                 visits={visits}
                 onRemoveVisit={onRemoveVisit}
-                flagDisplayMode={flagDisplayMode}
               />
             ))}
           </div>

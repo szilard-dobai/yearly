@@ -10,23 +10,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DAYS_OF_WEEK } from '@/lib/constants'
+import {
+  useSettings,
+  type WeekStartsOn,
+} from '@/lib/contexts/SettingsContext'
 
-export type FlagDisplayMode = 'emoji' | 'icon'
-export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6
+export default function Settings() {
+  const { settings, actions } = useSettings()
 
-interface SettingsProps {
-  flagDisplayMode: FlagDisplayMode
-  onFlagDisplayModeChange: (mode: FlagDisplayMode) => void
-  weekStartsOn: WeekStartsOn
-  onWeekStartsOnChange: (day: WeekStartsOn) => void
-}
-
-export default function Settings({
-  flagDisplayMode,
-  onFlagDisplayModeChange,
-  weekStartsOn,
-  onWeekStartsOnChange,
-}: SettingsProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
@@ -38,9 +29,9 @@ export default function Settings({
         </div>
         <Switch
           id="flag-display-mode"
-          checked={flagDisplayMode === 'icon'}
+          checked={settings.flagDisplayMode === 'icon'}
           onCheckedChange={(checked) =>
-            onFlagDisplayModeChange(checked ? 'icon' : 'emoji')
+            actions.setFlagDisplayMode(checked ? 'icon' : 'emoji')
           }
         />
       </div>
@@ -48,9 +39,9 @@ export default function Settings({
       <div className="flex items-center justify-between gap-4">
         <Label htmlFor="week-starts-on">Week starts on</Label>
         <Select
-          value={weekStartsOn.toString()}
+          value={settings.weekStartsOn.toString()}
           onValueChange={(value) =>
-            onWeekStartsOnChange(Number(value) as WeekStartsOn)
+            actions.setWeekStartsOn(Number(value) as WeekStartsOn)
           }
         >
           <SelectTrigger id="week-starts-on">

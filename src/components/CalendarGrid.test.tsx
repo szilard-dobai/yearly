@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { renderWithSettings } from '@/test/test-utils'
 import CalendarGrid from './CalendarGrid'
 import type { CalendarData, CountryVisit } from '../lib/types'
 
@@ -52,9 +53,8 @@ describe('CalendarGrid', () => {
 
   describe('rendering', () => {
     it('renders 12 MonthGrid components', () => {
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -67,9 +67,8 @@ describe('CalendarGrid', () => {
     })
 
     it('renders all month grids with correct month numbers', () => {
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -83,9 +82,8 @@ describe('CalendarGrid', () => {
     })
 
     it('applies responsive grid layout classes', () => {
-      const { container } = render(
+      const { container } = renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -99,9 +97,8 @@ describe('CalendarGrid', () => {
     })
 
     it('applies gap spacing to grid', () => {
-      const { container } = render(
+      const { container } = renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -120,9 +117,8 @@ describe('CalendarGrid', () => {
 
   describe('prop passing', () => {
     it('passes year prop to all MonthGrid components', () => {
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -136,9 +132,8 @@ describe('CalendarGrid', () => {
     })
 
     it('passes different year to MonthGrid components', () => {
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2025}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -152,9 +147,8 @@ describe('CalendarGrid', () => {
     })
 
     it('passes visits from calendarData to MonthGrid components', () => {
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -168,9 +162,8 @@ describe('CalendarGrid', () => {
     it('passes onRemoveVisit to MonthGrid components', async () => {
       const user = userEvent.setup()
 
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -186,9 +179,8 @@ describe('CalendarGrid', () => {
     it('passes onRemoveVisit to all month grids', async () => {
       const user = userEvent.setup()
 
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -210,9 +202,8 @@ describe('CalendarGrid', () => {
         visits: [],
       }
 
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={emptyCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -237,9 +228,8 @@ describe('CalendarGrid', () => {
         visits: manyVisits,
       }
 
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={largeCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -261,9 +251,8 @@ describe('CalendarGrid', () => {
         ],
       }
 
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={calendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -276,9 +265,8 @@ describe('CalendarGrid', () => {
 
   describe('month ordering', () => {
     it('renders months in correct order (0-11)', () => {
-      const { container } = render(
+      const { container } = renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -296,9 +284,8 @@ describe('CalendarGrid', () => {
     })
 
     it('maintains consistent month order across re-renders', () => {
-      const { rerender } = render(
+      const { rerender } = renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -311,7 +298,6 @@ describe('CalendarGrid', () => {
 
       rerender(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -328,9 +314,8 @@ describe('CalendarGrid', () => {
 
   describe('layout structure', () => {
     it('has inner grid container', () => {
-      const { container } = render(
+      const { container } = renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -344,9 +329,8 @@ describe('CalendarGrid', () => {
 
   describe('edge cases', () => {
     it('renders correctly with year 2025', () => {
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2025}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -358,9 +342,8 @@ describe('CalendarGrid', () => {
     })
 
     it('renders correctly with year 2020', () => {
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2020}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -374,9 +357,8 @@ describe('CalendarGrid', () => {
     it('renders when calendarData has no visits', () => {
       const emptyData: CalendarData = { visits: [] }
 
-      render(
+      renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={emptyData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -398,9 +380,8 @@ describe('CalendarGrid', () => {
         ],
       }
 
-      const { rerender } = render(
+      const { rerender } = renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={initialData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -427,7 +408,6 @@ describe('CalendarGrid', () => {
 
       rerender(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={updatedData}
           onRemoveVisit={mockOnRemoveVisit}
@@ -441,9 +421,8 @@ describe('CalendarGrid', () => {
 
   describe('component keys', () => {
     it('uses month as key for MonthGrid components', () => {
-      const { container } = render(
+      const { container } = renderWithSettings(
         <CalendarGrid
-          flagDisplayMode="emoji"
           year={2024}
           calendarData={mockCalendarData}
           onRemoveVisit={mockOnRemoveVisit}

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { renderWithSettings } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as calendar from '../lib/calendar'
@@ -50,9 +51,8 @@ describe('MonthGrid', () => {
     it('renders month name and year', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -82,9 +82,8 @@ describe('MonthGrid', () => {
       months.forEach((monthName, index) => {
         vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-        const { unmount } = render(
+        const { unmount } = renderWithSettings(
           <MonthGrid
-            flagDisplayMode="emoji"
             year={2024}
             month={index}
             visits={[]}
@@ -135,9 +134,8 @@ describe('MonthGrid', () => {
       ]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      const { container } = render(
+      const { container } = renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -163,9 +161,8 @@ describe('MonthGrid', () => {
       ]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -188,9 +185,8 @@ describe('MonthGrid', () => {
       const mockWeeks = [[new Date(2024, 0, 1)]]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -206,9 +202,8 @@ describe('MonthGrid', () => {
       const mockWeeks = [[new Date(2024, 0, 1)]]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -225,9 +220,8 @@ describe('MonthGrid', () => {
     it('calls getMonthData with correct year, month, and weekStartsOn', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={5}
           visits={mockVisits}
@@ -243,9 +237,8 @@ describe('MonthGrid', () => {
     it('renders section with aria-labelledby', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      const { container } = render(
+      const { container } = renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -260,9 +253,8 @@ describe('MonthGrid', () => {
     it('month heading has correct id for aria-labelledby', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={3}
           visits={mockVisits}
@@ -277,9 +269,8 @@ describe('MonthGrid', () => {
     it('grid has role="grid"', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      const { container } = render(
+      const { container } = renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -294,9 +285,8 @@ describe('MonthGrid', () => {
     it('grid has aria-label with month and year', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -320,9 +310,8 @@ describe('MonthGrid', () => {
       ]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      const { container } = render(
+      const { container } = renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -342,9 +331,8 @@ describe('MonthGrid', () => {
       ]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      const { container } = render(
+      const { container } = renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -363,9 +351,8 @@ describe('MonthGrid', () => {
       ]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      const { container } = render(
+      const { container } = renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -378,30 +365,28 @@ describe('MonthGrid', () => {
     })
   })
 
-  describe('weekStartsOn prop', () => {
-    it('should pass weekStartsOn to getMonthData when provided', () => {
+  describe('weekStartsOn from context', () => {
+    it('should use weekStartsOn from settings context', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={5}
           visits={mockVisits}
           onRemoveVisit={mockOnRemoveVisit}
-          weekStartsOn={1}
         />
       )
 
-      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 1)
+      // Default value from context is 0 (Sunday)
+      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 0)
     })
 
     it('should use default weekStartsOn=0 when not provided', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={5}
           visits={mockVisits}
@@ -411,27 +396,6 @@ describe('MonthGrid', () => {
 
       expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 0)
     })
-
-    it('should accept all valid weekStartsOn values', () => {
-      const weekStarts = [0, 1, 2, 3, 4, 5, 6] as const
-
-      weekStarts.forEach((weekStart) => {
-        vi.mocked(calendar.getMonthData).mockReturnValue([])
-        const { unmount } = render(
-          <MonthGrid
-            flagDisplayMode="emoji"
-            year={2024}
-            month={5}
-            visits={mockVisits}
-            onRemoveVisit={mockOnRemoveVisit}
-            weekStartsOn={weekStart}
-          />
-        )
-
-        expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, weekStart)
-        unmount()
-      })
-    })
   })
 
   describe('edge cases', () => {
@@ -440,9 +404,8 @@ describe('MonthGrid', () => {
         [new Date(2024, 0, 1), null, null, null, null, null, null],
       ])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={[]}
@@ -465,9 +428,8 @@ describe('MonthGrid', () => {
       ])
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      const { container } = render(
+      const { container } = renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}
@@ -482,9 +444,8 @@ describe('MonthGrid', () => {
     it('handles different years', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2025}
           month={11}
           visits={mockVisits}
@@ -502,9 +463,8 @@ describe('MonthGrid', () => {
       ]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
-      render(
+      renderWithSettings(
         <MonthGrid
-          flagDisplayMode="emoji"
           year={2024}
           month={0}
           visits={mockVisits}

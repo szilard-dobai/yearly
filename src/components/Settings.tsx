@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DAYS_OF_WEEK } from '@/lib/constants'
 
 export type FlagDisplayMode = 'emoji' | 'icon'
 export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6
@@ -19,16 +20,6 @@ interface SettingsProps {
   weekStartsOn: WeekStartsOn
   onWeekStartsOnChange: (day: WeekStartsOn) => void
 }
-
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-] as const
 
 export default function Settings({
   flagDisplayMode,

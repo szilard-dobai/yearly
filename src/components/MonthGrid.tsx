@@ -1,5 +1,6 @@
 import type { CountryVisit } from '../lib/types'
 import { getMonthData } from '../lib/calendar'
+import { MONTH_NAMES_SHORT } from '../lib/constants'
 import DateCell from './DateCell'
 import type { FlagDisplayMode, WeekStartsOn } from './Settings'
 
@@ -11,21 +12,6 @@ interface MonthGridProps {
   flagDisplayMode: FlagDisplayMode
   weekStartsOn?: WeekStartsOn
 }
-
-const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-]
 
 export default function MonthGrid({
   year,
@@ -46,13 +32,13 @@ export default function MonthGrid({
         id={`month-${year}-${month}`}
         className="text-base sm:text-xl font-bold text-gray-900 dark:text-white mb-1 sm:mb-2 ps-1 sm:ps-3"
       >
-        {MONTH_NAMES[month]}
+        {MONTH_NAMES_SHORT[month]}
       </h3>
 
       <div
         className="space-y-0"
         role="grid"
-        aria-label={`${MONTH_NAMES[month]} ${year} calendar`}
+        aria-label={`${MONTH_NAMES_SHORT[month]} ${year} calendar`}
       >
         {weeks.map((week, weekIndex) => (
           <div key={weekIndex} className="grid grid-cols-7 gap-0" role="row">

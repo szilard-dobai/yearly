@@ -1,7 +1,7 @@
 import { useState, RefObject } from 'react'
 import { toJpeg } from 'html-to-image'
 import { Button } from '@/components/ui/button'
-import { Image, XCircle, Loader2 } from 'lucide-react'
+import { Image as ImageIcon, XCircle, Loader2 } from 'lucide-react'
 import ImagePreviewModal from './ImagePreviewModal'
 
 interface ImageExportButtonProps {
@@ -179,8 +179,7 @@ export default function ImageExportButton({
           </>
         ) : (
           <>
-            {/* eslint-disable-next-line jsx-a11y/alt-text */}
-            <Image className="size-5" />
+            <ImageIcon className="size-5" />
             Download as Image
           </>
         )}

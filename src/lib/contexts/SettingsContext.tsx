@@ -1,11 +1,11 @@
 'use client'
 
-import React, {
+import {
   createContext,
   useContext,
-  useReducer,
   useEffect,
   useMemo,
+  useReducer,
   type ReactNode,
 } from 'react'
 
@@ -46,7 +46,8 @@ function loadSettingsFromStorage(): Settings {
     const parsed = JSON.parse(json)
 
     return {
-      flagDisplayMode: parsed.flagDisplayMode || DEFAULT_SETTINGS.flagDisplayMode,
+      flagDisplayMode:
+        parsed.flagDisplayMode || DEFAULT_SETTINGS.flagDisplayMode,
       weekStartsOn:
         typeof parsed.weekStartsOn === 'number'
           ? parsed.weekStartsOn
@@ -68,6 +69,16 @@ export function clearSettings(): void {
   }
 }
 
+interface SettingsState {
+  settings: Settings
+  isLoaded: boolean
+}
+
+const DEFAULT_STATE: SettingsState = {
+  settings: DEFAULT_SETTINGS,
+  isLoaded: false,
+}
+
 type SettingsAction =
   | { type: 'SET_FLAG_DISPLAY_MODE'; payload: FlagDisplayMode }
   | { type: 'SET_WEEK_STARTS_ON'; payload: WeekStartsOn }
@@ -77,22 +88,40 @@ type SettingsAction =
   | { type: 'RESET_SETTINGS' }
   | { type: 'LOAD_SETTINGS'; payload: Settings }
 
-function settingsReducer(state: Settings, action: SettingsAction): Settings {
+function settingsReducer(
+  state: SettingsState,
+  action: SettingsAction
+): SettingsState {
   switch (action.type) {
     case 'SET_FLAG_DISPLAY_MODE':
-      return { ...state, flagDisplayMode: action.payload }
+      return {
+        ...state,
+        settings: { ...state.settings, flagDisplayMode: action.payload },
+      }
     case 'SET_WEEK_STARTS_ON':
-      return { ...state, weekStartsOn: action.payload }
+      return {
+        ...state,
+        settings: { ...state.settings, weekStartsOn: action.payload },
+      }
     case 'SET_COLOR_SCHEME':
-      return { ...state, colorScheme: action.payload }
+      return {
+        ...state,
+        settings: { ...state.settings, colorScheme: action.payload },
+      }
     case 'SET_HIGHLIGHT_TODAY':
-      return { ...state, highlightToday: action.payload }
+      return {
+        ...state,
+        settings: { ...state.settings, highlightToday: action.payload },
+      }
     case 'UPDATE_SETTINGS':
-      return { ...state, ...action.payload }
+      return {
+        ...state,
+        settings: { ...state.settings, ...action.payload },
+      }
     case 'RESET_SETTINGS':
-      return DEFAULT_SETTINGS
+      return { ...state, settings: DEFAULT_SETTINGS }
     case 'LOAD_SETTINGS':
-      return action.payload
+      return { settings: action.payload, isLoaded: true }
     default:
       return state
   }
@@ -120,13 +149,12 @@ interface SettingsProviderProps {
 }
 
 export function SettingsProvider({ children }: SettingsProviderProps) {
-  const [settings, dispatch] = useReducer(settingsReducer, DEFAULT_SETTINGS)
-  const [isLoaded, setIsLoaded] = React.useState(false)
+  const [state, dispatch] = useReducer(settingsReducer, DEFAULT_STATE)
+  const { settings, isLoaded } = state
 
   useEffect(() => {
     const stored = loadSettingsFromStorage()
     dispatch({ type: 'LOAD_SETTINGS', payload: stored })
-    setIsLoaded(true)
   }, [])
 
   useEffect(() => {

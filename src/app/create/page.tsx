@@ -73,7 +73,7 @@ function Create() {
         </div>
       </header>
 
-      <main className="container mx-auto py-4">
+      <main className="container mx-auto py-6">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 mb-16">
           <div className="space-y-6">
             <StandardCard>

@@ -57,7 +57,10 @@ function Home() {
           </div>
         </section>
 
-        <section className="py-24">
+        <section className="py-24" aria-labelledby="features-heading">
+          <h2 id="features-heading" className="sr-only">
+            Features
+          </h2>
           <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             <motion.div {...fadeInUpOnView} className="text-center">
               <FeatureIcon icon={<Calendar className="w-7 h-7 text-white" />} />
@@ -100,16 +103,20 @@ function Home() {
           </div>
         </section>
 
-        <section className="py-24 bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950">
+        <section
+          className="py-24 bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950"
+          aria-labelledby="how-it-works-heading"
+        >
           <div className="max-w-3xl mx-auto">
             <motion.h2
+              id="how-it-works-heading"
               {...fadeInUpOnView}
               className="text-center mb-16 text-gray-900 dark:text-white text-4xl font-serif font-normal"
             >
               Build it in seconds
             </motion.h2>
 
-            <div className="space-y-8">
+            <ol className="space-y-8" role="list">
               {[
                 {
                   step: '01',
@@ -130,12 +137,15 @@ function Home() {
                     'Download your Yearly as a high-quality JPEG image, ready to post anywhere.',
                 },
               ].map((item, idx) => (
-                <motion.div
+                <motion.li
                   key={item.step}
                   {...fadeInLeftOnViewWithDelay(idx * 0.1)}
-                  className="flex gap-6 items-start bg-white dark:bg-neutral-950 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/10"
+                  className="flex gap-6 items-start bg-white dark:bg-neutral-950 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 list-none"
                 >
-                  <div className="text-gray-300 dark:text-gray-400 text-5xl font-serif font-light leading-none">
+                  <div
+                    className="text-gray-300 dark:text-gray-400 text-5xl font-serif font-light leading-none"
+                    aria-hidden="true"
+                  >
                     {item.step}
                   </div>
                   <div className="flex-1">
@@ -146,18 +156,21 @@ function Home() {
                       {item.description}
                     </p>
                   </div>
-                </motion.div>
+                </motion.li>
               ))}
-            </div>
+            </ol>
           </div>
         </section>
 
-        <section className="py-24">
+        <section className="py-24" aria-labelledby="cta-heading">
           <motion.div
             {...fadeInUpOnView}
             className="max-w-3xl mx-auto text-center bg-black text-white dark:bg-white dark:text-black rounded-3xl p-16 shadow-2xl"
           >
-            <h2 className="mb-6 text-4xl font-serif font-normal">
+            <h2
+              id="cta-heading"
+              className="mb-6 text-4xl font-serif font-normal"
+            >
               Ready to create yours?
             </h2>
             <p className="mb-8 text-gray-300 dark:text-gray-700 text-lg leading-relaxed">
@@ -165,7 +178,7 @@ function Home() {
             </p>
             <Link
               href="/create"
-              className="px-10 py-4 bg-white text-black dark:bg-black dark:text-white dark:hover:bg-gray-900 rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
+              className="inline-block px-10 py-4 bg-white text-black dark:bg-black dark:text-white dark:hover:bg-gray-900 rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
             >
               Get started for free
             </Link>

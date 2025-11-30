@@ -1,8 +1,9 @@
 import Footer from '@/components/Footer'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata } from 'next'
 import { Geist, Newsreader, Roboto } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 const geistSans = Geist({
@@ -38,6 +39,7 @@ export default function RootLayout({
           className={`min-h-screen bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950 ${geistSans.variable} ${roboto.variable} ${newsreader.variable} antialiased`}
         >
           <Analytics />
+          <SpeedInsights />
           {children}
           <Footer />
         </body>

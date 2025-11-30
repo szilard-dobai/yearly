@@ -30,7 +30,7 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
     day: 'numeric',
   })
 
-  const today = isToday(date)
+  const showTodayHighlight = settings.highlightToday && isToday(date)
 
   const hasTwoCountries = cellVisits.length === 2
   const allCountries = cellVisits
@@ -91,7 +91,7 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
           </>
         ) : (
           <span
-            className={`text-[10px] sm:text-xs font-medium ${today ? 'text-red-500 font-bold' : 'text-gray-900 dark:text-white'}`}
+            className={`text-[10px] sm:text-xs font-medium ${showTodayHighlight ? 'text-red-500 font-bold' : 'text-gray-900 dark:text-white'}`}
           >
             {dayNumber}
           </span>

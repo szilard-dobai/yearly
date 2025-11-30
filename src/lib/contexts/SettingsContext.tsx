@@ -17,6 +17,7 @@ export interface Settings {
   flagDisplayMode: FlagDisplayMode
   weekStartsOn: WeekStartsOn
   colorScheme: ColorScheme
+  highlightToday: boolean
 }
 
 const SETTINGS_STORAGE_KEY = 'countries-in-year-settings'
@@ -25,6 +26,7 @@ const DEFAULT_SETTINGS: Settings = {
   flagDisplayMode: 'emoji',
   weekStartsOn: 0,
   colorScheme: 'system',
+  highlightToday: true,
 }
 
 function saveSettingsToStorage(settings: Settings): void {
@@ -50,6 +52,7 @@ function loadSettingsFromStorage(): Settings {
           ? parsed.weekStartsOn
           : DEFAULT_SETTINGS.weekStartsOn,
       colorScheme: parsed.colorScheme || DEFAULT_SETTINGS.colorScheme,
+      highlightToday: parsed.highlightToday ?? DEFAULT_SETTINGS.highlightToday,
     }
   } catch (error) {
     console.error('Failed to load settings:', error)
@@ -69,6 +72,7 @@ type SettingsAction =
   | { type: 'SET_FLAG_DISPLAY_MODE'; payload: FlagDisplayMode }
   | { type: 'SET_WEEK_STARTS_ON'; payload: WeekStartsOn }
   | { type: 'SET_COLOR_SCHEME'; payload: ColorScheme }
+  | { type: 'SET_HIGHLIGHT_TODAY'; payload: boolean }
   | { type: 'UPDATE_SETTINGS'; payload: Partial<Settings> }
   | { type: 'RESET_SETTINGS' }
   | { type: 'LOAD_SETTINGS'; payload: Settings }
@@ -81,6 +85,8 @@ function settingsReducer(state: Settings, action: SettingsAction): Settings {
       return { ...state, weekStartsOn: action.payload }
     case 'SET_COLOR_SCHEME':
       return { ...state, colorScheme: action.payload }
+    case 'SET_HIGHLIGHT_TODAY':
+      return { ...state, highlightToday: action.payload }
     case 'UPDATE_SETTINGS':
       return { ...state, ...action.payload }
     case 'RESET_SETTINGS':
@@ -96,6 +102,7 @@ interface SettingsActions {
   setFlagDisplayMode: (mode: FlagDisplayMode) => void
   setWeekStartsOn: (day: WeekStartsOn) => void
   setColorScheme: (scheme: ColorScheme) => void
+  setHighlightToday: (highlight: boolean) => void
   updateSettings: (updates: Partial<Settings>) => void
   resetSettings: () => void
 }
@@ -163,6 +170,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         dispatch({ type: 'SET_WEEK_STARTS_ON', payload: day }),
       setColorScheme: (scheme) =>
         dispatch({ type: 'SET_COLOR_SCHEME', payload: scheme }),
+      setHighlightToday: (highlight) =>
+        dispatch({ type: 'SET_HIGHLIGHT_TODAY', payload: highlight }),
       updateSettings: (updates) =>
         dispatch({ type: 'UPDATE_SETTINGS', payload: updates }),
       resetSettings: () => dispatch({ type: 'RESET_SETTINGS' }),

@@ -56,6 +56,20 @@ export default function Settings() {
           </SelectContent>
         </Select>
       </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <Label htmlFor="highlight-today">Highlight today</Label>
+          <p className="text-sm text-muted-foreground">
+            Show today&apos;s date in red on the calendar
+          </p>
+        </div>
+        <Switch
+          id="highlight-today"
+          checked={settings.highlightToday}
+          onCheckedChange={actions.setHighlightToday}
+        />
+      </div>
     </div>
   )
 }

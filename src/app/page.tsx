@@ -4,22 +4,21 @@ import { CalendarMockup } from '@/components/CalendarMockup'
 import { FeatureIcon } from '@/components/FeatureIcon'
 import ThemeToggle from '@/components/ThemeToggle'
 import { YearlyLogo } from '@/components/YearlyLogo'
-import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import {
+  fadeInLeftOnViewWithDelay,
   fadeInUp,
   fadeInUpOnView,
   fadeInUpOnViewWithDelay,
-  fadeInLeftOnViewWithDelay,
 } from '@/lib/animations'
 import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
 
-function HomeContent() {
+function Home() {
   return (
     <>
       <header className="border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="container mx-auto py-4 flex justify-between items-center">
           <YearlyLogo />
           <Link
             href="/create"
@@ -205,10 +204,4 @@ function HomeContent() {
   )
 }
 
-export default function Home() {
-  return (
-    <SettingsProvider>
-      <HomeContent />
-    </SettingsProvider>
-  )
-}
+export default Home

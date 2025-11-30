@@ -6,7 +6,6 @@ import DeveloperMode from '@/components/DeveloperMode'
 import ImageExportButton from '@/components/ImageExportButton'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
-import ThemeToggle from '@/components/ThemeToggle'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
 import {
@@ -17,7 +16,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { YearlyLogo } from '@/components/YearlyLogo'
-import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import type { CalendarData } from '@/lib/types'
 import { useRef, useState } from 'react'
@@ -29,7 +27,7 @@ function getInitialData(): CalendarData {
   return loadCalendarData() || { visits: [] }
 }
 
-function CreateContent() {
+function Create() {
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   )
@@ -51,7 +49,7 @@ function CreateContent() {
   return (
     <>
       <header className="border-b border-gray-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="container mx-auto py-4 flex justify-between items-center">
           <YearlyLogo />
           <Select
             value={selectedYear.toString()}
@@ -75,8 +73,8 @@ function CreateContent() {
         </div>
       </header>
 
-      <main className="container mx-auto px-3 py-4">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+      <main className="container mx-auto py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 mb-16">
           <div className="space-y-6">
             <StandardCard>
               <CardContent>
@@ -155,10 +153,8 @@ function CreateContent() {
             </StandardCard>
           </aside>
         </div>
-      </main>
 
-      <footer className="container mx-auto px-3 py-8 space-y-4">
-        <StandardCard>
+        <StandardCard className="p-0 overflow-hidden">
           <details>
             <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2">
               <span className="text-lg">🔧</span>
@@ -172,18 +168,9 @@ function CreateContent() {
             </div>
           </details>
         </StandardCard>
-        <div className="flex justify-center">
-          <ThemeToggle />
-        </div>
-      </footer>
+      </main>
     </>
   )
 }
 
-export default function Create() {
-  return (
-    <SettingsProvider>
-      <CreateContent />
-    </SettingsProvider>
-  )
-}
+export default Create

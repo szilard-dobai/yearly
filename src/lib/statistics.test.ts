@@ -9,6 +9,12 @@ import {
   calculateMonthlyBreakdown,
   calculateAverageVisitsPerCountry,
   findMostVisitedCountry,
+  calculateTotalDaysTraveled,
+  calculateDaysByCountry,
+  calculateCountriesByDays,
+  calculateAverageDaysPerCountry,
+  calculateBusiestMonth,
+  calculatePercentageOfYearTraveled,
 } from './statistics'
 
 describe('statistics', () => {
@@ -360,6 +366,227 @@ describe('statistics', () => {
       const result = findMostVisitedCountry(visits)
       expect(result?.count).toBe(1)
       expect(['US', 'FR']).toContain(result?.countryCode)
+    })
+  })
+
+  describe('calculateTotalDaysTraveled', () => {
+    it('returns 0 for empty array', () => {
+      expect(calculateTotalDaysTraveled([])).toBe(0)
+    })
+
+    it('returns correct count of days', () => {
+      expect(calculateTotalDaysTraveled(mockVisits)).toBe(6)
+    })
+
+    it('counts each unique day', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
+        { id: '2', countryCode: 'US', date: new Date(2024, 0, 16) },
+        { id: '3', countryCode: 'US', date: new Date(2024, 0, 17) },
+      ]
+      expect(calculateTotalDaysTraveled(visits)).toBe(3)
+    })
+
+    it('counts multiple visits on same day as 1 day', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) }, // Jan 15
+        { id: '2', countryCode: 'FR', date: new Date(2024, 0, 15) }, // Jan 15 (same day, different country)
+        { id: '3', countryCode: 'DE', date: new Date(2024, 0, 16) }, // Jan 16
+      ]
+      // Should be 2 unique days, not 3 visits
+      expect(calculateTotalDaysTraveled(visits)).toBe(2)
+    })
+
+    it('counts complex scenario with multiple visits per day correctly', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) }, // Jan 15
+        { id: '2', countryCode: 'FR', date: new Date(2024, 0, 15) }, // Jan 15
+        { id: '3', countryCode: 'DE', date: new Date(2024, 0, 15) }, // Jan 15
+        { id: '4', countryCode: 'IT', date: new Date(2024, 0, 16) }, // Jan 16
+        { id: '5', countryCode: 'ES', date: new Date(2024, 0, 16) }, // Jan 16
+        { id: '6', countryCode: 'PT', date: new Date(2024, 0, 17) }, // Jan 17
+      ]
+      // 3 unique days (Jan 15, 16, 17), not 6 visits
+      expect(calculateTotalDaysTraveled(visits)).toBe(3)
+    })
+  })
+
+  describe('calculateDaysByCountry', () => {
+    it('returns empty map for empty array', () => {
+      const result = calculateDaysByCountry([])
+      expect(result.size).toBe(0)
+    })
+
+    it('returns correct day counts per country', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
+        { id: '2', countryCode: 'US', date: new Date(2024, 0, 16) },
+        { id: '3', countryCode: 'FR', date: new Date(2024, 0, 17) },
+      ]
+      const result = calculateDaysByCountry(visits)
+      expect(result.get('US')).toBe(2)
+      expect(result.get('FR')).toBe(1)
+    })
+
+    it('counts all days in mockVisits correctly', () => {
+      const result = calculateDaysByCountry(mockVisits)
+      expect(result.get('US')).toBe(3) // 3 days in US
+      expect(result.get('FR')).toBe(2) // 2 days in FR
+      expect(result.get('DE')).toBe(1) // 1 day in DE
+    })
+  })
+
+  describe('calculateCountriesByDays', () => {
+    it('returns empty array for empty visits', () => {
+      expect(calculateCountriesByDays([])).toEqual([])
+    })
+
+    it('returns countries sorted by days descending', () => {
+      const result = calculateCountriesByDays(mockVisits)
+      expect(result).toEqual([
+        { countryCode: 'US', days: 3 },
+        { countryCode: 'FR', days: 2 },
+        { countryCode: 'DE', days: 1 },
+      ])
+    })
+
+    it('respects limit parameter', () => {
+      const result = calculateCountriesByDays(mockVisits, 2)
+      expect(result).toHaveLength(2)
+      expect(result).toEqual([
+        { countryCode: 'US', days: 3 },
+        { countryCode: 'FR', days: 2 },
+      ])
+    })
+
+    it('returns all countries when limit is 0', () => {
+      const result = calculateCountriesByDays(mockVisits, 0)
+      expect(result).toHaveLength(3)
+    })
+  })
+
+  describe('calculateAverageDaysPerCountry', () => {
+    it('returns 0 for empty array', () => {
+      expect(calculateAverageDaysPerCountry([])).toBe(0)
+    })
+
+    it('returns correct average', () => {
+      // 6 days across 3 countries = 2 average
+      expect(calculateAverageDaysPerCountry(mockVisits)).toBe(2)
+    })
+
+    it('handles non-integer averages', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
+        { id: '2', countryCode: 'US', date: new Date(2024, 0, 16) },
+        { id: '3', countryCode: 'FR', date: new Date(2024, 0, 17) },
+      ]
+      // 3 days across 2 countries = 1.5 average
+      expect(calculateAverageDaysPerCountry(visits)).toBe(1.5)
+    })
+  })
+
+  describe('calculateBusiestMonth', () => {
+    it('returns null for empty array', () => {
+      expect(calculateBusiestMonth([], 2024)).toBeNull()
+    })
+
+    it('returns null when no visits in given year', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2023, 0, 15) },
+      ]
+      expect(calculateBusiestMonth(visits, 2024)).toBeNull()
+    })
+
+    it('returns busiest month correctly', () => {
+      // mockVisits has 2 visits in January (month 0)
+      const result = calculateBusiestMonth(mockVisits, 2024)
+      expect(result).toEqual({ month: 0, days: 2 })
+    })
+
+    it('handles single month with all visits', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 5, 1) },
+        { id: '2', countryCode: 'FR', date: new Date(2024, 5, 2) },
+        { id: '3', countryCode: 'DE', date: new Date(2024, 5, 3) },
+      ]
+      const result = calculateBusiestMonth(visits, 2024)
+      expect(result).toEqual({ month: 5, days: 3 }) // June
+    })
+
+    it('returns first busiest month in case of tie', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
+        { id: '2', countryCode: 'FR', date: new Date(2024, 1, 15) },
+      ]
+      const result = calculateBusiestMonth(visits, 2024)
+      expect(result).toEqual({ month: 0, days: 1 }) // January wins tie
+    })
+
+    it('counts multiple visits on same day as 1 day', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 5, 1) }, // June 1
+        { id: '2', countryCode: 'FR', date: new Date(2024, 5, 1) }, // June 1 (same day, different country)
+        { id: '3', countryCode: 'DE', date: new Date(2024, 5, 2) }, // June 2
+      ]
+      const result = calculateBusiestMonth(visits, 2024)
+      // Should be 2 unique days (June 1 and June 2), not 3 visits
+      expect(result).toEqual({ month: 5, days: 2 })
+    })
+  })
+
+  describe('calculatePercentageOfYearTraveled', () => {
+    it('returns 0 for empty array', () => {
+      expect(calculatePercentageOfYearTraveled([], 2024)).toBe(0)
+    })
+
+    it('returns 0 when no visits in given year', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2023, 0, 15) },
+      ]
+      expect(calculatePercentageOfYearTraveled(visits, 2024)).toBe(0)
+    })
+
+    it('calculates percentage correctly for regular year', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2023, 0, 1) },
+        { id: '2', countryCode: 'US', date: new Date(2023, 0, 2) },
+      ]
+      // 2 days out of 365 = ~0.548%
+      const result = calculatePercentageOfYearTraveled(visits, 2023)
+      expect(result).toBeCloseTo((2 / 365) * 100, 5)
+    })
+
+    it('calculates percentage correctly for leap year', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 1) },
+        { id: '2', countryCode: 'US', date: new Date(2024, 0, 2) },
+      ]
+      // 2024 is a leap year (366 days)
+      const result = calculatePercentageOfYearTraveled(visits, 2024)
+      expect(result).toBeCloseTo((2 / 366) * 100, 5)
+    })
+
+    it('filters by year correctly', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2023, 0, 1) },
+        { id: '2', countryCode: 'US', date: new Date(2024, 0, 1) },
+        { id: '3', countryCode: 'US', date: new Date(2024, 0, 2) },
+      ]
+      // Only 2024 visits: 2 days out of 366
+      const result = calculatePercentageOfYearTraveled(visits, 2024)
+      expect(result).toBeCloseTo((2 / 366) * 100, 5)
+    })
+
+    it('counts multiple visits on same day as 1 day', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 1) }, // Jan 1
+        { id: '2', countryCode: 'FR', date: new Date(2024, 0, 1) }, // Jan 1 (same day, different country)
+        { id: '3', countryCode: 'DE', date: new Date(2024, 0, 2) }, // Jan 2
+      ]
+      // 2 unique days out of 366 (leap year), not 3 visits
+      const result = calculatePercentageOfYearTraveled(visits, 2024)
+      expect(result).toBeCloseTo((2 / 366) * 100, 5)
     })
   })
 })

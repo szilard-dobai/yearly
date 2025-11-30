@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 
 export interface CountryRankingItem {
   countryCode: string
-  count: number
+  days: number
   rank: number
 }
 
@@ -88,7 +88,7 @@ export default function CountryRankingList({
 
             <div className="shrink-0">
               <Badge variant="primary">
-                {item.count} {item.count === 1 ? 'visit' : 'visits'}
+                {item.days} {item.days === 1 ? 'day' : 'days'}
               </Badge>
             </div>
           </div>

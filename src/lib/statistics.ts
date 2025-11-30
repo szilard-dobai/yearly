@@ -188,3 +188,121 @@ export function findMostVisitedCountry(
   const mostVisited = calculateMostVisitedCountries(visits, 1)
   return mostVisited.length > 0 ? mostVisited[0] : null
 }
+
+/**
+ * Calculates the total number of unique days traveled
+ * Days with multiple country visits count as 1 day
+ */
+export function calculateTotalDaysTraveled(visits: CountryVisit[]): number {
+  const uniqueDays = new Set(
+    visits.map((v) => v.date.toISOString().split('T')[0])
+  )
+  return uniqueDays.size
+}
+
+/**
+ * Calculates days spent in each country
+ */
+export function calculateDaysByCountry(
+  visits: CountryVisit[]
+): Map<string, number> {
+  const countMap = new Map<string, number>()
+
+  for (const visit of visits) {
+    const currentCount = countMap.get(visit.countryCode) || 0
+    countMap.set(visit.countryCode, currentCount + 1)
+  }
+
+  return countMap
+}
+
+/**
+ * Calculates the countries with most days spent, sorted by days descending
+ */
+export function calculateCountriesByDays(
+  visits: CountryVisit[],
+  limit = 5
+): Array<{ countryCode: string; days: number }> {
+  const countMap = calculateDaysByCountry(visits)
+
+  const sorted = Array.from(countMap.entries())
+    .map(([countryCode, days]) => ({ countryCode, days }))
+    .sort((a, b) => b.days - a.days)
+
+  return limit && limit > 0 ? sorted.slice(0, limit) : sorted
+}
+
+/**
+ * Calculates average days per country
+ */
+export function calculateAverageDaysPerCountry(
+  visits: CountryVisit[]
+): number {
+  const totalCountries = calculateTotalCountriesVisited(visits)
+  if (totalCountries === 0) return 0
+
+  const totalDays = calculateTotalDaysTraveled(visits)
+  return totalDays / totalCountries
+}
+
+/**
+ * Finds the busiest month (most unique days traveled)
+ * Days with multiple country visits count as 1 day
+ */
+export function calculateBusiestMonth(
+  visits: CountryVisit[],
+  year: number
+): { month: number; days: number } | null {
+  // Track unique days per month using Set of day-of-month
+  const monthlyUniqueDays: Set<number>[] = Array.from(
+    { length: 12 },
+    () => new Set()
+  )
+
+  for (const visit of visits) {
+    if (visit.date.getFullYear() === year) {
+      const month = visit.date.getMonth()
+      const day = visit.date.getDate()
+      monthlyUniqueDays[month].add(day)
+    }
+  }
+
+  let busiestMonth = -1
+  let maxDays = 0
+
+  for (let i = 0; i < 12; i++) {
+    const uniqueDayCount = monthlyUniqueDays[i].size
+    if (uniqueDayCount > maxDays) {
+      maxDays = uniqueDayCount
+      busiestMonth = i
+    }
+  }
+
+  if (busiestMonth === -1 || maxDays === 0) return null
+
+  return { month: busiestMonth, days: maxDays }
+}
+
+/**
+ * Calculates percentage of year spent traveling
+ * Days with multiple country visits count as 1 day
+ */
+export function calculatePercentageOfYearTraveled(
+  visits: CountryVisit[],
+  year: number
+): number {
+  const yearVisits = visits.filter((v) => v.date.getFullYear() === year)
+
+  // Count unique days
+  const uniqueDays = new Set(
+    yearVisits.map((v) => v.date.toISOString().split('T')[0])
+  )
+  const totalDays = uniqueDays.size
+
+  // Check if it's a leap year
+  const isLeapYear =
+    (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+  const daysInYear = isLeapYear ? 366 : 365
+
+  return (totalDays / daysInYear) * 100
+}

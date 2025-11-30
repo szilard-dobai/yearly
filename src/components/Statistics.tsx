@@ -2,14 +2,31 @@ import { useMemo } from 'react'
 import type { CalendarData } from '../lib/types'
 import {
   calculateTotalCountriesVisited,
-  calculateTotalVisits,
-  calculateMostVisitedCountries,
-  calculateAverageVisitsPerCountry,
+  calculateTotalDaysTraveled,
+  calculateCountriesByDays,
+  calculateAverageDaysPerCountry,
+  calculateBusiestMonth,
+  calculatePercentageOfYearTraveled,
 } from '../lib/statistics'
 import StatisticsCard from './StatisticsCard'
 import CountryRankingList, {
   type CountryRankingItem,
 } from './CountryRankingList'
+
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
 
 interface StatisticsProps {
   calendarData: CalendarData
@@ -17,6 +34,8 @@ interface StatisticsProps {
 }
 
 export default function Statistics({ calendarData, year }: StatisticsProps) {
+  const currentYear = year ?? new Date().getFullYear()
+
   const visits = useMemo(
     () =>
       year
@@ -29,25 +48,33 @@ export default function Statistics({ calendarData, year }: StatisticsProps) {
 
   const stats = useMemo(() => {
     const totalCountries = calculateTotalCountriesVisited(visits)
-    const totalVisits = calculateTotalVisits(visits)
-    const averageVisits = calculateAverageVisitsPerCountry(visits)
-    const mostVisited = calculateMostVisitedCountries(visits, 5)
+    const totalDays = calculateTotalDaysTraveled(visits)
+    const averageDays = calculateAverageDaysPerCountry(visits)
+    const countriesByDays = calculateCountriesByDays(visits, 5)
+    const busiestMonth = calculateBusiestMonth(visits, currentYear)
+    const percentTraveled = calculatePercentageOfYearTraveled(
+      visits,
+      currentYear
+    )
 
     return {
       totalCountries,
-      totalVisits,
-      averageVisits,
-      mostVisited,
+      totalDays,
+      averageDays,
+      countriesByDays,
+      busiestMonth,
+      percentTraveled,
     }
-  }, [visits])
+  }, [visits, currentYear])
 
   const rankingItems: CountryRankingItem[] = useMemo(
     () =>
-      stats.mostVisited.map((item, index) => ({
-        ...item,
+      stats.countriesByDays.map((item, index) => ({
+        countryCode: item.countryCode,
+        days: item.days,
         rank: index + 1,
       })),
-    [stats.mostVisited]
+    [stats.countriesByDays]
   )
 
   return (
@@ -60,30 +87,46 @@ export default function Statistics({ calendarData, year }: StatisticsProps) {
         />
 
         <StatisticsCard
-          title="Total Visits"
-          value={stats.totalVisits}
-          subtitle={stats.totalVisits === 1 ? 'visit' : 'visits'}
+          title="Days Abroad"
+          value={stats.totalDays}
+          subtitle={stats.totalDays === 1 ? 'day' : 'days'}
         />
 
         {stats.totalCountries > 0 && (
           <StatisticsCard
-            title="Average"
-            value={stats.averageVisits.toFixed(1)}
-            subtitle="visits per country"
+            title="Average Stay"
+            value={stats.averageDays.toFixed(1)}
+            subtitle="days per country"
+          />
+        )}
+
+        {stats.busiestMonth && (
+          <StatisticsCard
+            title="Busiest Month"
+            value={MONTH_NAMES[stats.busiestMonth.month]}
+            subtitle={`${stats.busiestMonth.days} ${stats.busiestMonth.days === 1 ? 'day' : 'days'}`}
+          />
+        )}
+
+        {stats.totalDays > 0 && (
+          <StatisticsCard
+            title="Year Abroad"
+            value={`${stats.percentTraveled.toFixed(1)}%`}
+            subtitle="of the year"
           />
         )}
       </div>
 
-      {stats.mostVisited.length > 0 && (
+      {stats.countriesByDays.length > 0 && (
         <div>
           <h3 className="text-sm font-medium mb-3 text-gray-900 dark:text-white">
-            Most Visited Countries
+            Top Countries by Days
           </h3>
           <CountryRankingList items={rankingItems} maxItems={5} />
         </div>
       )}
 
-      {stats.totalVisits === 0 && (
+      {stats.totalDays === 0 && (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           <p className="text-sm">No visits recorded yet</p>
           <p className="text-xs mt-1">

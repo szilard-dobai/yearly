@@ -1,9 +1,10 @@
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
-export function YearlyLogo({ className = '' }: { className?: string }) {
+export function YearlyLogo({ className }: { className?: string }) {
   return (
-    <Link href="/" className={`flex items-center gap-3 ${className}`}>
-      <div className="relative w-10 h-10 mb-3">
+    <Link href="/" className={cn('flex items-center gap-3', className)}>
+      <div className="relative w-10 h-10">
         <svg
           viewBox="0 0 40 40"
           fill="none"
@@ -12,7 +13,7 @@ export function YearlyLogo({ className = '' }: { className?: string }) {
         >
           <rect
             x="4"
-            y="8"
+            y="6"
             width="32"
             height="28"
             rx="3"
@@ -41,14 +42,10 @@ export function YearlyLogo({ className = '' }: { className?: string }) {
           <circle cx="12" cy="29" r="1.5" fill="currentColor" />
           <circle cx="20" cy="29" r="1.5" fill="currentColor" />
           <circle cx="28" cy="29" r="1.5" fill="currentColor" />
-
-          <circle cx="12" cy="34" r="1.5" fill="currentColor" />
-          <circle cx="20" cy="34" r="1.5" fill="currentColor" />
-          <circle cx="28" cy="34" r="1.5" fill="currentColor" />
         </svg>
       </div>
 
-      <span className="text-3xl font-serif font-normal tracking-tight">
+      <span className="text-3xl leading-none pt-2 font-serif font-normal tracking-tight">
         Yearly
       </span>
     </Link>

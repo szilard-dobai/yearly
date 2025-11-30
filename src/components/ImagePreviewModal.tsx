@@ -51,7 +51,7 @@ export default function ImagePreviewModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[80vh] p-0 gap-0 overflow-scroll bg-white dark:bg-black border-0">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[80vh] p-0 gap-0 overflow-scroll bg-white dark:bg-black border shadow-stone-900">
         <DialogTitle className="sr-only">
           Export Your Yearly Calendar
         </DialogTitle>
@@ -102,7 +102,7 @@ export default function ImagePreviewModal({
                 onClick={handleDownload}
               >
                 <Download className="w-5 h-5" />
-                <span className="font-medium">Download Image</span>
+                Download Image
               </Button>
 
               <div className="bg-gray-50 dark:bg-neutral-900 rounded-lg p-4 border border-gray-200 dark:border-white/10">

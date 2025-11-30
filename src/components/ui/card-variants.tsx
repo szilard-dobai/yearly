@@ -7,7 +7,10 @@ type CardVariantProps = React.ComponentProps<typeof Card>
 export function StandardCard({ className, ...props }: CardVariantProps) {
   return (
     <Card
-      className={cn('shadow-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-black', className)}
+      className={cn(
+        'shadow-sm border border-gray-200 dark:border-white/10 bg-white dark:bg-black',
+        className
+      )}
       {...props}
     />
   )
@@ -16,7 +19,10 @@ export function StandardCard({ className, ...props }: CardVariantProps) {
 export function DarkCard({ className, ...props }: CardVariantProps) {
   return (
     <Card
-      className={cn('shadow-sm border-0 bg-black text-white', className)}
+      className={cn(
+        'shadow-sm border-0 bg-black text-white dark:bg-white dark:text-black',
+        className
+      )}
       {...props}
     />
   )

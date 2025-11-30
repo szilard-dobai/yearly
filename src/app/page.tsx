@@ -2,7 +2,6 @@
 
 import { CalendarMockup } from '@/components/CalendarMockup'
 import { FeatureIcon } from '@/components/FeatureIcon'
-import ThemeToggle from '@/components/ThemeToggle'
 import { YearlyLogo } from '@/components/YearlyLogo'
 import {
   fadeInLeftOnViewWithDelay,
@@ -168,38 +167,6 @@ function Home() {
           </Link>
         </motion.div>
       </section>
-
-      <footer className="border-t border-gray-200 dark:border-white/10 bg-white dark:bg-black">
-        <div className="container mx-auto px-6 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <YearlyLogo />
-            <div className="flex gap-8 text-gray-600 dark:text-gray-400 items-center">
-              <a
-                href="#"
-                className="hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                About
-              </a>
-              <a
-                href="#"
-                className="hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                Help
-              </a>
-              <a
-                href="#"
-                className="hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                Contact
-              </a>
-              <ThemeToggle />
-            </div>
-          </div>
-          <div className="text-center mt-8 text-gray-500 dark:text-gray-400">
-            © 2025 Yearly. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </>
   )
 }

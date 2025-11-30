@@ -115,7 +115,7 @@ function Create() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <p className="text-gray-300 leading-relaxed">
+                    <p className="text-gray-300 dark:text-gray-600 leading-relaxed">
                       Download a high-quality image of your travel calendar
                     </p>
                     <ImageExportButton

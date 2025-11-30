@@ -183,11 +183,10 @@ export default function CountryInput({
               {dateRange?.from && (
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="xs"
                   onClick={handleClearDates}
-                  className="h-7 px-2"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="size-3" />
                   Clear
                 </Button>
               )}

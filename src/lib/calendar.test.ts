@@ -4,6 +4,7 @@ import {
   expandDateRange,
   getVisitsForDate,
   canAddVisitToDate,
+  hasVisitForCountryOnDate,
   getMonthData,
   getYear,
   isToday,
@@ -176,6 +177,62 @@ describe('calendar utilities', () => {
         },
       ]
       expect(canAddVisitToDate(date, visits)).toBe(true)
+    })
+  })
+
+  describe('hasVisitForCountryOnDate', () => {
+    it('should return false for date with no visits', () => {
+      const date = new Date('2023-05-15')
+      const visits: CountryVisit[] = []
+      expect(hasVisitForCountryOnDate(date, 'US', visits)).toBe(false)
+    })
+
+    it('should return true when country already has visit on date', () => {
+      const date = new Date('2023-05-15')
+      const visits: CountryVisit[] = [
+        {
+          id: '1',
+          countryCode: 'US',
+          date: new Date('2023-05-15'),
+        },
+      ]
+      expect(hasVisitForCountryOnDate(date, 'US', visits)).toBe(true)
+    })
+
+    it('should return false when different country has visit on date', () => {
+      const date = new Date('2023-05-15')
+      const visits: CountryVisit[] = [
+        {
+          id: '1',
+          countryCode: 'FR',
+          date: new Date('2023-05-15'),
+        },
+      ]
+      expect(hasVisitForCountryOnDate(date, 'US', visits)).toBe(false)
+    })
+
+    it('should return false when same country has visit on different date', () => {
+      const date = new Date('2023-05-15')
+      const visits: CountryVisit[] = [
+        {
+          id: '1',
+          countryCode: 'US',
+          date: new Date('2023-05-16'),
+        },
+      ]
+      expect(hasVisitForCountryOnDate(date, 'US', visits)).toBe(false)
+    })
+
+    it('should handle date with different time', () => {
+      const date = new Date('2023-05-15T14:30:00')
+      const visits: CountryVisit[] = [
+        {
+          id: '1',
+          countryCode: 'US',
+          date: new Date('2023-05-15T08:00:00'),
+        },
+      ]
+      expect(hasVisitForCountryOnDate(date, 'US', visits)).toBe(true)
     })
   })
 

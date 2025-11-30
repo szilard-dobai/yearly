@@ -79,6 +79,22 @@ export function canAddVisitToDate(date: Date, visits: CountryVisit[]): boolean {
 }
 
 /**
+ * Check if a visit already exists for a specific country on a specific date
+ * @param date - The date to check
+ * @param countryCode - The country code to check
+ * @param visits - Array of all existing visits
+ * @returns True if a visit already exists for this country on this date
+ */
+export function hasVisitForCountryOnDate(
+  date: Date,
+  countryCode: string,
+  visits: CountryVisit[]
+): boolean {
+  const visitsOnDate = getVisitsForDate(date, visits)
+  return visitsOnDate.some((visit) => visit.countryCode === countryCode)
+}
+
+/**
  * Get calendar data for a specific month
  * Returns a 2D array where each sub-array represents a week
  * @param year - The year

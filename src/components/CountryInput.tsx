@@ -22,7 +22,11 @@ import dayjs from 'dayjs'
 import { CalendarIcon, Check, ChevronsUpDown, Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import type { DateRange } from 'react-day-picker'
-import { canAddVisitToDate, expandDateRange } from '../lib/calendar'
+import {
+  canAddVisitToDate,
+  expandDateRange,
+  hasVisitForCountryOnDate,
+} from '../lib/calendar'
 import { searchCountries } from '../lib/countries'
 import type { CalendarData, Country } from '../lib/types'
 import { generateId } from '../lib/utils'
@@ -89,6 +93,14 @@ export default function CountryInput({
     const dates = expandDateRange(start, end)
 
     for (const date of dates) {
+      if (
+        hasVisitForCountryOnDate(date, selectedCountry.code, calendarData.visits)
+      ) {
+        setError(
+          `${selectedCountry.name} is already added for ${date.toLocaleDateString()}`
+        )
+        return
+      }
       if (!canAddVisitToDate(date, calendarData.visits)) {
         setError(
           `Maximum 2 countries per day exceeded for ${date.toLocaleDateString()}`

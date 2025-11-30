@@ -3,7 +3,7 @@ import Link from 'next/link'
 export function YearlyLogo({ className = '' }: { className?: string }) {
   return (
     <Link href="/" className={`flex items-center gap-3 ${className}`}>
-      <div className="relative w-10 h-10">
+      <div className="relative w-10 h-10 mb-3">
         <svg
           viewBox="0 0 40 40"
           fill="none"

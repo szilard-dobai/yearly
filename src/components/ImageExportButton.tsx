@@ -79,6 +79,19 @@ export default function ImageExportButton({
         gridContainer.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))'
       }
 
+      // Show the watermark for export
+      const watermark = clonedElement.querySelector(
+        '[data-export-watermark]'
+      ) as HTMLElement
+      if (watermark) {
+        watermark.style.display = 'block'
+        // Scale up watermark text for high-res export
+        const watermarkText = watermark.querySelector('p') as HTMLElement
+        if (watermarkText) {
+          watermarkText.style.fontSize = '1rem'
+        }
+      }
+
       // Override any responsive spacing/sizing
       const allElements = clonedElement.querySelectorAll('*')
       allElements.forEach((el) => {

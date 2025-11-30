@@ -32,6 +32,15 @@ const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
             />
           ))}
         </div>
+        {/* Watermark - hidden on screen, visible in export */}
+        <div
+          data-export-watermark
+          className="hidden mt-6 pt-4 border-t border-gray-200 dark:border-white/10"
+        >
+          <p className="text-center text-xs text-gray-400 dark:text-gray-500 tracking-wide">
+            made with <span className="font-medium">yearly.world</span>
+          </p>
+        </div>
       </div>
     )
   }

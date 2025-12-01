@@ -6,6 +6,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { trackEvent } from '@/lib/tracking'
 import { Download } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
@@ -30,6 +31,11 @@ export default function ImagePreviewModal({
     const isMobileOrTablet = /Mobi|Android|iPad|iPhone|iPod/i.test(
       navigator.userAgent
     )
+
+    trackEvent('image_download_click', {
+      isMobile: isMobileOrTablet,
+    })
+
     if (isMobileOrTablet && !!navigator.share) {
       const blob = await fetch(imageDataUrl).then((r) => r.blob())
       const file = new File([blob], filename, { type: blob.type })

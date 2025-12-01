@@ -9,16 +9,30 @@ import {
   fadeInUpOnView,
   fadeInUpOnViewWithDelay,
 } from '@/lib/animations'
+import {
+  trackEvent,
+  type HomepageCtaClickMetadata,
+} from '@/lib/tracking'
 import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
+import { useEffect } from 'react'
+
+function trackCtaClick(linkType: HomepageCtaClickMetadata['linkType']) {
+  trackEvent('homepage_cta_click', { linkType })
+}
 
 function Home() {
+  useEffect(() => {
+    trackEvent('homepage_view')
+  }, [])
+
   return (
     <>
       <Header>
         <Link
           href="/create"
+          onClick={() => trackCtaClick('header')}
           className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
         >
           Try it now
@@ -41,6 +55,7 @@ function Home() {
             <div className="flex gap-4 justify-center items-center flex-wrap">
               <Link
                 href="/create"
+                onClick={() => trackCtaClick('hero')}
                 className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
               >
                 Create your Yearly
@@ -178,6 +193,7 @@ function Home() {
             </p>
             <Link
               href="/create"
+              onClick={() => trackCtaClick('cta_section')}
               className="inline-block px-10 py-4 bg-white text-black dark:bg-black dark:text-white dark:hover:bg-gray-900 rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
             >
               Get started for free

@@ -28,6 +28,7 @@ import {
   hasVisitForCountryOnDate,
 } from '../lib/calendar'
 import { searchCountries } from '../lib/countries'
+import { trackEvent } from '../lib/tracking'
 import type { CalendarData, Country } from '../lib/types'
 import { generateId } from '../lib/utils'
 
@@ -96,15 +97,25 @@ export default function CountryInput({
       if (
         hasVisitForCountryOnDate(date, selectedCountry.code, calendarData.visits)
       ) {
-        setError(
-          `${selectedCountry.name} is already added for ${date.toLocaleDateString()}`
-        )
+        const errorMsg = `${selectedCountry.name} is already added for ${date.toLocaleDateString()}`
+        setError(errorMsg)
+        trackEvent('visit_add_attempt', {
+          success: false,
+          countryCode: selectedCountry.code,
+          dateCount: dates.length,
+          errorReason: 'duplicate_country',
+        })
         return
       }
       if (!canAddVisitToDate(date, calendarData.visits)) {
-        setError(
-          `Maximum 2 countries per day exceeded for ${date.toLocaleDateString()}`
-        )
+        const errorMsg = `Maximum 2 countries per day exceeded for ${date.toLocaleDateString()}`
+        setError(errorMsg)
+        trackEvent('visit_add_attempt', {
+          success: false,
+          countryCode: selectedCountry.code,
+          dateCount: dates.length,
+          errorReason: 'max_countries_exceeded',
+        })
         return
       }
     }
@@ -120,6 +131,12 @@ export default function CountryInput({
     }
 
     onDataChange(newData)
+
+    trackEvent('visit_add_attempt', {
+      success: true,
+      countryCode: selectedCountry.code,
+      dateCount: dates.length,
+    })
 
     setSelectedCountry(null)
     setDateRange(undefined)

@@ -1,7 +1,17 @@
+'use client'
+
+import { trackEvent } from '@/lib/tracking'
 import { Home } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 export default function NotFound() {
+  useEffect(() => {
+    trackEvent('not_found_page_view', {
+      path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+    })
+  }, [])
+
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center px-6">
       <div className="text-center">
@@ -14,8 +24,8 @@ export default function NotFound() {
 
         <Link
           href="/"
+          onClick={() => trackEvent('not_found_home_click')}
           className="inline-flex items-center gap-2 px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-        
         >
           <Home className="w-4 h-4" />
           Home

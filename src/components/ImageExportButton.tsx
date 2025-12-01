@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Image as ImageIcon, XCircle, Loader2 } from 'lucide-react'
 import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import { useSettings } from '@/lib/contexts/SettingsContext'
+import { trackEvent } from '@/lib/tracking'
 import ImagePreviewModal from './ImagePreviewModal'
 
 interface ImageExportButtonProps {
@@ -37,6 +38,11 @@ export default function ImageExportButton({
       setError()
       return
     }
+
+    trackEvent('image_export_click', {
+      year,
+      visitCount: hasData ? 1 : 0, // We don't have exact count here, but hasData tells us there's data
+    })
 
     setLoading()
 

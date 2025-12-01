@@ -17,8 +17,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
+import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
-import { useRef, useState } from 'react'
+import { getCountryByCode } from '@/lib/countries'
+import { useEffect, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
   if (typeof window === 'undefined') {
@@ -34,12 +36,33 @@ function Create() {
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
   const calendarRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    trackEvent('create_page_view')
+  }, [])
+
   const handleDataChange = (newData: CalendarData) => {
     setCalendarData(newData)
     saveCalendarData(newData)
   }
 
+  const handleYearChange = (value: string) => {
+    const newYear = Number(value)
+    trackEvent('year_changed', {
+      fromYear: selectedYear,
+      toYear: newYear,
+    })
+    setSelectedYear(newYear)
+  }
+
   const handleRemoveVisit = (visitId: string) => {
+    const visit = calendarData.visits.find((v) => v.id === visitId)
+    if (visit) {
+      const country = getCountryByCode(visit.countryCode)
+      trackEvent('visit_deleted', {
+        countryCode: visit.countryCode,
+        countryName: country?.name,
+      })
+    }
     const newData = {
       visits: calendarData.visits.filter((visit) => visit.id !== visitId),
     }
@@ -51,7 +74,7 @@ function Create() {
       <Header>
         <Select
           value={selectedYear.toString()}
-          onValueChange={(value) => setSelectedYear(Number(value))}
+          onValueChange={handleYearChange}
         >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Select year" />
@@ -152,7 +175,12 @@ function Create() {
         </div>
 
         <StandardCard className="p-0 overflow-hidden">
-          <details>
+          <details
+            onToggle={(e) => {
+              const isOpen = (e.target as HTMLDetailsElement).open
+              trackEvent('developer_mode_toggle', { opened: isOpen })
+            }}
+          >
             <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2">
               <span className="text-lg">🔧</span>
               Developer Mode

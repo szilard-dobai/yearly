@@ -1,5 +1,6 @@
 import type { CalendarData } from '../lib/types'
 import { exportToJSON } from '../lib/storage'
+import { trackEvent } from '@/lib/tracking'
 import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import { Button } from '@/components/ui/button'
 import { Download, CheckCircle2, XCircle } from 'lucide-react'
@@ -33,9 +34,20 @@ export default function ExportButton({
 
       URL.revokeObjectURL(url)
 
+      trackEvent('json_export', {
+        visitCount: calendarData.visits.length,
+        success: true,
+      })
+
       setSuccess()
     } catch (error) {
       console.error('Export failed:', error)
+
+      trackEvent('json_export', {
+        visitCount: calendarData.visits.length,
+        success: false,
+      })
+
       setError()
     }
   }

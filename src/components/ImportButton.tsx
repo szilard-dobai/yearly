@@ -5,6 +5,7 @@ import {
   calculateTotalCountriesVisited,
   calculateTotalVisits,
 } from '../lib/statistics'
+import { trackEvent } from '@/lib/tracking'
 import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import { Button } from '@/components/ui/button'
 import { Upload, CheckCircle2, XCircle } from 'lucide-react'
@@ -77,11 +78,24 @@ export default function ImportButton({
         onImport(mergedData)
       }
 
+      trackEvent('json_import', {
+        strategy: mergeStrategy,
+        importedVisitCount: importedData.visits.length,
+        success: true,
+      })
+
       setSuccess()
       setShowModal(false)
       setImportedData(null)
     } catch (error) {
       console.error('Import merge failed:', error)
+
+      trackEvent('json_import', {
+        strategy: mergeStrategy,
+        importedVisitCount: importedData.visits.length,
+        success: false,
+      })
+
       setError()
 
       if (onError) {

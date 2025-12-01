@@ -52,7 +52,7 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
           <>
             {hasTwoCountries ? (
               // Two countries: diagonal split like ½ symbol
-              <div className="relative w-full h-full">
+              <div className="relative w-6 h-4 sm:w-8 sm:h-6">
                 <div
                   className="absolute inset-0 flex items-center justify-center overflow-hidden"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
@@ -91,7 +91,7 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
           </>
         ) : (
           <span
-            className={`text-[10px] sm:text-xs font-medium ${showTodayHighlight ? 'text-red-500 font-bold' : 'text-gray-900 dark:text-white'}`}
+            className={`text-[10px] sm:text-sm font-medium ${showTodayHighlight ? 'text-red-500 font-bold' : 'text-gray-900 dark:text-white'}`}
           >
             {dayNumber}
           </span>

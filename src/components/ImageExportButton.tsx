@@ -94,7 +94,7 @@ export default function ImageExportButton({
         // Scale up watermark text for high-res export
         const watermarkText = watermark.querySelector('p') as HTMLElement
         if (watermarkText) {
-          watermarkText.style.fontSize = '1rem'
+          watermarkText.style.fontSize = '1.5rem'
         }
       }
 
@@ -121,7 +121,7 @@ export default function ImageExportButton({
         }
         // Make day numbers larger
         if (htmlEl.classList.contains('text-[10px]')) {
-          htmlEl.style.fontSize = '1.66rem' // Make day numbers much larger (text-base)
+          htmlEl.style.fontSize = '1.75rem' // Make day numbers much larger (text-base)
         }
         // Make diagonal split flag emojis larger (have fixed-size containers)
         if (
@@ -130,7 +130,7 @@ export default function ImageExportButton({
           htmlEl.classList.contains('leading-none') &&
           (htmlEl.classList.contains('w-6') || htmlEl.classList.contains('w-8'))
         ) {
-          htmlEl.style.fontSize = '2.5rem' // Larger diagonal split flags (text-3xl equivalent)
+          htmlEl.style.fontSize = '2.75rem' // Larger diagonal split flags (text-3xl equivalent)
         }
         // Make single flag emojis larger (no fixed-size container, just text-lg)
         else if (
@@ -138,14 +138,14 @@ export default function ImageExportButton({
           !htmlEl.classList.contains('w-6') &&
           !htmlEl.classList.contains('w-8')
         ) {
-          htmlEl.style.fontSize = '2.5rem' // Larger flag emojis (text-3xl equivalent)
+          htmlEl.style.fontSize = '2.75rem' // Larger flag emojis (text-3xl equivalent)
         }
         // Make flag icons larger
         if (htmlEl.classList.contains('w-6')) {
-          htmlEl.style.width = '2.75rem' // Larger flag icon width
+          htmlEl.style.width = '3rem' // Larger flag icon width
         }
         if (htmlEl.classList.contains('h-4')) {
-          htmlEl.style.height = '2rem' // Larger flag icon height
+          htmlEl.style.height = '2.25rem' // Larger flag icon height
         }
       })
 

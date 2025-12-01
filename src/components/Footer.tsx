@@ -8,10 +8,18 @@ export default function Footer() {
           Built by{' '}
           <a
             href="https://www.linkedin.com/in/szilard-dobai/"
-            target="blank"
+            target="_blank"
             className="hover:opacity-80 transition-opacity underline"
           >
             Szilard Dobai
+          </a>
+          {' · '}
+          <a
+            href="https://www.instagram.com/yearly.world"
+            target="_blank"
+            className="hover:opacity-80 transition-opacity underline"
+          >
+            @yearly.world
           </a>
         </p>
 

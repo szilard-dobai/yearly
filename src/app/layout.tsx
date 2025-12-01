@@ -23,7 +23,7 @@ const newsreader = Newsreader({
   style: ['normal', 'italic'],
 })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yearly.travel'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
       'Create a stunning visual calendar of your travels. Add countries and dates, see flags replace days, and export a shareable image.',
   },
   alternates: {
-    canonical: siteUrl,
+    canonical: '/',
   },
   category: 'Travel',
 }
@@ -93,10 +93,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+        <link
+          rel="icon"
+          type="image/png"
+          href="/favicon-96x96.png"
+          sizes="96x96"
+        />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
         <meta name="apple-mobile-web-app-title" content="Yearly" />
         <link rel="manifest" href="/site.webmanifest" />
         <JsonLd type="website" />

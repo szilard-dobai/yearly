@@ -1,4 +1,4 @@
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yearly.travel'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
 
 interface JsonLdProps {
   type: 'website' | 'webapp'
@@ -12,13 +12,6 @@ export function JsonLd({ type }: JsonLdProps) {
     url: siteUrl,
     description:
       'Create a stunning visual calendar of your travels. Add countries and dates, see flags replace days, and export a shareable image of your year in review.',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${siteUrl}/create`,
-      },
-    },
   }
 
   const webAppSchema = {
@@ -28,7 +21,7 @@ export function JsonLd({ type }: JsonLdProps) {
     url: `${siteUrl}/create`,
     description:
       'Build your personalized travel calendar with country flags and export it as a shareable image.',
-    applicationCategory: 'LifestyleApplication',
+    applicationCategory: 'TravelApplication',
     operatingSystem: 'Any',
     offers: {
       '@type': 'Offer',

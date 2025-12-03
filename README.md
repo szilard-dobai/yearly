@@ -10,6 +10,12 @@
 </p>
 
 <p align="center">
+  <a href="https://yearly.world">
+    <img src="https://img.shields.io/website?url=https%3A%2F%2Fyearly.world&label=yearly.world" alt="Website Status" />
+  </a>
+</p>
+
+<p align="center">
   <img src="public/example.jpg" alt="Yearly Example" width="600" />
 </p>
 

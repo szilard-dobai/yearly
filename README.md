@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Yearly
+
+<p align="center">
+  <img src="public/favicon.svg" alt="Yearly Logo" width="80" height="80" />
+</p>
+
+<p align="center">
+  <strong>Your year, at a glance.</strong><br />
+  A beautiful travel calendar that turns your trips into shareable art.
+</p>
+
+<p align="center">
+  <img src="public/example.jpg" alt="Yearly Example" width="600" />
+</p>
+
+## What is Yearly?
+
+Yearly helps you create a visual summary of your travel year. Add your countries and travel dates, and get a polished calendar-style snapshot with country flags replacing the dates you were abroad. Perfect for sharing your year-in-review on Instagram, TikTok, or anywhere else.
+
+**Key features:**
+
+- Clean 3×4 calendar grid showing all 12 months
+- Country flags automatically appear on your travel dates
+- Export as a high-quality image
+- Dark mode support
+
+## Tech Stack
+
+- **Framework:** [Next.js 16](https://nextjs.org/) with App Router
+- **React:** 19.2
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Animations:** [Motion](https://motion.dev/) (Framer Motion)
+- **UI Components:** [Radix UI](https://www.radix-ui.com/) primitives
+- **Date handling:** [Day.js](https://day-js.github.io/dayjs/)
+- **Image export:** [html-to-image](https://github.com/bubkoo/html-to-image)
+- **Testing:** [Vitest](https://vitest.dev/) + Testing Library
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Create production build |
+| `npm run start` | Run production server |
+| `npm run lint` | Run ESLint |
+| `npm run type-check` | Run TypeScript type checking |
+| `npm run test` | Run tests |
+| `npm run check` | Run lint + type-check |
+| `npm run check:full` | Run lint + type-check + tests + build |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/           # Next.js App Router pages
+├── components/    # React components
+├── lib/           # Utilities, hooks, and contexts
+public/            # Static assets (favicons, images)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private project.

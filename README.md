@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://yearly.world">
-    <img src="https://img.shields.io/website?url=https%3A%2F%2Fyearly.world&label=yearly.world" alt="Website Status" />
+  <a href="https://www.yearly.world">
+    <img src="https://img.shields.io/website?url=https%3A%2F%2Fwww.yearly.world&label=yearly.world" alt="Website Status" />
   </a>
 </p>
 

@@ -1,47 +1,69 @@
-'use client'
-
+import { AnimatedSection } from '@/components/AnimatedSection'
 import { CalendarMockup } from '@/components/CalendarMockup'
 import { FeatureIcon } from '@/components/FeatureIcon'
 import Header from '@/components/Header'
-import {
-  fadeInLeftOnViewWithDelay,
-  fadeInUp,
-  fadeInUpOnView,
-  fadeInUpOnViewWithDelay,
-} from '@/lib/animations'
-import {
-  trackEvent,
-  type HomepageCtaClickMetadata,
-} from '@/lib/tracking'
+import { HomepageTracker, TrackingLink } from '@/components/HomepageClient'
 import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
-import { motion } from 'motion/react'
-import Link from 'next/link'
-import { useEffect } from 'react'
 
-function trackCtaClick(linkType: HomepageCtaClickMetadata['linkType']) {
-  trackEvent('homepage_cta_click', { linkType })
-}
+const features = [
+  {
+    icon: Calendar,
+    title: 'Clean calendar view',
+    description:
+      'Your entire year displayed in a beautiful 3×4 grid—all 12 months at once.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Flags replace dates',
+    description:
+      'Country flags automatically appear on your dates when you add visits, turning your trips into visual stories.',
+  },
+  {
+    icon: Share2,
+    title: 'Share anywhere',
+    description:
+      'Download your calendar as a high-quality image and share your year-in-review on Instagram, TikTok, or anywhere else.',
+  },
+]
 
-function Home() {
-  useEffect(() => {
-    trackEvent('homepage_view')
-  }, [])
+const steps = [
+  {
+    step: '01',
+    title: 'Select a country and dates',
+    description:
+      'Choose a country from the dropdown, then pick a date or date range for your visit.',
+  },
+  {
+    step: '02',
+    title: 'Add all your trips',
+    description:
+      'Keep adding countries and dates. Flags automatically appear on your calendar as you go.',
+  },
+  {
+    step: '03',
+    title: 'Export and share',
+    description:
+      'Download your Yearly as a high-quality JPEG image, ready to post anywhere.',
+  },
+]
 
+export default function Home() {
   return (
     <>
+      <HomepageTracker />
       <Header>
-        <Link
+        <TrackingLink
           href="/create"
-          onClick={() => trackCtaClick('header')}
+          linkType="header"
           className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
         >
           Try it now
-        </Link>
+        </TrackingLink>
       </Header>
 
       <main className="container mx-auto px-3 py-6">
         <section className="pt-24 pb-16">
-          <motion.div {...fadeInUp} className="text-center max-w-4xl mx-auto">
+          <AnimatedSection animation="fadeInUp" className="text-center max-w-4xl mx-auto">
             <h1 className="mb-6 text-gray-900 dark:text-white text-7xl font-serif font-normal leading-tight tracking-tight">
               Your year, at a glance.
             </h1>
@@ -53,19 +75,16 @@ function Home() {
             </p>
 
             <div className="flex gap-4 justify-center items-center flex-wrap">
-              <Link
+              <TrackingLink
                 href="/create"
-                onClick={() => trackCtaClick('hero')}
+                linkType="hero"
                 className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
               >
                 Create your Yearly
                 <ArrowRight className="w-5 h-5" />
-              </Link>
-              {/* <button className="px-8 py-4 bg-white text-gray-700 rounded-full hover:bg-gray-50 transition-all border border-gray-300">
-              See example
-            </button> */}
+              </TrackingLink>
             </div>
-          </motion.div>
+          </AnimatedSection>
 
           <div className="mt-20">
             <CalendarMockup />
@@ -77,44 +96,24 @@ function Home() {
             Features
           </h2>
           <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
-            <motion.div {...fadeInUpOnView} className="text-center">
-              <FeatureIcon icon={<Calendar className="w-7 h-7 text-white" />} />
-              <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
-                Clean calendar view
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Your entire year displayed in a beautiful 3×4 grid—all 12 months
-                at once.
-              </p>
-            </motion.div>
-
-            <motion.div
-              {...fadeInUpOnViewWithDelay(0.1)}
-              className="text-center"
-            >
-              <FeatureIcon icon={<Sparkles className="w-7 h-7 text-white" />} />
-              <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
-                Flags replace dates
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Country flags automatically appear on your dates when you add
-                visits, turning your trips into visual stories.
-              </p>
-            </motion.div>
-
-            <motion.div
-              {...fadeInUpOnViewWithDelay(0.2)}
-              className="text-center"
-            >
-              <FeatureIcon icon={<Share2 className="w-7 h-7 text-white" />} />
-              <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
-                Share anywhere
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Download your calendar as a high-quality image and share your
-                year-in-review on Instagram, TikTok, or anywhere else.
-              </p>
-            </motion.div>
+            {features.map((feature, idx) => (
+              <AnimatedSection
+                key={feature.title}
+                animation="fadeInUpOnViewWithDelay"
+                delay={idx * 0.1}
+                className="text-center"
+              >
+                <FeatureIcon
+                  icon={<feature.icon className="w-7 h-7 text-white" />}
+                />
+                <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {feature.description}
+                </p>
+              </AnimatedSection>
+            ))}
           </div>
         </section>
 
@@ -123,38 +122,21 @@ function Home() {
           aria-labelledby="how-it-works-heading"
         >
           <div className="max-w-3xl mx-auto">
-            <motion.h2
-              id="how-it-works-heading"
-              {...fadeInUpOnView}
-              className="text-center mb-16 text-gray-900 dark:text-white text-4xl font-serif font-normal"
-            >
-              Build it in seconds
-            </motion.h2>
+            <AnimatedSection animation="fadeInUpOnView">
+              <h2
+                id="how-it-works-heading"
+                className="text-center mb-16 text-gray-900 dark:text-white text-4xl font-serif font-normal"
+              >
+                Build it in seconds
+              </h2>
+            </AnimatedSection>
 
             <ol className="space-y-8" role="list">
-              {[
-                {
-                  step: '01',
-                  title: 'Select a country and dates',
-                  description:
-                    'Choose a country from the dropdown, then pick a date or date range for your visit.',
-                },
-                {
-                  step: '02',
-                  title: 'Add all your trips',
-                  description:
-                    'Keep adding countries and dates. Flags automatically appear on your calendar as you go.',
-                },
-                {
-                  step: '03',
-                  title: 'Export and share',
-                  description:
-                    'Download your Yearly as a high-quality JPEG image, ready to post anywhere.',
-                },
-              ].map((item, idx) => (
-                <motion.li
+              {steps.map((item, idx) => (
+                <AnimatedSection
                   key={item.step}
-                  {...fadeInLeftOnViewWithDelay(idx * 0.1)}
+                  animation="fadeInLeftOnViewWithDelay"
+                  delay={idx * 0.1}
                   className="flex gap-6 items-start bg-white dark:bg-neutral-950 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 list-none"
                 >
                   <div
@@ -171,15 +153,15 @@ function Home() {
                       {item.description}
                     </p>
                   </div>
-                </motion.li>
+                </AnimatedSection>
               ))}
             </ol>
           </div>
         </section>
 
         <section className="py-24" aria-labelledby="cta-heading">
-          <motion.div
-            {...fadeInUpOnView}
+          <AnimatedSection
+            animation="fadeInUpOnView"
             className="max-w-3xl mx-auto text-center bg-black text-white dark:bg-white dark:text-black rounded-3xl p-16 shadow-2xl"
           >
             <h2
@@ -191,18 +173,16 @@ function Home() {
             <p className="mb-8 text-gray-300 dark:text-gray-700 text-lg leading-relaxed">
               Transform your 2025 travels into a shareable calendar in minutes.
             </p>
-            <Link
+            <TrackingLink
               href="/create"
-              onClick={() => trackCtaClick('cta_section')}
+              linkType="cta_section"
               className="inline-block px-10 py-4 bg-white text-black dark:bg-black dark:text-white dark:hover:bg-gray-900 rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
             >
               Get started for free
-            </Link>
-          </motion.div>
+            </TrackingLink>
+          </AnimatedSection>
         </section>
       </main>
     </>
   )
 }
-
-export default Home

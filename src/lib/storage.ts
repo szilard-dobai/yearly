@@ -1,6 +1,24 @@
-import type { CalendarData, SerializedCalendarData } from './types'
+import { z } from 'zod'
+
+import type { CalendarData } from './types'
 
 const STORAGE_KEY = 'countries-in-year'
+const MAX_VISITS = 365 * 2
+
+/**
+ * Zod schema for validating serialized calendar data
+ */
+const serializedVisitSchema = z.object({
+  id: z.string().min(1),
+  countryCode: z.string().length(2),
+  date: z.iso.datetime(),
+})
+
+const serializedCalendarDataSchema = z.object({
+  visits: z.array(serializedVisitSchema).max(MAX_VISITS),
+})
+
+type SerializedCalendarData = z.infer<typeof serializedCalendarDataSchema>
 
 /**
  * Serialize calendar data for storage
@@ -56,8 +74,15 @@ export function loadCalendarData(): CalendarData | null {
     const json = localStorage.getItem(STORAGE_KEY)
     if (!json) return null
 
-    const serialized = JSON.parse(json) as SerializedCalendarData
-    return deserializeCalendarData(serialized)
+    const parsed: unknown = JSON.parse(json)
+    const result = serializedCalendarDataSchema.safeParse(parsed)
+
+    if (!result.success) {
+      console.error('Invalid stored calendar data:', result.error.issues)
+      return null
+    }
+
+    return deserializeCalendarData(result.data)
   } catch (error) {
     console.error('Failed to load calendar data:', error)
     return null
@@ -92,26 +117,15 @@ export function exportToJSON(data: CalendarData): string {
  */
 export function importFromJSON(json: string): CalendarData | null {
   try {
-    const serialized = JSON.parse(json) as SerializedCalendarData
+    const parsed: unknown = JSON.parse(json)
+    const result = serializedCalendarDataSchema.safeParse(parsed)
 
-    // Validate structure
-    if (!serialized.visits || !Array.isArray(serialized.visits)) {
-      throw new Error('Invalid calendar data structure')
+    if (!result.success) {
+      console.error('Invalid calendar data:', result.error.issues)
+      return null
     }
 
-    // Validate each visit
-    for (const visit of serialized.visits) {
-      if (!visit.id || !visit.countryCode || !visit.date) {
-        throw new Error('Invalid visit data structure')
-      }
-      // Check if date is valid
-      const date = new Date(visit.date)
-      if (isNaN(date.getTime())) {
-        throw new Error('Invalid date in visit data')
-      }
-    }
-
-    return deserializeCalendarData(serialized)
+    return deserializeCalendarData(result.data)
   } catch (error) {
     console.error('Failed to import calendar data:', error)
     return null

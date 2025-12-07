@@ -25,7 +25,8 @@ function MonthsDropdown(props: DropdownProps) {
   const [open, setOpen] = React.useState(false)
 
   // Extract current month from the options
-  const currentValue = props.value ? Number(props.value) : new Date().getMonth()
+  const currentValue =
+    props.value !== undefined ? Number(props.value) : new Date().getMonth()
 
   const months = [
     'January',

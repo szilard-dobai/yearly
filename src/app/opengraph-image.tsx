@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og'
-
-export const runtime = 'edge'
+import LogoSvg from '@/assets/logo.svg'
 
 export const alt = 'Yearly - Visualize Your Travel Year in a Beautiful Calendar'
 export const size = {
@@ -9,7 +8,31 @@ export const size = {
 }
 export const contentType = 'image/png'
 
+async function loadGoogleFont(font: string) {
+  const url = new URL('https://fonts.googleapis.com/css2')
+  url.searchParams.set('family', font)
+
+  const css = await fetch(url, {
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; de-at) AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1',
+    },
+  }).then((res) => res.text())
+
+  const fontUrl = css.match(
+    /src: url\((.+)\) format\('(opentype|truetype)'\)/
+  )?.[1]
+
+  if (!fontUrl) {
+    throw new Error('Failed to load font')
+  }
+
+  return fetch(fontUrl).then((res) => res.arrayBuffer())
+}
+
 export default async function Image() {
+  const newsreaderFont = await loadGoogleFont('Newsreader:wght@400')
+
   return new ImageResponse(
     (
       <div
@@ -20,10 +43,7 @@ export default async function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#000',
-          backgroundImage:
-            'radial-gradient(circle at 25px 25px, #111 2%, transparent 0%), radial-gradient(circle at 75px 75px, #111 2%, transparent 0%)',
-          backgroundSize: '100px 100px',
+          background: 'linear-gradient(to bottom right, #f9fafb, #fafaf9)',
         }}
       >
         <div
@@ -34,136 +54,101 @@ export default async function Image() {
             justifyContent: 'center',
           }}
         >
-          {/* Calendar Icon */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 30,
+              gap: 16,
+              marginBottom: 32,
             }}
           >
-            <svg
-              width="80"
-              height="80"
-              viewBox="0 0 40 40"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            <LogoSvg width={48} height={48} color="#111827" />
+            <span
+              style={{
+                fontSize: 36,
+                fontWeight: 400,
+                color: '#111827',
+                fontFamily: 'Newsreader',
+                letterSpacing: '-0.02em',
+                paddingTop: 8,
+              }}
             >
-              <rect
-                x="4"
-                y="6"
-                width="32"
-                height="28"
-                rx="3"
-                stroke="white"
-                strokeWidth="2"
-                fill="none"
-              />
-              <line
-                x1="4"
-                y1="14"
-                x2="36"
-                y2="14"
-                stroke="white"
-                strokeWidth="2"
-              />
-              <line
-                x1="12"
-                y1="6"
-                x2="12"
-                y2="2"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <line
-                x1="28"
-                y1="6"
-                x2="28"
-                y2="2"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <circle cx="12" cy="19" r="1.5" fill="white" />
-              <circle cx="20" cy="19" r="1.5" fill="white" />
-              <circle cx="28" cy="19" r="1.5" fill="white" />
-              <circle cx="12" cy="24" r="1.5" fill="white" />
-              <circle cx="20" cy="24" r="1.5" fill="white" />
-              <circle cx="28" cy="24" r="1.5" fill="white" />
-              <circle cx="12" cy="29" r="1.5" fill="white" />
-              <circle cx="20" cy="29" r="1.5" fill="white" />
-              <circle cx="28" cy="29" r="1.5" fill="white" />
-            </svg>
+              Yearly
+            </span>
           </div>
 
-          {/* Title */}
           <div
             style={{
               display: 'flex',
               fontSize: 72,
               fontWeight: 400,
-              color: 'white',
-              marginBottom: 20,
-              fontFamily: 'serif',
+              color: '#111827',
+              marginBottom: 24,
+              fontFamily: 'Newsreader',
               letterSpacing: '-0.02em',
-            }}
-          >
-            Yearly
-          </div>
-
-          {/* Tagline */}
-          <div
-            style={{
-              display: 'flex',
-              fontSize: 32,
-              color: '#9ca3af',
               textAlign: 'center',
-              maxWidth: 800,
-              lineHeight: 1.4,
             }}
           >
             Your year, at a glance.
           </div>
 
-          {/* Subtitle */}
           <div
             style={{
               display: 'flex',
-              fontSize: 22,
-              color: '#6b7280',
+              fontSize: 24,
+              color: '#4b5563',
               textAlign: 'center',
               maxWidth: 700,
-              marginTop: 20,
               lineHeight: 1.5,
             }}
           >
-            Create a beautiful visual calendar of your travels with country
-            flags
+            Create a visual calendar of your travels and share it anywhere
           </div>
 
-          {/* Sample flags */}
           <div
             style={{
               display: 'flex',
-              gap: 16,
-              marginTop: 40,
-              fontSize: 48,
+              gap: 20,
+              marginTop: 48,
+              fontSize: 44,
             }}
           >
-            <span>🇫🇷</span>
-            <span>🇯🇵</span>
-            <span>🇧🇷</span>
-            <span>🇦🇺</span>
-            <span>🇮🇹</span>
+            <span>🇷🇴</span>
             <span>🇬🇧</span>
+            <span>🇫🇷</span>
+            <span>🇮🇹</span>
+            <span>🇯🇵</span>
+            <span>🇦🇺</span>
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: 48,
+              padding: '12px 28px',
+              backgroundColor: '#111827',
+              color: 'white',
+              borderRadius: 9999,
+              fontSize: 18,
+              fontWeight: 500,
+            }}
+          >
+            Create your Yearly
           </div>
         </div>
       </div>
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: 'Newsreader',
+          data: newsreaderFont,
+          style: 'normal',
+          weight: 400,
+        },
+      ],
     }
   )
 }

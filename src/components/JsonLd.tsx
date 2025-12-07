@@ -42,7 +42,7 @@ export function JsonLd({ type }: JsonLdProps) {
     '@type': 'Organization',
     name: 'Yearly',
     url: siteUrl,
-    logo: `${siteUrl}/icon-512.png`,
+    logo: `${siteUrl}/web-app-manifest-512x512.png`,
   }
 
   const schema = type === 'website' ? websiteSchema : webAppSchema

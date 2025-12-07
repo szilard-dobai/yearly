@@ -82,17 +82,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '48x48', rel: 'icon shortcut' },
-      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
-    ],
-    apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
-  },
   appleWebApp: {
     title: 'Yearly',
   },
-  manifest: '/site.webmanifest',
   category: 'Travel',
 }
 

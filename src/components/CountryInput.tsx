@@ -95,7 +95,11 @@ export default function CountryInput({
 
     for (const date of dates) {
       if (
-        hasVisitForCountryOnDate(date, selectedCountry.code, calendarData.visits)
+        hasVisitForCountryOnDate(
+          date,
+          selectedCountry.code,
+          calendarData.visits
+        )
       ) {
         const errorMsg = `${selectedCountry.name} is already added for ${date.toLocaleDateString()}`
         setError(errorMsg)
@@ -149,49 +153,67 @@ export default function CountryInput({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label>Country</Label>
-        <Popover open={isCountryOpen} onOpenChange={setIsCountryOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={isCountryOpen}
-              className="w-full justify-between font-normal"
+        <div className="relative">
+          <Popover open={isCountryOpen} onOpenChange={setIsCountryOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={isCountryOpen}
+                className={cn(
+                  'w-full justify-between font-normal',
+                  selectedCountry && 'pr-8'
+                )}
+              >
+                {selectedCountry ? selectedCountry.name : 'Select country...'}
+                {!selectedCountry && (
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search countries..." />
+                <CommandList>
+                  <CommandEmpty>No country found.</CommandEmpty>
+                  <CommandGroup>
+                    {searchCountries('').map((country) => (
+                      <CommandItem
+                        key={country.code}
+                        value={country.name}
+                        onSelect={() => {
+                          setSelectedCountry(country)
+                          setIsCountryOpen(false)
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            selectedCountry?.code === country.code
+                              ? 'opacity-100'
+                              : 'opacity-0'
+                          )}
+                        />
+                        {country.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {selectedCountry && (
+            <button
+              type="button"
+              aria-label="Clear country selection"
+              title="Clear country selection"
+              onClick={() => setSelectedCountry(null)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-sm opacity-50 hover:opacity-100 cursor-pointer"
             >
-              {selectedCountry ? selectedCountry.name : 'Select country...'}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Search countries..." />
-              <CommandList>
-                <CommandEmpty>No country found.</CommandEmpty>
-                <CommandGroup>
-                  {searchCountries('').map((country) => (
-                    <CommandItem
-                      key={country.code}
-                      value={country.name}
-                      onSelect={() => {
-                        setSelectedCountry(country)
-                        setIsCountryOpen(false)
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          selectedCountry?.code === country.code
-                            ? 'opacity-100'
-                            : 'opacity-0'
-                        )}
-                      />
-                      {country.name}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -210,11 +232,7 @@ export default function CountryInput({
             <div className="p-3 border-b flex items-center justify-between">
               <p className="text-sm font-medium">Select date range</p>
               {dateRange?.from && (
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={handleClearDates}
-                >
+                <Button variant="ghost" size="xs" onClick={handleClearDates}>
                   <X className="size-3" />
                   Clear
                 </Button>

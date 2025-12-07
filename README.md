@@ -1,7 +1,7 @@
 # Yearly
 
 <p align="center">
-  <img src="public/favicon.svg" alt="Yearly Logo" width="80" height="80" />
+  <img src="src/app/favicon.svg" alt="Yearly Logo" width="80" height="80" />
 </p>
 
 <p align="center">

@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isLoadingEvents) {
           loadMore()
         }
       },
@@ -227,7 +227,7 @@ export default function AnalyticsPage() {
     }
 
     return () => observer.disconnect()
-  }, [hasMore, isLoadingMore, loadMore])
+  }, [hasMore, isLoadingMore, isLoadingEvents, loadMore])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

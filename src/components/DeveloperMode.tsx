@@ -12,11 +12,13 @@ import type { CalendarData } from '@/lib/types'
  */
 interface DeveloperModeProps {
   calendarData: CalendarData
+  year: number
   onDataChange: (data: CalendarData) => void
 }
 
 export default function DeveloperMode({
   calendarData,
+  year,
   onDataChange,
 }: DeveloperModeProps) {
   const { status: copyStatus, setSuccess, setError } = useStatusFeedback()
@@ -64,7 +66,7 @@ export default function DeveloperMode({
           Export or import your calendar data as JSON
         </p>
         <div className="flex gap-2">
-          <ExportButton calendarData={calendarData} />
+          <ExportButton calendarData={calendarData} year={year} />
           <ImportButton
             currentData={calendarData}
             onImport={onDataChange}

@@ -140,6 +140,7 @@ function Create() {
                     </p>
                     <ImageExportButton
                       calendarRef={calendarRef}
+                      calendarData={calendarData}
                       year={selectedYear}
                       hasData={calendarData.visits.length > 0}
                     />
@@ -188,6 +189,7 @@ function Create() {
             <div className="px-6 pb-4 pt-2">
               <DeveloperMode
                 calendarData={calendarData}
+                year={selectedYear}
                 onDataChange={handleDataChange}
               />
             </div>

@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { trackEvent } from '@/lib/tracking'
+import type { CalendarData } from '@/lib/types'
 import { Download } from 'lucide-react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
@@ -16,6 +17,8 @@ interface ImagePreviewModalProps {
   open: boolean
   imageDataUrl: string | null
   filename: string
+  year: number
+  calendarData: CalendarData
   onOpenChange: (open: boolean) => void
 }
 
@@ -23,6 +26,8 @@ export default function ImagePreviewModal({
   open,
   imageDataUrl,
   filename,
+  year,
+  calendarData,
   onOpenChange,
 }: ImagePreviewModalProps) {
   const handleDownload = async () => {
@@ -34,6 +39,8 @@ export default function ImagePreviewModal({
 
     trackEvent('image_download_click', {
       isMobile: isMobileOrTablet,
+      year,
+      calendarData,
     })
 
     if (isMobileOrTablet && !!navigator.share) {

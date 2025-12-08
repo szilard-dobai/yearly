@@ -7,11 +7,13 @@ import { Download, CheckCircle2, XCircle } from 'lucide-react'
 
 interface ExportButtonProps {
   calendarData: CalendarData
+  year: number
   filename?: string
 }
 
 export default function ExportButton({
   calendarData,
+  year,
   filename,
 }: ExportButtonProps) {
   const { status, setSuccess, setError } = useStatusFeedback()
@@ -35,7 +37,8 @@ export default function ExportButton({
       URL.revokeObjectURL(url)
 
       trackEvent('json_export', {
-        visitCount: calendarData.visits.length,
+        year,
+        calendarData,
         success: true,
       })
 
@@ -44,7 +47,8 @@ export default function ExportButton({
       console.error('Export failed:', error)
 
       trackEvent('json_export', {
-        visitCount: calendarData.visits.length,
+        year,
+        calendarData,
         success: false,
       })
 

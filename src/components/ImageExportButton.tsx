@@ -5,16 +5,19 @@ import { Image as ImageIcon, XCircle, Loader2 } from 'lucide-react'
 import { useStatusFeedback } from '@/lib/hooks/useStatusFeedback'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { trackEvent } from '@/lib/tracking'
+import type { CalendarData } from '@/lib/types'
 import ImagePreviewModal from './ImagePreviewModal'
 
 interface ImageExportButtonProps {
   calendarRef: RefObject<HTMLDivElement | null>
+  calendarData: CalendarData
   year: number
   hasData: boolean
 }
 
 export default function ImageExportButton({
   calendarRef,
+  calendarData,
   year,
   hasData,
 }: ImageExportButtonProps) {
@@ -41,7 +44,7 @@ export default function ImageExportButton({
 
     trackEvent('image_export_click', {
       year,
-      visitCount: hasData ? 1 : 0, // We don't have exact count here, but hasData tells us there's data
+      calendarData,
     })
 
     setLoading()
@@ -225,6 +228,8 @@ export default function ImageExportButton({
         onOpenChange={setPreviewOpen}
         imageDataUrl={imageDataUrl}
         filename={filename}
+        year={year}
+        calendarData={calendarData}
       />
     </>
   )

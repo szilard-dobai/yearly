@@ -40,6 +40,10 @@ interface Stats {
   filteredUniqueDevices: number
   eventTypes: number
   filteredEventTypes: number
+  uniqueCountries: number
+  filteredUniqueCountries: number
+  countries: string[]
+  regions: string[]
 }
 
 export default function AnalyticsPage() {
@@ -60,6 +64,8 @@ export default function AnalyticsPage() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [deviceIdFilter, setDeviceIdFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [countryFilter, setCountryFilter] = useState<string>('all')
+  const [regionFilter, setRegionFilter] = useState<string>('all')
 
   const [sortField, setSortField] = useState<SortField>('timestamp')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
@@ -75,6 +81,8 @@ export default function AnalyticsPage() {
       if (typeFilter !== 'all') params.set('type', typeFilter)
       if (deviceIdFilter) params.set('deviceId', deviceIdFilter)
       if (searchQuery) params.set('search', searchQuery)
+      if (countryFilter !== 'all') params.set('country', countryFilter)
+      if (regionFilter !== 'all') params.set('region', regionFilter)
       params.set('sortField', sortField)
       params.set('sortOrder', sortOrder)
       if (extraParams) {
@@ -84,7 +92,7 @@ export default function AnalyticsPage() {
       }
       return params.toString()
     },
-    [typeFilter, deviceIdFilter, searchQuery, sortField, sortOrder]
+    [typeFilter, deviceIdFilter, searchQuery, countryFilter, regionFilter, sortField, sortOrder]
   )
 
   const fetchStats = useCallback(async () => {
@@ -198,6 +206,8 @@ export default function AnalyticsPage() {
     typeFilter,
     deviceIdFilter,
     searchQuery,
+    countryFilter,
+    regionFilter,
     sortField,
     sortOrder,
   ])
@@ -323,7 +333,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg bg-white dark:bg-gray-900">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4 border rounded-lg bg-white dark:bg-gray-900">
           <div className="space-y-2">
             <Label>Event Type</Label>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -335,6 +345,40 @@ export default function AnalyticsPage() {
                 {EVENT_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Country</Label>
+            <Select value={countryFilter} onValueChange={setCountryFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All countries" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All countries</SelectItem>
+                {(stats?.countries ?? []).map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Region</Label>
+            <Select value={regionFilter} onValueChange={setRegionFilter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All regions" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All regions</SelectItem>
+                {(stats?.regions ?? []).map((region) => (
+                  <SelectItem key={region} value={region}>
+                    {region}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -396,7 +440,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="p-4 border rounded-lg bg-white dark:bg-gray-900">
             <p className="text-sm text-gray-500">Total Events</p>
             <p className="text-2xl font-semibold">
@@ -452,6 +496,24 @@ export default function AnalyticsPage() {
               )}
             </p>
           </div>
+          <div className="p-4 border rounded-lg bg-white dark:bg-gray-900">
+            <p className="text-sm text-gray-500">Unique Countries</p>
+            <p className="text-2xl font-semibold">
+              {isLoadingStats ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <>
+                  {stats?.filteredUniqueCountries ?? '-'}
+                  {stats &&
+                    stats.filteredUniqueCountries !== stats.uniqueCountries && (
+                      <span className="text-sm text-gray-400 font-normal ml-1">
+                        / {stats.uniqueCountries}
+                      </span>
+                    )}
+                </>
+              )}
+            </p>
+          </div>
         </div>
 
         {eventsError && (
@@ -468,13 +530,14 @@ export default function AnalyticsPage() {
                   <th className="text-left p-3 font-medium">Timestamp</th>
                   <th className="text-left p-3 font-medium">Type</th>
                   <th className="text-left p-3 font-medium">Device ID</th>
+                  <th className="text-left p-3 font-medium">Location</th>
                   <th className="text-left p-3 font-medium">Metadata</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {isLoadingEvents ? (
                   <tr>
-                    <td colSpan={4} className="p-8 text-center">
+                    <td colSpan={5} className="p-8 text-center">
                       <Loader2 className="size-6 animate-spin mx-auto text-gray-400" />
                     </td>
                   </tr>
@@ -497,6 +560,11 @@ export default function AnalyticsPage() {
                         <td className="p-3 font-mono text-xs text-gray-500">
                           {event.deviceId.slice(0, 8)}...
                         </td>
+                        <td className="p-3 text-xs text-gray-500">
+                          {event.country
+                            ? `${event.country}${event.region ? ` / ${event.region}` : ''}`
+                            : '-'}
+                        </td>
                         <td className="p-3 max-w-xs truncate text-gray-500 text-xs">
                           {event.metadata
                             ? JSON.stringify(event.metadata).slice(0, 50) +
@@ -510,7 +578,7 @@ export default function AnalyticsPage() {
                     {events.length === 0 && (
                       <tr>
                         <td
-                          colSpan={4}
+                          colSpan={5}
                           className="p-8 text-center text-gray-500"
                         >
                           No events found
@@ -569,6 +637,14 @@ export default function AnalyticsPage() {
                   <Label className="text-gray-500">Device ID</Label>
                   <p className="font-mono text-sm break-all">
                     {selectedEvent.deviceId}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Location</Label>
+                  <p className="font-mono">
+                    {selectedEvent.country
+                      ? `${selectedEvent.country}${selectedEvent.region ? ` / ${selectedEvent.region}` : ''}`
+                      : 'Unknown'}
                   </p>
                 </div>
                 <div>

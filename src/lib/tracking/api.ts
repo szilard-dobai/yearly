@@ -1,6 +1,15 @@
 import type { TrackingEvent } from './types'
 import { list } from '@vercel/blob'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+
+export function validateSameOrigin(request: Request): NextResponse | null {
+  const secFetchSite = request.headers.get('sec-fetch-site')
+  if (secFetchSite !== 'same-origin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  return null
+}
 
 export async function isAuthenticated() {
   const cookieStore = await cookies()
@@ -40,7 +49,9 @@ export function filterEvents(
   events: TrackingEvent[],
   type?: string,
   deviceId?: string,
-  search?: string
+  search?: string,
+  country?: string,
+  region?: string
 ): TrackingEvent[] {
   let result = events
 
@@ -60,6 +71,14 @@ export function filterEvents(
         .toLowerCase()
         .includes(search.toLowerCase())
     )
+  }
+
+  if (country && country !== 'all') {
+    result = result.filter((e) => e.country === country)
+  }
+
+  if (region && region !== 'all') {
+    result = result.filter((e) => e.region === region)
   }
 
   return result

@@ -25,6 +25,8 @@ export interface TrackingEvent {
   type: TrackingEventType
   timestamp: string
   deviceId: string
+  country?: string
+  region?: string
   metadata?: Record<string, unknown>
 }
 

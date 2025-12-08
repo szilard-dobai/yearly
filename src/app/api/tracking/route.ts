@@ -4,11 +4,15 @@ import {
   filterEvents,
   isAuthenticated,
   sortEvents,
+  validateSameOrigin,
 } from '@/lib/tracking/api'
 import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
+
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -17,6 +21,8 @@ export async function GET(request: Request) {
   const type = url.searchParams.get('type') as TrackingEventType | null
   const deviceId = url.searchParams.get('deviceId')
   const search = url.searchParams.get('search')
+  const country = url.searchParams.get('country')
+  const region = url.searchParams.get('region')
   const sortField = (url.searchParams.get('sortField') || 'timestamp') as
     | 'timestamp'
     | 'type'
@@ -34,7 +40,9 @@ export async function GET(request: Request) {
       allEvents,
       type ?? undefined,
       deviceId ?? undefined,
-      search ?? undefined
+      search ?? undefined,
+      country ?? undefined,
+      region ?? undefined
     )
 
     const sortedEvents = sortEvents(filteredEvents, sortField, sortOrder)
@@ -55,10 +63,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const secFetchSite = request.headers.get('sec-fetch-site')
-  if (secFetchSite !== 'same-origin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
 
   try {
     const event = await request.json()
@@ -70,12 +76,21 @@ export async function POST(request: Request) {
       )
     }
 
+    const country = request.headers.get('x-vercel-ip-country') || undefined
+    const region = request.headers.get('x-vercel-ip-country-region') || undefined
+
+    const eventWithLocation = {
+      ...event,
+      country,
+      region,
+    }
+
     const date = new Date(event.timestamp)
     const dateStr = date.toISOString().split('T')[0]
     const timeStr = date.toISOString().replace(/[:.]/g, '-')
     const filename = `tracking/${dateStr}/${event.type}_${timeStr}_${event.deviceId.slice(0, 8)}.json`
 
-    await put(filename, JSON.stringify(event, null, 2), {
+    await put(filename, JSON.stringify(eventWithLocation, null, 2), {
       access: 'public',
       contentType: 'application/json',
     })

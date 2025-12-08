@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server'
+import { validateSameOrigin } from '@/lib/tracking/api'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 
 export async function POST(request: Request) {
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
+
   try {
     const { password } = await request.json()
 
@@ -35,7 +39,10 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
+
   const cookieStore = await cookies()
   cookieStore.delete('admin_session')
   return NextResponse.json({ success: true })

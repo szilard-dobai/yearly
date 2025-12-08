@@ -87,6 +87,23 @@ function Create() {
     handleDataChange(newData)
   }
 
+  const handleResetCalendar = useCallback(() => {
+    const newData = {
+      visits: calendarData.visits.filter((visit) => {
+        const visitYear = new Date(visit.date).getFullYear()
+        return visitYear !== selectedYear
+      }),
+    }
+    setUndoStack((prev) => [...prev.slice(-9), calendarData])
+    setCalendarData(newData)
+    saveCalendarData(newData)
+  }, [calendarData, selectedYear])
+
+  const visitsForSelectedYear = calendarData.visits.filter((visit) => {
+    const visitYear = new Date(visit.date).getFullYear()
+    return visitYear === selectedYear
+  }).length
+
   return (
     <>
       <Header>
@@ -200,7 +217,11 @@ function Create() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Settings />
+                <Settings
+                  year={selectedYear}
+                  visitCount={visitsForSelectedYear}
+                  onReset={handleResetCalendar}
+                />
               </CardContent>
             </StandardCard>
           </aside>

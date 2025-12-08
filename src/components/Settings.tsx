@@ -1,7 +1,18 @@
 'use client'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -9,11 +20,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { DAYS_OF_WEEK } from '@/lib/constants'
 import { useSettings, type WeekStartsOn } from '@/lib/contexts/SettingsContext'
+import { trackEvent } from '@/lib/tracking'
+import { Trash2 } from 'lucide-react'
+import { useState } from 'react'
 
-export default function Settings() {
+interface SettingsProps {
+  year: number
+  visitCount: number
+  onReset: () => void
+}
+
+export default function Settings({ year, visitCount, onReset }: SettingsProps) {
   const { settings, actions } = useSettings()
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
+
+  const handleReset = () => {
+    trackEvent('calendar_reset', { year, visitCount })
+    onReset()
+    setIsResetDialogOpen(false)
+  }
 
   return (
     <div className="space-y-4">
@@ -66,6 +94,40 @@ export default function Settings() {
           checked={settings.highlightToday}
           onCheckedChange={actions.setHighlightToday}
         />
+      </div>
+
+      <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+        <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="destructive"
+              className="w-full"
+              disabled={visitCount === 0}
+            >
+              <Trash2 className="size-4" />
+              Reset Calendar for {year}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent onOverlayClick={() => setIsResetDialogOpen(false)}>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset calendar for {year}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete all {visitCount} visit
+                {visitCount !== 1 ? 's' : ''} from your {year} calendar. This
+                action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleReset}
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                Reset Calendar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   )

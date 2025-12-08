@@ -16,6 +16,7 @@ export type TrackingEventType =
   | 'visit_add_attempt'
   | 'visit_deleted'
   | 'visit_undo'
+  | 'calendar_reset'
   | 'image_export_click'
   | 'image_download_click'
   | 'developer_mode_toggle'

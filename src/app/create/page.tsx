@@ -16,11 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { getCountryByCode } from '@/lib/countries'
-import { useEffect, useRef, useState } from 'react'
+import { Undo2 } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
   if (typeof window === 'undefined') {
@@ -34,16 +36,32 @@ function Create() {
     new Date().getFullYear()
   )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
+  const [undoStack, setUndoStack] = useState<CalendarData[]>([])
   const calendarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     trackEvent('create_page_view')
   }, [])
 
-  const handleDataChange = (newData: CalendarData) => {
-    setCalendarData(newData)
-    saveCalendarData(newData)
-  }
+  const handleDataChange = useCallback(
+    (newData: CalendarData) => {
+      setUndoStack((prev) => [...prev.slice(-9), calendarData])
+      setCalendarData(newData)
+      saveCalendarData(newData)
+    },
+    [calendarData]
+  )
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.length === 0) return
+
+    const previousData = undoStack[undoStack.length - 1]
+    setUndoStack((prev) => prev.slice(0, -1))
+    setCalendarData(previousData)
+    saveCalendarData(previousData)
+
+    trackEvent('visit_undo')
+  }, [undoStack])
 
   const handleYearChange = (value: string) => {
     const newYear = Number(value)
@@ -111,10 +129,23 @@ function Create() {
           <aside className="space-y-4">
             <StandardCard>
               <CardHeader>
-                <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
-                  <span className="text-2xl">✈️</span>
-                  Add Visit
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
+                    <span className="text-2xl">✈️</span>
+                    Add Visit
+                  </CardTitle>
+                  {undoStack.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleUndo}
+                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      <Undo2 className="size-4 mr-1" />
+                      Undo
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <CountryInput

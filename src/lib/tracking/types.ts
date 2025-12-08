@@ -15,6 +15,7 @@ export type TrackingEventType =
   | 'year_changed'
   | 'visit_add_attempt'
   | 'visit_deleted'
+  | 'visit_undo'
   | 'image_export_click'
   | 'image_download_click'
   | 'developer_mode_toggle'

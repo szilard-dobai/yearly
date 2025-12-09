@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import dayjs from 'dayjs'
 import { CalendarIcon, Check, ChevronsUpDown, Plus, X } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { DateRange } from 'react-day-picker'
 import {
   canAddVisitToDate,
@@ -49,6 +49,20 @@ export default function CountryInput({
   const [error, setError] = useState('')
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [isCountryOpen, setIsCountryOpen] = useState(false)
+
+  const defaultMonth = useMemo(() => {
+    const visitsInYear = calendarData.visits.filter((visit) => {
+      const visitYear = new Date(visit.date).getFullYear()
+      return visitYear === year
+    })
+
+    if (visitsInYear.length === 0) {
+      return new Date(year, 0)
+    }
+
+    const lastVisitDate = new Date(visitsInYear[visitsInYear.length - 1].date)
+    return new Date(year, lastVisitDate.getMonth())
+  }, [calendarData.visits, year])
 
   const handleDateSelect = (range: DateRange | undefined) => {
     setDateRange(range)
@@ -245,6 +259,7 @@ export default function CountryInput({
               mode="range"
               captionLayout="dropdown-months"
               selected={dateRange}
+              defaultMonth={defaultMonth}
               startMonth={new Date(year, 0)}
               endMonth={new Date(year, 11)}
               onSelect={handleDateSelect}

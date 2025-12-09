@@ -31,16 +31,26 @@ export async function getAllBlobs(prefix: string) {
 
 export async function fetchAllEvents(): Promise<TrackingEvent[]> {
   const allBlobs = await getAllBlobs('tracking/')
-  const events: TrackingEvent[] = await Promise.all(
-    allBlobs.map(async (blob) => {
-      try {
-        const response = await fetch(blob.url)
-        return await response.json()
-      } catch {
-        return null
-      }
-    })
-  ).then((results) => results.filter(Boolean) as TrackingEvent[])
+  const validBlobs = allBlobs.filter((blob) => blob.pathname.endsWith('.json'))
+
+  // Batch fetches to avoid EMFILE (too many open files) error
+  const BATCH_SIZE = 100
+  const events: TrackingEvent[] = []
+
+  for (let i = 0; i < validBlobs.length; i += BATCH_SIZE) {
+    const batch = validBlobs.slice(i, i + BATCH_SIZE)
+    const batchResults = await Promise.all(
+      batch.map(async (blob) => {
+        try {
+          const response = await fetch(blob.url)
+          return await response.json()
+        } catch {
+          return null
+        }
+      })
+    )
+    events.push(...(batchResults.filter(Boolean) as TrackingEvent[]))
+  }
 
   return events
 }

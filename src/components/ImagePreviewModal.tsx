@@ -38,7 +38,6 @@ export default function ImagePreviewModal({
     )
 
     trackEvent('image_download_click', {
-      isMobile: isMobileOrTablet,
       year,
       calendarData,
     })

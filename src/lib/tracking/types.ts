@@ -24,10 +24,13 @@ export type TrackingEventType =
   | 'json_import'
   | 'json_export'
 
+export type DeviceType = 'mobile' | 'tablet' | 'desktop'
+
 export interface TrackingEvent {
   type: TrackingEventType
   timestamp: string
   deviceId: string
+  deviceType?: DeviceType
   country?: string
   region?: string
   metadata?: Record<string, unknown>
@@ -60,7 +63,6 @@ export interface ImageExportClickMetadata {
 
 export interface ImageDownloadClickMetadata {
   year: number
-  isMobile: boolean
 }
 
 export interface DeveloperModeToggleMetadata {

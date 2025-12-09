@@ -1,12 +1,6 @@
-import type { TrackingEventType } from '@/lib/tracking/types'
-import {
-  fetchAllEvents,
-  filterEvents,
-  isAuthenticated,
-  sortEvents,
-  validateSameOrigin,
-} from '@/lib/tracking/api'
-import { put } from '@vercel/blob'
+import { getTrackingCollection } from '@/lib/mongodb'
+import { isAuthenticated, validateSameOrigin } from '@/lib/tracking/api'
+import type { Sort } from 'mongodb'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -20,7 +14,7 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url)
-  const type = url.searchParams.get('type') as TrackingEventType | null
+  const type = url.searchParams.get('type')
   const deviceId = url.searchParams.get('deviceId')
   const search = url.searchParams.get('search')
   const country = url.searchParams.get('country')
@@ -36,24 +30,32 @@ export async function GET(request: Request) {
   const offset = Number(url.searchParams.get('offset')) || 0
 
   try {
-    const allEvents = await fetchAllEvents()
+    const collection = await getTrackingCollection()
 
-    const filteredEvents = filterEvents(
-      allEvents,
-      type ?? undefined,
-      deviceId ?? undefined,
-      search ?? undefined,
-      country ?? undefined,
-      region ?? undefined
-    )
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any> = {}
+    if (type && type !== 'all') filter.type = type
+    if (deviceId) filter.deviceId = { $regex: deviceId, $options: 'i' }
+    if (country && country !== 'all') filter.country = country
+    if (region && region !== 'all') filter.region = region
+    if (search) {
+      filter.$or = [
+        { 'metadata': { $regex: search, $options: 'i' } },
+        { type: { $regex: search, $options: 'i' } },
+      ]
+    }
 
-    const sortedEvents = sortEvents(filteredEvents, sortField, sortOrder)
-    const paginatedEvents = sortedEvents.slice(offset, offset + limit)
+    const sort: Sort = { [sortField]: sortOrder === 'asc' ? 1 : -1 }
+
+    const [events, total] = await Promise.all([
+      collection.find(filter).sort(sort).skip(offset).limit(limit).toArray(),
+      collection.countDocuments(filter),
+    ])
 
     return NextResponse.json({
-      events: paginatedEvents,
-      total: sortedEvents.length,
-      hasMore: offset + limit < sortedEvents.length,
+      events,
+      total,
+      hasMore: offset + limit < total,
     })
   } catch (error) {
     console.error('Failed to fetch events:', error)
@@ -81,20 +83,12 @@ export async function POST(request: Request) {
     const country = request.headers.get('x-vercel-ip-country') || undefined
     const region = request.headers.get('x-vercel-ip-country-region') || undefined
 
-    const eventWithLocation = {
+    const collection = await getTrackingCollection()
+    await collection.insertOne({
       ...event,
+      timestamp: new Date(event.timestamp),
       country,
       region,
-    }
-
-    const date = new Date(event.timestamp)
-    const dateStr = date.toISOString().split('T')[0]
-    const timeStr = date.toISOString().replace(/[:.]/g, '-')
-    const filename = `tracking/${dateStr}/${event.type}_${timeStr}_${event.deviceId.slice(0, 8)}.json`
-
-    await put(filename, JSON.stringify(eventWithLocation, null, 2), {
-      access: 'public',
-      contentType: 'application/json',
     })
 
     return NextResponse.json({ success: true })

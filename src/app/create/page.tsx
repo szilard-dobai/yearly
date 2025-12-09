@@ -255,9 +255,9 @@ function Create() {
           </details>
         </StandardCard>
 
-        <div className="lg:hidden sticky bottom-2 right-3 flex justify-end pointer-events-none">
+        <div className="lg:hidden sticky bottom-6 flex justify-end pointer-events-none">
           <Button
-            className="z-40 size-14 rounded-full shadow-lg pointer-events-auto"
+            className="z-40 size-14 me-3 rounded-full shadow-lg pointer-events-auto"
             size="icon"
             onClick={() => {
               setIsMobileAddDialogOpen(true)

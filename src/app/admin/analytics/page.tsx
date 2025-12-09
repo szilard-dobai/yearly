@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { COUNTRIES } from '@/lib/countries'
 import type { TrackingEvent, TrackingEventType } from '@/lib/tracking/types'
 import { Loader2, LogOut, RefreshCw, Search } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -92,7 +93,15 @@ export default function AnalyticsPage() {
       }
       return params.toString()
     },
-    [typeFilter, deviceIdFilter, searchQuery, countryFilter, regionFilter, sortField, sortOrder]
+    [
+      typeFilter,
+      deviceIdFilter,
+      searchQuery,
+      countryFilter,
+      regionFilter,
+      sortField,
+      sortOrder,
+    ]
   )
 
   const fetchStats = useCallback(async () => {
@@ -215,7 +224,12 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isLoadingEvents) {
+        if (
+          entries[0].isIntersecting &&
+          hasMore &&
+          !isLoadingMore &&
+          !isLoadingEvents
+        ) {
           loadMore()
         }
       },
@@ -361,7 +375,8 @@ export default function AnalyticsPage() {
                 <SelectItem value="all">All countries</SelectItem>
                 {(stats?.countries ?? []).map((country) => (
                   <SelectItem key={country} value={country}>
-                    {country}
+                    {COUNTRIES.find((item) => item.code === country)?.name ||
+                      country}
                   </SelectItem>
                 ))}
               </SelectContent>

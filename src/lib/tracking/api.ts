@@ -23,7 +23,7 @@ export async function getAllBlobs(prefix: string) {
   do {
     const result = await list({ prefix, limit: 1000, cursor })
     allBlobs.push(...result.blobs)
-    cursor = result.cursor ?? undefined
+    cursor = result.hasMore ? result.cursor : undefined
   } while (cursor)
 
   return allBlobs

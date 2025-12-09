@@ -51,6 +51,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - Dark mode support via `prefers-color-scheme` media query
 - Tailwind theme customization using `@theme inline` directive
 - Font variables: `--font-geist-sans` and `--font-geist-mono`
+- Do not place any comments unless absolutely necessary to clarify what is going on
 
 ## Code Conventions
 

@@ -74,16 +74,20 @@ export default function AnalyticsPage() {
   const [selectedEvent, setSelectedEvent] = useState<TrackingEvent | null>(null)
 
   const loadMoreRef = useRef<HTMLDivElement>(null)
-  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  const buildFilterParams = useCallback(() => {
+    const params = new URLSearchParams()
+    if (typeFilter !== 'all') params.set('type', typeFilter)
+    if (deviceIdFilter) params.set('deviceId', deviceIdFilter)
+    if (searchQuery) params.set('search', searchQuery)
+    if (countryFilter !== 'all') params.set('country', countryFilter)
+    if (regionFilter !== 'all') params.set('region', regionFilter)
+    return params
+  }, [typeFilter, deviceIdFilter, searchQuery, countryFilter, regionFilter])
 
   const buildQueryParams = useCallback(
     (extraParams?: Record<string, string>) => {
-      const params = new URLSearchParams()
-      if (typeFilter !== 'all') params.set('type', typeFilter)
-      if (deviceIdFilter) params.set('deviceId', deviceIdFilter)
-      if (searchQuery) params.set('search', searchQuery)
-      if (countryFilter !== 'all') params.set('country', countryFilter)
-      if (regionFilter !== 'all') params.set('region', regionFilter)
+      const params = buildFilterParams()
       params.set('sortField', sortField)
       params.set('sortOrder', sortOrder)
       if (extraParams) {
@@ -93,21 +97,15 @@ export default function AnalyticsPage() {
       }
       return params.toString()
     },
-    [
-      typeFilter,
-      deviceIdFilter,
-      searchQuery,
-      countryFilter,
-      regionFilter,
-      sortField,
-      sortOrder,
-    ]
+    [buildFilterParams, sortField, sortOrder]
   )
 
   const fetchStats = useCallback(async () => {
     setIsLoadingStats(true)
     try {
-      const response = await fetch(`/api/tracking/stats?${buildQueryParams()}`)
+      const response = await fetch(
+        `/api/tracking/stats?${buildFilterParams().toString()}`
+      )
       if (!response.ok) {
         if (response.status === 401) {
           setIsAuthenticated(false)
@@ -122,7 +120,7 @@ export default function AnalyticsPage() {
     } finally {
       setIsLoadingStats(false)
     }
-  }, [buildQueryParams])
+  }, [buildFilterParams])
 
   const fetchEvents = useCallback(
     async (resetOffset = true) => {
@@ -192,21 +190,25 @@ export default function AnalyticsPage() {
     checkAuth()
   }, [])
 
+  const filterDebounceRef = useRef<NodeJS.Timeout | null>(null)
+  const sortDebounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Fetch stats and events when filters change
   useEffect(() => {
     if (!isAuthenticated) return
 
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
+    if (filterDebounceRef.current) {
+      clearTimeout(filterDebounceRef.current)
     }
 
-    debounceRef.current = setTimeout(() => {
+    filterDebounceRef.current = setTimeout(() => {
       fetchStats()
       fetchEvents(true)
     }, 300)
 
     return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
+      if (filterDebounceRef.current) {
+        clearTimeout(filterDebounceRef.current)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,9 +219,27 @@ export default function AnalyticsPage() {
     searchQuery,
     countryFilter,
     regionFilter,
-    sortField,
-    sortOrder,
   ])
+
+  // Only fetch events when sort changes (not stats)
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    if (sortDebounceRef.current) {
+      clearTimeout(sortDebounceRef.current)
+    }
+
+    sortDebounceRef.current = setTimeout(() => {
+      fetchEvents(true)
+    }, 300)
+
+    return () => {
+      if (sortDebounceRef.current) {
+        clearTimeout(sortDebounceRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortField, sortOrder])
 
   useEffect(() => {
     const observer = new IntersectionObserver(

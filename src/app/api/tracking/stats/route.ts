@@ -7,6 +7,8 @@ import {
 } from '@/lib/tracking/api'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   const forbidden = validateSameOrigin(request)
   if (forbidden) return forbidden

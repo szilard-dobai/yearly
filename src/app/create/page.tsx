@@ -10,6 +10,12 @@ import Statistics from '@/components/Statistics'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -21,7 +27,7 @@ import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { getCountryByCode } from '@/lib/countries'
-import { Undo2 } from 'lucide-react'
+import { Plus, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
@@ -37,6 +43,7 @@ function Create() {
   )
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
   const [undoStack, setUndoStack] = useState<CalendarData[]>([])
+  const [isMobileAddDialogOpen, setIsMobileAddDialogOpen] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -247,7 +254,43 @@ function Create() {
             </div>
           </details>
         </StandardCard>
+
+        <div className="lg:hidden sticky bottom-2 right-3 flex justify-end pointer-events-none">
+          <Button
+            className="z-40 size-14 rounded-full shadow-lg pointer-events-auto"
+            size="icon"
+            onClick={() => {
+              setIsMobileAddDialogOpen(true)
+              trackEvent('mobile_fab_click')
+            }}
+            aria-label="Add visit"
+          >
+            <Plus className="size-6" />
+          </Button>
+        </div>
       </main>
+
+      <Dialog
+        open={isMobileAddDialogOpen}
+        onOpenChange={setIsMobileAddDialogOpen}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-2xl">✈️</span>
+              Add Visit
+            </DialogTitle>
+          </DialogHeader>
+          <CountryInput
+            year={selectedYear}
+            calendarData={calendarData}
+            onDataChange={(data) => {
+              handleDataChange(data)
+              setIsMobileAddDialogOpen(false)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

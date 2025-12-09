@@ -20,6 +20,7 @@ export type TrackingEventType =
   | 'image_export_click'
   | 'image_download_click'
   | 'developer_mode_toggle'
+  | 'mobile_fab_click'
   | 'json_import'
   | 'json_export'
 

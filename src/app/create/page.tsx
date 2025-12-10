@@ -10,7 +10,6 @@ import MobileFab from '@/components/MobileFab'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
-import StatisticsExportCard from '@/components/StatisticsExportCard'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
@@ -242,7 +241,11 @@ function Create() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Statistics calendarData={calendarData} year={selectedYear} />
+                  <Statistics
+                    calendarData={calendarData}
+                    year={selectedYear}
+                    exportRef={statisticsRef}
+                  />
                 </CardContent>
               </StandardCard>
 
@@ -295,13 +298,6 @@ function Create() {
           />
         </div>
 
-        <div className="sr-only" aria-hidden="true">
-          <StatisticsExportCard
-            ref={statisticsRef}
-            calendarData={calendarData}
-            year={selectedYear}
-          />
-        </div>
       </div>
 
       <Dialog

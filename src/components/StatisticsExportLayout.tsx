@@ -29,14 +29,14 @@ const MONTH_NAMES = [
   'December',
 ]
 
-interface StatisticsExportCardProps {
+interface StatisticsExportLayoutProps {
   calendarData: CalendarData
   year: number
 }
 
-const StatisticsExportCard = forwardRef<
+const StatisticsExportLayout = forwardRef<
   HTMLDivElement,
-  StatisticsExportCardProps
+  StatisticsExportLayoutProps
 >(({ calendarData, year }, ref) => {
   const { settings } = useSettings()
 
@@ -130,7 +130,7 @@ const StatisticsExportCard = forwardRef<
               Busiest Month
             </p>
             <p className="text-3xl leading-tight font-bold text-gray-900 dark:text-white">
-              {MONTH_NAMES[8]}
+              {MONTH_NAMES[stats.busiestMonth.month]}
             </p>
             <p className="text-lg text-gray-500 dark:text-gray-400">
               {stats.busiestMonth.days} days
@@ -203,6 +203,6 @@ const StatisticsExportCard = forwardRef<
   )
 })
 
-StatisticsExportCard.displayName = 'StatisticsExportCard'
+StatisticsExportLayout.displayName = 'StatisticsExportLayout'
 
-export default StatisticsExportCard
+export default StatisticsExportLayout

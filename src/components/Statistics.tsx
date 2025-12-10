@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type RefObject } from 'react'
 import type { CalendarData } from '../lib/types'
 import {
   calculateTotalCountriesVisited,
@@ -9,6 +9,7 @@ import {
   calculatePercentageOfYearTraveled,
 } from '../lib/statistics'
 import StatisticsCard from './StatisticsCard'
+import StatisticsExportLayout from './StatisticsExportLayout'
 import CountryRankingList, {
   type CountryRankingItem,
 } from './CountryRankingList'
@@ -31,9 +32,14 @@ const MONTH_NAMES = [
 interface StatisticsProps {
   calendarData: CalendarData
   year?: number
+  exportRef?: RefObject<HTMLDivElement | null>
 }
 
-export default function Statistics({ calendarData, year }: StatisticsProps) {
+export default function Statistics({
+  calendarData,
+  year,
+  exportRef,
+}: StatisticsProps) {
   const currentYear = year ?? new Date().getFullYear()
 
   const visits = useMemo(
@@ -132,6 +138,16 @@ export default function Statistics({ calendarData, year }: StatisticsProps) {
           <p className="text-xs mt-1">
             Add your first country visit to see statistics
           </p>
+        </div>
+      )}
+
+      {exportRef && (
+        <div className="sr-only" aria-hidden="true">
+          <StatisticsExportLayout
+            ref={exportRef}
+            calendarData={calendarData}
+            year={currentYear}
+          />
         </div>
       )}
     </div>

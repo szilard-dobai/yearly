@@ -24,7 +24,7 @@ const SETTINGS_STORAGE_KEY = 'countries-in-year-settings'
 
 const DEFAULT_SETTINGS: Settings = {
   flagDisplayMode: 'emoji',
-  weekStartsOn: 0,
+  weekStartsOn: 1,
   colorScheme: 'system',
   highlightToday: true,
 }

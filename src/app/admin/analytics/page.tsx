@@ -564,6 +564,7 @@ export default function AnalyticsPage() {
                 <tr>
                   <th className="text-left p-3 font-medium">Timestamp</th>
                   <th className="text-left p-3 font-medium">Type</th>
+                  <th className="text-left p-3 font-medium">Device</th>
                   <th className="text-left p-3 font-medium">Device ID</th>
                   <th className="text-left p-3 font-medium">Location</th>
                   <th className="text-left p-3 font-medium">Metadata</th>
@@ -572,7 +573,7 @@ export default function AnalyticsPage() {
               <tbody className="divide-y">
                 {isLoadingEvents ? (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center">
+                    <td colSpan={6} className="p-8 text-center">
                       <Loader2 className="size-6 animate-spin mx-auto text-gray-400" />
                     </td>
                   </tr>
@@ -591,6 +592,9 @@ export default function AnalyticsPage() {
                           <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
                             {event.type}
                           </span>
+                        </td>
+                        <td className="p-3 text-xs text-gray-500">
+                          {event.deviceType ?? '-'}
                         </td>
                         <td className="p-3 font-mono text-xs text-gray-500">
                           {event.deviceId.slice(0, 8)}...
@@ -613,7 +617,7 @@ export default function AnalyticsPage() {
                     {events.length === 0 && (
                       <tr>
                         <td
-                          colSpan={5}
+                          colSpan={6}
                           className="p-8 text-center text-gray-500"
                         >
                           No events found
@@ -667,6 +671,10 @@ export default function AnalyticsPage() {
                   <p className="font-mono">
                     {new Date(selectedEvent.timestamp).toLocaleString()}
                   </p>
+                </div>
+                <div>
+                  <Label className="text-gray-500">Device Type</Label>
+                  <p className="font-mono">{selectedEvent.deviceType ?? '-'}</p>
                 </div>
                 <div>
                   <Label className="text-gray-500">Device ID</Label>

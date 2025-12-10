@@ -19,6 +19,7 @@ export type TrackingEventType =
   | 'calendar_reset'
   | 'image_export_click'
   | 'image_download_click'
+  | 'statistics_export_click'
   | 'developer_mode_toggle'
   | 'mobile_fab_click'
   | 'json_import'

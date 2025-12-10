@@ -4,11 +4,13 @@ import CalendarGrid from '@/components/CalendarGrid'
 import CountryInput from '@/components/CountryInput'
 import DeveloperMode from '@/components/DeveloperMode'
 import Header from '@/components/Header'
-import ImageExportButton from '@/components/ImageExportButton'
+import CalendarExportButton from '@/components/CalendarExportButton'
 import ImagePreviewModal from '@/components/ImagePreviewModal'
 import MobileFab from '@/components/MobileFab'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
+import StatisticsExportButton from '@/components/StatisticsExportButton'
+import StatisticsExportCard from '@/components/StatisticsExportCard'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
@@ -27,6 +29,7 @@ import {
 } from '@/components/ui/select'
 import { getCountryByCode } from '@/lib/countries'
 import { useImageExport } from '@/lib/hooks/useImageExport'
+import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
@@ -48,6 +51,7 @@ function Create() {
   const [undoStack, setUndoStack] = useState<CalendarData[]>([])
   const [isMobileAddDialogOpen, setIsMobileAddDialogOpen] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
+  const statisticsRef = useRef<HTMLDivElement>(null)
 
   const {
     exportImage,
@@ -56,6 +60,14 @@ function Create() {
     imageDataUrl: mobileImageDataUrl,
     filename: mobileFilename,
   } = useImageExport({ calendarRef, calendarData, year: selectedYear })
+
+  const {
+    exportStatistics,
+    previewOpen: statsPreviewOpen,
+    setPreviewOpen: setStatsPreviewOpen,
+    imageDataUrl: statsImageDataUrl,
+    filename: statsFilename,
+  } = useStatisticsExport({ statisticsRef, calendarData, year: selectedYear })
 
   useEffect(() => {
     trackEvent('create_page_view')
@@ -197,16 +209,22 @@ function Create() {
                   <CardHeader>
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
                       <span className="text-2xl">📸</span>
-                      Export Your Calendar
+                      Export Your Year
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       <p className="text-gray-300 dark:text-gray-600 leading-relaxed">
-                        Download a high-quality image of your travel calendar
+                        Download high-quality images to share
                       </p>
-                      <ImageExportButton
+                      <CalendarExportButton
                         calendarRef={calendarRef}
+                        calendarData={calendarData}
+                        year={selectedYear}
+                        hasData={calendarData.visits.length > 0}
+                      />
+                      <StatisticsExportButton
+                        statisticsRef={statisticsRef}
                         calendarData={calendarData}
                         year={selectedYear}
                         hasData={calendarData.visits.length > 0}
@@ -272,7 +290,16 @@ function Create() {
           <MobileFab
             onAddClick={() => setIsMobileAddDialogOpen(true)}
             onExportClick={exportImage}
+            onExportStatsClick={exportStatistics}
             hasVisits={calendarData.visits.length > 0}
+          />
+        </div>
+
+        <div className="sr-only" aria-hidden="true">
+          <StatisticsExportCard
+            ref={statisticsRef}
+            calendarData={calendarData}
+            year={selectedYear}
           />
         </div>
       </div>
@@ -304,6 +331,15 @@ function Create() {
         onOpenChange={setMobilePreviewOpen}
         imageDataUrl={mobileImageDataUrl}
         filename={mobileFilename}
+        year={selectedYear}
+        calendarData={calendarData}
+      />
+
+      <ImagePreviewModal
+        open={statsPreviewOpen}
+        onOpenChange={setStatsPreviewOpen}
+        imageDataUrl={statsImageDataUrl}
+        filename={statsFilename}
         year={selectedYear}
         calendarData={calendarData}
       />

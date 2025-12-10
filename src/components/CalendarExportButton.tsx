@@ -1,23 +1,23 @@
 import { RefObject } from 'react'
 import { Button } from '@/components/ui/button'
-import { Image as ImageIcon, XCircle, Loader2 } from 'lucide-react'
+import { Calendar, XCircle, Loader2 } from 'lucide-react'
 import { useImageExport } from '@/lib/hooks/useImageExport'
 import type { CalendarData } from '@/lib/types'
 import ImagePreviewModal from './ImagePreviewModal'
 
-interface ImageExportButtonProps {
+interface CalendarExportButtonProps {
   calendarRef: RefObject<HTMLDivElement | null>
   calendarData: CalendarData
   year: number
   hasData: boolean
 }
 
-export default function ImageExportButton({
+export default function CalendarExportButton({
   calendarRef,
   calendarData,
   year,
   hasData,
-}: ImageExportButtonProps) {
+}: CalendarExportButtonProps) {
   const {
     exportImage,
     status,
@@ -38,13 +38,13 @@ export default function ImageExportButton({
         variant={status === 'error' ? 'destructive' : 'cta'}
         size="lg"
         aria-label={
-          hasData ? 'Export calendar as JPEG image' : 'No data to export'
+          hasData ? 'Download calendar as JPEG image' : 'No data to export'
         }
       >
         {status === 'loading' ? (
           <>
             <Loader2 className="size-5 animate-spin" />
-            Generating Image...
+            Generating...
           </>
         ) : status === 'error' ? (
           <>
@@ -53,8 +53,8 @@ export default function ImageExportButton({
           </>
         ) : (
           <>
-            <ImageIcon className="size-5" />
-            Download as Image
+            <Calendar className="size-5" />
+            Download Calendar
           </>
         )}
       </Button>

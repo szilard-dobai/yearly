@@ -5,8 +5,11 @@ import CountryInput from '@/components/CountryInput'
 import DeveloperMode from '@/components/DeveloperMode'
 import Header from '@/components/Header'
 import ImageExportButton from '@/components/ImageExportButton'
+import ImagePreviewModal from '@/components/ImagePreviewModal'
+import MobileFab from '@/components/MobileFab'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
+import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
 import {
@@ -22,12 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
+import { getCountryByCode } from '@/lib/countries'
+import { useImageExport } from '@/lib/hooks/useImageExport'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
-import { getCountryByCode } from '@/lib/countries'
-import { Plus, Undo2 } from 'lucide-react'
+import { Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
@@ -45,6 +48,14 @@ function Create() {
   const [undoStack, setUndoStack] = useState<CalendarData[]>([])
   const [isMobileAddDialogOpen, setIsMobileAddDialogOpen] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
+
+  const {
+    exportImage,
+    previewOpen: mobilePreviewOpen,
+    setPreviewOpen: setMobilePreviewOpen,
+    imageDataUrl: mobileImageDataUrl,
+    filename: mobileFilename,
+  } = useImageExport({ calendarRef, calendarData, year: selectedYear })
 
   useEffect(() => {
     trackEvent('create_page_view')
@@ -135,140 +146,136 @@ function Create() {
         </Select>
       </Header>
 
-      <main className="container mx-auto px-3 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 mb-16">
-          <div className="space-y-6">
-            <StandardCard>
-              <CardContent>
-                <CalendarGrid
-                  ref={calendarRef}
-                  year={selectedYear}
-                  calendarData={calendarData}
-                  onRemoveVisit={handleRemoveVisit}
-                />
-              </CardContent>
-            </StandardCard>
-          </div>
+      <div>
+        <main className="container mx-auto px-3 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 mb-16">
+            <div className="space-y-6">
+              <StandardCard>
+                <CardContent>
+                  <CalendarGrid
+                    ref={calendarRef}
+                    year={selectedYear}
+                    calendarData={calendarData}
+                    onRemoveVisit={handleRemoveVisit}
+                  />
+                </CardContent>
+              </StandardCard>
+            </div>
 
-          <aside className="space-y-4">
-            <StandardCard>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
-                    <span className="text-2xl">✈️</span>
-                    Add Visit
-                  </CardTitle>
-                  {undoStack.length > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleUndo}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      <Undo2 className="size-4 mr-1" />
-                      Undo
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CountryInput
-                  year={selectedYear}
-                  calendarData={calendarData}
-                  onDataChange={handleDataChange}
-                />
-              </CardContent>
-            </StandardCard>
-
-            {calendarData.visits.length > 0 && (
-              <DarkCard>
+            <aside className="space-y-4">
+              <StandardCard>
                 <CardHeader>
-                  <CardTitle className="text-lg font-medium flex items-center gap-2">
-                    <span className="text-2xl">📸</span>
-                    Export Your Calendar
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
+                      <span className="text-2xl">✈️</span>
+                      Add Visit
+                    </CardTitle>
+                    {undoStack.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleUndo}
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      >
+                        <Undo2 className="size-4 mr-1" />
+                        Undo
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CountryInput
+                    year={selectedYear}
+                    calendarData={calendarData}
+                    onDataChange={handleDataChange}
+                  />
+                </CardContent>
+              </StandardCard>
+
+              {calendarData.visits.length > 0 && (
+                <DarkCard>
+                  <CardHeader>
+                    <CardTitle className="text-lg font-medium flex items-center gap-2">
+                      <span className="text-2xl">📸</span>
+                      Export Your Calendar
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-gray-300 dark:text-gray-600 leading-relaxed">
+                        Download a high-quality image of your travel calendar
+                      </p>
+                      <ImageExportButton
+                        calendarRef={calendarRef}
+                        calendarData={calendarData}
+                        year={selectedYear}
+                        hasData={calendarData.visits.length > 0}
+                      />
+                    </div>
+                  </CardContent>
+                </DarkCard>
+              )}
+
+              <StandardCard>
+                <CardHeader>
+                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
+                    <span className="text-2xl">📊</span>
+                    Statistics
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <p className="text-gray-300 dark:text-gray-600 leading-relaxed">
-                      Download a high-quality image of your travel calendar
-                    </p>
-                    <ImageExportButton
-                      calendarRef={calendarRef}
-                      calendarData={calendarData}
-                      year={selectedYear}
-                      hasData={calendarData.visits.length > 0}
-                    />
-                  </div>
+                  <Statistics calendarData={calendarData} year={selectedYear} />
                 </CardContent>
-              </DarkCard>
-            )}
+              </StandardCard>
 
-            <StandardCard>
-              <CardHeader>
-                <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
-                  <span className="text-2xl">📊</span>
-                  Statistics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Statistics calendarData={calendarData} year={selectedYear} />
-              </CardContent>
-            </StandardCard>
+              <StandardCard>
+                <CardHeader>
+                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
+                    <span className="text-2xl">⚙️</span>
+                    Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Settings
+                    year={selectedYear}
+                    visitCount={visitsForSelectedYear}
+                    onReset={handleResetCalendar}
+                  />
+                </CardContent>
+              </StandardCard>
+            </aside>
+          </div>
 
-            <StandardCard>
-              <CardHeader>
-                <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
-                  <span className="text-2xl">⚙️</span>
-                  Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Settings
+          <StandardCard className="p-0 overflow-hidden">
+            <details
+              onToggle={(e) => {
+                const isOpen = (e.target as HTMLDetailsElement).open
+                trackEvent('developer_mode_toggle', { opened: isOpen })
+              }}
+            >
+              <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2">
+                <span className="text-lg">🔧</span>
+                Developer Mode
+              </summary>
+              <div className="px-6 pb-4 pt-2">
+                <DeveloperMode
+                  calendarData={calendarData}
                   year={selectedYear}
-                  visitCount={visitsForSelectedYear}
-                  onReset={handleResetCalendar}
+                  onDataChange={handleDataChange}
                 />
-              </CardContent>
-            </StandardCard>
-          </aside>
-        </div>
+              </div>
+            </details>
+          </StandardCard>
+        </main>
 
-        <StandardCard className="p-0 overflow-hidden">
-          <details
-            onToggle={(e) => {
-              const isOpen = (e.target as HTMLDetailsElement).open
-              trackEvent('developer_mode_toggle', { opened: isOpen })
-            }}
-          >
-            <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2">
-              <span className="text-lg">🔧</span>
-              Developer Mode
-            </summary>
-            <div className="px-6 pb-4 pt-2">
-              <DeveloperMode
-                calendarData={calendarData}
-                year={selectedYear}
-                onDataChange={handleDataChange}
-              />
-            </div>
-          </details>
-        </StandardCard>
-
-        <div className="lg:hidden sticky bottom-6 flex justify-end pointer-events-none">
-          <Button
-            className="z-40 size-14 me-3 rounded-full shadow-lg pointer-events-auto"
-            size="icon"
-            onClick={() => {
-              setIsMobileAddDialogOpen(true)
-              trackEvent('mobile_fab_click')
-            }}
-            aria-label="Add visit"
-          >
-            <Plus className="size-6" />
-          </Button>
+        <div className="sticky bottom-0 right-0">
+          <MobileFab
+            onAddClick={() => setIsMobileAddDialogOpen(true)}
+            onExportClick={exportImage}
+            hasVisits={calendarData.visits.length > 0}
+          />
         </div>
-      </main>
+      </div>
 
       <Dialog
         open={isMobileAddDialogOpen}
@@ -291,6 +298,15 @@ function Create() {
           />
         </DialogContent>
       </Dialog>
+
+      <ImagePreviewModal
+        open={mobilePreviewOpen}
+        onOpenChange={setMobilePreviewOpen}
+        imageDataUrl={mobileImageDataUrl}
+        filename={mobileFilename}
+        year={selectedYear}
+        calendarData={calendarData}
+      />
     </>
   )
 }

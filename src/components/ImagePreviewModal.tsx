@@ -72,7 +72,7 @@ export default function ImagePreviewModal({
         </DialogDescription>
 
         <div className="grid md:grid-cols-2 gap-0">
-          <div className="bg-linear-to-br from-gray-50 to-stone-50 dark:bg-none dark:bg-neutral-900 p-8 md:p-12 flex items-center justify-center">
+          <div className="order-2 md:order-1 bg-linear-to-br from-gray-50 to-stone-50 dark:bg-none dark:bg-neutral-900 p-4 md:p-12 flex items-center justify-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -90,17 +90,17 @@ export default function ImagePreviewModal({
             </motion.div>
           </div>
 
-          <div className="p-8 md:p-12 flex flex-col justify-center">
+          <div className="order-1 md:order-2 p-6 md:p-12 flex flex-col justify-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <div className="mb-8">
-                <h2 className="text-gray-900 dark:text-white mb-3 text-3xl font-serif font-normal leading-tight">
+              <div className="mb-4 md:mb-8">
+                <h2 className="text-gray-900 dark:text-white mb-2 md:mb-3 text-2xl md:text-3xl font-serif font-normal leading-tight">
                   Your Yearly is ready! 🎉
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm md:text-base">
                   Share your year-in-review with the world. Download the
                   high-quality image or share directly to your favorite social
                   platforms.
@@ -117,7 +117,7 @@ export default function ImagePreviewModal({
                 Download Image
               </Button>
 
-              <div className="bg-gray-50 dark:bg-neutral-900 rounded-lg p-4 border border-gray-200 dark:border-white/10">
+              <div className="hidden md:block bg-gray-50 dark:bg-neutral-900 rounded-lg p-4 border border-gray-200 dark:border-white/10">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   <span className="font-medium text-gray-900 dark:text-white">
                     Pro tip:

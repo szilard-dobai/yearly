@@ -9,14 +9,12 @@ interface StatisticsExportButtonProps {
   statisticsRef: RefObject<HTMLDivElement | null>
   calendarData: CalendarData
   year: number
-  hasData: boolean
 }
 
 export default function StatisticsExportButton({
   statisticsRef,
   calendarData,
   year,
-  hasData,
 }: StatisticsExportButtonProps) {
   const {
     exportStatistics,
@@ -27,7 +25,7 @@ export default function StatisticsExportButton({
     filename,
   } = useStatisticsExport({ statisticsRef, calendarData, year })
 
-  const isDisabled = !hasData || status === 'loading'
+  const isDisabled = status === 'loading'
 
   return (
     <>
@@ -37,9 +35,7 @@ export default function StatisticsExportButton({
         className="w-full"
         variant={status === 'error' ? 'destructive' : 'cta'}
         size="lg"
-        aria-label={
-          hasData ? 'Download statistics as JPEG image' : 'No data to export'
-        }
+        aria-label="Download statistics as JPEG image"
       >
         {status === 'loading' ? (
           <>

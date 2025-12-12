@@ -9,14 +9,12 @@ interface CalendarExportButtonProps {
   calendarRef: RefObject<HTMLDivElement | null>
   calendarData: CalendarData
   year: number
-  hasData: boolean
 }
 
 export default function CalendarExportButton({
   calendarRef,
   calendarData,
   year,
-  hasData,
 }: CalendarExportButtonProps) {
   const {
     exportImage,
@@ -27,7 +25,7 @@ export default function CalendarExportButton({
     filename,
   } = useImageExport({ calendarRef, calendarData, year })
 
-  const isDisabled = !hasData || status === 'loading'
+  const isDisabled = status === 'loading'
 
   return (
     <>
@@ -37,9 +35,7 @@ export default function CalendarExportButton({
         className="w-full"
         variant={status === 'error' ? 'destructive' : 'cta'}
         size="lg"
-        aria-label={
-          hasData ? 'Download calendar as JPEG image' : 'No data to export'
-        }
+        aria-label="Download calendar as JPEG image"
       >
         {status === 'loading' ? (
           <>

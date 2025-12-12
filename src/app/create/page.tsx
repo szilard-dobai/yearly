@@ -203,7 +203,7 @@ function Create() {
                 </CardContent>
               </StandardCard>
 
-              {calendarData.visits.length > 0 && (
+              {visitsForSelectedYear > 0 && (
                 <DarkCard>
                   <CardHeader>
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
@@ -220,13 +220,11 @@ function Create() {
                         calendarRef={calendarRef}
                         calendarData={calendarData}
                         year={selectedYear}
-                        hasData={calendarData.visits.length > 0}
                       />
                       <StatisticsExportButton
                         statisticsRef={statisticsRef}
                         calendarData={calendarData}
                         year={selectedYear}
-                        hasData={calendarData.visits.length > 0}
                       />
                     </div>
                   </CardContent>
@@ -294,10 +292,9 @@ function Create() {
             onAddClick={() => setIsMobileAddDialogOpen(true)}
             onExportClick={exportImage}
             onExportStatsClick={exportStatistics}
-            hasVisits={calendarData.visits.length > 0}
+            hasVisits={visitsForSelectedYear > 0}
           />
         </div>
-
       </div>
 
       <Dialog

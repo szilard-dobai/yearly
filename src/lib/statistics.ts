@@ -233,16 +233,32 @@ export function calculateCountriesByDays(
 }
 
 /**
- * Calculates average days per country
+ * Calculates the average trip length in days
+ * A trip is any consecutive sequence of days with at least one country logged
+ * Multiple countries on the same day still count as 1 day in 1 trip
  */
-export function calculateAverageDaysPerCountry(
-  visits: CountryVisit[]
-): number {
-  const totalCountries = calculateTotalCountriesVisited(visits)
-  if (totalCountries === 0) return 0
+export function calculateAverageTripLength(visits: CountryVisit[]): number {
+  if (visits.length === 0) return 0
 
-  const totalDays = calculateTotalDaysTraveled(visits)
-  return totalDays / totalCountries
+  const uniqueDates = [
+    ...new Set(visits.map((v) => v.date.toISOString().split('T')[0])),
+  ].sort()
+
+  if (uniqueDates.length === 0) return 0
+
+  let tripCount = 1
+  const totalDays = uniqueDates.length
+
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const prevDate = new Date(uniqueDates[i - 1])
+    const currDate = new Date(uniqueDates[i])
+
+    if (!isNextDay(prevDate, currDate)) {
+      tripCount++
+    }
+  }
+
+  return totalDays / tripCount
 }
 
 /**

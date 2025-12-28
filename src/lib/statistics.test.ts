@@ -12,7 +12,7 @@ import {
   calculateTotalDaysTraveled,
   calculateDaysByCountry,
   calculateCountriesByDays,
-  calculateAverageDaysPerCountry,
+  calculateAverageTripLength,
   calculateBusiestMonth,
   calculatePercentageOfYearTraveled,
 } from './statistics'
@@ -465,24 +465,54 @@ describe('statistics', () => {
     })
   })
 
-  describe('calculateAverageDaysPerCountry', () => {
+  describe('calculateAverageTripLength', () => {
     it('returns 0 for empty array', () => {
-      expect(calculateAverageDaysPerCountry([])).toBe(0)
+      expect(calculateAverageTripLength([])).toBe(0)
     })
 
-    it('returns correct average', () => {
-      // 6 days across 3 countries = 2 average
-      expect(calculateAverageDaysPerCountry(mockVisits)).toBe(2)
-    })
-
-    it('handles non-integer averages', () => {
+    it('returns total days when all consecutive (single trip)', () => {
       const visits: CountryVisit[] = [
         { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
         { id: '2', countryCode: 'US', date: new Date(2024, 0, 16) },
         { id: '3', countryCode: 'FR', date: new Date(2024, 0, 17) },
       ]
-      // 3 days across 2 countries = 1.5 average
-      expect(calculateAverageDaysPerCountry(visits)).toBe(1.5)
+      // 3 consecutive days = 1 trip, average = 3
+      expect(calculateAverageTripLength(visits)).toBe(3)
+    })
+
+    it('counts multiple countries on same day as one day', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
+        { id: '2', countryCode: 'FR', date: new Date(2024, 0, 15) },
+        { id: '3', countryCode: 'DE', date: new Date(2024, 0, 16) },
+      ]
+      // 2 unique days, all consecutive = 1 trip, average = 2
+      expect(calculateAverageTripLength(visits)).toBe(2)
+    })
+
+    it('calculates average across multiple trips', () => {
+      const visits: CountryVisit[] = [
+        // Trip 1: 2 days
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
+        { id: '2', countryCode: 'US', date: new Date(2024, 0, 16) },
+        // Gap (non-consecutive)
+        // Trip 2: 3 days
+        { id: '3', countryCode: 'FR', date: new Date(2024, 0, 20) },
+        { id: '4', countryCode: 'FR', date: new Date(2024, 0, 21) },
+        { id: '5', countryCode: 'FR', date: new Date(2024, 0, 22) },
+      ]
+      // 5 total days, 2 trips = 2.5 average
+      expect(calculateAverageTripLength(visits)).toBe(2.5)
+    })
+
+    it('handles single day trips', () => {
+      const visits: CountryVisit[] = [
+        { id: '1', countryCode: 'US', date: new Date(2024, 0, 15) },
+        { id: '2', countryCode: 'FR', date: new Date(2024, 0, 20) },
+        { id: '3', countryCode: 'DE', date: new Date(2024, 0, 25) },
+      ]
+      // 3 single-day trips = average of 1
+      expect(calculateAverageTripLength(visits)).toBe(1)
     })
   })
 

@@ -9,7 +9,7 @@ import {
   calculateTotalCountriesVisited,
   calculateTotalDaysTraveled,
   calculateCountriesByDays,
-  calculateAverageDaysPerCountry,
+  calculateAverageTripLength,
   calculateBusiestMonth,
   calculatePercentageOfYearTraveled,
 } from '@/lib/statistics'
@@ -49,7 +49,7 @@ const StatisticsExportLayout = forwardRef<
   const stats = useMemo(() => {
     const totalCountries = calculateTotalCountriesVisited(visits)
     const totalDays = calculateTotalDaysTraveled(visits)
-    const averageDays = calculateAverageDaysPerCountry(visits)
+    const averageTripLength = calculateAverageTripLength(visits)
     const countriesByDays = calculateCountriesByDays(visits, 5)
     const busiestMonth = calculateBusiestMonth(visits, year)
     const percentTraveled = calculatePercentageOfYearTraveled(visits, year)
@@ -57,7 +57,7 @@ const StatisticsExportLayout = forwardRef<
     return {
       totalCountries,
       totalDays,
-      averageDays,
+      averageTripLength,
       countriesByDays,
       busiestMonth,
       percentTraveled,
@@ -112,10 +112,10 @@ const StatisticsExportLayout = forwardRef<
 
         <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Average Stay
+            Average Trip
           </p>
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.averageDays.toFixed(1)}
+            {stats.averageTripLength.toFixed(1)}
             <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-1">
               days
             </span>

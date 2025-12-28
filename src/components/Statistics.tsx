@@ -4,7 +4,7 @@ import {
   calculateTotalCountriesVisited,
   calculateTotalDaysTraveled,
   calculateCountriesByDays,
-  calculateAverageDaysPerCountry,
+  calculateAverageTripLength,
   calculateBusiestMonth,
   calculatePercentageOfYearTraveled,
 } from '../lib/statistics'
@@ -55,7 +55,7 @@ export default function Statistics({
   const stats = useMemo(() => {
     const totalCountries = calculateTotalCountriesVisited(visits)
     const totalDays = calculateTotalDaysTraveled(visits)
-    const averageDays = calculateAverageDaysPerCountry(visits)
+    const averageTripLength = calculateAverageTripLength(visits)
     const countriesByDays = calculateCountriesByDays(visits, 5)
     const busiestMonth = calculateBusiestMonth(visits, currentYear)
     const percentTraveled = calculatePercentageOfYearTraveled(
@@ -66,7 +66,7 @@ export default function Statistics({
     return {
       totalCountries,
       totalDays,
-      averageDays,
+      averageTripLength,
       countriesByDays,
       busiestMonth,
       percentTraveled,
@@ -99,11 +99,11 @@ export default function Statistics({
             subtitle={stats.totalDays === 1 ? 'day' : 'days'}
           />
 
-          {stats.totalCountries > 0 && (
+          {stats.totalDays > 0 && (
             <StatisticsCard
-              title="Average Stay"
-              value={stats.averageDays.toFixed(1)}
-              subtitle="days per country"
+              title="Average Trip"
+              value={stats.averageTripLength.toFixed(1)}
+              subtitle="days per trip"
             />
           )}
 

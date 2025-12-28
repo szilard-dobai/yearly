@@ -54,10 +54,10 @@ describe('Settings', () => {
       expect(screen.getByRole('combobox')).toBeInTheDocument()
     })
 
-    it('should show Sunday when weekStartsOn is 0 (default)', () => {
+    it('should show Monday when weekStartsOn is 1 (default)', () => {
       renderWithSettings(<Settings {...defaultProps} />)
 
-      expect(screen.getByRole('combobox')).toHaveTextContent('Sunday')
+      expect(screen.getByRole('combobox')).toHaveTextContent('Monday')
     })
 
     it('should allow changing the week start day', async () => {
@@ -65,15 +65,15 @@ describe('Settings', () => {
       renderWithSettings(<Settings {...defaultProps} />)
 
       const combobox = screen.getByRole('combobox')
-      expect(combobox).toHaveTextContent('Sunday')
+      expect(combobox).toHaveTextContent('Monday')
 
       await user.click(combobox)
 
-      const mondayOption = await screen.findByRole('option', { name: 'Monday' })
-      await user.click(mondayOption)
+      const sundayOption = await screen.findByRole('option', { name: 'Sunday' })
+      await user.click(sundayOption)
 
-      // After selection, the combobox should show Monday
-      expect(combobox).toHaveTextContent('Monday')
+      // After selection, the combobox should show Sunday
+      expect(combobox).toHaveTextContent('Sunday')
     })
 
     it('should render all 7 days of the week in dropdown', async () => {

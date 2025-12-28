@@ -229,7 +229,7 @@ describe('MonthGrid', () => {
         />
       )
 
-      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 0)
+      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 1)
     })
   })
 
@@ -378,11 +378,11 @@ describe('MonthGrid', () => {
         />
       )
 
-      // Default value from context is 0 (Sunday)
-      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 0)
+      // Default value is 1 (Monday)
+      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 1)
     })
 
-    it('should use default weekStartsOn=0 when not provided', () => {
+    it('should use default weekStartsOn=1 when not provided', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
@@ -394,7 +394,7 @@ describe('MonthGrid', () => {
         />
       )
 
-      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 0)
+      expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 1)
     })
   })
 

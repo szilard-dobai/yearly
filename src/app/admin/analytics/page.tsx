@@ -12,7 +12,13 @@ import {
 } from '@/components/ui/select'
 import { COUNTRIES } from '@/lib/countries'
 import type { TrackingEvent, TrackingEventType } from '@/lib/tracking/types'
-import { Loader2, LogOut, RefreshCw, Search } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { BarChart3, Loader2, LogOut, RefreshCw, Search } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 type SortField = 'timestamp' | 'type' | 'deviceId'
@@ -55,6 +61,40 @@ interface Stats {
   regions: string[]
 }
 
+interface HighLevelStats {
+  totalEvents: number
+  uniqueCountries: number
+  uniqueDevices: number
+  totalVisitsAdded: number
+  visitAttempts: {
+    total: number
+    successful: number
+    failed: number
+  }
+  deviceTypePercentages: {
+    mobile: number
+    tablet: number
+    desktop: number
+  }
+  deviceTypeCounts: Record<string, number>
+  exports: {
+    imageExportClicks: number
+    statisticsExportClicks: number
+    imageDownloadClicks: number
+  }
+  dataManagement: {
+    jsonImports: number
+    jsonExports: number
+    calendarResets: number
+  }
+  pageViews: {
+    homepage: number
+    createPage: number
+    notFound: number
+  }
+  eventBreakdown: Record<string, number>
+}
+
 export default function AnalyticsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -80,6 +120,12 @@ export default function AnalyticsPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
   const [selectedEvent, setSelectedEvent] = useState<TrackingEvent | null>(null)
+
+  const [showHighLevelStats, setShowHighLevelStats] = useState(false)
+  const [highLevelStats, setHighLevelStats] = useState<HighLevelStats | null>(
+    null
+  )
+  const [isLoadingHighLevelStats, setIsLoadingHighLevelStats] = useState(false)
 
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -309,6 +355,31 @@ export default function AnalyticsPage() {
     fetchEvents(true)
   }
 
+  const fetchHighLevelStats = async () => {
+    setIsLoadingHighLevelStats(true)
+    try {
+      const response = await fetch('/api/tracking/stats/high-level')
+      if (!response.ok) {
+        if (response.status === 401) {
+          setIsAuthenticated(false)
+          return
+        }
+        throw new Error('Failed to fetch high-level stats')
+      }
+      const data = await response.json()
+      setHighLevelStats(data)
+    } catch (error) {
+      console.error('Failed to fetch high-level stats:', error)
+    } finally {
+      setIsLoadingHighLevelStats(false)
+    }
+  }
+
+  const handleOpenHighLevelStats = () => {
+    setShowHighLevelStats(true)
+    fetchHighLevelStats()
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -357,6 +428,14 @@ export default function AnalyticsPage() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenHighLevelStats}
+            >
+              <BarChart3 className="size-4" />
+              Overview
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -708,6 +787,191 @@ export default function AnalyticsPage() {
             </div>
           </div>
         )}
+
+        <Dialog open={showHighLevelStats} onOpenChange={setShowHighLevelStats}>
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Analytics Overview</DialogTitle>
+            </DialogHeader>
+
+            {isLoadingHighLevelStats ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="size-8 animate-spin text-gray-400" />
+              </div>
+            ) : highLevelStats ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-gray-500">Total Events</p>
+                    <p className="text-2xl font-semibold">
+                      {highLevelStats.totalEvents.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-gray-500">Unique Devices</p>
+                    <p className="text-2xl font-semibold">
+                      {highLevelStats.uniqueDevices.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-gray-500">Unique Countries</p>
+                    <p className="text-2xl font-semibold">
+                      {highLevelStats.uniqueCountries}
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-gray-500">Total Visits Added</p>
+                    <p className="text-2xl font-semibold">
+                      {highLevelStats.totalVisitsAdded.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-medium mb-3">Device Type Distribution</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Mobile</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full"
+                            style={{
+                              width: `${highLevelStats.deviceTypePercentages.mobile}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium w-16 text-right">
+                          {highLevelStats.deviceTypePercentages.mobile.toFixed(
+                            1
+                          )}
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Tablet</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-500 rounded-full"
+                            style={{
+                              width: `${highLevelStats.deviceTypePercentages.tablet}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium w-16 text-right">
+                          {highLevelStats.deviceTypePercentages.tablet.toFixed(
+                            1
+                          )}
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Desktop</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-purple-500 rounded-full"
+                            style={{
+                              width: `${highLevelStats.deviceTypePercentages.desktop}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium w-16 text-right">
+                          {highLevelStats.deviceTypePercentages.desktop.toFixed(
+                            1
+                          )}
+                          %
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border rounded-lg p-4">
+                    <h3 className="font-medium mb-3">Visit Attempts</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Total Attempts</span>
+                        <span className="font-medium">
+                          {highLevelStats.visitAttempts.total.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-green-600">Successful</span>
+                        <span className="font-medium">
+                          {highLevelStats.visitAttempts.successful.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-red-600">Failed</span>
+                        <span className="font-medium">
+                          {highLevelStats.visitAttempts.failed.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border rounded-lg p-4">
+                    <h3 className="font-medium mb-3">Export Activity</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">
+                          Image Export Clicks
+                        </span>
+                        <span className="font-medium">
+                          {highLevelStats.exports.imageExportClicks.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">
+                          Statistics Export Clicks
+                        </span>
+                        <span className="font-medium">
+                          {highLevelStats.exports.statisticsExportClicks.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Image Downloads</span>
+                        <span className="font-medium">
+                          {highLevelStats.exports.imageDownloadClicks.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border rounded-lg p-4">
+                  <h3 className="font-medium mb-3">Event Type Breakdown</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+                    {Object.entries(highLevelStats.eventBreakdown)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([type, count]) => (
+                        <div
+                          key={type}
+                          className="flex justify-between py-1 px-2 rounded bg-gray-50 dark:bg-gray-800"
+                        >
+                          <span className="text-gray-600 dark:text-gray-400 truncate">
+                            {type}
+                          </span>
+                          <span className="font-medium ml-2">
+                            {count.toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Failed to load stats
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

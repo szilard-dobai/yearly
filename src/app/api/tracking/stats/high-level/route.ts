@@ -34,6 +34,7 @@ export async function GET(request: Request) {
       calendarResets,
       pageViews,
       eventTypeBreakdown,
+      countriesByDevices,
     ] = await Promise.all([
       collection.countDocuments({}),
       collection.distinct('country').then((arr) => arr.filter(Boolean).length),
@@ -63,6 +64,24 @@ export async function GET(request: Request) {
         .toArray(),
       collection
         .aggregate([{ $group: { _id: '$type', count: { $sum: 1 } } }])
+        .toArray(),
+      collection
+        .aggregate([
+          { $match: { country: { $exists: true, $ne: null } } },
+          {
+            $group: {
+              _id: '$country',
+              devices: { $addToSet: '$deviceId' },
+            },
+          },
+          {
+            $project: {
+              country: '$_id',
+              deviceCount: { $size: '$devices' },
+            },
+          },
+          { $sort: { deviceCount: -1 } },
+        ])
         .toArray(),
     ])
 
@@ -102,6 +121,21 @@ export async function GET(request: Request) {
       eventBreakdown[item._id as string] = item.count as number
     }
 
+    const topCountriesByDevices = countriesByDevices
+      .slice(0, 10)
+      .map((item) => ({
+        country: item.country as string,
+        deviceCount: item.deviceCount as number,
+      }))
+
+    const interestingMentions = countriesByDevices
+      .filter((item) => (item.deviceCount as number) <= 2)
+      .slice(0, 10)
+      .map((item) => ({
+        country: item.country as string,
+        deviceCount: item.deviceCount as number,
+      }))
+
     return NextResponse.json({
       totalEvents,
       uniqueCountries,
@@ -130,6 +164,8 @@ export async function GET(request: Request) {
         notFound: pageViewMap['not_found_page_view'] || 0,
       },
       eventBreakdown,
+      topCountriesByDevices,
+      interestingMentions,
     })
   } catch (error) {
     console.error('Failed to fetch high-level stats:', error)

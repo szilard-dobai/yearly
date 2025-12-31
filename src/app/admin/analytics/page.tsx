@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { COUNTRIES } from '@/lib/countries'
+import { COUNTRIES, getFlagEmoji } from '@/lib/countries'
 import type { TrackingEvent, TrackingEventType } from '@/lib/tracking/types'
 import {
   Dialog,
@@ -61,6 +61,11 @@ interface Stats {
   regions: string[]
 }
 
+interface CountryDeviceCount {
+  country: string
+  deviceCount: number
+}
+
 interface HighLevelStats {
   totalEvents: number
   uniqueCountries: number
@@ -93,6 +98,8 @@ interface HighLevelStats {
     notFound: number
   }
   eventBreakdown: Record<string, number>
+  topCountriesByDevices: CountryDeviceCount[]
+  interestingMentions: CountryDeviceCount[]
 }
 
 export default function AnalyticsPage() {
@@ -942,6 +949,76 @@ export default function AnalyticsPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {highLevelStats.topCountriesByDevices.length > 0 && (
+                    <div className="border rounded-lg p-4">
+                      <h3 className="font-medium mb-3">
+                        Top Countries by Devices
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        {highLevelStats.topCountriesByDevices
+                          .slice(0, 5)
+                          .map(({ country, deviceCount }, index) => (
+                            <div
+                              key={country}
+                              className="flex items-center justify-between py-1"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-400 w-5 text-right">
+                                  {index + 1}.
+                                </span>
+                                <span>{getFlagEmoji(country)}</span>
+                                <span>
+                                  {COUNTRIES.find((c) => c.code === country)
+                                    ?.name || country}
+                                </span>
+                              </div>
+                              <span className="font-medium">
+                                {deviceCount.toLocaleString()}{' '}
+                                <span className="text-gray-500 font-normal">
+                                  {deviceCount === 1 ? 'device' : 'devices'}
+                                </span>
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {highLevelStats.interestingMentions.length > 0 && (
+                    <div className="border rounded-lg p-4">
+                      <h3 className="font-medium mb-3">Interesting Mentions</h3>
+                      <div className="space-y-2 text-sm">
+                        {highLevelStats.interestingMentions
+                          .slice(0, 5)
+                          .map(({ country, deviceCount }, index) => (
+                            <div
+                              key={country}
+                              className="flex items-center justify-between py-1"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-400 w-5 text-right">
+                                  {index + 1}.
+                                </span>
+                                <span>{getFlagEmoji(country)}</span>
+                                <span>
+                                  {COUNTRIES.find((c) => c.code === country)
+                                    ?.name || country}
+                                </span>
+                              </div>
+                              <span className="font-medium">
+                                {deviceCount.toLocaleString()}{' '}
+                                <span className="text-gray-500 font-normal">
+                                  {deviceCount === 1 ? 'device' : 'devices'}
+                                </span>
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="border rounded-lg p-4">

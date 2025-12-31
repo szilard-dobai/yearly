@@ -19,17 +19,25 @@ type SortField = 'timestamp' | 'type' | 'deviceId'
 type SortOrder = 'asc' | 'desc'
 
 const EVENT_TYPES: TrackingEventType[] = [
+  // Page view events
   'homepage_view',
   'create_page_view',
   'not_found_page_view',
+  // Homepage events
   'homepage_cta_click',
+  // 404 page events
   'not_found_home_click',
+  // Create page events
   'year_changed',
   'visit_add_attempt',
   'visit_deleted',
+  'visit_undo',
+  'calendar_reset',
   'image_export_click',
   'image_download_click',
+  'statistics_export_click',
   'developer_mode_toggle',
+  'mobile_fab_click',
   'json_import',
   'json_export',
 ]

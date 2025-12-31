@@ -827,7 +827,7 @@ export default function AnalyticsPage() {
                     </p>
                   </div>
                   <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-500">Total Visits Added</p>
+                    <p className="text-sm text-gray-500">Travel Days Logged</p>
                     <p className="text-2xl font-semibold">
                       {highLevelStats.totalVisitsAdded.toLocaleString()}
                     </p>

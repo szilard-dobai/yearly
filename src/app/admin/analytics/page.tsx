@@ -434,14 +434,14 @@ export default function AnalyticsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handleOpenHighLevelStats}
             >
               <BarChart3 className="size-4" />
-              Overview
+              <span className="hidden sm:inline">Overview</span>
             </Button>
             <Button
               variant="outline"
@@ -452,11 +452,11 @@ export default function AnalyticsPage() {
               <RefreshCw
                 className={`size-4 ${isLoadingStats || isLoadingEvents ? 'animate-spin' : ''}`}
               />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="size-4" />
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </div>

@@ -77,7 +77,7 @@ export function useStatisticsExport({
       clonedElement.style.flexDirection = 'column'
 
       const darkMode = isDarkMode()
-      clonedElement.style.backgroundColor = darkMode ? '#0a0a0a' : '#fafafa'
+      clonedElement.style.backgroundColor = darkMode ? '#000000' : '#fafafa'
 
       if (darkMode) {
         clonedElement.style.color = '#ffffff'
@@ -87,6 +87,7 @@ export function useStatisticsExport({
         '[data-export-watermark]'
       ) as HTMLElement
       if (watermark) {
+        watermark.classList.remove('hidden')
         watermark.style.display = 'block'
         watermark.style.marginTop = 'auto'
         watermark.style.paddingTop = '2rem'
@@ -205,7 +206,7 @@ export function useStatisticsExport({
       const dataUrl = await toJpeg(clonedElement, {
         quality: 0.95,
         pixelRatio: 2,
-        backgroundColor: darkMode ? '#0a0a0a' : '#fafafa',
+        backgroundColor: darkMode ? '#000000' : '#fafafa',
         cacheBust: true,
         width: exportWidth,
         height: exportHeight,

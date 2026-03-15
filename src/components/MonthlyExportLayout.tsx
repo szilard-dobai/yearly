@@ -98,12 +98,12 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
           </h2>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-16">
           <div className="grid grid-cols-7 gap-0 mb-1">
             {dayLabels.map((day) => (
               <div
                 key={day}
-                className="text-center text-xs text-gray-500 dark:text-gray-400 font-medium py-1"
+                className="text-center text-sm text-gray-500 dark:text-gray-400 font-medium py-1"
               >
                 {day}
               </div>
@@ -113,7 +113,7 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
             <div key={weekIndex} className="grid grid-cols-7 gap-0">
               {week.map((date, dayIndex) => {
                 if (!date) {
-                  return <div key={dayIndex} className="aspect-square p-1" />
+                  return <div key={dayIndex} className="h-20 p-1" />
                 }
 
                 const cellVisits = getVisitsForDate(date, monthVisits)
@@ -123,12 +123,12 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
                 return (
                   <div
                     key={dayIndex}
-                    className="aspect-square p-0.5 flex items-center justify-center"
+                    className="h-20 p-0.5 flex items-center justify-center"
                   >
                     <div className="flex items-center justify-center w-full h-full">
                       {hasVisits ? (
                         hasTwoCountries ? (
-                          <div className="relative w-8 h-6">
+                          <div className="relative w-10 h-8">
                             <div
                               className="absolute inset-0 flex items-center justify-center overflow-hidden"
                               style={{
@@ -138,6 +138,8 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
                               <Flag
                                 countryCode={cellVisits[0].countryCode}
                                 displayMode={settings.flagDisplayMode}
+                                size="lg"
+                                className="text-3xl"
                               />
                             </div>
                             <div
@@ -150,6 +152,8 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
                               <Flag
                                 countryCode={cellVisits[1].countryCode}
                                 displayMode={settings.flagDisplayMode}
+                                size="lg"
+                                className="text-3xl"
                               />
                             </div>
                           </div>
@@ -157,10 +161,12 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
                           <Flag
                             displayMode={settings.flagDisplayMode}
                             countryCode={cellVisits[0].countryCode}
+                            size="lg"
+                            className="text-3xl"
                           />
                         )
                       ) : (
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        <span className="text-lg font-medium text-gray-900 dark:text-white">
                           {date.getDate()}
                         </span>
                       )}
@@ -172,42 +178,42 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
               Countries Visited
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {stats.totalCountries}
             </p>
           </div>
 
-          <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
               Days Abroad
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {stats.totalDays}
             </p>
           </div>
 
-          <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
               Average Trip
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {stats.averageTripLength.toFixed(1)}
-              <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-1">
+              <span className="text-base font-normal text-gray-500 dark:text-gray-400 ml-1">
                 days
               </span>
             </p>
           </div>
 
-          <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
               Month Abroad
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {stats.percentTraveled.toFixed(1)}%
             </p>
           </div>
@@ -215,10 +221,10 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
 
         {stats.countriesByDays.length > 0 && (
           <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+            <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
               Top Countries
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {stats.countriesByDays.map((item, index) => {
                 const country = getCountryByCode(item.countryCode)
                 const countryName = country?.name || item.countryCode
@@ -226,7 +232,7 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
                 return (
                   <div
                     key={item.countryCode}
-                    className="flex items-center gap-4 p-4 border rounded-2xl bg-gray-100 dark:bg-white/5"
+                    className="flex items-center gap-4 p-3 border rounded-2xl bg-gray-100 dark:bg-white/5"
                   >
                     <div className="w-10 flex items-center justify-center shrink-0">
                       {getRankDisplay(index + 1)}

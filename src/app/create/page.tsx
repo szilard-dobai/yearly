@@ -28,14 +28,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getCountryByCode } from '@/lib/countries'
-import { MONTH_NAMES } from '@/lib/constants'
+import { MONTH_NAMES, MONTH_NAMES_SHORT } from '@/lib/constants'
 import { useImageExport } from '@/lib/hooks/useImageExport'
 import { useMonthlyExport } from '@/lib/hooks/useMonthlyExport'
 import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
-import { CalendarDays, Undo2 } from 'lucide-react'
+import { CalendarDays, Loader2, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
@@ -78,6 +78,7 @@ function Create() {
 
   const {
     exportMonth,
+    status: monthlyExportStatus,
     previewOpen: monthlyPreviewOpen,
     setPreviewOpen: setMonthlyPreviewOpen,
     imageDataUrl: monthlyImageDataUrl,
@@ -228,7 +229,7 @@ function Create() {
               <StandardCard>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
+                    <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
                       <span className="text-2xl">✈️</span>
                       Add Visit
                     </CardTitle>
@@ -237,7 +238,7 @@ function Create() {
                         variant="ghost"
                         size="sm"
                         onClick={handleUndo}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                        className="text-gray-500 hover:text-gray-700 dark:text-zinc-500 dark:hover:text-zinc-300"
                       >
                         <Undo2 className="size-4 mr-1" />
                         Undo
@@ -264,7 +265,7 @@ function Create() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <p className="text-gray-300 dark:text-gray-600 leading-relaxed">
+                      <p className="text-gray-300 dark:text-zinc-400 leading-relaxed">
                         Download high-quality images to share
                       </p>
                       <CalendarExportButton
@@ -277,14 +278,14 @@ function Create() {
                         calendarData={calendarData}
                         year={selectedYear}
                       />
-                      <div className="border-t border-white/20 dark:border-black/10 pt-3">
-                        <div className="flex gap-2">
+                      <div className="border-t border-white/20 dark:border-white/8 pt-3">
+                        <div className="flex items-center gap-2">
                           <Select
                             value={selectedMonth.toString()}
                             onValueChange={(v) => setSelectedMonth(Number(v))}
                           >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue />
+                            <SelectTrigger className="flex-1 h-10! min-w-0 bg-white/10 border-white/15 hover:bg-white/15 cursor-pointer">
+                              <SelectValue>{MONTH_NAMES_SHORT[selectedMonth]}</SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               {MONTH_NAMES.map((name, i) => (
@@ -296,12 +297,22 @@ function Create() {
                           </Select>
                           <Button
                             onClick={() => exportMonth()}
+                            disabled={monthlyExportStatus === 'loading'}
                             variant="cta"
                             size="lg"
-                            className="whitespace-nowrap"
+                            className="whitespace-nowrap w-[180px]"
                           >
-                            <CalendarDays className="size-5" />
-                            Download Month
+                            {monthlyExportStatus === 'loading' ? (
+                              <>
+                                <Loader2 className="size-5 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <CalendarDays className="size-5" />
+                                Download Month
+                              </>
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -312,7 +323,7 @@ function Create() {
 
               <StandardCard>
                 <CardHeader>
-                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
+                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
                     <span className="text-2xl">📊</span>
                     Statistics
                   </CardTitle>
@@ -328,7 +339,7 @@ function Create() {
 
               <StandardCard>
                 <CardHeader>
-                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-white">
+                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
                     <span className="text-2xl">⚙️</span>
                     Settings
                   </CardTitle>
@@ -351,7 +362,7 @@ function Create() {
                 trackEvent('developer_mode_toggle', { opened: isOpen })
               }}
             >
-              <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg list-none flex items-center gap-2">
+              <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-zinc-100 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/4 transition-colors rounded-lg list-none flex items-center gap-2">
                 <span className="text-lg">🔧</span>
                 Developer Mode
               </summary>
@@ -429,14 +440,24 @@ function Create() {
             <Button
               onClick={() => {
                 setIsMobileMonthDialogOpen(false)
-                exportMonth('mobile_fab')
+                requestAnimationFrame(() => exportMonth('mobile_fab'))
               }}
+              disabled={monthlyExportStatus === 'loading'}
               variant="cta"
               size="lg"
               className="w-full"
             >
-              <CalendarDays className="size-5" />
-              Download Month
+              {monthlyExportStatus === 'loading' ? (
+                <>
+                  <Loader2 className="size-5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <CalendarDays className="size-5" />
+                  Download Month
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>

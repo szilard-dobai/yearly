@@ -79,9 +79,10 @@ export function useMonthlyExport({
       clonedElement.style.boxSizing = 'border-box'
       clonedElement.style.display = 'flex'
       clonedElement.style.flexDirection = 'column'
+      clonedElement.style.minHeight = `${exportHeight}px`
 
       const darkMode = isDarkMode()
-      clonedElement.style.backgroundColor = darkMode ? '#0a0a0a' : '#fafafa'
+      clonedElement.style.backgroundColor = darkMode ? '#000000' : '#fafafa'
 
       if (darkMode) {
         clonedElement.style.color = '#ffffff'
@@ -91,6 +92,7 @@ export function useMonthlyExport({
         '[data-export-watermark]'
       ) as HTMLElement
       if (watermark) {
+        watermark.classList.remove('hidden')
         watermark.style.display = 'block'
         watermark.style.marginTop = 'auto'
         watermark.style.paddingTop = '2rem'
@@ -136,14 +138,38 @@ export function useMonthlyExport({
         if (htmlEl.classList.contains('p-4')) {
           htmlEl.style.padding = '1.75rem'
         }
+        if (htmlEl.classList.contains('p-3')) {
+          htmlEl.style.padding = '1.25rem'
+        }
         if (htmlEl.classList.contains('gap-4')) {
           htmlEl.style.gap = '1.5rem'
+        }
+        if (htmlEl.classList.contains('gap-3')) {
+          htmlEl.style.gap = '1.25rem'
+        }
+        if (htmlEl.classList.contains('mb-5')) {
+          htmlEl.style.marginBottom = '2rem'
         }
         if (htmlEl.classList.contains('mb-4')) {
           htmlEl.style.marginBottom = '1.5rem'
         }
+        if (htmlEl.classList.contains('mb-1')) {
+          htmlEl.style.marginBottom = '0.5rem'
+        }
+        if (htmlEl.classList.contains('mb-16')) {
+          htmlEl.style.marginBottom = '5rem'
+        }
         if (htmlEl.classList.contains('mb-6')) {
           htmlEl.style.marginBottom = '2.5rem'
+        }
+        if (htmlEl.classList.contains('mb-3')) {
+          htmlEl.style.marginBottom = '1.25rem'
+        }
+        if (htmlEl.classList.contains('space-y-2')) {
+          const children = htmlEl.children
+          for (let i = 1; i < children.length; i++) {
+            ;(children[i] as HTMLElement).style.marginTop = '0.75rem'
+          }
         }
         if (htmlEl.classList.contains('space-y-3')) {
           const children = htmlEl.children
@@ -170,6 +196,12 @@ export function useMonthlyExport({
         }
         if (htmlEl.classList.contains('w-8')) {
           htmlEl.style.width = '2.5rem'
+        }
+        if (htmlEl.classList.contains('h-20')) {
+          htmlEl.style.height = '6.5rem'
+        }
+        if (htmlEl.classList.contains('h-8')) {
+          htmlEl.style.height = '2.5rem'
         }
         if (htmlEl.classList.contains('h-6')) {
           htmlEl.style.height = '2rem'
@@ -203,7 +235,7 @@ export function useMonthlyExport({
       const dataUrl = await toJpeg(clonedElement, {
         quality: 0.95,
         pixelRatio: 2,
-        backgroundColor: darkMode ? '#0a0a0a' : '#fafafa',
+        backgroundColor: darkMode ? '#000000' : '#fafafa',
         cacheBust: true,
         width: exportWidth,
         height: exportHeight,

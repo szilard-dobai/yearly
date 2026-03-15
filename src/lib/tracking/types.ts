@@ -20,6 +20,7 @@ export type TrackingEventType =
   | 'image_export_click'
   | 'image_download_click'
   | 'statistics_export_click'
+  | 'monthly_export_click'
   | 'developer_mode_toggle'
   | 'mobile_fab_click'
   | 'json_import'
@@ -79,4 +80,10 @@ export interface JsonImportMetadata {
 export interface JsonExportMetadata {
   visitCount: number
   success: boolean
+}
+
+export interface MonthlyExportClickMetadata {
+  year: number
+  month: number
+  source: 'sidebar' | 'header' | 'mobile_fab'
 }

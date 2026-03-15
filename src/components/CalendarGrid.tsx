@@ -8,10 +8,11 @@ interface CalendarGridProps {
   year: number
   calendarData: CalendarData
   onRemoveVisit: (visitId: string) => void
+  onMonthExport?: (month: number) => void
 }
 
 const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
-  ({ year, calendarData, onRemoveVisit }, ref) => {
+  ({ year, calendarData, onRemoveVisit, onMonthExport }, ref) => {
     const visits = calendarData.visits
 
     return (
@@ -29,6 +30,7 @@ const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
               month={month}
               visits={visits}
               onRemoveVisit={onRemoveVisit}
+              onExport={onMonthExport ? () => onMonthExport(month) : undefined}
             />
           ))}
         </div>

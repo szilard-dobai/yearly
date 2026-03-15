@@ -56,7 +56,13 @@ export async function GET(request: Request) {
         .aggregate([
           {
             $match: {
-              type: { $in: ['homepage_view', 'create_page_view', 'not_found_page_view'] },
+              type: {
+                $in: [
+                  'homepage_view',
+                  'create_page_view',
+                  'not_found_page_view',
+                ],
+              },
             },
           },
           { $group: { _id: '$type', count: { $sum: 1 } } },
@@ -96,7 +102,8 @@ export async function GET(request: Request) {
     const successfulVisitAttempts = visitAddAttempts.filter(
       (e) => (e.metadata as VisitAddAttemptMetadata | undefined)?.success
     ).length
-    const failedVisitAttempts = visitAddAttempts.length - successfulVisitAttempts
+    const failedVisitAttempts =
+      visitAddAttempts.length - successfulVisitAttempts
 
     const deviceTypeMap: Record<string, number> = {}
     let totalWithDeviceType = 0
@@ -106,9 +113,18 @@ export async function GET(request: Request) {
     }
 
     const deviceTypePercentages = {
-      mobile: totalWithDeviceType > 0 ? ((deviceTypeMap['mobile'] || 0) / totalWithDeviceType) * 100 : 0,
-      tablet: totalWithDeviceType > 0 ? ((deviceTypeMap['tablet'] || 0) / totalWithDeviceType) * 100 : 0,
-      desktop: totalWithDeviceType > 0 ? ((deviceTypeMap['desktop'] || 0) / totalWithDeviceType) * 100 : 0,
+      mobile:
+        totalWithDeviceType > 0
+          ? ((deviceTypeMap['mobile'] || 0) / totalWithDeviceType) * 100
+          : 0,
+      tablet:
+        totalWithDeviceType > 0
+          ? ((deviceTypeMap['tablet'] || 0) / totalWithDeviceType) * 100
+          : 0,
+      desktop:
+        totalWithDeviceType > 0
+          ? ((deviceTypeMap['desktop'] || 0) / totalWithDeviceType) * 100
+          : 0,
     }
 
     const pageViewMap: Record<string, number> = {}

@@ -63,7 +63,10 @@ export default function Home() {
 
       <main className="container mx-auto px-3 py-6">
         <section className="pt-24 pb-16">
-          <AnimatedSection animation="fadeInUp" className="text-center max-w-4xl mx-auto">
+          <AnimatedSection
+            animation="fadeInUp"
+            className="text-center max-w-4xl mx-auto"
+          >
             <h1 className="mb-6 text-gray-900 dark:text-zinc-100 text-7xl font-serif font-normal leading-tight tracking-tight">
               Your year, at a glance.
             </h1>

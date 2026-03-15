@@ -6,10 +6,7 @@ import { Button } from '@/components/ui/button'
 
 const THEME_CYCLE: ColorScheme[] = ['light', 'dark', 'system']
 
-const THEME_CONFIG: Record<
-  ColorScheme,
-  { icon: typeof Sun; label: string }
-> = {
+const THEME_CONFIG: Record<ColorScheme, { icon: typeof Sun; label: string }> = {
   light: { icon: Sun, label: 'Light' },
   dark: { icon: Moon, label: 'Dark' },
   system: { icon: Monitor, label: 'System' },

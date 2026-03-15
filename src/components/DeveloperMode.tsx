@@ -67,10 +67,7 @@ export default function DeveloperMode({
         </p>
         <div className="flex gap-2">
           <ExportButton calendarData={calendarData} year={year} />
-          <ImportButton
-            currentData={calendarData}
-            onImport={onDataChange}
-          />
+          <ImportButton currentData={calendarData} onImport={onDataChange} />
         </div>
       </div>
 

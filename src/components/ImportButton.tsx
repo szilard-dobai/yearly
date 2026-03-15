@@ -179,7 +179,10 @@ export default function ImportButton({
         )}
       </Button>
 
-      <Dialog open={showModal && !!importedData} onOpenChange={handleOpenChange}>
+      <Dialog
+        open={showModal && !!importedData}
+        onOpenChange={handleOpenChange}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Import Calendar Data</DialogTitle>

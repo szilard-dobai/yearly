@@ -2,7 +2,14 @@
 
 import { Button } from '@/components/ui/button'
 import { trackEvent } from '@/lib/tracking'
-import { Calendar, CalendarDays, BarChart3, Loader2, Plus, X } from 'lucide-react'
+import {
+  Calendar,
+  CalendarDays,
+  BarChart3,
+  Loader2,
+  Plus,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
 
 type ExportType = 'calendar' | 'stats' | null

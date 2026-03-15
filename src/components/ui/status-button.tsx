@@ -8,8 +8,10 @@ interface StatusConfig {
   text: string
 }
 
-interface StatusButtonProps
-  extends Omit<React.ComponentProps<typeof Button>, 'children'> {
+interface StatusButtonProps extends Omit<
+  React.ComponentProps<typeof Button>,
+  'children'
+> {
   status: StatusState
   idleIcon: React.ReactNode
   idleText: string

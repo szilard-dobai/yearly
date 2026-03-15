@@ -8,7 +8,8 @@ import { useEffect } from 'react'
 export default function NotFound() {
   useEffect(() => {
     trackEvent('not_found_page_view', {
-      path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+      path:
+        typeof window !== 'undefined' ? window.location.pathname : undefined,
     })
   }, [])
 

@@ -173,7 +173,7 @@ const StatisticsExportLayout = forwardRef<
                       <Flag
                         countryCode={item.countryCode}
                         displayMode={settings.flagDisplayMode}
-                        className='text-2xl'
+                        className="text-2xl"
                         size="lg"
                       />
                     </div>

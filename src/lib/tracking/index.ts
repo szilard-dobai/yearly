@@ -17,7 +17,11 @@ function getDeviceType(): DeviceType {
       return 'tablet'
     }
     // Check for mobile devices
-    if (/iPhone|iPod|Android.*Mobile|webOS|BlackBerry|Opera Mini|IEMobile/i.test(ua)) {
+    if (
+      /iPhone|iPod|Android.*Mobile|webOS|BlackBerry|Opera Mini|IEMobile/i.test(
+        ua
+      )
+    ) {
       return 'mobile'
     }
     return 'desktop'

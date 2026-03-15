@@ -31,6 +31,7 @@ Add a monthly export that generates a single vertical image combining a one-mont
 ### Stats Scoping
 
 Reuse existing statistics functions from `src/lib/statistics.ts`, but filter visits to the selected month before calculating. Changes from yearly stats:
+
 - Remove "Busiest Month" (irrelevant for single month)
 - Replace "Year Abroad %" with "Month Abroad %" (days abroad / days in month)
 
@@ -41,6 +42,7 @@ Reuse existing statistics functions from `src/lib/statistics.ts`, but filter vis
 Current state: "Export Your Year" card with "Download Calendar" and "Download Statistics" buttons.
 
 Changes:
+
 - Rename card title from "Export Your Year" to "Export"
 - Keep existing two buttons unchanged
 - Add a horizontal divider below existing buttons
@@ -116,6 +118,7 @@ Changes:
 ## Tracking
 
 New events:
+
 - `monthly_export_click` — when user clicks "Download Month" button or month header icon. Metadata: `{ year, month, source: 'sidebar' | 'header' | 'mobile_fab' }`
 
 The download action from the preview modal is handled by the existing `ImagePreviewModal` which already fires `image_download_click`. No new download event needed — the modal is reused as-is.

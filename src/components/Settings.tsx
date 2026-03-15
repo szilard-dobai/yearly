@@ -97,7 +97,10 @@ export default function Settings({ year, visitCount, onReset }: SettingsProps) {
       </div>
 
       <div className="pt-4 border-t border-gray-200 dark:border-white/8">
-        <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+        <AlertDialog
+          open={isResetDialogOpen}
+          onOpenChange={setIsResetDialogOpen}
+        >
           <AlertDialogTrigger asChild>
             <Button
               variant="destructive"
@@ -108,7 +111,9 @@ export default function Settings({ year, visitCount, onReset }: SettingsProps) {
               Reset Calendar for {year}
             </Button>
           </AlertDialogTrigger>
-          <AlertDialogContent onOverlayClick={() => setIsResetDialogOpen(false)}>
+          <AlertDialogContent
+            onOverlayClick={() => setIsResetDialogOpen(false)}
+          >
             <AlertDialogHeader>
               <AlertDialogTitle>Reset calendar for {year}?</AlertDialogTitle>
               <AlertDialogDescription>

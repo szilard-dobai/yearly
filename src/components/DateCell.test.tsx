@@ -15,11 +15,7 @@ describe('DateCell', () => {
   describe('Empty date cell', () => {
     it('should render empty cell when date is null', () => {
       const { container } = renderWithSettings(
-        <DateCell
-          date={null}
-          visits={[]}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={null} visits={[]} onRemoveVisit={mockOnRemoveVisit} />
       )
 
       const cell = container.querySelector('[role="gridcell"]')
@@ -30,11 +26,7 @@ describe('DateCell', () => {
     it('should render date number when no visits', () => {
       const date = new Date(2025, 1, 15) // Feb 15, 2025
       renderWithSettings(
-        <DateCell
-          date={date}
-          visits={[]}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={[]} onRemoveVisit={mockOnRemoveVisit} />
       )
 
       expect(screen.getByText('15')).toBeInTheDocument()
@@ -43,11 +35,7 @@ describe('DateCell', () => {
     it('should highlight today date in red', () => {
       const today = new Date()
       renderWithSettings(
-        <DateCell
-          date={today}
-          visits={[]}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={today} visits={[]} onRemoveVisit={mockOnRemoveVisit} />
       )
 
       const dayNumber = screen.getByText(today.getDate().toString())

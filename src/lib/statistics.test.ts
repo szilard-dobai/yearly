@@ -623,7 +623,11 @@ describe('statistics', () => {
 })
 
 function makeVisit(countryCode: string, dateStr: string): CountryVisit {
-  return { id: `${countryCode}-${dateStr}`, countryCode, date: new Date(dateStr) }
+  return {
+    id: `${countryCode}-${dateStr}`,
+    countryCode,
+    date: new Date(dateStr),
+  }
 }
 
 describe('calculatePercentageOfMonthTraveled', () => {

@@ -52,15 +52,13 @@ export async function GET(request: Request) {
       collection.distinct('deviceId', filter).then((arr) => arr.length),
       collection.distinct('type').then((arr) => arr.length),
       collection.distinct('type', filter).then((arr) => arr.length),
-      collection.distinct('country').then((arr) =>
-        arr.filter(Boolean).sort() as string[]
-      ),
-      collection.distinct('region').then((arr) =>
-        arr.filter(Boolean).sort() as string[]
-      ),
-      collection.distinct('country', filter).then((arr) =>
-        arr.filter(Boolean)
-      ),
+      collection
+        .distinct('country')
+        .then((arr) => arr.filter(Boolean).sort() as string[]),
+      collection
+        .distinct('region')
+        .then((arr) => arr.filter(Boolean).sort() as string[]),
+      collection.distinct('country', filter).then((arr) => arr.filter(Boolean)),
     ])
 
     return NextResponse.json({

@@ -316,8 +316,7 @@ export function calculatePercentageOfYearTraveled(
   const totalDays = uniqueDays.size
 
   // Check if it's a leap year
-  const isLeapYear =
-    (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
   const daysInYear = isLeapYear ? 366 : 365
 
   return (totalDays / daysInYear) * 100

@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     if (region && region !== 'all') filter.region = region
     if (search) {
       filter.$or = [
-        { 'metadata': { $regex: search, $options: 'i' } },
+        { metadata: { $regex: search, $options: 'i' } },
         { type: { $regex: search, $options: 'i' } },
       ]
     }
@@ -74,14 +74,12 @@ export async function POST(request: Request) {
     const event = await request.json()
 
     if (!event.type || !event.timestamp || !event.deviceId) {
-      return NextResponse.json(
-        { error: 'Invalid event data' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid event data' }, { status: 400 })
     }
 
     const country = request.headers.get('x-vercel-ip-country') || undefined
-    const region = request.headers.get('x-vercel-ip-country-region') || undefined
+    const region =
+      request.headers.get('x-vercel-ip-country-region') || undefined
 
     const collection = await getTrackingCollection()
     await collection.insertOne({

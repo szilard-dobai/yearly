@@ -27,7 +27,9 @@ describe('Settings', () => {
     it('should show switch as unchecked when mode is emoji (default)', () => {
       renderWithSettings(<Settings {...defaultProps} />)
 
-      const switchElement = screen.getByRole('switch', { name: /use flag icons/i })
+      const switchElement = screen.getByRole('switch', {
+        name: /use flag icons/i,
+      })
       expect(switchElement).not.toBeChecked()
     })
 
@@ -35,7 +37,9 @@ describe('Settings', () => {
       const user = userEvent.setup()
       renderWithSettings(<Settings {...defaultProps} />)
 
-      const switchElement = screen.getByRole('switch', { name: /use flag icons/i })
+      const switchElement = screen.getByRole('switch', {
+        name: /use flag icons/i,
+      })
       expect(switchElement).not.toBeChecked()
 
       await user.click(switchElement)
@@ -94,7 +98,9 @@ describe('Settings', () => {
       ]
 
       for (const day of days) {
-        expect(await screen.findByRole('option', { name: day })).toBeInTheDocument()
+        expect(
+          await screen.findByRole('option', { name: day })
+        ).toBeInTheDocument()
       }
     })
   })

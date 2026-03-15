@@ -7,6 +7,7 @@ import Header from '@/components/Header'
 import CalendarExportButton from '@/components/CalendarExportButton'
 import ImagePreviewModal from '@/components/ImagePreviewModal'
 import MobileFab from '@/components/MobileFab'
+import MonthlyExportLayout from '@/components/MonthlyExportLayout'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
@@ -27,12 +28,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getCountryByCode } from '@/lib/countries'
+import { MONTH_NAMES } from '@/lib/constants'
 import { useImageExport } from '@/lib/hooks/useImageExport'
+import { useMonthlyExport } from '@/lib/hooks/useMonthlyExport'
 import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
-import { Undo2 } from 'lucide-react'
+import { CalendarDays, Undo2 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
@@ -51,6 +54,11 @@ function Create() {
   const [isMobileAddDialogOpen, setIsMobileAddDialogOpen] = useState(false)
   const calendarRef = useRef<HTMLDivElement>(null)
   const statisticsRef = useRef<HTMLDivElement>(null)
+  const monthlyExportRef = useRef<HTMLDivElement>(null)
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth()
+  )
+  const [isMobileMonthDialogOpen, setIsMobileMonthDialogOpen] = useState(false)
 
   const {
     exportImage,
@@ -67,6 +75,19 @@ function Create() {
     imageDataUrl: statsImageDataUrl,
     filename: statsFilename,
   } = useStatisticsExport({ statisticsRef, calendarData, year: selectedYear })
+
+  const {
+    exportMonth,
+    previewOpen: monthlyPreviewOpen,
+    setPreviewOpen: setMonthlyPreviewOpen,
+    imageDataUrl: monthlyImageDataUrl,
+    filename: monthlyFilename,
+  } = useMonthlyExport({
+    monthlyExportRef,
+    calendarData,
+    year: selectedYear,
+    month: selectedMonth,
+  })
 
   useEffect(() => {
     trackEvent('create_page_view')
@@ -128,6 +149,24 @@ function Create() {
     saveCalendarData(newData)
   }, [calendarData, selectedYear])
 
+  const pendingMonthExport = useRef<{ month: number; source: 'header' } | null>(null)
+
+  const handleMonthExport = useCallback(
+    (month: number) => {
+      setSelectedMonth(month)
+      pendingMonthExport.current = { month, source: 'header' }
+    },
+    []
+  )
+
+  useEffect(() => {
+    if (pendingMonthExport.current && pendingMonthExport.current.month === selectedMonth) {
+      const { source } = pendingMonthExport.current
+      pendingMonthExport.current = null
+      exportMonth(source)
+    }
+  }, [selectedMonth, exportMonth])
+
   const visitsForSelectedYear = calendarData.visits.filter((visit) => {
     const visitYear = new Date(visit.date).getFullYear()
     return visitYear === selectedYear
@@ -168,9 +207,18 @@ function Create() {
                     year={selectedYear}
                     calendarData={calendarData}
                     onRemoveVisit={handleRemoveVisit}
+                    onMonthExport={handleMonthExport}
                   />
                 </CardContent>
               </StandardCard>
+              <div className="hidden">
+                <MonthlyExportLayout
+                  ref={monthlyExportRef}
+                  calendarData={calendarData}
+                  year={selectedYear}
+                  month={selectedMonth}
+                />
+              </div>
             </div>
 
             <aside className="space-y-4">
@@ -208,12 +256,12 @@ function Create() {
                   <CardHeader>
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
                       <span className="text-2xl">📸</span>
-                      Export Your Year
+                      Export
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <p className="text-gray-300 dark:text-gray-600 leading-relaxed">
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                         Download high-quality images to share
                       </p>
                       <CalendarExportButton
@@ -226,6 +274,34 @@ function Create() {
                         calendarData={calendarData}
                         year={selectedYear}
                       />
+                      <div className="border-t border-white/10 dark:border-gray-200/10 pt-3">
+                        <div className="flex gap-2">
+                          <Select
+                            value={selectedMonth.toString()}
+                            onValueChange={(v) => setSelectedMonth(Number(v))}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {MONTH_NAMES.map((name, i) => (
+                                <SelectItem key={i} value={i.toString()}>
+                                  {name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            onClick={() => exportMonth()}
+                            variant="cta"
+                            size="lg"
+                            className="whitespace-nowrap"
+                          >
+                            <CalendarDays className="size-5" />
+                            Download Month
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </DarkCard>
@@ -292,7 +368,7 @@ function Create() {
             onAddClick={() => setIsMobileAddDialogOpen(true)}
             onExportClick={exportImage}
             onExportStatsClick={exportStatistics}
-            onExportMonthClick={() => {}}
+            onExportMonthClick={() => setIsMobileMonthDialogOpen(true)}
             hasVisits={visitsForSelectedYear > 0}
           />
         </div>
@@ -320,6 +396,49 @@ function Create() {
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={isMobileMonthDialogOpen}
+        onOpenChange={setIsMobileMonthDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-2xl">📅</span>
+              Download Month
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Select
+              value={selectedMonth.toString()}
+              onValueChange={(v) => setSelectedMonth(Number(v))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTH_NAMES.map((name, i) => (
+                  <SelectItem key={i} value={i.toString()}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => {
+                setIsMobileMonthDialogOpen(false)
+                exportMonth()
+              }}
+              variant="cta"
+              size="lg"
+              className="w-full"
+            >
+              <CalendarDays className="size-5" />
+              Download Month
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <ImagePreviewModal
         open={mobilePreviewOpen}
         onOpenChange={setMobilePreviewOpen}
@@ -334,6 +453,15 @@ function Create() {
         onOpenChange={setStatsPreviewOpen}
         imageDataUrl={statsImageDataUrl}
         filename={statsFilename}
+        year={selectedYear}
+        calendarData={calendarData}
+      />
+
+      <ImagePreviewModal
+        open={monthlyPreviewOpen}
+        onOpenChange={setMonthlyPreviewOpen}
+        imageDataUrl={monthlyImageDataUrl}
+        filename={monthlyFilename}
         year={selectedYear}
         calendarData={calendarData}
       />

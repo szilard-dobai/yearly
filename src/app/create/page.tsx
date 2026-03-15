@@ -292,6 +292,7 @@ function Create() {
             onAddClick={() => setIsMobileAddDialogOpen(true)}
             onExportClick={exportImage}
             onExportStatsClick={exportStatistics}
+            onExportMonthClick={() => {}}
             hasVisits={visitsForSelectedYear > 0}
           />
         </div>

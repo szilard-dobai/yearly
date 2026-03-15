@@ -43,3 +43,8 @@ next-env.d.ts
 # logs
 /logs
 .env*.local
+
+# claude
+.claude/settings.json
+.superpowers/
+__pycache__/

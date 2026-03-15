@@ -4,11 +4,9 @@ import { useStatusFeedback } from './useStatusFeedback'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { trackEvent } from '@/lib/tracking'
 import { MONTH_NAMES } from '@/lib/constants'
-import type { CalendarData } from '@/lib/types'
 
 interface UseMonthlyExportOptions {
   monthlyExportRef: RefObject<HTMLDivElement | null>
-  calendarData: CalendarData
   year: number
   month: number
 }
@@ -26,7 +24,6 @@ interface UseMonthlyExportReturn {
 
 export function useMonthlyExport({
   monthlyExportRef,
-  calendarData,
   year,
   month,
 }: UseMonthlyExportOptions): UseMonthlyExportReturn {

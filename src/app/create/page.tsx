@@ -84,7 +84,6 @@ function Create() {
     filename: monthlyFilename,
   } = useMonthlyExport({
     monthlyExportRef,
-    calendarData,
     year: selectedYear,
     month: selectedMonth,
   })

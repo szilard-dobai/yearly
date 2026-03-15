@@ -164,12 +164,12 @@ export function useImageExport({
 
       const dataUrl = await toJpeg(clonedElement, {
         quality: 0.95,
-        pixelRatio: 2, // High DPI for quality
+        pixelRatio: 2,
         backgroundColor: darkMode ? '#000000' : '#ffffff',
         cacheBust: true,
         width: 1200,
+        skipFonts: true,
         style: {
-          // Ensure good rendering
           transform: 'scale(1)',
           opacity: '1',
         },
@@ -193,7 +193,15 @@ export function useImageExport({
 
       setError()
     }
-  }, [calendarRef, calendarData, year, isDarkMode, setLoading, setIdle, setError])
+  }, [
+    calendarRef,
+    calendarData,
+    year,
+    isDarkMode,
+    setLoading,
+    setIdle,
+    setError,
+  ])
 
   return {
     exportImage,

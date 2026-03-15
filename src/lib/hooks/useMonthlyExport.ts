@@ -41,234 +41,230 @@ export function useMonthlyExport({
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   }, [settings.colorScheme])
 
-  const exportMonth = useCallback(async (source: ExportSource = 'sidebar') => {
-    if (!monthlyExportRef.current) {
-      setError()
-      return
-    }
-
-    trackEvent('monthly_export_click', {
-      year,
-      month,
-      source,
-    })
-
-    setLoading()
-
-    let clonedElement: HTMLDivElement | null = null
-
-    try {
-      const element = monthlyExportRef.current
-
-      clonedElement = element.cloneNode(true) as HTMLDivElement
-
-      const exportWidth = 1080
-      const exportHeight = 1920
-
-      clonedElement.style.position = 'absolute'
-      clonedElement.style.left = '0'
-      clonedElement.style.top = '0'
-      clonedElement.style.width = `${exportWidth}px`
-      clonedElement.style.height = `${exportHeight}px`
-      clonedElement.style.maxWidth = `${exportWidth}px`
-      clonedElement.style.transform = 'none'
-      clonedElement.style.zIndex = '-1000'
-      clonedElement.style.pointerEvents = 'none'
-      clonedElement.style.opacity = '0'
-      clonedElement.style.padding = '4rem 3rem'
-      clonedElement.style.boxSizing = 'border-box'
-      clonedElement.style.display = 'flex'
-      clonedElement.style.flexDirection = 'column'
-      clonedElement.style.minHeight = `${exportHeight}px`
-
-      const darkMode = isDarkMode()
-      clonedElement.style.backgroundColor = darkMode ? '#000000' : '#fafafa'
-
-      if (darkMode) {
-        clonedElement.style.color = '#ffffff'
+  const exportMonth = useCallback(
+    async (source: ExportSource = 'sidebar') => {
+      if (!monthlyExportRef.current) {
+        setError()
+        return
       }
 
-      const watermark = clonedElement.querySelector(
-        '[data-export-watermark]'
-      ) as HTMLElement
-      if (watermark) {
-        watermark.classList.remove('hidden')
-        watermark.style.display = 'block'
-        watermark.style.marginTop = 'auto'
-        watermark.style.paddingTop = '2rem'
-        const watermarkText = watermark.querySelector('p') as HTMLElement
-        if (watermarkText) {
-          watermarkText.style.fontSize = '1.5rem'
-        }
-      }
-
-      const allElements = clonedElement.querySelectorAll('*')
-      allElements.forEach((el) => {
-        const htmlEl = el as HTMLElement
-        if (htmlEl.classList.contains('text-4xl')) {
-          htmlEl.style.fontSize = '5rem'
-        }
-        if (htmlEl.classList.contains('text-3xl')) {
-          htmlEl.style.fontSize = '4rem'
-        }
-        if (htmlEl.classList.contains('text-2xl')) {
-          htmlEl.style.fontSize = '3rem'
-        }
-        if (htmlEl.classList.contains('text-xl')) {
-          htmlEl.style.fontSize = '2rem'
-        }
-        if (htmlEl.classList.contains('text-lg')) {
-          htmlEl.style.fontSize = '1.75rem'
-        }
-        if (htmlEl.classList.contains('text-base')) {
-          htmlEl.style.fontSize = '1.5rem'
-        }
-        if (htmlEl.classList.contains('text-sm')) {
-          htmlEl.style.fontSize = '1.25rem'
-        }
-        if (htmlEl.classList.contains('text-xs')) {
-          htmlEl.style.fontSize = '1.1rem'
-        }
-        if (htmlEl.classList.contains('rounded-2xl')) {
-          htmlEl.style.borderRadius = '2rem'
-        }
-        if (htmlEl.classList.contains('p-5')) {
-          htmlEl.style.padding = '2rem'
-        }
-        if (htmlEl.classList.contains('p-4')) {
-          htmlEl.style.padding = '1.75rem'
-        }
-        if (htmlEl.classList.contains('p-3')) {
-          htmlEl.style.padding = '1.25rem'
-        }
-        if (htmlEl.classList.contains('gap-4')) {
-          htmlEl.style.gap = '1.5rem'
-        }
-        if (htmlEl.classList.contains('gap-3')) {
-          htmlEl.style.gap = '1.25rem'
-        }
-        if (htmlEl.classList.contains('mb-5')) {
-          htmlEl.style.marginBottom = '2rem'
-        }
-        if (htmlEl.classList.contains('mb-4')) {
-          htmlEl.style.marginBottom = '1.5rem'
-        }
-        if (htmlEl.classList.contains('mb-1')) {
-          htmlEl.style.marginBottom = '0.5rem'
-        }
-        if (htmlEl.classList.contains('mb-16')) {
-          htmlEl.style.marginBottom = '5rem'
-        }
-        if (htmlEl.classList.contains('mb-6')) {
-          htmlEl.style.marginBottom = '2.5rem'
-        }
-        if (htmlEl.classList.contains('mb-3')) {
-          htmlEl.style.marginBottom = '1.25rem'
-        }
-        if (htmlEl.classList.contains('space-y-2')) {
-          const children = htmlEl.children
-          for (let i = 1; i < children.length; i++) {
-            ;(children[i] as HTMLElement).style.marginTop = '0.75rem'
-          }
-        }
-        if (htmlEl.classList.contains('space-y-3')) {
-          const children = htmlEl.children
-          for (let i = 1; i < children.length; i++) {
-            ;(children[i] as HTMLElement).style.marginTop = '1.25rem'
-          }
-        }
-        if (htmlEl.classList.contains('rounded-full')) {
-          htmlEl.style.borderRadius = '9999px'
-        }
-        if (htmlEl.classList.contains('px-3')) {
-          htmlEl.style.paddingLeft = '1rem'
-          htmlEl.style.paddingRight = '1rem'
-        }
-        if (
-          htmlEl.classList.contains('py-1.5') ||
-          htmlEl.classList.contains('py-1')
-        ) {
-          htmlEl.style.paddingTop = '0.5rem'
-          htmlEl.style.paddingBottom = '0.5rem'
-        }
-        if (htmlEl.classList.contains('w-10')) {
-          htmlEl.style.width = '3rem'
-        }
-        if (htmlEl.classList.contains('w-8')) {
-          htmlEl.style.width = '2.5rem'
-        }
-        if (htmlEl.classList.contains('h-20')) {
-          htmlEl.style.height = '6.5rem'
-        }
-        if (htmlEl.classList.contains('h-8')) {
-          htmlEl.style.height = '2.5rem'
-        }
-        if (htmlEl.classList.contains('h-6')) {
-          htmlEl.style.height = '2rem'
-        }
-        if (htmlEl.classList.contains('border-b')) {
-          htmlEl.style.borderBottomWidth = '2px'
-          htmlEl.style.borderBottomStyle = 'solid'
-          htmlEl.style.borderBottomColor = darkMode
-            ? 'rgba(255, 255, 255, 0.1)'
-            : '#e5e7eb'
-        }
-        if (htmlEl.classList.contains('border-t')) {
-          htmlEl.style.borderTopWidth = '2px'
-          htmlEl.style.borderTopStyle = 'solid'
-          htmlEl.style.borderTopColor = darkMode
-            ? 'rgba(255, 255, 255, 0.1)'
-            : '#e5e7eb'
-        }
-        if (htmlEl.classList.contains('pb-6')) {
-          htmlEl.style.paddingBottom = '2rem'
-        }
-        if (htmlEl.classList.contains('pt-6')) {
-          htmlEl.style.paddingTop = '2rem'
-        }
+      trackEvent('monthly_export_click', {
+        year,
+        month,
+        source,
       })
 
-      document.body.appendChild(clonedElement)
+      setLoading()
 
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      let clonedElement: HTMLDivElement | null = null
 
-      const dataUrl = await toJpeg(clonedElement, {
-        quality: 0.95,
-        pixelRatio: 2,
-        backgroundColor: darkMode ? '#000000' : '#fafafa',
-        cacheBust: true,
-        width: exportWidth,
-        height: exportHeight,
-        style: {
-          transform: 'scale(1)',
-          opacity: '1',
-        },
-      })
+      try {
+        const element = monthlyExportRef.current
 
-      document.body.removeChild(clonedElement)
-      clonedElement = null
+        clonedElement = element.cloneNode(true) as HTMLDivElement
 
-      setImageDataUrl(dataUrl)
-      setPreviewOpen(true)
-      setIdle()
-    } catch (error) {
-      console.error('Monthly export failed:', error)
+        const exportWidth = 1080
+        const exportHeight = 1920
 
-      if (clonedElement && document.body.contains(clonedElement)) {
+        clonedElement.style.position = 'absolute'
+        clonedElement.style.left = '0'
+        clonedElement.style.top = '0'
+        clonedElement.style.width = `${exportWidth}px`
+        clonedElement.style.height = `${exportHeight}px`
+        clonedElement.style.maxWidth = `${exportWidth}px`
+        clonedElement.style.transform = 'none'
+        clonedElement.style.zIndex = '-1000'
+        clonedElement.style.pointerEvents = 'none'
+        clonedElement.style.opacity = '0'
+        clonedElement.style.padding = '4rem 3rem'
+        clonedElement.style.boxSizing = 'border-box'
+        clonedElement.style.display = 'flex'
+        clonedElement.style.flexDirection = 'column'
+        clonedElement.style.minHeight = `${exportHeight}px`
+
+        const darkMode = isDarkMode()
+        clonedElement.style.backgroundColor = darkMode ? '#000000' : '#fafafa'
+
+        if (darkMode) {
+          clonedElement.style.color = '#ffffff'
+        }
+
+        const watermark = clonedElement.querySelector(
+          '[data-export-watermark]'
+        ) as HTMLElement
+        if (watermark) {
+          watermark.classList.remove('hidden')
+          watermark.style.display = 'block'
+          watermark.style.marginTop = 'auto'
+          watermark.style.paddingTop = '2rem'
+          const watermarkText = watermark.querySelector('p') as HTMLElement
+          if (watermarkText) {
+            watermarkText.style.fontSize = '1.5rem'
+          }
+        }
+
+        const allElements = clonedElement.querySelectorAll('*')
+        allElements.forEach((el) => {
+          const htmlEl = el as HTMLElement
+          if (htmlEl.classList.contains('text-4xl')) {
+            htmlEl.style.fontSize = '5rem'
+          }
+          if (htmlEl.classList.contains('text-3xl')) {
+            htmlEl.style.fontSize = '4rem'
+          }
+          if (htmlEl.classList.contains('text-2xl')) {
+            htmlEl.style.fontSize = '3rem'
+          }
+          if (htmlEl.classList.contains('text-xl')) {
+            htmlEl.style.fontSize = '2rem'
+          }
+          if (htmlEl.classList.contains('text-lg')) {
+            htmlEl.style.fontSize = '1.75rem'
+          }
+          if (htmlEl.classList.contains('text-base')) {
+            htmlEl.style.fontSize = '1.5rem'
+          }
+          if (htmlEl.classList.contains('text-sm')) {
+            htmlEl.style.fontSize = '1.25rem'
+          }
+          if (htmlEl.classList.contains('text-xs')) {
+            htmlEl.style.fontSize = '1.1rem'
+          }
+          if (htmlEl.classList.contains('rounded-2xl')) {
+            htmlEl.style.borderRadius = '2rem'
+          }
+          if (htmlEl.classList.contains('p-5')) {
+            htmlEl.style.padding = '2rem'
+          }
+          if (htmlEl.classList.contains('p-4')) {
+            htmlEl.style.padding = '1.75rem'
+          }
+          if (htmlEl.classList.contains('p-3')) {
+            htmlEl.style.padding = '1.25rem'
+          }
+          if (htmlEl.classList.contains('gap-4')) {
+            htmlEl.style.gap = '1.5rem'
+          }
+          if (htmlEl.classList.contains('gap-3')) {
+            htmlEl.style.gap = '1.25rem'
+          }
+          if (htmlEl.classList.contains('mb-5')) {
+            htmlEl.style.marginBottom = '2rem'
+          }
+          if (htmlEl.classList.contains('mb-4')) {
+            htmlEl.style.marginBottom = '1.5rem'
+          }
+          if (htmlEl.classList.contains('mb-1')) {
+            htmlEl.style.marginBottom = '0.5rem'
+          }
+          if (htmlEl.classList.contains('mb-16')) {
+            htmlEl.style.marginBottom = '5rem'
+          }
+          if (htmlEl.classList.contains('mb-6')) {
+            htmlEl.style.marginBottom = '2.5rem'
+          }
+          if (htmlEl.classList.contains('mb-3')) {
+            htmlEl.style.marginBottom = '1.25rem'
+          }
+          if (htmlEl.classList.contains('space-y-2')) {
+            const children = htmlEl.children
+            for (let i = 1; i < children.length; i++) {
+              ;(children[i] as HTMLElement).style.marginTop = '0.75rem'
+            }
+          }
+          if (htmlEl.classList.contains('space-y-3')) {
+            const children = htmlEl.children
+            for (let i = 1; i < children.length; i++) {
+              ;(children[i] as HTMLElement).style.marginTop = '1.25rem'
+            }
+          }
+          if (htmlEl.classList.contains('rounded-full')) {
+            htmlEl.style.borderRadius = '9999px'
+          }
+          if (htmlEl.classList.contains('px-3')) {
+            htmlEl.style.paddingLeft = '1rem'
+            htmlEl.style.paddingRight = '1rem'
+          }
+          if (
+            htmlEl.classList.contains('py-1.5') ||
+            htmlEl.classList.contains('py-1')
+          ) {
+            htmlEl.style.paddingTop = '0.5rem'
+            htmlEl.style.paddingBottom = '0.5rem'
+          }
+          if (htmlEl.classList.contains('w-10')) {
+            htmlEl.style.width = '3rem'
+          }
+          if (htmlEl.classList.contains('w-8')) {
+            htmlEl.style.width = '2.5rem'
+          }
+          if (htmlEl.classList.contains('h-20')) {
+            htmlEl.style.height = '6.5rem'
+          }
+          if (htmlEl.classList.contains('h-8')) {
+            htmlEl.style.height = '2.5rem'
+          }
+          if (htmlEl.classList.contains('h-6')) {
+            htmlEl.style.height = '2rem'
+          }
+          if (htmlEl.classList.contains('border-b')) {
+            htmlEl.style.borderBottomWidth = '2px'
+            htmlEl.style.borderBottomStyle = 'solid'
+            htmlEl.style.borderBottomColor = darkMode
+              ? 'rgba(255, 255, 255, 0.1)'
+              : '#e5e7eb'
+          }
+          if (htmlEl.classList.contains('border-t')) {
+            htmlEl.style.borderTopWidth = '2px'
+            htmlEl.style.borderTopStyle = 'solid'
+            htmlEl.style.borderTopColor = darkMode
+              ? 'rgba(255, 255, 255, 0.1)'
+              : '#e5e7eb'
+          }
+          if (htmlEl.classList.contains('pb-6')) {
+            htmlEl.style.paddingBottom = '2rem'
+          }
+          if (htmlEl.classList.contains('pt-6')) {
+            htmlEl.style.paddingTop = '2rem'
+          }
+        })
+
+        document.body.appendChild(clonedElement)
+
+        await new Promise((resolve) => setTimeout(resolve, 300))
+
+        const dataUrl = await toJpeg(clonedElement, {
+          quality: 0.95,
+          pixelRatio: 2,
+          backgroundColor: darkMode ? '#000000' : '#fafafa',
+          cacheBust: true,
+          width: exportWidth,
+          height: exportHeight,
+          skipFonts: true,
+          style: {
+            transform: 'scale(1)',
+            opacity: '1',
+          },
+        })
+
         document.body.removeChild(clonedElement)
-      }
+        clonedElement = null
 
-      setError()
-    }
-  }, [
-    monthlyExportRef,
-    year,
-    month,
-    isDarkMode,
-    setLoading,
-    setIdle,
-    setError,
-  ])
+        setImageDataUrl(dataUrl)
+        setPreviewOpen(true)
+        setIdle()
+      } catch (error) {
+        console.error('Monthly export failed:', error)
+
+        if (clonedElement && document.body.contains(clonedElement)) {
+          document.body.removeChild(clonedElement)
+        }
+
+        setError()
+      }
+    },
+    [monthlyExportRef, year, month, isDarkMode, setLoading, setIdle, setError]
+  )
 
   return {
     exportMonth,

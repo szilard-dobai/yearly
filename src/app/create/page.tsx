@@ -149,7 +149,9 @@ function Create() {
     saveCalendarData(newData)
   }, [calendarData, selectedYear])
 
-  const pendingMonthExport = useRef<{ month: number; source: 'header' } | null>(null)
+  const pendingMonthExport = useRef<{ month: number; source: 'header' } | null>(
+    null
+  )
 
   const handleMonthExport = useCallback(
     (month: number) => {
@@ -164,7 +166,10 @@ function Create() {
   )
 
   useEffect(() => {
-    if (pendingMonthExport.current && pendingMonthExport.current.month === selectedMonth) {
+    if (
+      pendingMonthExport.current &&
+      pendingMonthExport.current.month === selectedMonth
+    ) {
       const { source } = pendingMonthExport.current
       pendingMonthExport.current = null
       exportMonth(source)
@@ -285,7 +290,9 @@ function Create() {
                             onValueChange={(v) => setSelectedMonth(Number(v))}
                           >
                             <SelectTrigger className="flex-1 h-10! min-w-0 bg-white/10 border-white/15 hover:bg-white/15 cursor-pointer">
-                              <SelectValue>{MONTH_NAMES_SHORT[selectedMonth]}</SelectValue>
+                              <SelectValue>
+                                {MONTH_NAMES_SHORT[selectedMonth]}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               {MONTH_NAMES.map((name, i) => (

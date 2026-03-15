@@ -210,6 +210,7 @@ export function useStatisticsExport({
         cacheBust: true,
         width: exportWidth,
         height: exportHeight,
+        skipFonts: true,
         style: {
           transform: 'scale(1)',
           opacity: '1',

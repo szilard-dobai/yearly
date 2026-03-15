@@ -12,11 +12,16 @@ export function CalendarMockup() {
       transition={{ duration: 0.6, delay: 0.2 }}
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-white/8 p-8">
+      <div className="bg-white dark:bg-black rounded-2xl shadow-2xl dark:shadow-[0_0_40px_rgba(255,255,255,0.06)] overflow-hidden border border-gray-200 dark:border-white/8 p-8">
         <ImageWithFallback
-          src="/example.jpg"
+          src="/example_light.jpg"
           alt="Yearly calendar showing 2025 with country flags marking travel dates"
-          className="w-full h-auto"
+          className="w-full h-auto dark:hidden"
+        />
+        <ImageWithFallback
+          src="/example_dark.jpg"
+          alt="Yearly calendar showing 2025 with country flags marking travel dates"
+          className="w-full h-auto hidden dark:block"
         />
       </div>
 

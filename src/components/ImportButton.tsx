@@ -198,11 +198,11 @@ export default function ImportButton({
             </div>
 
             {currentVisits > 0 && (
-              <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <div className="p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/8">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-zinc-100 mb-2">
                   Current Data
                 </h3>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-gray-700 dark:text-zinc-300">
                   {currentVisits} {currentVisits === 1 ? 'visit' : 'visits'} •{' '}
                   {currentCountries}{' '}
                   {currentCountries === 1 ? 'country' : 'countries'}
@@ -211,12 +211,12 @@ export default function ImportButton({
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-900 dark:text-white">
+              <label className="text-sm font-medium text-gray-900 dark:text-zinc-100">
                 Import Strategy
               </label>
 
               <label
-                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${mergeStrategy === 'merge' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${mergeStrategy === 'merge' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30' : 'border-gray-200 dark:border-white/8 hover:bg-gray-50 dark:hover:bg-white/5'}`}
               >
                 <input
                   type="radio"
@@ -229,10 +229,10 @@ export default function ImportButton({
                   className="mt-0.5 cursor-pointer"
                 />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  <div className="text-sm font-medium text-gray-900 dark:text-zinc-100">
                     Merge with existing data
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                  <div className="text-xs text-gray-600 dark:text-zinc-400 mt-0.5">
                     Add {newVisitsCount} new{' '}
                     {newVisitsCount === 1 ? 'visit' : 'visits'}
                     {duplicatesCount > 0 &&
@@ -242,7 +242,7 @@ export default function ImportButton({
               </label>
 
               <label
-                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${mergeStrategy === 'replace' ? 'border-red-600 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${mergeStrategy === 'replace' ? 'border-red-600 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30' : 'border-gray-200 dark:border-white/8 hover:bg-gray-50 dark:hover:bg-white/5'}`}
               >
                 <input
                   type="radio"
@@ -255,7 +255,7 @@ export default function ImportButton({
                   className="mt-0.5 cursor-pointer"
                 />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  <div className="text-sm font-medium text-gray-900 dark:text-zinc-100">
                     Replace all data
                   </div>
                   <div className="text-xs text-red-600 dark:text-red-400 mt-0.5">

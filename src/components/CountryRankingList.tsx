@@ -23,7 +23,7 @@ export default function CountryRankingList({
 
   if (displayItems.length === 0) {
     return (
-      <div className="text-center py-6 text-gray-500 dark:text-gray-400 text-sm">
+      <div className="text-center py-6 text-gray-500 dark:text-zinc-400 text-sm">
         No country visits yet
       </div>
     )
@@ -51,7 +51,7 @@ export default function CountryRankingList({
         )
       default:
         return (
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-6 text-center">
+          <span className="text-sm font-medium text-gray-500 dark:text-zinc-400 w-6 text-center">
             {rank}
           </span>
         )
@@ -67,7 +67,7 @@ export default function CountryRankingList({
         return (
           <div
             key={item.countryCode}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/4 transition-colors"
           >
             <div className="shrink-0 w-6 flex items-center justify-center">
               {getRankBadge(item.rank)}
@@ -81,7 +81,7 @@ export default function CountryRankingList({
             </div>
 
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">
+              <span className="text-sm font-medium text-gray-900 dark:text-zinc-100 truncate block">
                 {countryName}
               </span>
             </div>

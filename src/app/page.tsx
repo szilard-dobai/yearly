@@ -55,7 +55,7 @@ export default function Home() {
         <TrackingLink
           href="/create"
           linkType="header"
-          className="px-6 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
+          className="px-6 py-2 bg-black dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
         >
           Try it now
         </TrackingLink>
@@ -64,11 +64,11 @@ export default function Home() {
       <main className="container mx-auto px-3 py-6">
         <section className="pt-24 pb-16">
           <AnimatedSection animation="fadeInUp" className="text-center max-w-4xl mx-auto">
-            <h1 className="mb-6 text-gray-900 dark:text-white text-7xl font-serif font-normal leading-tight tracking-tight">
+            <h1 className="mb-6 text-gray-900 dark:text-zinc-100 text-7xl font-serif font-normal leading-tight tracking-tight">
               Your year, at a glance.
             </h1>
 
-            <p className="text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto text-xl leading-relaxed">
+            <p className="text-gray-600 dark:text-zinc-400 mb-12 max-w-2xl mx-auto text-xl leading-relaxed">
               A clean, visual summary of your year. Add your countries and
               travel dates, and export a polished, calendar-style snapshot of
               everywhere you travelled.
@@ -78,7 +78,7 @@ export default function Home() {
               <TrackingLink
                 href="/create"
                 linkType="hero"
-                className="px-8 py-4 bg-black dark:bg-white text-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
+                className="px-8 py-4 bg-black dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
               >
                 Create your Yearly
                 <ArrowRight className="w-5 h-5" />
@@ -106,10 +106,10 @@ export default function Home() {
                 <FeatureIcon
                   icon={<feature.icon className="w-7 h-7 text-white" />}
                 />
-                <h3 className="mb-3 text-gray-900 dark:text-white text-xl font-medium">
+                <h3 className="mb-3 text-gray-900 dark:text-zinc-100 text-xl font-medium">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-gray-600 dark:text-zinc-400 leading-relaxed">
                   {feature.description}
                 </p>
               </AnimatedSection>
@@ -118,14 +118,14 @@ export default function Home() {
         </section>
 
         <section
-          className="py-24 bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950"
+          className="py-24 bg-linear-to-br from-gray-50 to-stone-50 dark:from-[#0e0e0e] dark:to-[#111111]"
           aria-labelledby="how-it-works-heading"
         >
           <div className="max-w-3xl mx-auto">
             <AnimatedSection animation="fadeInUpOnView">
               <h2
                 id="how-it-works-heading"
-                className="text-center mb-16 text-gray-900 dark:text-white text-4xl font-serif font-normal"
+                className="text-center mb-16 text-gray-900 dark:text-zinc-100 text-4xl font-serif font-normal"
               >
                 Build it in seconds
               </h2>
@@ -137,19 +137,19 @@ export default function Home() {
                   key={item.step}
                   animation="fadeInLeftOnViewWithDelay"
                   delay={idx * 0.1}
-                  className="flex gap-6 items-start bg-white dark:bg-neutral-950 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 list-none"
+                  className="flex gap-6 items-start bg-white dark:bg-[#141414] p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-white/8 list-none"
                 >
                   <div
-                    className="text-gray-300 dark:text-gray-400 text-5xl font-serif font-light leading-none"
+                    className="text-gray-300 dark:text-zinc-400 text-5xl font-serif font-light leading-none"
                     aria-hidden="true"
                   >
                     {item.step}
                   </div>
                   <div className="flex-1">
-                    <h3 className="mb-2 text-gray-900 dark:text-white text-xl font-medium">
+                    <h3 className="mb-2 text-gray-900 dark:text-zinc-100 text-xl font-medium">
                       {item.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <p className="text-gray-600 dark:text-zinc-400 leading-relaxed">
                       {item.description}
                     </p>
                   </div>
@@ -162,7 +162,7 @@ export default function Home() {
         <section className="py-24" aria-labelledby="cta-heading">
           <AnimatedSection
             animation="fadeInUpOnView"
-            className="max-w-3xl mx-auto text-center bg-black text-white dark:bg-white dark:text-black rounded-3xl p-16 shadow-2xl"
+            className="max-w-3xl mx-auto text-center bg-black text-white dark:bg-[#1a1a1a] dark:text-zinc-100 rounded-3xl p-16 shadow-2xl dark:border dark:border-white/8"
           >
             <h2
               id="cta-heading"
@@ -170,13 +170,13 @@ export default function Home() {
             >
               Ready to create yours?
             </h2>
-            <p className="mb-8 text-gray-300 dark:text-gray-700 text-lg leading-relaxed">
+            <p className="mb-8 text-gray-300 dark:text-zinc-400 text-lg leading-relaxed">
               Transform your 2025 travels into a shareable calendar in minutes.
             </p>
             <TrackingLink
               href="/create"
               linkType="cta_section"
-              className="inline-block px-10 py-4 bg-white text-black dark:bg-black dark:text-white dark:hover:bg-gray-900 rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
+              className="inline-block px-10 py-4 bg-white text-black dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-full hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
             >
               Get started for free
             </TrackingLink>

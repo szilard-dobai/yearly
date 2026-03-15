@@ -100,7 +100,7 @@ export default function RootLayout({
       </head>
       <SettingsProvider>
         <body
-          className={`min-h-screen bg-linear-to-br from-gray-50 to-stone-50 dark:from-gray-950 dark:to-stone-950 ${geistSans.variable} ${roboto.variable} ${newsreader.variable} antialiased`}
+          className={`min-h-screen bg-linear-to-br from-gray-50 to-stone-50 dark:from-[#0a0a0a] dark:to-[#0a0a0a] ${geistSans.variable} ${roboto.variable} ${newsreader.variable} antialiased`}
         >
           <Analytics />
           <SpeedInsights />

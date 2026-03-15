@@ -96,7 +96,7 @@ export default function Settings({ year, visitCount, onReset }: SettingsProps) {
         />
       </div>
 
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="pt-4 border-t border-gray-200 dark:border-white/8">
         <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
           <AlertDialogTrigger asChild>
             <Button

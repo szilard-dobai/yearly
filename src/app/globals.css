@@ -80,70 +80,55 @@
 }
 
 .dark {
-  /* Yearly Dark Mode - Premium, Clean Aesthetic */
-  /* Rich dark background with subtle warmth */
   --background: #0a0a0a;
-  --foreground: #fafafa;
-  
-  /* Cards with slightly elevated background */
+  --foreground: #f5f5f5;
+
   --card: #141414;
-  --card-foreground: #fafafa;
-  
-  /* Popovers and modals */
+  --card-foreground: #f5f5f5;
+
   --popover: #1a1a1a;
-  --popover-foreground: #fafafa;
-  
-  /* Primary brand colors - inverted for dark mode */
-  --primary: #ffffff;
+  --popover-foreground: #f5f5f5;
+
+  --primary: #f5f5f5;
   --primary-foreground: #0a0a0a;
-  
-  /* Secondary elements with subtle contrast */
-  --secondary: #1f1f1f;
-  --secondary-foreground: #fafafa;
-  
-  /* Muted text and backgrounds */
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  
-  /* Accent for hover states */
-  --accent: #262626;
-  --accent-foreground: #fafafa;
-  
-  /* Destructive colors */
+
+  --secondary: #1a1a1a;
+  --secondary-foreground: #f5f5f5;
+
+  --muted: #1a1a1a;
+  --muted-foreground: #a1a1aa;
+
+  --accent: #222222;
+  --accent-foreground: #f5f5f5;
+
   --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
-  
-  /* Borders - subtle and elegant */
-  --border: rgba(255, 255, 255, 0.1);
-  
-  /* Input fields */
-  --input: #262626;
-  --input-background: #1a1a1a;
-  --switch-background: #404040;
-  
-  /* Focus ring */
-  --ring: rgba(255, 255, 255, 0.3);
-  
-  /* Font weights */
+  --destructive-foreground: #f5f5f5;
+
+  --border: rgba(255, 255, 255, 0.08);
+
+  --input: #1a1a1a;
+  --input-background: #141414;
+  --switch-background: #3f3f46;
+
+  --ring: rgba(255, 255, 255, 0.25);
+
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  
-  /* Chart colors - adjusted for dark mode */
+
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.745 0.188 70.08);
-  
-  /* Sidebar colors */
-  --sidebar: #0f0f0f;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #ffffff;
+
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #f5f5f5;
   --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #1f1f1f;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: rgba(255, 255, 255, 0.3);
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(255, 255, 255, 0.25);
 }
 
 @layer base {
@@ -152,5 +137,13 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }

@@ -203,16 +203,14 @@ const MonthlyExportLayout = forwardRef<HTMLDivElement, MonthlyExportLayoutProps>
             </p>
           </div>
 
-          {stats.totalDays > 0 && (
-            <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                Month Abroad
-              </p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {stats.percentTraveled.toFixed(1)}%
-              </p>
-            </div>
-          )}
+          <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              Month Abroad
+            </p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {stats.percentTraveled.toFixed(1)}%
+            </p>
+          </div>
         </div>
 
         {stats.countriesByDays.length > 0 && (

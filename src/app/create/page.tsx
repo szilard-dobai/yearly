@@ -152,10 +152,14 @@ function Create() {
 
   const handleMonthExport = useCallback(
     (month: number) => {
-      setSelectedMonth(month)
-      pendingMonthExport.current = { month, source: 'header' }
+      if (month === selectedMonth) {
+        exportMonth('header')
+      } else {
+        setSelectedMonth(month)
+        pendingMonthExport.current = { month, source: 'header' }
+      }
     },
-    []
+    [selectedMonth, exportMonth]
   )
 
   useEffect(() => {
@@ -425,7 +429,7 @@ function Create() {
             <Button
               onClick={() => {
                 setIsMobileMonthDialogOpen(false)
-                exportMonth()
+                exportMonth('mobile_fab')
               }}
               variant="cta"
               size="lg"

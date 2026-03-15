@@ -15,6 +15,7 @@ import {
   calculateAverageTripLength,
   calculateBusiestMonth,
   calculatePercentageOfYearTraveled,
+  calculatePercentageOfMonthTraveled,
 } from './statistics'
 
 describe('statistics', () => {
@@ -618,5 +619,56 @@ describe('statistics', () => {
       const result = calculatePercentageOfYearTraveled(visits, 2024)
       expect(result).toBeCloseTo((2 / 366) * 100, 5)
     })
+  })
+})
+
+function makeVisit(countryCode: string, dateStr: string): CountryVisit {
+  return { id: `${countryCode}-${dateStr}`, countryCode, date: new Date(dateStr) }
+}
+
+describe('calculatePercentageOfMonthTraveled', () => {
+  it('returns 0 for empty visits', () => {
+    expect(calculatePercentageOfMonthTraveled([], 2026, 2)).toBe(0)
+  })
+
+  it('calculates percentage for a month with visits', () => {
+    const visits = [
+      makeVisit('FR', '2026-03-03'),
+      makeVisit('FR', '2026-03-04'),
+      makeVisit('FR', '2026-03-05'),
+    ]
+    const result = calculatePercentageOfMonthTraveled(visits, 2026, 2)
+    expect(result).toBeCloseTo(9.68, 1)
+  })
+
+  it('counts unique days only (multiple countries on same day = 1 day)', () => {
+    const visits = [
+      makeVisit('FR', '2026-03-03'),
+      makeVisit('IT', '2026-03-03'),
+      makeVisit('FR', '2026-03-04'),
+    ]
+    const result = calculatePercentageOfMonthTraveled(visits, 2026, 2)
+    expect(result).toBeCloseTo(6.45, 1)
+  })
+
+  it('ignores visits from other months', () => {
+    const visits = [
+      makeVisit('FR', '2026-03-03'),
+      makeVisit('IT', '2026-04-03'),
+    ]
+    const result = calculatePercentageOfMonthTraveled(visits, 2026, 2)
+    expect(result).toBeCloseTo(3.23, 1)
+  })
+
+  it('handles February in leap year', () => {
+    const visits = [makeVisit('FR', '2024-02-15')]
+    const result = calculatePercentageOfMonthTraveled(visits, 2024, 1)
+    expect(result).toBeCloseTo(3.45, 1)
+  })
+
+  it('handles February in non-leap year', () => {
+    const visits = [makeVisit('FR', '2026-02-15')]
+    const result = calculatePercentageOfMonthTraveled(visits, 2026, 1)
+    expect(result).toBeCloseTo(3.57, 1)
   })
 })

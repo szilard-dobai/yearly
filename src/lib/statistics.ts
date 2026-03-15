@@ -322,3 +322,29 @@ export function calculatePercentageOfYearTraveled(
 
   return (totalDays / daysInYear) * 100
 }
+
+/**
+ * Calculates percentage of a specific month spent traveling
+ * Days with multiple country visits count as 1 day
+ * @param visits - Array of visits (pre-filtered to relevant year or not)
+ * @param year - The year
+ * @param month - The month (0-11, where 0 = January)
+ */
+export function calculatePercentageOfMonthTraveled(
+  visits: CountryVisit[],
+  year: number,
+  month: number
+): number {
+  const monthVisits = visits.filter(
+    (v) => v.date.getFullYear() === year && v.date.getMonth() === month
+  )
+
+  const uniqueDays = new Set(
+    monthVisits.map((v) => v.date.toISOString().split('T')[0])
+  )
+  const totalDays = uniqueDays.size
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+  return (totalDays / daysInMonth) * 100
+}

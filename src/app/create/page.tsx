@@ -264,7 +264,7 @@ function Create() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      <p className="text-gray-300 dark:text-gray-600 leading-relaxed">
                         Download high-quality images to share
                       </p>
                       <CalendarExportButton
@@ -277,7 +277,7 @@ function Create() {
                         calendarData={calendarData}
                         year={selectedYear}
                       />
-                      <div className="border-t border-white/10 dark:border-gray-200/10 pt-3">
+                      <div className="border-t border-white/20 dark:border-black/10 pt-3">
                         <div className="flex gap-2">
                           <Select
                             value={selectedMonth.toString()}

@@ -289,7 +289,7 @@ function Create() {
                             value={selectedMonth.toString()}
                             onValueChange={(v) => setSelectedMonth(Number(v))}
                           >
-                            <SelectTrigger className="flex-1 h-10! min-w-0 bg-white/10 border-white/15 hover:bg-white/15 cursor-pointer">
+                            <SelectTrigger className="flex-1 h-10! min-w-0 bg-white text-gray-900 text-sm! font-medium dark:text-white dark:bg-black dark:border-transparent hover:bg-gray-100 dark:hover:bg-gray-800">
                               <SelectValue>
                                 {MONTH_NAMES_SHORT[selectedMonth]}
                               </SelectValue>

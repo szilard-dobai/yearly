@@ -5,6 +5,8 @@ import Header from '@/components/Header'
 import { HomepageTracker, TrackingLink } from '@/components/HomepageClient'
 import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
 
+export const revalidate = 86400
+
 const features = [
   {
     icon: Calendar,
@@ -174,7 +176,8 @@ export default function Home() {
               Ready to create yours?
             </h2>
             <p className="mb-8 text-gray-300 dark:text-zinc-400 text-lg leading-relaxed">
-              Transform your 2025 travels into a shareable calendar in minutes.
+              Transform your {new Date().getFullYear()} travels into a shareable
+              calendar in minutes.
             </p>
             <TrackingLink
               href="/create"

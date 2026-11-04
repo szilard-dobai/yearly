@@ -1,4 +1,6 @@
-import { type Db, MongoClient } from 'mongodb'
+import { type Collection, type Db, MongoClient, type ObjectId } from 'mongodb'
+import type { FeedbackContext, FeedbackSource } from './feedback/types'
+import type { DeviceType } from './tracking/types'
 
 const options = {
   appName: 'devrel.vercel.integration',
@@ -45,4 +47,43 @@ export default getDb
 export async function getTrackingCollection() {
   const db = await getDb()
   return db.collection('tracking_events')
+}
+
+export interface FeedbackDocument {
+  _id?: ObjectId
+  deviceId: string
+  rating: number | null
+  message: string | null
+  source: FeedbackSource
+  context?: FeedbackContext
+  deviceType?: DeviceType
+  userAgent?: string
+  country?: string
+  region?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+let feedbackIndexesPromise: Promise<unknown> | null = null
+
+function ensureFeedbackIndexes(collection: Collection<FeedbackDocument>) {
+  if (!feedbackIndexesPromise) {
+    feedbackIndexesPromise = collection
+      .createIndexes([
+        { key: { createdAt: -1 } },
+        { key: { rating: 1, createdAt: -1 } },
+        { key: { deviceId: 1, createdAt: -1 } },
+      ])
+      .catch((error) => {
+        console.error('Failed to create feedback indexes:', error)
+        feedbackIndexesPromise = null
+      })
+  }
+}
+
+export async function getFeedbackCollection() {
+  const db = await getDb()
+  const collection = db.collection<FeedbackDocument>('feedback')
+  ensureFeedbackIndexes(collection)
+  return collection
 }

@@ -3,6 +3,8 @@
 import CalendarGrid from '@/components/CalendarGrid'
 import CountryInput from '@/components/CountryInput'
 import DeveloperMode from '@/components/DeveloperMode'
+import FeedbackButton from '@/components/FeedbackButton'
+import FeedbackDialog from '@/components/FeedbackDialog'
 import Header from '@/components/Header'
 import CalendarExportButton from '@/components/CalendarExportButton'
 import ImagePreviewModal from '@/components/ImagePreviewModal'
@@ -28,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getCountryByCode } from '@/lib/countries'
+import type { FeedbackSource } from '@/lib/feedback/types'
 import { MONTH_NAMES, MONTH_NAMES_SHORT } from '@/lib/constants'
 import { useImageExport } from '@/lib/hooks/useImageExport'
 import { useMonthlyExport } from '@/lib/hooks/useMonthlyExport'
@@ -59,6 +62,15 @@ function Create() {
     new Date().getMonth()
   )
   const [isMobileMonthDialogOpen, setIsMobileMonthDialogOpen] = useState(false)
+  const [feedbackDialog, setFeedbackDialog] = useState<{
+    open: boolean
+    source: FeedbackSource
+  }>({ open: false, source: 'feedback_button' })
+
+  const openFeedbackDialog = (source: FeedbackSource) => {
+    trackEvent('feedback_dialog_open', { source })
+    setFeedbackDialog({ open: true, source })
+  }
 
   const {
     exportImage,
@@ -390,7 +402,12 @@ function Create() {
             onExportClick={exportImage}
             onExportStatsClick={exportStatistics}
             onExportMonthClick={() => setIsMobileMonthDialogOpen(true)}
+            onFeedbackClick={() => openFeedbackDialog('mobile_fab')}
             hasVisits={visitsForSelectedYear > 0}
+          />
+          <FeedbackButton
+            onClick={() => openFeedbackDialog('feedback_button')}
+            className="hidden lg:flex absolute bottom-6 right-6 z-40"
           />
         </div>
       </div>
@@ -470,6 +487,14 @@ function Create() {
         </DialogContent>
       </Dialog>
 
+      <FeedbackDialog
+        open={feedbackDialog.open}
+        onOpenChange={(open) =>
+          setFeedbackDialog((current) => ({ ...current, open }))
+        }
+        source={feedbackDialog.source}
+      />
+
       <ImagePreviewModal
         open={mobilePreviewOpen}
         onOpenChange={setMobilePreviewOpen}
@@ -477,6 +502,7 @@ function Create() {
         filename={mobileFilename}
         year={selectedYear}
         calendarData={calendarData}
+        exportType="calendar"
       />
 
       <ImagePreviewModal
@@ -486,6 +512,7 @@ function Create() {
         filename={statsFilename}
         year={selectedYear}
         calendarData={calendarData}
+        exportType="statistics"
       />
 
       <ImagePreviewModal
@@ -495,6 +522,7 @@ function Create() {
         filename={monthlyFilename}
         year={selectedYear}
         calendarData={calendarData}
+        exportType="monthly"
       />
     </>
   )

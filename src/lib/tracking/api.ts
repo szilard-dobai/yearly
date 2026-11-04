@@ -13,3 +13,15 @@ export async function isAuthenticated() {
   const cookieStore = await cookies()
   return cookieStore.get('admin_session')?.value === 'authenticated'
 }
+
+export async function requireAdmin(
+  request: Request
+): Promise<NextResponse | null> {
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
+
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  return null
+}

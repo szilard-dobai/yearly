@@ -2,29 +2,32 @@
  * Tracking event types for analytics
  */
 
-export type TrackingEventType =
-  // Page view events
-  | 'homepage_view'
-  | 'create_page_view'
-  | 'not_found_page_view'
-  // Homepage events
-  | 'homepage_cta_click'
-  // 404 page events
-  | 'not_found_home_click'
-  // Create page events
-  | 'year_changed'
-  | 'visit_add_attempt'
-  | 'visit_deleted'
-  | 'visit_undo'
-  | 'calendar_reset'
-  | 'image_export_click'
-  | 'image_download_click'
-  | 'statistics_export_click'
-  | 'monthly_export_click'
-  | 'developer_mode_toggle'
-  | 'mobile_fab_click'
-  | 'json_import'
-  | 'json_export'
+export const TRACKING_EVENT_TYPES = [
+  'homepage_view',
+  'create_page_view',
+  'not_found_page_view',
+  'homepage_cta_click',
+  'not_found_home_click',
+  'year_changed',
+  'visit_add_attempt',
+  'visit_deleted',
+  'visit_undo',
+  'calendar_reset',
+  'image_export_click',
+  'image_download_click',
+  'statistics_export_click',
+  'monthly_export_click',
+  'developer_mode_toggle',
+  'mobile_fab_click',
+  'json_import',
+  'json_export',
+  'feedback_prompt_shown',
+  'feedback_prompt_dismissed',
+  'feedback_dialog_open',
+  'feedback_submitted',
+] as const
+
+export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]
 
 export type DeviceType = 'mobile' | 'tablet' | 'desktop'
 
@@ -86,4 +89,17 @@ export interface MonthlyExportClickMetadata {
   year: number
   month: number
   source: 'sidebar' | 'header' | 'mobile_fab'
+}
+
+export interface StoredTrackingEvent extends TrackingEvent {
+  _id: string
+}
+
+export interface DeviceSummary {
+  totalEvents: number
+  firstSeen: string | null
+  lastSeen: string | null
+  countries: string[]
+  deviceTypes: DeviceType[]
+  eventCounts: Record<string, number>
 }

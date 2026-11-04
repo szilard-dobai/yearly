@@ -62,6 +62,7 @@ export default function StatisticsExportButton({
         filename={filename}
         year={year}
         calendarData={calendarData}
+        exportType="statistics"
       />
     </>
   )

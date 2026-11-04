@@ -10,28 +10,34 @@ vi.mock('./MonthGrid', () => ({
     year,
     month,
     visits,
-    onRemoveVisit,
+    selectionStartKey,
+    selectionEndKey,
+    onSelectMonth,
   }: {
     year: number
     month: number
     visits: CountryVisit[]
-    onRemoveVisit: (id: string) => void
+    selectionStartKey?: string | null
+    selectionEndKey?: string | null
+    onSelectMonth?: () => void
   }) => (
     <div
       data-testid={`month-grid-${month}`}
       data-year={year}
       data-month={month}
       data-visits-count={visits.length}
-      onClick={() => onRemoveVisit('test-id')}
+      data-selection-start={selectionStartKey ?? ''}
+      data-selection-end={selectionEndKey ?? ''}
     >
       Month {month} - Year {year}
+      {onSelectMonth && (
+        <button onClick={onSelectMonth}>Select month {month}</button>
+      )}
     </div>
   ),
 }))
 
 describe('CalendarGrid', () => {
-  const mockOnRemoveVisit = vi.fn()
-
   const mockCalendarData: CalendarData = {
     visits: [
       {
@@ -54,11 +60,7 @@ describe('CalendarGrid', () => {
   describe('rendering', () => {
     it('renders 12 MonthGrid components', () => {
       renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       for (let month = 0; month < 12; month++) {
@@ -68,11 +70,7 @@ describe('CalendarGrid', () => {
 
     it('renders all month grids with correct month numbers', () => {
       renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       for (let month = 0; month < 12; month++) {
@@ -83,11 +81,7 @@ describe('CalendarGrid', () => {
 
     it('applies responsive grid layout classes', () => {
       const { container } = renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const gridContainer = container.querySelector('.grid')
@@ -98,11 +92,7 @@ describe('CalendarGrid', () => {
 
     it('applies gap spacing to grid', () => {
       const { container } = renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const gridContainer = container.querySelector('.grid')
@@ -118,11 +108,7 @@ describe('CalendarGrid', () => {
   describe('prop passing', () => {
     it('passes year prop to all MonthGrid components', () => {
       renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       for (let month = 0; month < 12; month++) {
@@ -133,11 +119,7 @@ describe('CalendarGrid', () => {
 
     it('passes different year to MonthGrid components', () => {
       renderWithSettings(
-        <CalendarGrid
-          year={2025}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2025} calendarData={mockCalendarData} />
       )
 
       for (let month = 0; month < 12; month++) {
@@ -148,51 +130,63 @@ describe('CalendarGrid', () => {
 
     it('passes visits from calendarData to MonthGrid components', () => {
       renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
       expect(monthGrid).toHaveAttribute('data-visits-count', '2')
     })
 
-    it('passes onRemoveVisit to MonthGrid components', async () => {
-      const user = userEvent.setup()
-
+    it('passes ordered selection bounds to every month', () => {
       renderWithSettings(
         <CalendarGrid
           year={2024}
           calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
+          selection={{
+            anchor: '2024-03-10',
+            focus: '2024-03-02',
+            method: 'drag',
+          }}
+          onSelectionChange={vi.fn()}
         />
       )
 
-      const monthGrid = screen.getByTestId('month-grid-0')
-      await user.click(monthGrid)
-
-      expect(mockOnRemoveVisit).toHaveBeenCalledWith('test-id')
+      for (let month = 0; month < 12; month++) {
+        const monthGrid = screen.getByTestId(`month-grid-${month}`)
+        expect(monthGrid).toHaveAttribute('data-selection-start', '2024-03-02')
+        expect(monthGrid).toHaveAttribute('data-selection-end', '2024-03-10')
+      }
     })
 
-    it('passes onRemoveVisit to all month grids', async () => {
+    it('selects a whole month when a month name is chosen', async () => {
       const user = userEvent.setup()
+      const onSelectionChange = vi.fn()
 
       renderWithSettings(
         <CalendarGrid
           year={2024}
           calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
+          onSelectionChange={onSelectionChange}
         />
       )
 
-      for (let month = 0; month < 3; month++) {
-        mockOnRemoveVisit.mockClear()
-        const monthGrid = screen.getByTestId(`month-grid-${month}`)
-        await user.click(monthGrid)
-        expect(mockOnRemoveVisit).toHaveBeenCalledWith('test-id')
-      }
+      await user.click(screen.getByRole('button', { name: 'Select month 1' }))
+
+      expect(onSelectionChange).toHaveBeenCalledWith({
+        anchor: '2024-02-01',
+        focus: '2024-02-29',
+        method: 'month',
+      })
+    })
+
+    it('does not offer month selection when selection is not enabled', () => {
+      renderWithSettings(
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
+      )
+
+      expect(
+        screen.queryByRole('button', { name: /select month/i })
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -203,11 +197,7 @@ describe('CalendarGrid', () => {
       }
 
       renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={emptyCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={emptyCalendarData} />
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
@@ -229,11 +219,7 @@ describe('CalendarGrid', () => {
       }
 
       renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={largeCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={largeCalendarData} />
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
@@ -252,11 +238,7 @@ describe('CalendarGrid', () => {
       }
 
       renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={calendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={calendarData} />
       )
 
       expect(screen.getByTestId('month-grid-0')).toBeInTheDocument()
@@ -266,11 +248,7 @@ describe('CalendarGrid', () => {
   describe('month ordering', () => {
     it('renders months in correct order (0-11)', () => {
       const { container } = renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const monthGrids = container.querySelectorAll(
@@ -285,24 +263,14 @@ describe('CalendarGrid', () => {
 
     it('maintains consistent month order across re-renders', () => {
       const { rerender } = renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const firstRenderMonths = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(
         (m) => screen.getByTestId(`month-grid-${m}`)
       )
 
-      rerender(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
-      )
+      rerender(<CalendarGrid year={2024} calendarData={mockCalendarData} />)
 
       const secondRenderMonths = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(
         (m) => screen.getByTestId(`month-grid-${m}`)
@@ -315,11 +283,7 @@ describe('CalendarGrid', () => {
   describe('layout structure', () => {
     it('has inner grid container', () => {
       const { container } = renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const gridContainer = container.querySelector('.grid')
@@ -330,11 +294,7 @@ describe('CalendarGrid', () => {
   describe('edge cases', () => {
     it('renders correctly with year 2025', () => {
       renderWithSettings(
-        <CalendarGrid
-          year={2025}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2025} calendarData={mockCalendarData} />
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
@@ -343,11 +303,7 @@ describe('CalendarGrid', () => {
 
     it('renders correctly with year 2020', () => {
       renderWithSettings(
-        <CalendarGrid
-          year={2020}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2020} calendarData={mockCalendarData} />
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
@@ -357,13 +313,7 @@ describe('CalendarGrid', () => {
     it('renders when calendarData has no visits', () => {
       const emptyData: CalendarData = { visits: [] }
 
-      renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={emptyData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
-      )
+      renderWithSettings(<CalendarGrid year={2024} calendarData={emptyData} />)
 
       expect(screen.getByTestId('month-grid-0')).toBeInTheDocument()
       expect(screen.getByTestId('month-grid-11')).toBeInTheDocument()
@@ -381,11 +331,7 @@ describe('CalendarGrid', () => {
       }
 
       const { rerender } = renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={initialData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={initialData} />
       )
 
       let monthGrid = screen.getByTestId('month-grid-0')
@@ -406,13 +352,7 @@ describe('CalendarGrid', () => {
         ],
       }
 
-      rerender(
-        <CalendarGrid
-          year={2024}
-          calendarData={updatedData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
-      )
+      rerender(<CalendarGrid year={2024} calendarData={updatedData} />)
 
       monthGrid = screen.getByTestId('month-grid-0')
       expect(monthGrid).toHaveAttribute('data-visits-count', '2')
@@ -422,11 +362,7 @@ describe('CalendarGrid', () => {
   describe('component keys', () => {
     it('uses month as key for MonthGrid components', () => {
       const { container } = renderWithSettings(
-        <CalendarGrid
-          year={2024}
-          calendarData={mockCalendarData}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const monthGrids = container.querySelectorAll(

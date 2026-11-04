@@ -1,21 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithSettings } from '@/test/test-utils'
-import userEvent from '@testing-library/user-event'
 import DateCell from './DateCell'
 import type { CountryVisit } from '@/lib/types'
 
 describe('DateCell', () => {
-  const mockOnRemoveVisit = vi.fn()
-
-  beforeEach(() => {
-    mockOnRemoveVisit.mockClear()
-  })
-
   describe('Empty date cell', () => {
     it('should render empty cell when date is null', () => {
       const { container } = renderWithSettings(
-        <DateCell date={null} visits={[]} onRemoveVisit={mockOnRemoveVisit} />
+        <DateCell date={null} visits={[]} />
       )
 
       const cell = container.querySelector('[role="gridcell"]')
@@ -25,18 +18,14 @@ describe('DateCell', () => {
 
     it('should render date number when no visits', () => {
       const date = new Date(2025, 1, 15) // Feb 15, 2025
-      renderWithSettings(
-        <DateCell date={date} visits={[]} onRemoveVisit={mockOnRemoveVisit} />
-      )
+      renderWithSettings(<DateCell date={date} visits={[]} />)
 
       expect(screen.getByText('15')).toBeInTheDocument()
     })
 
     it('should highlight today date in red', () => {
       const today = new Date()
-      renderWithSettings(
-        <DateCell date={today} visits={[]} onRemoveVisit={mockOnRemoveVisit} />
-      )
+      renderWithSettings(<DateCell date={today} visits={[]} />)
 
       const dayNumber = screen.getByText(today.getDate().toString())
       expect(dayNumber).toHaveClass('text-red-500')
@@ -56,11 +45,7 @@ describe('DateCell', () => {
     it('should render single flag emoji centered', () => {
       const date = new Date(2025, 1, 15)
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={singleVisit}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={singleVisit} />
       )
 
       // Check that flag emoji is rendered (US flag)
@@ -74,11 +59,7 @@ describe('DateCell', () => {
       // This test would need to modify the context value, but for now we'll just test the emoji mode
       // The icon mode is tested through integration tests
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={singleVisit}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={singleVisit} />
       )
 
       // Check that flag emoji is rendered (default mode)
@@ -86,25 +67,69 @@ describe('DateCell', () => {
       expect(cell).toBeInTheDocument()
     })
 
-    it('should show delete button on hover and call onRemoveVisit', async () => {
-      const user = userEvent.setup()
+    it('does not render a remove button that a tap could trigger by accident', () => {
       const date = new Date(2025, 1, 15)
-      renderWithSettings(
+      renderWithSettings(<DateCell date={date} visits={singleVisit} />)
+
+      expect(
+        screen.queryByRole('button', { name: /remove/i })
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('button', {
+          name: 'February 15, visited United States',
+        })
+      ).toBeInTheDocument()
+    })
+  })
+
+  describe('Selection', () => {
+    it('renders the day as a button keyed by its date', () => {
+      renderWithSettings(<DateCell date={new Date(2025, 1, 5)} visits={[]} />)
+
+      const button = screen.getByRole('button', {
+        name: 'February 5, no visits',
+      })
+      expect(button).toHaveAttribute('data-day', '2025-02-05')
+    })
+
+    it('is not marked as selected by default', () => {
+      const { container } = renderWithSettings(
+        <DateCell date={new Date(2025, 1, 5)} visits={[]} />
+      )
+
+      const cell = container.querySelector('[role="gridcell"]')
+      expect(cell).toHaveAttribute('aria-selected', 'false')
+      expect(cell).not.toHaveAttribute('data-selected')
+      expect(screen.getByRole('button')).not.toHaveAttribute('data-edge')
+    })
+
+    it('marks selected cells and their rounded ends', () => {
+      const { container } = renderWithSettings(
         <DateCell
-          date={date}
-          visits={singleVisit}
-          onRemoveVisit={mockOnRemoveVisit}
+          date={new Date(2025, 1, 5)}
+          visits={[]}
+          selected
+          selectionEdge
+          roundStart
         />
       )
 
-      const deleteButton = screen.getByRole('button', {
-        name: /remove visits: united states/i,
-      })
-      expect(deleteButton).toBeInTheDocument()
+      const cell = container.querySelector('[role="gridcell"]')
+      expect(cell).toHaveAttribute('aria-selected', 'true')
+      expect(cell).toHaveAttribute('data-selected')
+      expect(cell).toHaveAttribute('data-round-start')
+      expect(cell).not.toHaveAttribute('data-round-end')
+      expect(screen.getByRole('button')).toHaveAttribute('data-edge')
+    })
 
-      await user.click(deleteButton)
-      expect(mockOnRemoveVisit).toHaveBeenCalledTimes(1)
-      expect(mockOnRemoveVisit).toHaveBeenCalledWith('visit-1')
+    it('ignores rounding flags when the cell is not selected', () => {
+      const { container } = renderWithSettings(
+        <DateCell date={new Date(2025, 1, 5)} visits={[]} roundStart roundEnd />
+      )
+
+      const cell = container.querySelector('[role="gridcell"]')
+      expect(cell).not.toHaveAttribute('data-round-start')
+      expect(cell).not.toHaveAttribute('data-round-end')
     })
   })
 
@@ -125,11 +150,7 @@ describe('DateCell', () => {
     it('should render two flag emojis with diagonal split', () => {
       const date = new Date(2025, 1, 2)
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
       // Check that both flags are present
@@ -148,11 +169,7 @@ describe('DateCell', () => {
       // This test would need to modify the context value, but for now we'll just test the emoji mode
       // The icon mode is tested through integration tests
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
       // Check that both flags are present
@@ -165,11 +182,7 @@ describe('DateCell', () => {
     it('should use appropriate font size for diagonal split flags', () => {
       const date = new Date(2025, 1, 2)
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
       // Check that both flags are present
@@ -186,11 +199,7 @@ describe('DateCell', () => {
     it('should use clip-path for clean diagonal split', () => {
       const date = new Date(2025, 1, 2)
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
       // Check for absolutely positioned containers with clip-path
@@ -202,41 +211,14 @@ describe('DateCell', () => {
       expect(overflowContainers.length).toBeGreaterThanOrEqual(2)
     })
 
-    it('should remove all visits when delete button is clicked', async () => {
-      const user = userEvent.setup()
-      const date = new Date(2025, 1, 2)
-      renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
-      )
-
-      const deleteButton = screen.getByRole('button', {
-        name: /remove visits: latvia, vatican city/i,
-      })
-
-      await user.click(deleteButton)
-
-      // Should call onRemoveVisit for both visits
-      expect(mockOnRemoveVisit).toHaveBeenCalledTimes(2)
-      expect(mockOnRemoveVisit).toHaveBeenCalledWith('visit-1')
-      expect(mockOnRemoveVisit).toHaveBeenCalledWith('visit-2')
-    })
-
     it('should have correct aria-label with both countries', () => {
       const date = new Date(2025, 1, 2)
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toHaveAttribute(
+      const button = container.querySelector('[data-day]')
+      expect(button).toHaveAttribute(
         'aria-label',
         'February 2, visited Latvia, Vatican City'
       )
@@ -254,13 +236,7 @@ describe('DateCell', () => {
         },
       ]
 
-      renderWithSettings(
-        <DateCell
-          date={date}
-          visits={visits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
-      )
+      renderWithSettings(<DateCell date={date} visits={visits} />)
 
       // Should show date number since no visits match this date
       expect(screen.getByText('15')).toBeInTheDocument()
@@ -277,11 +253,7 @@ describe('DateCell', () => {
       ]
 
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={visits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={visits} />
       )
 
       const cell = container.querySelector('[role="gridcell"]')
@@ -306,11 +278,7 @@ describe('DateCell', () => {
       ]
 
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
       // Should have absolutely positioned flag containers (not simple flex layout)
@@ -334,11 +302,7 @@ describe('DateCell', () => {
       ]
 
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
       // Check that both flags are present
@@ -368,11 +332,7 @@ describe('DateCell', () => {
       ]
 
       const { container } = renderWithSettings(
-        <DateCell
-          date={date}
-          visits={twoVisits}
-          onRemoveVisit={mockOnRemoveVisit}
-        />
+        <DateCell date={date} visits={twoVisits} />
       )
 
       // Both flag containers should be absolutely positioned with inset-0

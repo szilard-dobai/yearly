@@ -1,7 +1,11 @@
 'use client'
 
 import CalendarGrid from '@/components/CalendarGrid'
+import CalendarHint from '@/components/CalendarHint'
 import CountryInput from '@/components/CountryInput'
+import DaySelectionPanel, {
+  type AddFromSelectionMeta,
+} from '@/components/DaySelectionPanel'
 import DeveloperMode from '@/components/DeveloperMode'
 import FeedbackButton from '@/components/FeedbackButton'
 import FeedbackDialog from '@/components/FeedbackDialog'
@@ -13,6 +17,7 @@ import MonthlyExportLayout from '@/components/MonthlyExportLayout'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
+import UndoToast from '@/components/UndoToast'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
@@ -32,13 +37,21 @@ import {
 import { getCountryByCode } from '@/lib/countries'
 import type { FeedbackSource } from '@/lib/feedback/types'
 import { MONTH_NAMES, MONTH_NAMES_SHORT } from '@/lib/constants'
+import {
+  dismissCalendarHint,
+  useCalendarHintDismissed,
+} from '@/lib/hooks/useCalendarHint'
 import { useImageExport } from '@/lib/hooks/useImageExport'
 import { useMonthlyExport } from '@/lib/hooks/useMonthlyExport'
 import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
+import type { DaySelection } from '@/lib/selection'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
+import { cn } from '@/lib/utils'
+import { addCountryToDays, removeCountryFromDays } from '@/lib/visits'
 import { CalendarDays, Loader2, Undo2 } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
@@ -48,6 +61,10 @@ function getInitialData(): CalendarData {
   return loadCalendarData() || { visits: [] }
 }
 
+function pluralDays(count: number) {
+  return `${count} ${count === 1 ? 'day' : 'days'}`
+}
+
 function Create() {
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
@@ -55,6 +72,15 @@ function Create() {
   const [calendarData, setCalendarData] = useState<CalendarData>(getInitialData)
   const [undoStack, setUndoStack] = useState<CalendarData[]>([])
   const [isMobileAddDialogOpen, setIsMobileAddDialogOpen] = useState(false)
+  const [selection, setSelection] = useState<DaySelection | null>(null)
+  const [toast, setToast] = useState<{
+    id: number
+    message: string
+    undoable: boolean
+  } | null>(null)
+  const toastIdRef = useRef(0)
+  const selectionPanelRef = useRef<HTMLDivElement>(null)
+  const hintDismissed = useCalendarHintDismissed()
   const calendarRef = useRef<HTMLDivElement>(null)
   const statisticsRef = useRef<HTMLDivElement>(null)
   const monthlyExportRef = useRef<HTMLDivElement>(null)
@@ -121,9 +147,86 @@ function Create() {
     setUndoStack((prev) => prev.slice(0, -1))
     setCalendarData(previousData)
     saveCalendarData(previousData)
+    setToast(null)
 
     trackEvent('visit_undo')
   }, [undoStack])
+
+  const showToast = (message: string, undoable = true) => {
+    toastIdRef.current += 1
+    setToast({ id: toastIdRef.current, message, undoable })
+  }
+
+  const dismissToast = useCallback(() => setToast(null), [])
+
+  const clearSelection = useCallback(() => setSelection(null), [])
+
+  const handleAddFromSelection = (
+    countryCode: string,
+    days: Date[],
+    meta: AddFromSelectionMeta
+  ) => {
+    const result = addCountryToDays(calendarData.visits, countryCode, days)
+    const name = getCountryByCode(countryCode)?.name ?? countryCode
+
+    trackEvent('visit_add_attempt', {
+      success: result.added > 0,
+      source: 'calendar',
+      selectionMethod: selection?.method,
+      suggested: meta.suggested,
+      emptyOnly: meta.emptyOnly,
+      countryCode,
+      dateCount: result.added,
+      skippedFull: result.skippedFull,
+      skippedExisting: result.skippedExisting,
+    })
+
+    if (result.added === 0) {
+      showToast(`${name} is already on the selected days`, false)
+      return
+    }
+
+    handleDataChange({ visits: result.visits })
+    setSelection(null)
+    dismissCalendarHint()
+    showToast(
+      result.skippedFull > 0
+        ? `Added ${name} to ${pluralDays(result.added)} (${result.skippedFull} already full)`
+        : `Added ${name} to ${pluralDays(result.added)}`
+    )
+  }
+
+  const handleRemoveFromSelection = (days: Date[], countryCode?: string) => {
+    const result = removeCountryFromDays(calendarData.visits, days, countryCode)
+    if (result.removed === 0) return
+
+    handleDataChange({ visits: result.visits })
+    trackEvent('visit_deleted', {
+      source: 'calendar',
+      countryCode,
+      countryName: countryCode
+        ? getCountryByCode(countryCode)?.name
+        : undefined,
+      dateCount: result.removed,
+    })
+    showToast(
+      countryCode
+        ? `Removed ${getCountryByCode(countryCode)?.name ?? countryCode} from ${pluralDays(result.removed)}`
+        : 'Cleared the selected days'
+    )
+  }
+
+  useEffect(() => {
+    if (!selection || selection.method !== 'tap') return
+    const cell = document.querySelector(`[data-day="${selection.focus}"]`)
+    const panel = selectionPanelRef.current
+    if (!cell || !panel) return
+    const visibleBottom = window.innerHeight - panel.offsetHeight - 12
+    const overlap = cell.getBoundingClientRect().bottom - visibleBottom
+    if (overlap > 0) {
+      window.scrollBy({ top: overlap, behavior: 'smooth' })
+    }
+  }, [selection])
 
   const handleYearChange = (value: string) => {
     const newYear = Number(value)
@@ -132,21 +235,7 @@ function Create() {
       toYear: newYear,
     })
     setSelectedYear(newYear)
-  }
-
-  const handleRemoveVisit = (visitId: string) => {
-    const visit = calendarData.visits.find((v) => v.id === visitId)
-    if (visit) {
-      const country = getCountryByCode(visit.countryCode)
-      trackEvent('visit_deleted', {
-        countryCode: visit.countryCode,
-        countryName: country?.name,
-      })
-    }
-    const newData = {
-      visits: calendarData.visits.filter((visit) => visit.id !== visitId),
-    }
-    handleDataChange(newData)
+    setSelection(null)
   }
 
   const handleResetCalendar = useCallback(() => {
@@ -223,11 +312,15 @@ function Create() {
             <div className="space-y-6">
               <StandardCard>
                 <CardContent>
+                  {!hintDismissed && (
+                    <CalendarHint onDismiss={dismissCalendarHint} />
+                  )}
                   <CalendarGrid
                     ref={calendarRef}
                     year={selectedYear}
                     calendarData={calendarData}
-                    onRemoveVisit={handleRemoveVisit}
+                    selection={selection}
+                    onSelectionChange={setSelection}
                     onMonthExport={handleMonthExport}
                   />
                 </CardContent>
@@ -394,22 +487,72 @@ function Create() {
               </div>
             </details>
           </StandardCard>
+          {selection && <div aria-hidden="true" className="h-72" />}
         </main>
 
         <div className="sticky bottom-0 right-0">
-          <MobileFab
-            onAddClick={() => setIsMobileAddDialogOpen(true)}
-            onExportClick={exportImage}
-            onExportStatsClick={exportStatistics}
-            onExportMonthClick={() => setIsMobileMonthDialogOpen(true)}
-            onFeedbackClick={() => openFeedbackDialog('mobile_fab')}
-            hasVisits={visitsForSelectedYear > 0}
-          />
+          {!selection && (
+            <MobileFab
+              onAddClick={() => setIsMobileAddDialogOpen(true)}
+              onExportClick={exportImage}
+              onExportStatsClick={exportStatistics}
+              onExportMonthClick={() => setIsMobileMonthDialogOpen(true)}
+              onFeedbackClick={() => openFeedbackDialog('mobile_fab')}
+              hasVisits={visitsForSelectedYear > 0}
+            />
+          )}
           <FeedbackButton
             onClick={() => openFeedbackDialog('feedback_button')}
             className="hidden lg:flex absolute bottom-6 right-6 z-40"
           />
         </div>
+      </div>
+
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 sm:bottom-4 sm:px-4">
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.18 }}
+              className={cn(
+                'flex w-full justify-center px-3 sm:px-0',
+                !selection && 'pe-20 pb-6 sm:pe-0 sm:pb-0'
+              )}
+            >
+              <UndoToast
+                message={toast.message}
+                onUndo={toast.undoable ? handleUndo : undefined}
+                onDismiss={dismissToast}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {selection && (
+            <motion.div
+              ref={selectionPanelRef}
+              key="selection-panel"
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+              className="flex w-full justify-center"
+            >
+              <DaySelectionPanel
+                key={`${selection.anchor}:${selection.focus}`}
+                selection={selection}
+                visits={calendarData.visits}
+                year={selectedYear}
+                onAdd={handleAddFromSelection}
+                onRemove={handleRemoveFromSelection}
+                onClose={clearSelection}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <Dialog

@@ -5,6 +5,13 @@ import { useSettings } from '@/lib/contexts/SettingsContext'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 
+const SELECTION_ATTRIBUTES = [
+  'data-selected',
+  'data-round-start',
+  'data-round-end',
+  'data-edge',
+] as const
+
 interface UseImageExportOptions {
   calendarRef: RefObject<HTMLDivElement | null>
   calendarData: CalendarData
@@ -60,6 +67,12 @@ export function useImageExport({
 
       // Clone the element for export
       clonedElement = element.cloneNode(true) as HTMLDivElement
+
+      for (const attribute of SELECTION_ATTRIBUTES) {
+        clonedElement
+          .querySelectorAll(`[${attribute}]`)
+          .forEach((el) => el.removeAttribute(attribute))
+      }
 
       // Style the clone for export
       clonedElement.style.position = 'absolute'

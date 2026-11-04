@@ -1,3 +1,7 @@
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionToken,
+} from '@/lib/admin/session'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -11,7 +15,7 @@ export function validateSameOrigin(request: Request): NextResponse | null {
 
 export async function isAuthenticated() {
   const cookieStore = await cookies()
-  return cookieStore.get('admin_session')?.value === 'authenticated'
+  return verifyAdminSessionToken(cookieStore.get(ADMIN_SESSION_COOKIE)?.value)
 }
 
 export async function requireAdmin(

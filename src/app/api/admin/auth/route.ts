@@ -1,8 +1,13 @@
+import {
+  ADMIN_SESSION_COOKIE,
+  ADMIN_SESSION_MAX_AGE_SECONDS,
+  createAdminSessionToken,
+  isAdminPasswordConfigured,
+  isValidAdminPassword,
+} from '@/lib/admin/session'
 import { isAuthenticated, validateSameOrigin } from '@/lib/tracking/api'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 
 export const dynamic = 'force-dynamic'
 
@@ -20,24 +25,23 @@ export async function POST(request: Request) {
   try {
     const { password } = await request.json()
 
-    if (!ADMIN_PASSWORD) {
+    if (!isAdminPasswordConfigured()) {
       return NextResponse.json(
         { error: 'Admin password not configured' },
         { status: 500 }
       )
     }
 
-    if (password !== ADMIN_PASSWORD) {
+    if (!isValidAdminPassword(password)) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
-    // Set a session cookie (valid for 24 hours)
     const cookieStore = await cookies()
-    cookieStore.set('admin_session', 'authenticated', {
+    cookieStore.set(ADMIN_SESSION_COOKIE, createAdminSessionToken(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 24 hours
+      maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
       path: '/',
     })
 
@@ -56,6 +60,6 @@ export async function DELETE(request: Request) {
   if (forbidden) return forbidden
 
   const cookieStore = await cookies()
-  cookieStore.delete('admin_session')
+  cookieStore.delete(ADMIN_SESSION_COOKIE)
   return NextResponse.json({ success: true })
 }

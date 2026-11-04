@@ -51,7 +51,7 @@ export default function CountryPickerDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="top-4 translate-y-0 sm:top-[50%] sm:translate-y-[-50%] max-w-md gap-0 overflow-hidden p-0"
+        className="top-4 translate-y-0 sm:top-[50%] sm:translate-y-[-50%] max-w-[calc(100%-2rem)] sm:max-w-md gap-0 overflow-hidden p-0"
       >
         <DialogTitle className="sr-only">Choose a country</DialogTitle>
         <DialogDescription className="sr-only">

@@ -4,16 +4,29 @@ import { memo } from 'react'
 import { getVisitsForDate, isToday } from '../lib/calendar'
 import { getCountryByCode } from '../lib/countries'
 import { useSettings } from '@/lib/contexts/SettingsContext'
+import { toDayKey } from '@/lib/selection'
 import type { CountryVisit } from '../lib/types'
 import Flag from './Flag'
 
 interface DateCellProps {
   date: Date | null
   visits: CountryVisit[]
-  onRemoveVisit: (visitId: string) => void
+  selected?: boolean
+  selectionEdge?: boolean
+  roundStart?: boolean
+  roundEnd?: boolean
+  tabbable?: boolean
 }
 
-function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
+function DateCell({
+  date,
+  visits,
+  selected = false,
+  selectionEdge = false,
+  roundStart = false,
+  roundEnd = false,
+  tabbable = false,
+}: DateCellProps) {
   const { settings } = useSettings()
   if (!date) {
     return (
@@ -37,58 +50,55 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
     .map((v) => getCountryByCode(v.countryCode)?.name || v.countryCode)
     .join(', ')
 
+  const label = hasVisits
+    ? `${dateLabel}, visited ${allCountries}`
+    : `${dateLabel}, no visits`
+
   return (
     <div
-      className="aspect-square p-0.5 sm:p-1 flex items-center justify-center group relative"
+      className="aspect-square p-0.5 sm:p-1 flex items-center justify-center relative data-selected:bg-red-500/12 dark:data-selected:bg-red-500/22 data-round-start:rounded-s-lg data-round-end:rounded-e-lg"
       role="gridcell"
-      aria-label={
-        hasVisits
-          ? `${dateLabel}, visited ${allCountries}`
-          : `${dateLabel}, no visits`
-      }
+      aria-selected={selected}
+      data-selected={selected || undefined}
+      data-round-start={(selected && roundStart) || undefined}
+      data-round-end={(selected && roundEnd) || undefined}
     >
-      <div className="relative flex flex-col items-center justify-center w-full h-full">
+      <button
+        type="button"
+        data-day={toDayKey(date)}
+        data-edge={selectionEdge || undefined}
+        tabIndex={tabbable ? 0 : -1}
+        aria-label={label}
+        className="relative flex flex-col items-center justify-center w-full h-full rounded-md cursor-pointer outline-none transition-colors hover:bg-black/5 dark:hover:bg-white/8 focus-visible:ring-2 focus-visible:ring-red-500/60 data-edge:ring-2 data-edge:ring-red-500 data-edge:bg-white dark:data-edge:bg-black"
+      >
         {hasVisits ? (
-          <>
-            {hasTwoCountries ? (
-              // Two countries: diagonal split like ½ symbol
-              <div className="relative w-6 h-4 sm:w-8 sm:h-6">
-                <div
-                  className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                  style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
-                >
-                  <Flag
-                    countryCode={cellVisits[0].countryCode}
-                    displayMode={settings.flagDisplayMode}
-                  />
-                </div>
-                <div
-                  className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                  style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
-                >
-                  <Flag
-                    countryCode={cellVisits[1].countryCode}
-                    displayMode={settings.flagDisplayMode}
-                  />
-                </div>
+          hasTwoCountries ? (
+            <div className="relative w-6 h-4 sm:w-8 sm:h-6">
+              <div
+                className="absolute inset-0 flex items-center justify-center overflow-hidden"
+                style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
+              >
+                <Flag
+                  countryCode={cellVisits[0].countryCode}
+                  displayMode={settings.flagDisplayMode}
+                />
               </div>
-            ) : (
-              // Single country: centered
-              <Flag
-                displayMode={settings.flagDisplayMode}
-                countryCode={cellVisits[0].countryCode}
-              />
-            )}
-            <button
-              onClick={() => {
-                cellVisits.forEach((visit) => onRemoveVisit(visit.id))
-              }}
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-red-600/90 rounded flex items-center justify-center text-white text-xs font-bold cursor-pointer transition-opacity"
-              aria-label={`Remove visits: ${allCountries}`}
-            >
-              ×
-            </button>
-          </>
+              <div
+                className="absolute inset-0 flex items-center justify-center overflow-hidden"
+                style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
+              >
+                <Flag
+                  countryCode={cellVisits[1].countryCode}
+                  displayMode={settings.flagDisplayMode}
+                />
+              </div>
+            </div>
+          ) : (
+            <Flag
+              displayMode={settings.flagDisplayMode}
+              countryCode={cellVisits[0].countryCode}
+            />
+          )
         ) : (
           <span
             className={`text-[10px] sm:text-sm font-medium ${showTodayHighlight ? 'text-red-500 font-bold' : 'text-gray-900 dark:text-white'}`}
@@ -96,7 +106,7 @@ function DateCell({ date, visits, onRemoveVisit }: DateCellProps) {
             {dayNumber}
           </span>
         )}
-      </div>
+      </button>
     </div>
   )
 }

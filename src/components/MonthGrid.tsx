@@ -1,7 +1,8 @@
 import type { CountryVisit } from '../lib/types'
 import { getMonthData } from '../lib/calendar'
-import { MONTH_NAMES_SHORT } from '../lib/constants'
+import { MONTH_NAMES, MONTH_NAMES_SHORT } from '../lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
+import { toDayKey } from '@/lib/selection'
 import DateCell from './DateCell'
 import { Download } from 'lucide-react'
 
@@ -9,7 +10,10 @@ interface MonthGridProps {
   year: number
   month: number
   visits: CountryVisit[]
-  onRemoveVisit: (visitId: string) => void
+  selectionStartKey?: string | null
+  selectionEndKey?: string | null
+  focusKey?: string | null
+  onSelectMonth?: () => void
   onExport?: () => void
 }
 
@@ -17,7 +21,10 @@ export default function MonthGrid({
   year,
   month,
   visits,
-  onRemoveVisit,
+  selectionStartKey = null,
+  selectionEndKey = null,
+  focusKey = null,
+  onSelectMonth,
   onExport,
 }: MonthGridProps) {
   const { settings } = useSettings()
@@ -33,7 +40,18 @@ export default function MonthGrid({
           id={`month-${year}-${month}`}
           className="text-base sm:text-xl font-bold text-gray-900 dark:text-zinc-100 mb-1 sm:mb-2 ps-1 sm:ps-3 lg:ps-4"
         >
-          {MONTH_NAMES_SHORT[month]}
+          {onSelectMonth ? (
+            <button
+              type="button"
+              onClick={onSelectMonth}
+              className="cursor-pointer rounded-sm outline-none transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-red-500/60"
+              aria-label={`Select all of ${MONTH_NAMES[month]}`}
+            >
+              {MONTH_NAMES_SHORT[month]}
+            </button>
+          ) : (
+            MONTH_NAMES_SHORT[month]
+          )}
         </h3>
         {onExport && (
           <button
@@ -53,14 +71,33 @@ export default function MonthGrid({
       >
         {weeks.map((week, weekIndex) => (
           <div key={weekIndex} className="grid grid-cols-7 gap-0" role="row">
-            {week.map((date, dayIndex) => (
-              <DateCell
-                key={dayIndex}
-                date={date}
-                visits={visits}
-                onRemoveVisit={onRemoveVisit}
-              />
-            ))}
+            {week.map((date, dayIndex) => {
+              const key = date ? toDayKey(date) : null
+              const selected =
+                key !== null &&
+                selectionStartKey !== null &&
+                selectionEndKey !== null &&
+                key >= selectionStartKey &&
+                key <= selectionEndKey
+              const isStart = selected && key === selectionStartKey
+              const isEnd = selected && key === selectionEndKey
+              return (
+                <DateCell
+                  key={dayIndex}
+                  date={date}
+                  visits={visits}
+                  selected={selected}
+                  selectionEdge={isStart || isEnd}
+                  roundStart={
+                    isStart || dayIndex === 0 || week[dayIndex - 1] === null
+                  }
+                  roundEnd={
+                    isEnd || dayIndex === 6 || week[dayIndex + 1] === null
+                  }
+                  tabbable={key !== null && key === focusKey}
+                />
+              )
+            })}
           </div>
         ))}
       </div>

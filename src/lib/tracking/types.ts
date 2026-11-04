@@ -2,6 +2,8 @@
  * Tracking event types for analytics
  */
 
+import type { SelectionMethod } from '@/lib/selection'
+
 export const TRACKING_EVENT_TYPES = [
   'homepage_view',
   'create_page_view',
@@ -11,6 +13,7 @@ export const TRACKING_EVENT_TYPES = [
   'year_changed',
   'visit_add_attempt',
   'visit_deleted',
+  'visit_reordered',
   'visit_undo',
   'calendar_reset',
   'image_export_click',
@@ -50,15 +53,25 @@ export interface YearChangedMetadata {
   toYear: number
 }
 
+export type VisitSource = 'form' | 'calendar'
+
 export interface VisitAddAttemptMetadata {
   success: boolean
   countryCode?: string
   dateCount?: number
   errorReason?: string
+  source?: VisitSource
+  selectionMethod?: SelectionMethod
+  suggested?: boolean
+  emptyOnly?: boolean
+  skippedFull?: number
+  skippedExisting?: number
 }
 
 export interface VisitDeletedMetadata {
-  countryCode: string
+  countryCode?: string
+  source?: VisitSource
+  dateCount?: number
 }
 
 export interface ImageExportClickMetadata {

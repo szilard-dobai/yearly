@@ -72,7 +72,9 @@ src/
 ## Key Architecture Patterns
 
 ### Image Export
+
 All three export types (calendar, monthly, statistics) follow the same pattern:
+
 1. Clone the source DOM element
 2. Apply inline styles to scale up for export (the hooks map Tailwind classes to explicit sizes)
 3. Show the hidden watermark
@@ -80,13 +82,16 @@ All three export types (calendar, monthly, statistics) follow the same pattern:
 5. Present in ImagePreviewModal for download/share
 
 ### Dark Mode
+
 Uses Material Design elevation hierarchy:
+
 - `#0a0a0a` (page background) → `#141414` (cards) → `#1a1a1a` (elevated surfaces) → `#222222` (hover)
 - Zinc color scale for text: zinc-100 (headings), zinc-400 (secondary), zinc-500 (muted)
 - Borders: `white/8` throughout
 - Calendar and exports use pure black (`#000000`) background in dark mode
 
 ### Data Flow
+
 - Calendar data stored in LocalStorage with Zod schema validation
 - Settings managed via React Context (SettingsContext)
 - Undo stack (10 levels) for visit removal

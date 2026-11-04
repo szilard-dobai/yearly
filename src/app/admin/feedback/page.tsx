@@ -470,9 +470,13 @@ function FeedbackDashboard({
                 <SelectItem value="all">All ratings</SelectItem>
                 {[...FEEDBACK_RATINGS].reverse().map((rating) => (
                   <SelectItem key={rating} value={String(rating)}>
-                    <span className="text-amber-400">{'★'.repeat(rating)}</span>
-                    <span className="text-gray-300 dark:text-zinc-600">
-                      {'★'.repeat(5 - rating)}
+                    <span>
+                      <span className="text-amber-400">
+                        {'★'.repeat(rating)}
+                      </span>
+                      <span className="text-gray-300 dark:text-zinc-600">
+                        {'★'.repeat(5 - rating)}
+                      </span>
                     </span>
                   </SelectItem>
                 ))}

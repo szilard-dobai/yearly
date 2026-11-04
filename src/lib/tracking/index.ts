@@ -7,7 +7,7 @@ import type { DeviceType, TrackingEvent, TrackingEventType } from './types'
 
 export * from './types'
 
-function getDeviceType(): DeviceType {
+export function getDeviceType(): DeviceType {
   if (typeof window === 'undefined') return 'desktop'
 
   const ua = navigator?.userAgent

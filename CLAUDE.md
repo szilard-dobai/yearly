@@ -27,7 +27,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Animations**: Motion (Framer Motion)
 - **Image export**: html-to-image (toJpeg)
 - **Validation**: Zod
-- **Database**: MongoDB (analytics only)
+- **Database**: MongoDB (`tracking_events` and `feedback` collections)
 - **Testing**: Vitest + Testing Library
 
 ## Project Structure
@@ -40,7 +40,8 @@ src/
 │   ├── globals.css           - Global styles, CSS variables, Tailwind config
 │   ├── create/page.tsx       - Main app page (calendar, exports, settings)
 │   ├── admin/analytics/      - Admin analytics dashboard
-│   └── api/                  - API routes (tracking, auth)
+│   ├── admin/feedback/       - Admin feedback review (device activity drill-down)
+│   └── api/                  - API routes (tracking, feedback, admin auth/devices)
 ├── components/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (1080×1920)
@@ -50,6 +51,9 @@ src/
 │   ├── CountryInput.tsx      - Country and date picker
 │   ├── Statistics.tsx        - Travel statistics display
 │   ├── MobileFab.tsx         - Mobile floating action button
+│   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
+│   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
+│   ├── admin/                - Admin-only components (login, nav, device activity)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/
 │   ├── types.ts              - Core types (Country, CountryVisit, CalendarData)
@@ -65,6 +69,7 @@ src/
 │   │   └── useStatusFeedback.ts    - Loading/error state management
 │   ├── contexts/
 │   │   └── SettingsContext.tsx      - User preferences (theme, flags, week start)
+│   ├── feedback/             - Feedback schemas, client API, prompt cooldowns
 │   └── tracking/             - Event tracking and analytics
 └── test/                     - Test setup and utilities
 ```

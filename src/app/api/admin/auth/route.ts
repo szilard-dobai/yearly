@@ -1,8 +1,17 @@
-import { validateSameOrigin } from '@/lib/tracking/api'
+import { isAuthenticated, validateSameOrigin } from '@/lib/tracking/api'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: Request) {
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
+
+  return NextResponse.json({ authenticated: await isAuthenticated() })
+}
 
 export async function POST(request: Request) {
   const forbidden = validateSameOrigin(request)

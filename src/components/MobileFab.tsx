@@ -7,6 +7,7 @@ import {
   CalendarDays,
   BarChart3,
   Loader2,
+  MessageSquareText,
   Plus,
   X,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ interface MobileFabProps {
   onExportClick: () => Promise<void>
   onExportStatsClick: () => Promise<void>
   onExportMonthClick: () => void
+  onFeedbackClick: () => void
   hasVisits: boolean
 }
 
@@ -27,6 +29,7 @@ export default function MobileFab({
   onExportClick,
   onExportStatsClick,
   onExportMonthClick,
+  onFeedbackClick,
   hasVisits,
 }: MobileFabProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -73,10 +76,31 @@ export default function MobileFab({
     onExportMonthClick()
   }
 
+  const handleFeedbackClick = () => {
+    setIsExpanded(false)
+    onFeedbackClick()
+  }
+
   return (
     <div className="lg:hidden absolute bottom-6 right-3 flex flex-col items-end gap-3 z-40">
       {showExpanded && (
         <>
+          <div className="flex items-center gap-2 me-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <span className="bg-gray-900 text-white text-sm px-3 py-1.5 rounded-full shadow-lg">
+              Send Feedback
+            </span>
+            <Button
+              className="size-12 rounded-full shadow-lg"
+              size="icon"
+              variant="secondary"
+              onClick={handleFeedbackClick}
+              disabled={isExporting}
+              aria-label="Send feedback"
+            >
+              <MessageSquareText className="size-5" />
+            </Button>
+          </div>
+
           {hasVisits && (
             <>
               <div className="flex items-center gap-2 me-1 animate-in fade-in slide-in-from-bottom-2 duration-200">

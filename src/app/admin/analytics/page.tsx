@@ -1,5 +1,7 @@
 'use client'
 
+import AdminLoginForm from '@/components/admin/AdminLoginForm'
+import AdminNav from '@/components/admin/AdminNav'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,7 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { COUNTRIES, getFlagEmoji } from '@/lib/countries'
-import type { TrackingEvent, TrackingEventType } from '@/lib/tracking/types'
+import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
+import { TRACKING_EVENT_TYPES, type TrackingEvent } from '@/lib/tracking/types'
 import {
   Dialog,
   DialogContent,
@@ -23,30 +26,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 type SortField = 'timestamp' | 'type' | 'deviceId'
 type SortOrder = 'asc' | 'desc'
-
-const EVENT_TYPES: TrackingEventType[] = [
-  // Page view events
-  'homepage_view',
-  'create_page_view',
-  'not_found_page_view',
-  // Homepage events
-  'homepage_cta_click',
-  // 404 page events
-  'not_found_home_click',
-  // Create page events
-  'year_changed',
-  'visit_add_attempt',
-  'visit_deleted',
-  'visit_undo',
-  'calendar_reset',
-  'image_export_click',
-  'image_download_click',
-  'statistics_export_click',
-  'developer_mode_toggle',
-  'mobile_fab_click',
-  'json_import',
-  'json_export',
-]
 
 interface Stats {
   total: number
@@ -103,10 +82,13 @@ interface HighLevelStats {
 }
 
 export default function AnalyticsPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [password, setPassword] = useState('')
-  const [authError, setAuthError] = useState('')
+  const {
+    status: authStatus,
+    isAuthenticated,
+    login,
+    logout,
+    markUnauthenticated,
+  } = useAdminAuth()
 
   const [events, setEvents] = useState<TrackingEvent[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
@@ -118,7 +100,11 @@ export default function AnalyticsPage() {
   const [offset, setOffset] = useState(0)
 
   const [typeFilter, setTypeFilter] = useState<string>('all')
-  const [deviceIdFilter, setDeviceIdFilter] = useState('')
+  const [deviceIdFilter, setDeviceIdFilter] = useState(() =>
+    typeof window === 'undefined'
+      ? ''
+      : (new URLSearchParams(window.location.search).get('deviceId') ?? '')
+  )
   const [searchQuery, setSearchQuery] = useState('')
   const [countryFilter, setCountryFilter] = useState<string>('all')
   const [regionFilter, setRegionFilter] = useState<string>('all')
@@ -169,7 +155,7 @@ export default function AnalyticsPage() {
       )
       if (!response.ok) {
         if (response.status === 401) {
-          setIsAuthenticated(false)
+          markUnauthenticated()
           return
         }
         throw new Error('Failed to fetch stats')
@@ -181,7 +167,7 @@ export default function AnalyticsPage() {
     } finally {
       setIsLoadingStats(false)
     }
-  }, [buildFilterParams])
+  }, [buildFilterParams, markUnauthenticated])
 
   const fetchEvents = useCallback(
     async (resetOffset = true) => {
@@ -200,7 +186,7 @@ export default function AnalyticsPage() {
         )
         if (!response.ok) {
           if (response.status === 401) {
-            setIsAuthenticated(false)
+            markUnauthenticated()
             return
           }
           throw new Error('Failed to fetch events')
@@ -225,7 +211,7 @@ export default function AnalyticsPage() {
         setIsLoadingMore(false)
       }
     },
-    [buildQueryParams, offset]
+    [buildQueryParams, offset, markUnauthenticated]
   )
 
   const loadMore = useCallback(() => {
@@ -233,23 +219,6 @@ export default function AnalyticsPage() {
       fetchEvents(false)
     }
   }, [fetchEvents, hasMore, isLoadingMore])
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/tracking/stats')
-        if (response.ok) {
-          setIsAuthenticated(true)
-        }
-      } catch {
-        // Not authenticated
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    checkAuth()
-  }, [])
 
   const filterDebounceRef = useRef<NodeJS.Timeout | null>(null)
   const sortDebounceRef = useRef<NodeJS.Timeout | null>(null)
@@ -324,35 +293,8 @@ export default function AnalyticsPage() {
     return () => observer.disconnect()
   }, [hasMore, isLoadingMore, isLoadingEvents, loadMore])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setAuthError('')
-    setIsLoading(true)
-
-    try {
-      const response = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-
-      if (response.ok) {
-        setIsAuthenticated(true)
-        setPassword('')
-      } else {
-        const data = await response.json()
-        setAuthError(data.error || 'Invalid password')
-      }
-    } catch {
-      setAuthError('Authentication failed')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleLogout = async () => {
-    await fetch('/api/admin/auth', { method: 'DELETE' })
-    setIsAuthenticated(false)
+    await logout()
     setEvents([])
     setStats(null)
   }
@@ -368,7 +310,7 @@ export default function AnalyticsPage() {
       const response = await fetch('/api/tracking/stats/high-level')
       if (!response.ok) {
         if (response.status === 401) {
-          setIsAuthenticated(false)
+          markUnauthenticated()
           return
         }
         throw new Error('Failed to fetch high-level stats')
@@ -387,7 +329,7 @@ export default function AnalyticsPage() {
     fetchHighLevelStats()
   }
 
-  if (isLoading) {
+  if (authStatus === 'checking') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="size-8 animate-spin text-gray-400" />
@@ -396,44 +338,17 @@ export default function AnalyticsPage() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <form
-          onSubmit={handleLogin}
-          className="w-full max-w-sm space-y-4 p-6 border rounded-lg bg-white dark:bg-gray-900 shadow-lg"
-        >
-          <h1 className="text-xl font-semibold text-center">Admin Access</h1>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              autoFocus
-            />
-          </div>
-          {authError && (
-            <p className="text-sm text-red-500 text-center">{authError}</p>
-          )}
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              'Sign In'
-            )}
-          </Button>
-        </form>
-      </div>
-    )
+    return <AdminLoginForm onLogin={login} />
   }
 
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
+            <AdminNav />
+          </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="outline"
@@ -470,7 +385,7 @@ export default function AnalyticsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All types</SelectItem>
-                {EVENT_TYPES.map((type) => (
+                {TRACKING_EVENT_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
                   </SelectItem>

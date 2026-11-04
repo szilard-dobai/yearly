@@ -62,6 +62,7 @@ export default function CalendarExportButton({
         filename={filename}
         year={year}
         calendarData={calendarData}
+        exportType="calendar"
       />
     </>
   )

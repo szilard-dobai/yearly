@@ -100,7 +100,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1a1a] px-3 py-2">
+    <div className="min-w-0 rounded-lg border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1a1a] px-3 py-2">
       <p className="text-xs text-gray-500 dark:text-zinc-500">{label}</p>
       <p className="text-sm font-semibold text-gray-900 dark:text-zinc-100 truncate">
         {value}
@@ -242,7 +242,7 @@ function DeviceActivityContent({
   const summary = data?.summary
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <DialogHeader>
         <DialogTitle>Feedback details</DialogTitle>
         <DialogDescription>
@@ -290,7 +290,7 @@ function DeviceActivityContent({
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-zinc-100">
+            <h3 className="shrink-0 font-semibold text-gray-900 dark:text-zinc-100">
               Device activity
             </h3>
             <code className="ml-2 truncate rounded bg-gray-100 dark:bg-white/8 px-1.5 py-0.5 text-xs text-gray-600 dark:text-zinc-400">
@@ -427,7 +427,7 @@ function DeviceActivityContent({
                         </span>
                       </div>
                       {summarizeMetadata(item.event.metadata) && (
-                        <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-zinc-500">
+                        <p className="mt-0.5 break-words text-xs text-gray-500 dark:text-zinc-500">
                           {summarizeMetadata(item.event.metadata)}
                         </p>
                       )}

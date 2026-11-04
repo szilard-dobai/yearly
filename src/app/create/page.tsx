@@ -5,6 +5,7 @@ import CalendarHint from '@/components/CalendarHint'
 import CountryInput from '@/components/CountryInput'
 import DaySelectionPanel, {
   type AddFromSelectionMeta,
+  type ReorderMethod,
 } from '@/components/DaySelectionPanel'
 import DeveloperMode from '@/components/DeveloperMode'
 import FeedbackButton from '@/components/FeedbackButton'
@@ -49,7 +50,11 @@ import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { addCountryToDays, removeCountryFromDays } from '@/lib/visits'
+import {
+  addCountryToDays,
+  removeCountryFromDays,
+  reorderCountriesOnDays,
+} from '@/lib/visits'
 import { CalendarDays, Loader2, Undo2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -214,6 +219,18 @@ function Create() {
         ? `Removed ${getCountryByCode(countryCode)?.name ?? countryCode} from ${pluralDays(result.removed)}`
         : 'Cleared the selected days'
     )
+  }
+
+  const handleReorderOnSelection = (
+    days: Date[],
+    order: string[],
+    method: ReorderMethod
+  ) => {
+    handleDataChange({
+      visits: reorderCountriesOnDays(calendarData.visits, days, order),
+    })
+    trackEvent('visit_reordered', { source: 'calendar', method, order })
+    showToast(`${getCountryByCode(order[0])?.name ?? order[0]} now shows first`)
   }
 
   useEffect(() => {
@@ -548,6 +565,7 @@ function Create() {
                 year={selectedYear}
                 onAdd={handleAddFromSelection}
                 onRemove={handleRemoveFromSelection}
+                onReorder={handleReorderOnSelection}
                 onClose={clearSelection}
               />
             </motion.div>

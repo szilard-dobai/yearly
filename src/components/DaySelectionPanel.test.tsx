@@ -26,6 +26,7 @@ const range = (anchor: string, focus: string): DaySelection => ({
 describe('DaySelectionPanel', () => {
   const onAdd = vi.fn()
   const onRemove = vi.fn()
+  const onReorder = vi.fn()
   const onClose = vi.fn()
 
   beforeEach(() => {
@@ -45,6 +46,7 @@ describe('DaySelectionPanel', () => {
         year={2026}
         onAdd={onAdd}
         onRemove={onRemove}
+        onReorder={onReorder}
         onClose={onClose}
       />
     )
@@ -134,6 +136,74 @@ describe('DaySelectionPanel', () => {
       '2026-03-06',
       '2026-03-07',
     ])
+  })
+
+  describe('reordering the two countries on a day', () => {
+    const travelDay = () => [visit('MX', 4, 23), visit('AD', 4, 23)]
+
+    it('shows the countries as sortable chips in stored order', () => {
+      renderPanel(range('2026-05-23', '2026-05-23'), travelDay())
+
+      const chips = screen.getAllByRole('listitem')
+      expect(chips.map((chip) => chip.getAttribute('aria-label'))).toEqual([
+        'Mexico, 1 of 2',
+        'Andorra, 2 of 2',
+      ])
+      expect(chips[0]).toHaveAccessibleDescription(/arrow keys/)
+    })
+
+    it('moves a country first with the arrow keys', async () => {
+      const user = userEvent.setup()
+      renderPanel(range('2026-05-23', '2026-05-23'), travelDay())
+
+      screen.getByRole('listitem', { name: 'Andorra, 2 of 2' }).focus()
+      await user.keyboard('{ArrowLeft}')
+
+      expect(onReorder).toHaveBeenCalledWith(
+        expect.any(Array),
+        ['AD', 'MX'],
+        'keyboard'
+      )
+      expect((onReorder.mock.calls[0][0] as Date[]).map(toDayKey)).toEqual([
+        '2026-05-23',
+      ])
+    })
+
+    it('does nothing when moving past either end', async () => {
+      const user = userEvent.setup()
+      renderPanel(range('2026-05-23', '2026-05-23'), travelDay())
+
+      screen.getByRole('listitem', { name: 'Mexico, 1 of 2' }).focus()
+      await user.keyboard('{ArrowLeft}')
+      screen.getByRole('listitem', { name: 'Andorra, 2 of 2' }).focus()
+      await user.keyboard('{ArrowRight}')
+
+      expect(onReorder).not.toHaveBeenCalled()
+    })
+
+    it('still removes a country from a sortable chip', async () => {
+      const user = userEvent.setup()
+      renderPanel(range('2026-05-23', '2026-05-23'), travelDay())
+
+      await user.click(
+        screen.getByRole('button', { name: 'Remove Andorra from this day' })
+      )
+
+      expect(onRemove).toHaveBeenCalledWith(expect.any(Array), 'AD')
+      expect(onReorder).not.toHaveBeenCalled()
+    })
+
+    it('is not offered for ranges or single-country days', () => {
+      const { unmount } = renderPanel(range('2026-05-22', '2026-05-23'), [
+        ...travelDay(),
+        visit('MX', 4, 22),
+      ])
+      expect(screen.queryByRole('listitem', { name: /1 of 2/ })).toBeNull()
+      unmount()
+
+      renderPanel(range('2026-05-23', '2026-05-23'), [visit('MX', 4, 23)])
+      expect(screen.queryByRole('listitem', { name: /1 of 1/ })).toBeNull()
+    })
   })
 
   it('clears every country from the selected days', async () => {

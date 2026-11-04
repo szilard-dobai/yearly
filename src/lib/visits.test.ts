@@ -5,6 +5,7 @@ import {
   addCountryToDays,
   getLocaleCountryCode,
   removeCountryFromDays,
+  reorderCountriesOnDays,
   suggestCountries,
   summarizeDays,
 } from './visits'
@@ -103,7 +104,65 @@ describe('removeCountryFromDays', () => {
   })
 })
 
+describe('reorderCountriesOnDays', () => {
+  it('swaps the order of two countries on a day in place', () => {
+    const existing = [
+      visit('MX', 4, 23),
+      visit('FR', 4, 20),
+      visit('AD', 4, 23),
+    ]
+
+    const result = reorderCountriesOnDays(existing, days(4, 23, 23), [
+      'AD',
+      'MX',
+    ])
+
+    expect(result.map((v) => v.countryCode)).toEqual(['AD', 'FR', 'MX'])
+    expect(result[1]).toBe(existing[1])
+  })
+
+  it('only touches the given days', () => {
+    const existing = [
+      visit('MX', 4, 22),
+      visit('AD', 4, 22),
+      visit('MX', 4, 23),
+      visit('AD', 4, 23),
+    ]
+
+    const result = reorderCountriesOnDays(existing, days(4, 23, 23), [
+      'AD',
+      'MX',
+    ])
+
+    expect(result.map((v) => v.countryCode)).toEqual(['MX', 'AD', 'AD', 'MX'])
+  })
+
+  it('keeps the same visits and does not mutate the input', () => {
+    const existing = [visit('MX', 4, 23), visit('AD', 4, 23)]
+    const snapshot = [...existing]
+
+    const result = reorderCountriesOnDays(existing, days(4, 23, 23), [
+      'AD',
+      'MX',
+    ])
+
+    expect(existing).toEqual(snapshot)
+    expect([...result].sort((a, b) => a.id.localeCompare(b.id))).toEqual(
+      [...existing].sort((a, b) => a.id.localeCompare(b.id))
+    )
+  })
+})
+
 describe('summarizeDays', () => {
+  it('lists the countries of a single day in their stored order', () => {
+    const existing = [visit('MX', 4, 23), visit('AD', 4, 23)]
+    expect(
+      summarizeDays(existing, days(4, 23, 23)).countries.map(
+        (c) => c.countryCode
+      )
+    ).toEqual(['MX', 'AD'])
+  })
+
   it('counts countries, empty days and full days in the range', () => {
     const existing = [
       visit('FR', 2, 1),

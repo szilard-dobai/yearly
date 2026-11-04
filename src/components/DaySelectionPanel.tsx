@@ -19,13 +19,23 @@ import {
   summarizeDays,
   suggestCountries,
 } from '@/lib/visits'
-import { Search, Trash2, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { GripVertical, Search, Trash2, X } from 'lucide-react'
+import { Reorder, useDragControls } from 'motion/react'
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react'
 
 export interface AddFromSelectionMeta {
   suggested: boolean
   emptyOnly: boolean
 }
+
+export type ReorderMethod = 'drag' | 'keyboard'
 
 interface DaySelectionPanelProps {
   selection: DaySelection
@@ -33,14 +43,116 @@ interface DaySelectionPanelProps {
   year: number
   onAdd: (countryCode: string, days: Date[], meta: AddFromSelectionMeta) => void
   onRemove: (days: Date[], countryCode?: string) => void
+  onReorder: (days: Date[], order: string[], method: ReorderMethod) => void
   onClose: () => void
 }
 
 const chipClassName =
   'inline-flex h-10 sm:h-9 items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 text-sm font-medium text-gray-900 transition-colors cursor-pointer hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:bg-[#222222] dark:text-zinc-100 dark:hover:bg-white/12 outline-none focus-visible:ring-2 focus-visible:ring-red-500/60'
 
+const existingChipClassName =
+  'inline-flex h-10 sm:h-9 items-center gap-2 rounded-full bg-gray-100 ps-3.5 pe-1 text-sm font-medium text-gray-900 dark:bg-white/8 dark:text-zinc-100'
+
 function pluralDays(count: number) {
   return `${count} ${count === 1 ? 'day' : 'days'}`
+}
+
+interface ExistingCountryChipProps {
+  countryCode: string
+  name: string
+  count: number | null
+  removeLabel: string
+  onRemove: () => void
+}
+
+function ExistingCountryChipContent({
+  countryCode,
+  name,
+  count,
+  removeLabel,
+  onRemove,
+}: ExistingCountryChipProps) {
+  const { settings } = useSettings()
+  return (
+    <>
+      <Flag
+        countryCode={countryCode}
+        size="sm"
+        displayMode={settings.flagDisplayMode}
+      />
+      <span className="truncate">{name}</span>
+      {count !== null && (
+        <span className="text-gray-500 dark:text-zinc-400">{count}d</span>
+      )}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={removeLabel}
+        className="flex size-8 sm:size-7 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors cursor-pointer hover:bg-gray-200 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/12 dark:hover:text-zinc-100"
+      >
+        <X className="size-4" />
+      </button>
+    </>
+  )
+}
+
+interface SortableCountryChipProps extends ExistingCountryChipProps {
+  position: number
+  total: number
+  instructionsId: string
+  constraintsRef: RefObject<HTMLUListElement | null>
+  onDragEnd: () => void
+  onMove: (direction: -1 | 1) => void
+}
+
+function SortableCountryChip({
+  position,
+  total,
+  instructionsId,
+  constraintsRef,
+  onDragEnd,
+  onMove,
+  ...chip
+}: SortableCountryChipProps) {
+  const controls = useDragControls()
+  return (
+    <Reorder.Item
+      value={chip.countryCode}
+      data-country={chip.countryCode}
+      dragListener={false}
+      dragControls={controls}
+      dragConstraints={constraintsRef}
+      dragElastic={0.1}
+      onDragEnd={onDragEnd}
+      whileDrag={{ scale: 1.05, zIndex: 10 }}
+      tabIndex={0}
+      title="Drag to reorder"
+      aria-label={`${chip.name}, ${position} of ${total}`}
+      aria-describedby={instructionsId}
+      onPointerDown={(event) => {
+        if (event.target instanceof Element && event.target.closest('button')) {
+          return
+        }
+        controls.start(event)
+      }}
+      onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+        event.preventDefault()
+        onMove(event.key === 'ArrowLeft' ? -1 : 1)
+      }}
+      className={cn(
+        existingChipClassName,
+        'relative min-w-0 cursor-grab touch-none ps-2 outline-none focus-visible:ring-2 focus-visible:ring-red-500/60 active:cursor-grabbing'
+      )}
+    >
+      <GripVertical
+        aria-hidden="true"
+        className="size-4 shrink-0 text-gray-400 dark:text-zinc-500"
+      />
+      <ExistingCountryChipContent {...chip} />
+    </Reorder.Item>
+  )
 }
 
 export default function DaySelectionPanel({
@@ -49,11 +161,17 @@ export default function DaySelectionPanel({
   year,
   onAdd,
   onRemove,
+  onReorder,
   onClose,
 }: DaySelectionPanelProps) {
   const { settings } = useSettings()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [emptyOnly, setEmptyOnly] = useState(false)
+  const [dragOrder, setDragOrder] = useState<string[] | null>(null)
+  const dragOrderRef = useRef<string[] | null>(null)
+  const focusAfterMoveRef = useRef<string | null>(null)
+  const sortableListRef = useRef<HTMLUListElement>(null)
+  const instructionsId = useId()
 
   const days = useMemo(() => getSelectionDays(selection), [selection])
   const summary = useMemo(() => summarizeDays(visits, days), [visits, days])
@@ -73,6 +191,21 @@ export default function DaySelectionPanel({
     summary.emptyDays.length > 0 && summary.emptyDays.length < days.length
   const targetDays = canChooseEmptyOnly && emptyOnly ? summary.emptyDays : days
   const allFull = summary.fullDays === days.length
+  const committedOrder = useMemo(
+    () => summary.countries.map(({ countryCode }) => countryCode),
+    [summary]
+  )
+  const reorderable = single && committedOrder.length === 2
+  const displayedOrder = dragOrder ?? committedOrder
+
+  useEffect(() => {
+    const code = focusAfterMoveRef.current
+    if (!code) return
+    focusAfterMoveRef.current = null
+    sortableListRef.current
+      ?.querySelector<HTMLElement>(`[data-country="${code}"]`)
+      ?.focus()
+  }, [committedOrder])
 
   useEffect(() => {
     if (pickerOpen) return
@@ -82,6 +215,40 @@ export default function DaySelectionPanel({
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [pickerOpen, onClose])
+
+  const commitOrder = (next: string[], method: ReorderMethod) => {
+    dragOrderRef.current = null
+    setDragOrder(null)
+    if (next.join() !== committedOrder.join()) {
+      onReorder(days, next, method)
+    }
+  }
+
+  const handleDragReorder = (next: string[]) => {
+    dragOrderRef.current = next
+    setDragOrder(next)
+  }
+
+  const moveCountry = (code: string, direction: -1 | 1) => {
+    const from = committedOrder.indexOf(code)
+    const to = from + direction
+    if (to < 0 || to >= committedOrder.length) return
+    const next = [...committedOrder]
+    ;[next[from], next[to]] = [next[to], next[from]]
+    focusAfterMoveRef.current = code
+    commitOrder(next, 'keyboard')
+  }
+
+  const chipProps = (countryCode: string, count: number) => {
+    const name = getCountryByCode(countryCode)?.name ?? countryCode
+    return {
+      countryCode,
+      name,
+      count: single ? null : count,
+      removeLabel: `Remove ${name} from ${single ? 'this day' : 'these days'}`,
+      onRemove: () => onRemove(days, countryCode),
+    }
+  }
 
   const add = (countryCode: string, suggested: boolean) => {
     onAdd(countryCode, targetDays, {
@@ -135,37 +302,49 @@ export default function DaySelectionPanel({
               </Button>
             )}
           </div>
-          <ul className="mt-2 flex flex-wrap gap-2">
-            {summary.countries.map(({ countryCode, days: count }) => {
-              const name = getCountryByCode(countryCode)?.name ?? countryCode
-              return (
-                <li
-                  key={countryCode}
-                  className="inline-flex h-10 sm:h-9 items-center gap-2 rounded-full bg-gray-100 ps-3.5 pe-1 text-sm font-medium text-gray-900 dark:bg-white/8 dark:text-zinc-100"
-                >
-                  <Flag
-                    countryCode={countryCode}
-                    size="sm"
-                    displayMode={settings.flagDisplayMode}
+          {reorderable ? (
+            <>
+              <Reorder.Group
+                ref={sortableListRef}
+                axis="x"
+                values={displayedOrder}
+                onReorder={handleDragReorder}
+                className="mt-2 flex gap-2"
+              >
+                {displayedOrder.map((countryCode, index) => (
+                  <SortableCountryChip
+                    key={countryCode}
+                    {...chipProps(countryCode, 1)}
+                    position={index + 1}
+                    total={displayedOrder.length}
+                    instructionsId={instructionsId}
+                    constraintsRef={sortableListRef}
+                    onDragEnd={() =>
+                      commitOrder(
+                        dragOrderRef.current ?? committedOrder,
+                        'drag'
+                      )
+                    }
+                    onMove={(direction) => moveCountry(countryCode, direction)}
                   />
-                  <span>{name}</span>
-                  {!single && (
-                    <span className="text-gray-500 dark:text-zinc-400">
-                      {count}d
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => onRemove(days, countryCode)}
-                    aria-label={`Remove ${name} from ${single ? 'this day' : 'these days'}`}
-                    className="flex size-8 sm:size-7 items-center justify-center rounded-full text-gray-500 transition-colors cursor-pointer hover:bg-gray-200 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-white/12 dark:hover:text-zinc-100"
-                  >
-                    <X className="size-4" />
-                  </button>
+                ))}
+              </Reorder.Group>
+              <p id={instructionsId} className="sr-only">
+                Drag, or use the left and right arrow keys, to choose which flag
+                comes first.
+              </p>
+            </>
+          ) : (
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {summary.countries.map(({ countryCode, days: count }) => (
+                <li key={countryCode} className={existingChipClassName}>
+                  <ExistingCountryChipContent
+                    {...chipProps(countryCode, count)}
+                  />
                 </li>
-              )
-            })}
-          </ul>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 

@@ -13,6 +13,7 @@ export const TRACKING_EVENT_TYPES = [
   'year_changed',
   'visit_add_attempt',
   'visit_deleted',
+  'visit_reordered',
   'visit_undo',
   'calendar_reset',
   'image_export_click',

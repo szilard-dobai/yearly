@@ -90,6 +90,36 @@ export function removeCountryFromDays(
   return { visits: remaining, removed: visits.length - remaining.length }
 }
 
+export function reorderCountriesOnDays(
+  visits: CountryVisit[],
+  days: Date[],
+  order: string[]
+): CountryVisit[] {
+  const keys = new Set(days.map(toDayKey))
+  const rank = (code: string) => {
+    const index = order.indexOf(code)
+    return index === -1 ? order.length : index
+  }
+
+  const positionsByDay = new Map<string, number[]>()
+  visits.forEach((visit, index) => {
+    const key = toDayKey(visit.date)
+    if (!keys.has(key)) return
+    positionsByDay.set(key, [...(positionsByDay.get(key) ?? []), index])
+  })
+
+  const reordered = [...visits]
+  for (const positions of positionsByDay.values()) {
+    const sorted = positions
+      .map((index) => visits[index])
+      .sort((a, b) => rank(a.countryCode) - rank(b.countryCode))
+    positions.forEach((index, n) => {
+      reordered[index] = sorted[n]
+    })
+  }
+  return reordered
+}
+
 export function summarizeDays(
   visits: CountryVisit[],
   days: Date[]

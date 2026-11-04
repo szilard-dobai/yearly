@@ -126,7 +126,7 @@ export default function MobileFab({
           aria-hidden="true"
           data-testid="mobile-fab-scrim"
           onClick={handleScrimClick}
-          className="lg:hidden fixed inset-0 z-30 bg-white/70 backdrop-blur-sm dark:bg-black/70 animate-in fade-in duration-200"
+          className="lg:hidden fixed inset-0 z-30 bg-white/70 backdrop-blur-[2px] dark:bg-black/70 animate-in fade-in duration-200"
         />
       )}
 

@@ -1,8 +1,9 @@
+import { notifyFeedbackToSlack } from '@/lib/feedback/slack'
 import { updateFeedbackSchema } from '@/lib/feedback/types'
 import { type FeedbackDocument, getFeedbackCollection } from '@/lib/mongodb'
 import { validateSameOrigin } from '@/lib/tracking/api'
 import { ObjectId } from 'mongodb'
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,18 +44,21 @@ export async function PATCH(
 
   try {
     const collection = await getFeedbackCollection()
-    const result = await collection.updateOne(
+    const updated = await collection.findOneAndUpdate(
       {
         _id: new ObjectId(id),
         deviceId,
         createdAt: { $gte: new Date(Date.now() - EDIT_WINDOW_MS) },
       },
-      { $set: update }
+      { $set: update },
+      { returnDocument: 'after' }
     )
 
-    if (result.matchedCount === 0) {
+    if (!updated) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
+
+    if (message) after(() => notifyFeedbackToSlack(updated, 'message_added'))
 
     return NextResponse.json({ success: true })
   } catch (error) {

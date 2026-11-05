@@ -69,7 +69,7 @@ src/
 │   │   └── useStatusFeedback.ts    - Loading/error state management
 │   ├── contexts/
 │   │   └── SettingsContext.tsx      - User preferences (theme, flags, week start)
-│   ├── feedback/             - Feedback schemas, client API, prompt cooldowns
+│   ├── feedback/             - Feedback schemas, client API, prompt cooldowns, Slack notifications (`SLACK_FEEDBACK_WEBHOOK_URL`)
 │   └── tracking/             - Event tracking and analytics
 └── test/                     - Test setup and utilities
 ```

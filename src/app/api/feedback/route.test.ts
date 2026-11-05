@@ -7,8 +7,19 @@ const collection = {
   insertOne: vi.fn(),
 }
 
+const notifyFeedbackToSlack = vi.fn()
+
 vi.mock('@/lib/mongodb', () => ({
   getFeedbackCollection: () => Promise.resolve(collection),
+}))
+
+vi.mock('@/lib/feedback/slack', () => ({
+  notifyFeedbackToSlack: (...args: unknown[]) => notifyFeedbackToSlack(...args),
+}))
+
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/server')>()),
+  after: (callback: () => unknown) => callback(),
 }))
 
 function postRequest(
@@ -33,6 +44,7 @@ const validBody = {
 
 describe('POST /api/feedback', () => {
   beforeEach(() => {
+    notifyFeedbackToSlack.mockReset()
     collection.countDocuments.mockReset().mockResolvedValue(0)
     collection.insertOne.mockReset().mockResolvedValue({
       insertedId: new ObjectId('6728b8f0c2a4e1d2f3a4b5c6'),
@@ -65,6 +77,25 @@ describe('POST /api/feedback', () => {
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
       })
+    )
+  })
+
+  it('sends new feedback to Slack', async () => {
+    await POST(
+      postRequest(validBody, {
+        'sec-fetch-site': 'same-origin',
+        'x-vercel-ip-country': 'RO',
+      })
+    )
+
+    expect(notifyFeedbackToSlack).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rating: 5,
+        message: 'Great app',
+        source: 'post_export',
+        country: 'RO',
+      }),
+      'created'
     )
   })
 
@@ -107,6 +138,7 @@ describe('POST /api/feedback', () => {
     const response = await POST(postRequest(validBody))
 
     expect(response.status).toBe(429)
+    expect(notifyFeedbackToSlack).not.toHaveBeenCalled()
     expect(collection.countDocuments).toHaveBeenCalledWith({
       deviceId: 'device-123',
       createdAt: { $gte: expect.any(Date) },

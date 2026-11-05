@@ -2,13 +2,14 @@ import {
   buildFeedbackFilter,
   buildFeedbackListPipeline,
 } from '@/lib/feedback/query'
+import { notifyFeedbackToSlack } from '@/lib/feedback/slack'
 import {
   createFeedbackSchema,
   feedbackListQuerySchema,
 } from '@/lib/feedback/types'
 import { type FeedbackDocument, getFeedbackCollection } from '@/lib/mongodb'
 import { requireAdmin, validateSameOrigin } from '@/lib/tracking/api'
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
     if (region) document.region = region
 
     const result = await collection.insertOne(document)
+    after(() => notifyFeedbackToSlack(document, 'created'))
 
     return NextResponse.json(
       { id: result.insertedId.toHexString() },

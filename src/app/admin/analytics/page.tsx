@@ -2,6 +2,7 @@
 
 import AdminLoginForm from '@/components/admin/AdminLoginForm'
 import AdminNav from '@/components/admin/AdminNav'
+import CountryFlag from '@/components/admin/CountryFlag'
 import AnalyticsOverviewDialog, {
   type HighLevelStats,
 } from '@/components/admin/AnalyticsOverviewDialog'
@@ -599,15 +600,13 @@ export default function AnalyticsPage() {
                           <td className="p-3 font-mono text-xs text-gray-500 dark:text-zinc-500">
                             {shortDeviceId(event.deviceId)}
                           </td>
-                          <td
-                            className="p-3 whitespace-nowrap text-xs text-gray-600 dark:text-zinc-400"
-                            title={
-                              event.country
-                                ? getCountryName(event.country)
-                                : undefined
-                            }
-                          >
-                            {formatLocation(event.country, event.region, '—')}
+                          <td className="p-3 whitespace-nowrap text-xs text-gray-600 dark:text-zinc-400">
+                            <span className="flex items-center gap-1.5">
+                              {event.country && (
+                                <CountryFlag code={event.country} />
+                              )}
+                              {formatLocation(event.country, event.region, '—')}
+                            </span>
                           </td>
                           <td className="p-3 text-xs text-gray-500 dark:text-zinc-500">
                             <div

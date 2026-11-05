@@ -2,6 +2,7 @@
 
 import AdminLoginForm from '@/components/admin/AdminLoginForm'
 import AdminNav from '@/components/admin/AdminNav'
+import CountryFlag from '@/components/admin/CountryFlag'
 import DeviceActivityDialog from '@/components/admin/DeviceActivityDialog'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import StatTile from '@/components/admin/StatTile'
@@ -19,10 +20,10 @@ import {
 import { Switch } from '@/components/ui/switch'
 import {
   formatDateTime,
+  formatLocation,
   formatRelativeTime,
   shortDeviceId,
 } from '@/lib/admin/format'
-import { getFlagEmoji } from '@/lib/countries'
 import {
   FEEDBACK_RATINGS,
   FEEDBACK_SOURCE_LABELS,
@@ -151,13 +152,11 @@ function FeedbackListItem({
             <DeviceTypeIcon type={entry.deviceType} />
             {entry.country && (
               <span
-                title={
-                  entry.region
-                    ? `${entry.country} / ${entry.region}`
-                    : entry.country
-                }
+                className="flex items-center gap-1"
+                title={formatLocation(entry.country, entry.region)}
               >
-                {getFlagEmoji(entry.country)} {entry.country}
+                <CountryFlag code={entry.country} />
+                {entry.country}
               </span>
             )}
           </span>

@@ -1,4 +1,4 @@
-import { getCountryByCode, getFlagEmoji } from '@/lib/countries'
+import { getCountryByCode } from '@/lib/countries'
 import type { TrackingEventType } from '@/lib/tracking/types'
 
 const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
@@ -48,7 +48,7 @@ export function formatLocation(
   fallback = 'Unknown'
 ): string {
   if (!country) return fallback
-  return `${getFlagEmoji(country)} ${country}${region ? ` / ${region}` : ''}`
+  return region ? `${country} / ${region}` : country
 }
 
 function summarizeValue(key: string, value: unknown): string | null {

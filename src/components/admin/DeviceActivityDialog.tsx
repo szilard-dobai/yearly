@@ -1,6 +1,7 @@
 'use client'
 
 import CopyButton from '@/components/admin/CopyButton'
+import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
@@ -216,6 +217,7 @@ function DeviceActivityContent({
           <DetailRow
             label="Location"
             value={formatLocation(feedback.country, feedback.region)}
+            icon={feedback.country && <CountryFlag code={feedback.country} />}
           />
           <DetailRow label="Source" value={formatContext(feedback)} />
           <DetailRow

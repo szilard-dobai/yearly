@@ -82,9 +82,9 @@ describe('getEventLabel', () => {
 })
 
 describe('formatLocation', () => {
-  it('shows the flag, country and region', () => {
-    expect(formatLocation('DE', 'BY')).toBe('🇩🇪 DE / BY')
-    expect(formatLocation('FR')).toBe('🇫🇷 FR')
+  it('shows the country and region', () => {
+    expect(formatLocation('DE', 'BY')).toBe('DE / BY')
+    expect(formatLocation('FR')).toBe('FR')
   })
 
   it('falls back when the country is unknown', () => {

@@ -42,7 +42,11 @@ describe('EventDetailsDialog', () => {
       screen.getByRole('heading', { name: 'Visit add attempted' })
     ).toBeInTheDocument()
     expect(screen.getByText('visit_add_attempt')).toBeInTheDocument()
-    expect(screen.getByText('🇩🇪 DE / BY')).toBeInTheDocument()
+    expect(screen.getByText('DE / BY')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Germany' })).toHaveAttribute(
+      'title',
+      'Germany'
+    )
     expect(screen.getByText('mobile')).toBeInTheDocument()
     expect(screen.getByText(event.deviceId)).toBeInTheDocument()
     expect(screen.getByText(/"countryCode": "FI"/)).toBeInTheDocument()

@@ -1,6 +1,7 @@
 'use client'
 
 import CopyButton from '@/components/admin/CopyButton'
+import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import { EventToneDot } from '@/components/admin/EventTypeBadge'
@@ -69,6 +70,7 @@ export default function EventDetailsDialog({
                 <DetailRow
                   label="Location"
                   value={formatLocation(event.country, event.region)}
+                  icon={event.country && <CountryFlag code={event.country} />}
                 />
               </dl>
               <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-white/8">

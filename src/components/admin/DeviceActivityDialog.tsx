@@ -1,5 +1,9 @@
 'use client'
 
+import CopyButton from '@/components/admin/CopyButton'
+import DetailRow from '@/components/admin/DetailRow'
+import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
+import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
 import StarRating, { RATING_LABELS } from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,48 +14,22 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  type EventTone,
   formatDateTime,
+  formatLocation,
   formatRelativeTime,
-  getEventTone,
   summarizeMetadata,
 } from '@/lib/admin/format'
-import { getFlagEmoji } from '@/lib/countries'
 import {
   FEEDBACK_SOURCE_LABELS,
   type FeedbackEntry,
 } from '@/lib/feedback/types'
 import type { DeviceSummary, StoredTrackingEvent } from '@/lib/tracking/types'
 import { cn } from '@/lib/utils'
-import {
-  Check,
-  Copy,
-  ExternalLink,
-  Loader2,
-  MessageSquareText,
-} from 'lucide-react'
+import { ExternalLink, Loader2, MessageSquareText } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const EVENT_PAGE_SIZE = 100
-
-const TONE_BADGE_CLASSES: Record<EventTone, string> = {
-  view: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
-  export:
-    'bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300',
-  feedback:
-    'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
-  edit: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
-  other: 'bg-gray-100 text-gray-700 dark:bg-white/8 dark:text-zinc-300',
-}
-
-const TONE_DOT_CLASSES: Record<EventTone, string> = {
-  view: 'bg-sky-500',
-  export: 'bg-violet-500',
-  feedback: 'bg-amber-500',
-  edit: 'bg-emerald-500',
-  other: 'bg-gray-400 dark:bg-zinc-500',
-}
 
 interface DeviceActivityResponse {
   deviceId: string
@@ -72,30 +50,11 @@ interface DeviceActivityDialogProps {
   onUnauthorized: () => void
 }
 
-function formatLocation(country?: string, region?: string) {
-  if (!country) return 'Unknown'
-  return `${getFlagEmoji(country)} ${country}${region ? ` / ${region}` : ''}`
-}
-
 function formatContext(entry: FeedbackEntry) {
   const parts = [FEEDBACK_SOURCE_LABELS[entry.source]]
   if (entry.context?.exportType) parts.push(entry.context.exportType)
   if (entry.context?.year) parts.push(String(entry.context.year))
   return parts.join(' · ')
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs text-gray-500 dark:text-zinc-500">{label}</dt>
-      <dd
-        className="text-sm text-gray-900 dark:text-zinc-100 truncate"
-        title={value}
-      >
-        {value}
-      </dd>
-    </div>
-  )
 }
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
@@ -106,31 +65,6 @@ function SummaryTile({ label, value }: { label: string; value: string }) {
         {value}
       </p>
     </div>
-  )
-}
-
-function CopyButton({ value }: { value: string }) {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(value)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch {
-      setCopied(false)
-    }
-  }
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon-sm"
-      onClick={handleCopy}
-      aria-label="Copy device id"
-    >
-      {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-    </Button>
   )
 }
 
@@ -274,7 +208,11 @@ function DeviceActivityContent({
           <p className="italic text-gray-500 dark:text-zinc-500">No message</p>
         )}
         <dl className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-gray-100 dark:border-white/8">
-          <DetailRow label="Device" value={feedback.deviceType ?? 'Unknown'} />
+          <DetailRow
+            label="Device"
+            value={feedback.deviceType ?? 'Unknown'}
+            icon={<DeviceTypeIcon type={feedback.deviceType} />}
+          />
           <DetailRow
             label="Location"
             value={formatLocation(feedback.country, feedback.region)}
@@ -296,7 +234,7 @@ function DeviceActivityContent({
             <code className="ml-2 truncate rounded bg-gray-100 dark:bg-white/8 px-1.5 py-0.5 text-xs text-gray-600 dark:text-zinc-400">
               {feedback.deviceId}
             </code>
-            <CopyButton value={feedback.deviceId} />
+            <CopyButton value={feedback.deviceId} label="Copy device id" />
           </div>
           <Button variant="outline" size="sm" asChild>
             <Link
@@ -348,15 +286,7 @@ function DeviceActivityContent({
             {topEventTypes.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {topEventTypes.map(([type, count]) => (
-                  <span
-                    key={type}
-                    className={cn(
-                      'rounded-full px-2 py-0.5 text-xs font-medium',
-                      TONE_BADGE_CLASSES[getEventTone(type)]
-                    )}
-                  >
-                    {type} × {count}
-                  </span>
+                  <EventTypeBadge key={type} type={type} count={count} />
                 ))}
               </div>
             )}
@@ -407,24 +337,15 @@ function DeviceActivityContent({
                     </li>
                   ) : (
                     <li key={item.event._id} className="relative pl-5">
-                      <span
-                        className={cn(
-                          'absolute -left-[5px] top-1.5 size-2.5 rounded-full ring-4 ring-white dark:ring-[#0a0a0a]',
-                          TONE_DOT_CLASSES[getEventTone(item.event.type)]
-                        )}
+                      <EventToneDot
+                        type={item.event.type}
+                        className="absolute -left-[5px] top-1.5 size-2.5 ring-4 ring-white dark:ring-[#0a0a0a]"
                       />
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span className="font-mono text-xs text-gray-500 dark:text-zinc-500 tabular-nums">
                           {formatDateTime(item.at)}
                         </span>
-                        <span
-                          className={cn(
-                            'rounded-full px-2 py-0.5 text-xs font-medium',
-                            TONE_BADGE_CLASSES[getEventTone(item.event.type)]
-                          )}
-                        >
-                          {item.event.type}
-                        </span>
+                        <EventTypeBadge type={item.event.type} />
                       </div>
                       {summarizeMetadata(item.event.metadata) && (
                         <p className="mt-0.5 break-words text-xs text-gray-500 dark:text-zinc-500">

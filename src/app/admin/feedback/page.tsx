@@ -3,6 +3,8 @@
 import AdminLoginForm from '@/components/admin/AdminLoginForm'
 import AdminNav from '@/components/admin/AdminNav'
 import DeviceActivityDialog from '@/components/admin/DeviceActivityDialog'
+import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
+import StatTile from '@/components/admin/StatTile'
 import StarRating from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,12 +37,9 @@ import {
   ChevronRight,
   Loader2,
   LogOut,
-  Monitor,
   RefreshCw,
   Search,
-  Smartphone,
   Star,
-  Tablet,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -59,36 +58,6 @@ const SORT_OPTIONS = {
 type SortOption = keyof typeof SORT_OPTIONS
 type RatingFilter = 'all' | 'none' | `${(typeof FEEDBACK_RATINGS)[number]}`
 type SourceFilter = 'all' | (typeof FEEDBACK_SOURCES)[number]
-
-const DEVICE_ICONS = {
-  mobile: Smartphone,
-  tablet: Tablet,
-  desktop: Monitor,
-} as const
-
-function StatTile({
-  label,
-  value,
-  hint,
-}: {
-  label: string
-  value: React.ReactNode
-  hint?: string
-}) {
-  return (
-    <div className="rounded-xl border border-gray-200 dark:border-white/8 bg-white dark:bg-[#141414] p-4">
-      <p className="text-sm text-gray-500 dark:text-zinc-400">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-zinc-100">
-        {value}
-      </p>
-      {hint && (
-        <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">
-          {hint}
-        </p>
-      )}
-    </div>
-  )
-}
 
 function RatingDistribution({
   stats,
@@ -159,8 +128,6 @@ function FeedbackListItem({
   now: number
   onSelect: () => void
 }) {
-  const DeviceIcon = entry.deviceType ? DEVICE_ICONS[entry.deviceType] : null
-
   return (
     <li>
       <button
@@ -181,7 +148,7 @@ function FeedbackListItem({
             {entry.context?.exportType && ` · ${entry.context.exportType}`}
           </span>
           <span className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-zinc-400">
-            {DeviceIcon && <DeviceIcon className="size-3.5" />}
+            <DeviceTypeIcon type={entry.deviceType} />
             {entry.country && (
               <span
                 title={

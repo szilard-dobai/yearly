@@ -53,7 +53,7 @@ src/
 │   ├── MobileFab.tsx         - Mobile floating action button
 │   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
-│   ├── admin/                - Admin-only components (login, nav, device activity)
+│   ├── admin/                - Admin-only components (login, nav, dialogs, shared event badges and tiles)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/
 │   ├── types.ts              - Core types (Country, CountryVisit, CalendarData)

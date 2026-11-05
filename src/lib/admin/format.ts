@@ -1,3 +1,6 @@
+import { getCountryByCode } from '@/lib/countries'
+import type { TrackingEventType } from '@/lib/tracking/types'
+
 const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ['year', 365 * 24 * 60 * 60 * 1000],
   ['month', 30 * 24 * 60 * 60 * 1000],
@@ -21,15 +24,31 @@ export function formatRelativeTime(value: string | Date, now: number): string {
   return 'just now'
 }
 
-export function formatDateTime(value: string | Date): string {
+export function formatDateTime(
+  value: string | Date,
+  precision: 'minutes' | 'seconds' = 'minutes'
+): string {
   return new Date(value).toLocaleString(undefined, {
     dateStyle: 'medium',
-    timeStyle: 'short',
+    timeStyle: precision === 'seconds' ? 'medium' : 'short',
   })
 }
 
 export function shortDeviceId(deviceId: string): string {
   return deviceId.slice(0, 8)
+}
+
+export function getCountryName(code: string): string {
+  return getCountryByCode(code)?.name ?? code
+}
+
+export function formatLocation(
+  country?: string,
+  region?: string,
+  fallback = 'Unknown'
+): string {
+  if (!country) return fallback
+  return region ? `${country} / ${region}` : country
 }
 
 function summarizeValue(key: string, value: unknown): string | null {
@@ -72,4 +91,38 @@ export function getEventTone(type: string): EventTone {
     return 'edit'
   }
   return 'other'
+}
+
+export const EVENT_LABELS: Record<TrackingEventType, string> = {
+  homepage_view: 'Homepage viewed',
+  create_page_view: 'Create page viewed',
+  not_found_page_view: '404 page viewed',
+  homepage_cta_click: 'Homepage CTA clicked',
+  not_found_home_click: '404 home link clicked',
+  year_changed: 'Year changed',
+  visit_add_attempt: 'Visit add attempted',
+  visit_deleted: 'Visit deleted',
+  visit_reordered: 'Visits reordered',
+  visit_undo: 'Change undone',
+  calendar_reset: 'Calendar reset',
+  image_export_click: 'Calendar export clicked',
+  image_download_click: 'Image download clicked',
+  statistics_export_click: 'Statistics export clicked',
+  monthly_export_click: 'Month export clicked',
+  developer_mode_toggle: 'Developer mode toggled',
+  mobile_fab_click: 'Mobile menu opened',
+  json_import: 'JSON imported',
+  json_export: 'JSON exported',
+  feedback_prompt_shown: 'Feedback prompt shown',
+  feedback_prompt_dismissed: 'Feedback prompt dismissed',
+  feedback_dialog_open: 'Feedback form opened',
+  feedback_submitted: 'Feedback submitted',
+}
+
+export function getEventLabel(type: string): string {
+  if (Object.hasOwn(EVENT_LABELS, type)) {
+    return EVENT_LABELS[type as TrackingEventType]
+  }
+  const words = type.split('_').filter(Boolean).join(' ')
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : type
 }

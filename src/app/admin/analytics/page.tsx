@@ -2,6 +2,14 @@
 
 import AdminLoginForm from '@/components/admin/AdminLoginForm'
 import AdminNav from '@/components/admin/AdminNav'
+import CountryFlag from '@/components/admin/CountryFlag'
+import AnalyticsOverviewDialog, {
+  type HighLevelStats,
+} from '@/components/admin/AnalyticsOverviewDialog'
+import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
+import EventDetailsDialog from '@/components/admin/EventDetailsDialog'
+import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
+import StatTile from '@/components/admin/StatTile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,17 +20,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { COUNTRIES, getFlagEmoji } from '@/lib/countries'
-import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
-import { TRACKING_EVENT_TYPES, type TrackingEvent } from '@/lib/tracking/types'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  formatDateTime,
+  formatLocation,
+  getCountryName,
+  getEventLabel,
+  shortDeviceId,
+  summarizeMetadata,
+} from '@/lib/admin/format'
+import { getFlagEmoji } from '@/lib/countries'
+import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
+import {
+  TRACKING_EVENT_TYPES,
+  type StoredTrackingEvent,
+} from '@/lib/tracking/types'
+import { cn } from '@/lib/utils'
 import { BarChart3, Loader2, LogOut, RefreshCw, Search } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type SortField = 'timestamp' | 'type' | 'deviceId'
 type SortOrder = 'asc' | 'desc'
@@ -40,45 +54,18 @@ interface Stats {
   regions: string[]
 }
 
-interface CountryDeviceCount {
-  country: string
-  deviceCount: number
+const CARD_CLASSES =
+  'rounded-xl border border-gray-200 dark:border-white/8 bg-white dark:bg-[#141414]'
+
+function statValue(isLoading: boolean, value?: number) {
+  if (isLoading)
+    return <Loader2 className="size-5 animate-spin text-gray-400" />
+  return value === undefined ? '—' : value.toLocaleString()
 }
 
-interface HighLevelStats {
-  totalEvents: number
-  uniqueCountries: number
-  uniqueDevices: number
-  totalVisitsAdded: number
-  visitAttempts: {
-    total: number
-    successful: number
-    failed: number
-  }
-  deviceTypePercentages: {
-    mobile: number
-    tablet: number
-    desktop: number
-  }
-  deviceTypeCounts: Record<string, number>
-  exports: {
-    imageExportClicks: number
-    statisticsExportClicks: number
-    imageDownloadClicks: number
-  }
-  dataManagement: {
-    jsonImports: number
-    jsonExports: number
-    calendarResets: number
-  }
-  pageViews: {
-    homepage: number
-    createPage: number
-    notFound: number
-  }
-  eventBreakdown: Record<string, number>
-  topCountriesByDevices: CountryDeviceCount[]
-  interestingMentions: CountryDeviceCount[]
+function statHint(isLoading: boolean, value?: number, total?: number) {
+  if (isLoading || value === undefined || total === undefined) return undefined
+  return value === total ? undefined : `of ${total.toLocaleString()} total`
 }
 
 export default function AnalyticsPage() {
@@ -90,7 +77,7 @@ export default function AnalyticsPage() {
     markUnauthenticated,
   } = useAdminAuth()
 
-  const [events, setEvents] = useState<TrackingEvent[]>([])
+  const [events, setEvents] = useState<StoredTrackingEvent[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [isLoadingStats, setIsLoadingStats] = useState(false)
   const [isLoadingEvents, setIsLoadingEvents] = useState(false)
@@ -112,7 +99,9 @@ export default function AnalyticsPage() {
   const [sortField, setSortField] = useState<SortField>('timestamp')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
-  const [selectedEvent, setSelectedEvent] = useState<TrackingEvent | null>(null)
+  const [selectedEvent, setSelectedEvent] =
+    useState<StoredTrackingEvent | null>(null)
+  const [isEventOpen, setIsEventOpen] = useState(false)
 
   const [showHighLevelStats, setShowHighLevelStats] = useState(false)
   const [highLevelStats, setHighLevelStats] = useState<HighLevelStats | null>(
@@ -329,6 +318,24 @@ export default function AnalyticsPage() {
     fetchHighLevelStats()
   }
 
+  const handleSelectEvent = (event: StoredTrackingEvent) => {
+    setSelectedEvent(event)
+    setIsEventOpen(true)
+  }
+
+  const handleShowDeviceEvents = (deviceId: string) => {
+    setDeviceIdFilter(deviceId)
+    setIsEventOpen(false)
+  }
+
+  const sortedCountries = useMemo(
+    () =>
+      [...(stats?.countries ?? [])].sort((a, b) =>
+        getCountryName(a).localeCompare(getCountryName(b))
+      ),
+    [stats?.countries]
+  )
+
   if (authStatus === 'checking') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -340,6 +347,8 @@ export default function AnalyticsPage() {
   if (!isAuthenticated) {
     return <AdminLoginForm onLogin={login} />
   }
+
+  const isRefreshing = isLoadingStats || isLoadingEvents
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -362,10 +371,10 @@ export default function AnalyticsPage() {
               variant="outline"
               size="sm"
               onClick={handleRefresh}
-              disabled={isLoadingStats || isLoadingEvents}
+              disabled={isRefreshing}
             >
               <RefreshCw
-                className={`size-4 ${isLoadingStats || isLoadingEvents ? 'animate-spin' : ''}`}
+                className={cn('size-4', isRefreshing && 'animate-spin')}
               />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
@@ -376,9 +385,14 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4 border rounded-lg bg-white dark:bg-gray-900">
+        <div
+          className={cn(
+            'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 p-4',
+            CARD_CLASSES
+          )}
+        >
           <div className="space-y-2">
-            <Label>Event Type</Label>
+            <Label>Event type</Label>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="All types" />
@@ -387,7 +401,8 @@ export default function AnalyticsPage() {
                 <SelectItem value="all">All types</SelectItem>
                 {TRACKING_EVENT_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
-                    {type}
+                    <EventToneDot type={type} />
+                    {getEventLabel(type)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -402,10 +417,9 @@ export default function AnalyticsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All countries</SelectItem>
-                {(stats?.countries ?? []).map((country) => (
+                {sortedCountries.map((country) => (
                   <SelectItem key={country} value={country}>
-                    {COUNTRIES.find((item) => item.code === country)?.name ||
-                      country}
+                    {`${getFlagEmoji(country)} ${getCountryName(country)}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -430,8 +444,9 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Device ID</Label>
+            <Label htmlFor="analytics-device-id">Device ID</Label>
             <Input
+              id="analytics-device-id"
               className="w-full"
               placeholder="Filter by device ID..."
               value={deviceIdFilter}
@@ -440,10 +455,11 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Search Metadata</Label>
+            <Label htmlFor="analytics-search">Search metadata</Label>
             <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
               <Input
+                id="analytics-search"
                 placeholder="Search in metadata..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -453,7 +469,7 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Sort By</Label>
+            <Label>Sort by</Label>
             <div className="flex gap-2">
               <Select
                 value={sortField}
@@ -485,101 +501,63 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="p-4 border rounded-lg bg-white dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Total Events</p>
-            <p className="text-2xl font-semibold">
-              {isLoadingStats ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                (stats?.total ?? '-')
-              )}
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg bg-white dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Filtered</p>
-            <p className="text-2xl font-semibold">
-              {isLoadingStats ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                (stats?.filtered ?? '-')
-              )}
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg bg-white dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Unique Devices</p>
-            <p className="text-2xl font-semibold">
-              {isLoadingStats ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <>
-                  {stats?.filteredUniqueDevices ?? '-'}
-                  {stats &&
-                    stats.filteredUniqueDevices !== stats.uniqueDevices && (
-                      <span className="text-sm text-gray-400 font-normal ml-1">
-                        / {stats.uniqueDevices}
-                      </span>
-                    )}
-                </>
-              )}
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg bg-white dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Event Types</p>
-            <p className="text-2xl font-semibold">
-              {isLoadingStats ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <>
-                  {stats?.filteredEventTypes ?? '-'}
-                  {stats && stats.filteredEventTypes !== stats.eventTypes && (
-                    <span className="text-sm text-gray-400 font-normal ml-1">
-                      / {stats.eventTypes}
-                    </span>
-                  )}
-                </>
-              )}
-            </p>
-          </div>
-          <div className="p-4 border rounded-lg bg-white dark:bg-gray-900">
-            <p className="text-sm text-gray-500">Unique Countries</p>
-            <p className="text-2xl font-semibold">
-              {isLoadingStats ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <>
-                  {stats?.filteredUniqueCountries ?? '-'}
-                  {stats &&
-                    stats.filteredUniqueCountries !== stats.uniqueCountries && (
-                      <span className="text-sm text-gray-400 font-normal ml-1">
-                        / {stats.uniqueCountries}
-                      </span>
-                    )}
-                </>
-              )}
-            </p>
-          </div>
+          <StatTile
+            label="Total events"
+            value={statValue(isLoadingStats, stats?.total)}
+          />
+          <StatTile
+            label="Matching filters"
+            value={statValue(isLoadingStats, stats?.filtered)}
+          />
+          <StatTile
+            label="Unique devices"
+            value={statValue(isLoadingStats, stats?.filteredUniqueDevices)}
+            hint={statHint(
+              isLoadingStats,
+              stats?.filteredUniqueDevices,
+              stats?.uniqueDevices
+            )}
+          />
+          <StatTile
+            label="Event types"
+            value={statValue(isLoadingStats, stats?.filteredEventTypes)}
+            hint={statHint(
+              isLoadingStats,
+              stats?.filteredEventTypes,
+              stats?.eventTypes
+            )}
+          />
+          <StatTile
+            label="Countries"
+            value={statValue(isLoadingStats, stats?.filteredUniqueCountries)}
+            hint={statHint(
+              isLoadingStats,
+              stats?.filteredUniqueCountries,
+              stats?.uniqueCountries
+            )}
+          />
         </div>
 
         {eventsError && (
-          <div className="p-4 border border-red-200 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
+          <div className="p-4 border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 rounded-lg text-red-600 dark:text-red-400">
             {eventsError}
           </div>
         )}
 
-        <div className="border rounded-lg bg-white dark:bg-gray-900 overflow-hidden">
+        <div className={cn('overflow-hidden', CARD_CLASSES)}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800 border-b">
+              <thead className="border-b border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1a1a] text-gray-500 dark:text-zinc-400">
                 <tr>
-                  <th className="text-left p-3 font-medium">Timestamp</th>
-                  <th className="text-left p-3 font-medium">Type</th>
+                  <th className="text-left p-3 font-medium">Time</th>
+                  <th className="text-left p-3 font-medium">Event</th>
                   <th className="text-left p-3 font-medium">Device</th>
                   <th className="text-left p-3 font-medium">Device ID</th>
                   <th className="text-left p-3 font-medium">Location</th>
-                  <th className="text-left p-3 font-medium">Metadata</th>
+                  <th className="text-left p-3 font-medium">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-gray-100 dark:divide-white/8">
                 {isLoadingEvents ? (
                   <tr>
                     <td colSpan={6} className="p-8 text-center">
@@ -588,46 +566,64 @@ export default function AnalyticsPage() {
                   </tr>
                 ) : (
                   <>
-                    {events.map((event, idx) => (
-                      <tr
-                        key={`${event.timestamp}-${event.deviceId}-${idx}`}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                        onClick={() => setSelectedEvent(event)}
-                      >
-                        <td className="p-3 whitespace-nowrap font-mono text-xs">
-                          {new Date(event.timestamp).toLocaleString()}
-                        </td>
-                        <td className="p-3">
-                          <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
-                            {event.type}
-                          </span>
-                        </td>
-                        <td className="p-3 text-xs text-gray-500">
-                          {event.deviceType ?? '-'}
-                        </td>
-                        <td className="p-3 font-mono text-xs text-gray-500">
-                          {event.deviceId.slice(0, 8)}...
-                        </td>
-                        <td className="p-3 text-xs text-gray-500">
-                          {event.country
-                            ? `${event.country}${event.region ? ` / ${event.region}` : ''}`
-                            : '-'}
-                        </td>
-                        <td className="p-3 max-w-xs truncate text-gray-500 text-xs">
-                          {event.metadata
-                            ? JSON.stringify(event.metadata).slice(0, 50) +
-                              (JSON.stringify(event.metadata).length > 50
-                                ? '...'
-                                : '')
-                            : '-'}
-                        </td>
-                      </tr>
-                    ))}
+                    {events.map((event) => {
+                      const details = summarizeMetadata(event.metadata)
+                      return (
+                        <tr
+                          key={event._id}
+                          tabIndex={0}
+                          aria-label={`${getEventLabel(event.type)}, ${formatDateTime(event.timestamp)}`}
+                          className="cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-[#1a1a1a] focus-visible:bg-gray-50 focus-visible:outline-none dark:focus-visible:bg-[#1a1a1a]"
+                          onClick={() => handleSelectEvent(event)}
+                          onKeyDown={(keyEvent) => {
+                            if (
+                              keyEvent.key === 'Enter' ||
+                              keyEvent.key === ' '
+                            ) {
+                              keyEvent.preventDefault()
+                              handleSelectEvent(event)
+                            }
+                          }}
+                        >
+                          <td className="p-3 whitespace-nowrap text-xs text-gray-500 dark:text-zinc-400 tabular-nums">
+                            {formatDateTime(event.timestamp, 'seconds')}
+                          </td>
+                          <td className="p-3">
+                            <EventTypeBadge type={event.type} />
+                          </td>
+                          <td className="p-3 text-xs text-gray-600 dark:text-zinc-400">
+                            <span className="flex items-center gap-1.5">
+                              <DeviceTypeIcon type={event.deviceType} />
+                              {event.deviceType ?? '—'}
+                            </span>
+                          </td>
+                          <td className="p-3 font-mono text-xs text-gray-500 dark:text-zinc-500">
+                            {shortDeviceId(event.deviceId)}
+                          </td>
+                          <td className="p-3 whitespace-nowrap text-xs text-gray-600 dark:text-zinc-400">
+                            <span className="flex items-center gap-1.5">
+                              {event.country && (
+                                <CountryFlag code={event.country} />
+                              )}
+                              {formatLocation(event.country, event.region, '—')}
+                            </span>
+                          </td>
+                          <td className="p-3 text-xs text-gray-500 dark:text-zinc-500">
+                            <div
+                              className="max-w-xs xl:max-w-sm truncate"
+                              title={details}
+                            >
+                              {details || '—'}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
                     {events.length === 0 && (
                       <tr>
                         <td
                           colSpan={6}
-                          className="p-8 text-center text-gray-500"
+                          className="p-8 text-center text-gray-500 dark:text-zinc-400"
                         >
                           No events found
                         </td>
@@ -640,7 +636,10 @@ export default function AnalyticsPage() {
           </div>
 
           {hasMore && (
-            <div ref={loadMoreRef} className="p-4 flex justify-center border-t">
+            <div
+              ref={loadMoreRef}
+              className="p-4 flex justify-center border-t border-gray-200 dark:border-white/8"
+            >
               {isLoadingMore ? (
                 <Loader2 className="size-5 animate-spin text-gray-400" />
               ) : (
@@ -651,320 +650,22 @@ export default function AnalyticsPage() {
             </div>
           )}
         </div>
-
-        {selectedEvent && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-            onClick={() => setSelectedEvent(null)}
-          >
-            <div
-              className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-4 border-b flex items-center justify-between">
-                <h2 className="font-semibold">Event Details</h2>
-                <button
-                  onClick={() => setSelectedEvent(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  &times;
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
-                <div>
-                  <Label className="text-gray-500">Type</Label>
-                  <p className="font-mono">{selectedEvent.type}</p>
-                </div>
-                <div>
-                  <Label className="text-gray-500">Timestamp</Label>
-                  <p className="font-mono">
-                    {new Date(selectedEvent.timestamp).toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-gray-500">Device Type</Label>
-                  <p className="font-mono">{selectedEvent.deviceType ?? '-'}</p>
-                </div>
-                <div>
-                  <Label className="text-gray-500">Device ID</Label>
-                  <p className="font-mono text-sm break-all">
-                    {selectedEvent.deviceId}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-gray-500">Location</Label>
-                  <p className="font-mono">
-                    {selectedEvent.country
-                      ? `${selectedEvent.country}${selectedEvent.region ? ` / ${selectedEvent.region}` : ''}`
-                      : 'Unknown'}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-gray-500">Metadata</Label>
-                  <pre className="mt-1 p-3 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto">
-                    {JSON.stringify(selectedEvent.metadata, null, 2) || 'null'}
-                  </pre>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <Dialog open={showHighLevelStats} onOpenChange={setShowHighLevelStats}>
-          <DialogContent className="max-w-3xl max-h-[85vh] overflow-auto">
-            <DialogHeader>
-              <DialogTitle>Analytics Overview</DialogTitle>
-            </DialogHeader>
-
-            {isLoadingHighLevelStats ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="size-8 animate-spin text-gray-400" />
-              </div>
-            ) : highLevelStats ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-500">Total Events</p>
-                    <p className="text-2xl font-semibold">
-                      {highLevelStats.totalEvents.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-500">Unique Devices</p>
-                    <p className="text-2xl font-semibold">
-                      {highLevelStats.uniqueDevices.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-500">Unique Countries</p>
-                    <p className="text-2xl font-semibold">
-                      {highLevelStats.uniqueCountries}
-                    </p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-500">Travel Days Logged</p>
-                    <p className="text-2xl font-semibold">
-                      {highLevelStats.totalVisitsAdded.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-medium mb-3">Device Type Distribution</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Mobile</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-blue-500 rounded-full"
-                            style={{
-                              width: `${highLevelStats.deviceTypePercentages.mobile}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium w-16 text-right">
-                          {highLevelStats.deviceTypePercentages.mobile.toFixed(
-                            1
-                          )}
-                          %
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Tablet</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 rounded-full"
-                            style={{
-                              width: `${highLevelStats.deviceTypePercentages.tablet}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium w-16 text-right">
-                          {highLevelStats.deviceTypePercentages.tablet.toFixed(
-                            1
-                          )}
-                          %
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Desktop</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-purple-500 rounded-full"
-                            style={{
-                              width: `${highLevelStats.deviceTypePercentages.desktop}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium w-16 text-right">
-                          {highLevelStats.deviceTypePercentages.desktop.toFixed(
-                            1
-                          )}
-                          %
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-4">
-                    <h3 className="font-medium mb-3">Visit Attempts</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Total Attempts</span>
-                        <span className="font-medium">
-                          {highLevelStats.visitAttempts.total.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-green-600">Successful</span>
-                        <span className="font-medium">
-                          {highLevelStats.visitAttempts.successful.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-red-600">Failed</span>
-                        <span className="font-medium">
-                          {highLevelStats.visitAttempts.failed.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border rounded-lg p-4">
-                    <h3 className="font-medium mb-3">Export Activity</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">
-                          Image Export Clicks
-                        </span>
-                        <span className="font-medium">
-                          {highLevelStats.exports.imageExportClicks.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">
-                          Statistics Export Clicks
-                        </span>
-                        <span className="font-medium">
-                          {highLevelStats.exports.statisticsExportClicks.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Image Downloads</span>
-                        <span className="font-medium">
-                          {highLevelStats.exports.imageDownloadClicks.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {highLevelStats.topCountriesByDevices.length > 0 && (
-                    <div className="border rounded-lg p-4">
-                      <h3 className="font-medium mb-3">
-                        Top Countries by Devices
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        {highLevelStats.topCountriesByDevices
-                          .slice(0, 5)
-                          .map(({ country, deviceCount }, index) => (
-                            <div
-                              key={country}
-                              className="flex items-center justify-between py-1"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 w-5 text-right">
-                                  {index + 1}.
-                                </span>
-                                <span>{getFlagEmoji(country)}</span>
-                                <span>
-                                  {COUNTRIES.find((c) => c.code === country)
-                                    ?.name || country}
-                                </span>
-                              </div>
-                              <span className="font-medium">
-                                {deviceCount.toLocaleString()}{' '}
-                                <span className="text-gray-500 font-normal">
-                                  {deviceCount === 1 ? 'device' : 'devices'}
-                                </span>
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {highLevelStats.interestingMentions.length > 0 && (
-                    <div className="border rounded-lg p-4">
-                      <h3 className="font-medium mb-3">Interesting Mentions</h3>
-                      <div className="space-y-2 text-sm">
-                        {highLevelStats.interestingMentions
-                          .slice(0, 5)
-                          .map(({ country, deviceCount }, index) => (
-                            <div
-                              key={country}
-                              className="flex items-center justify-between py-1"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="text-gray-400 w-5 text-right">
-                                  {index + 1}.
-                                </span>
-                                <span>{getFlagEmoji(country)}</span>
-                                <span>
-                                  {COUNTRIES.find((c) => c.code === country)
-                                    ?.name || country}
-                                </span>
-                              </div>
-                              <span className="font-medium">
-                                {deviceCount.toLocaleString()}{' '}
-                                <span className="text-gray-500 font-normal">
-                                  {deviceCount === 1 ? 'device' : 'devices'}
-                                </span>
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-medium mb-3">Event Type Breakdown</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-                    {Object.entries(highLevelStats.eventBreakdown)
-                      .sort(([, a], [, b]) => b - a)
-                      .map(([type, count]) => (
-                        <div
-                          key={type}
-                          className="flex justify-between py-1 px-2 rounded bg-gray-50 dark:bg-gray-800"
-                        >
-                          <span className="text-gray-600 dark:text-gray-400 truncate">
-                            {type}
-                          </span>
-                          <span className="font-medium ml-2">
-                            {count.toLocaleString()}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                Failed to load stats
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
+
+      <EventDetailsDialog
+        event={selectedEvent}
+        open={isEventOpen}
+        onOpenChange={setIsEventOpen}
+        isDeviceFiltered={deviceIdFilter === selectedEvent?.deviceId}
+        onShowDeviceEvents={handleShowDeviceEvents}
+      />
+
+      <AnalyticsOverviewDialog
+        open={showHighLevelStats}
+        onOpenChange={setShowHighLevelStats}
+        stats={highLevelStats}
+        isLoading={isLoadingHighLevelStats}
+      />
     </div>
   )
 }

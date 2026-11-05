@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { formatRelativeTime, getEventTone, summarizeMetadata } from './format'
+import { TRACKING_EVENT_TYPES } from '@/lib/tracking/types'
+import {
+  EVENT_LABELS,
+  formatLocation,
+  formatRelativeTime,
+  getCountryName,
+  getEventLabel,
+  getEventTone,
+  summarizeMetadata,
+} from './format'
 
 const NOW = new Date('2026-11-04T12:00:00Z').getTime()
 
@@ -51,5 +60,42 @@ describe('getEventTone', () => {
     ['year_changed', 'other'],
   ])('classifies %s as %s', (type, tone) => {
     expect(getEventTone(type)).toBe(tone)
+  })
+})
+
+describe('getEventLabel', () => {
+  it('uses the readable label for known events', () => {
+    expect(getEventLabel('visit_add_attempt')).toBe('Visit add attempted')
+    expect(getEventLabel('image_export_click')).toBe('Calendar export clicked')
+  })
+
+  it('has a unique label for every tracked event type', () => {
+    const labels = TRACKING_EVENT_TYPES.map((type) => EVENT_LABELS[type])
+    expect(labels.every(Boolean)).toBe(true)
+    expect(new Set(labels).size).toBe(labels.length)
+  })
+
+  it('humanizes event types it does not know', () => {
+    expect(getEventLabel('legacy_share_click')).toBe('Legacy share click')
+    expect(getEventLabel('toString')).toBe('ToString')
+  })
+})
+
+describe('formatLocation', () => {
+  it('shows the country and region', () => {
+    expect(formatLocation('DE', 'BY')).toBe('DE / BY')
+    expect(formatLocation('FR')).toBe('FR')
+  })
+
+  it('falls back when the country is unknown', () => {
+    expect(formatLocation(undefined, 'BY')).toBe('Unknown')
+    expect(formatLocation(undefined, undefined, '—')).toBe('—')
+  })
+})
+
+describe('getCountryName', () => {
+  it('returns the country name, or the code when it is not listed', () => {
+    expect(getCountryName('DE')).toBe('Germany')
+    expect(getCountryName('XX')).toBe('XX')
   })
 })

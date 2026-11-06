@@ -85,9 +85,9 @@ export default function PrivacyPage() {
               When you add or remove a trip, the event includes the country and
               how many days, but not the dates. When you export or download an
               image, or export a JSON backup, it includes the countries you
-              logged that year and how many days you logged in each, so we can
-              see which countries are most popular and how long people stay. It
-              never includes dates.
+              logged that year, how many days you logged in each and how many
+              separate trips that makes, so we can see which countries are most
+              popular and how long people travel for. It never includes dates.
             </p>
             <p>
               We also use Vercel Web Analytics and Speed Insights to count page

@@ -80,8 +80,8 @@ describe('ImagePreviewModal video offer', () => {
     expect(trackEvent).toHaveBeenCalledWith('image_download_click', {
       exportType: 'calendar',
       year: 2026,
-      visitCount: 1,
       dayCount: 1,
+      tripCount: 1,
       countryCount: 1,
       countries: [{ code: 'JP', days: 1 }],
     })

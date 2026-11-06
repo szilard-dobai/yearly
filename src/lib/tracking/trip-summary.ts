@@ -5,8 +5,8 @@ export type CountryDays = { code: string; days: number }
 
 export type TripSummary = {
   year: number
-  visitCount: number
   dayCount: number
+  tripCount: number
   countryCount: number
   countries: CountryDays[]
 }
@@ -18,6 +18,15 @@ export const TRIP_SUMMARY_EVENTS = [
 ] as const
 
 type DayVisit = { countryCode: string; day: string }
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function countTrips(days: Set<string>): number {
+  const sorted = [...days].sort()
+  return sorted.filter(
+    (day, i) => i === 0 || Date.parse(day) - Date.parse(sorted[i - 1]) > DAY_MS
+  ).length
+}
 
 export function summarizeTrips(visits: DayVisit[], year: number): TripSummary {
   const yearVisits = visits.filter((v) => v.day.startsWith(`${year}-`))
@@ -31,10 +40,12 @@ export function summarizeTrips(visits: DayVisit[], year: number): TripSummary {
     .map(([code, days]) => ({ code, days: days.size }))
     .sort((a, b) => (a.code < b.code ? -1 : 1))
 
+  const days = new Set(yearVisits.map((v) => v.day))
+
   return {
     year,
-    visitCount: yearVisits.length,
-    dayCount: new Set(yearVisits.map((v) => v.day)).size,
+    dayCount: days.size,
+    tripCount: countTrips(days),
     countryCount: countries.length,
     countries,
   }

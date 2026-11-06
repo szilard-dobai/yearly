@@ -1,3 +1,5 @@
+import { calculateAverageTripLength } from '@/lib/statistics'
+import type { CountryVisit } from '@/lib/types'
 import { describe, expect, it } from 'vitest'
 import {
   dayKeyFromStoredDate,
@@ -22,8 +24,8 @@ describe('summarizeCalendar', () => {
 
     expect(summary).toEqual({
       year: 2026,
-      visitCount: 4,
       dayCount: 3,
+      tripCount: 2,
       countryCount: 3,
       countries: [
         { code: 'GR', days: 2 },
@@ -49,11 +51,72 @@ describe('summarizeCalendar', () => {
   it('handles a year without trips', () => {
     expect(summarizeTrips([], 2026)).toEqual({
       year: 2026,
-      visitCount: 0,
       dayCount: 0,
+      tripCount: 0,
       countryCount: 0,
       countries: [],
     })
+  })
+})
+
+describe('tripCount', () => {
+  it('counts consecutive days as one trip, across countries and months', () => {
+    const summary = summarizeTrips(
+      [
+        { countryCode: 'US', day: '2026-01-31' },
+        { countryCode: 'CA', day: '2026-02-01' },
+        { countryCode: 'US', day: '2026-02-01' },
+        { countryCode: 'CA', day: '2026-02-03' },
+      ],
+      2026
+    )
+
+    expect(summary.tripCount).toBe(2)
+  })
+
+  it('only counts the part of a trip that falls in the year', () => {
+    const days = [
+      { countryCode: 'AT', day: '2025-12-30' },
+      { countryCode: 'AT', day: '2025-12-31' },
+      { countryCode: 'AT', day: '2026-01-01' },
+    ]
+
+    expect(summarizeTrips(days, 2025)).toMatchObject({
+      dayCount: 2,
+      tripCount: 1,
+    })
+    expect(summarizeTrips(days, 2026)).toMatchObject({
+      dayCount: 1,
+      tripCount: 1,
+    })
+  })
+
+  it('matches the average trip length users see in their stats', () => {
+    const visits: CountryVisit[] = [
+      ['JP', 2, 20],
+      ['JP', 2, 21],
+      ['KR', 2, 22],
+      ['GR', 6, 19],
+      ['TR', 6, 19],
+      ['TR', 6, 20],
+      ['PT', 9, 24],
+      ['PT', 9, 25],
+      ['PT', 9, 26],
+      ['IT', 9, 31],
+      ['IT', 10, 1],
+      ['IT', 10, 2],
+    ].map(([countryCode, month, day], i) => ({
+      id: String(i),
+      countryCode: countryCode as string,
+      date: new Date(2026, month as number, day as number),
+    }))
+
+    const summary = summarizeCalendar({ visits }, 2026)
+
+    expect(summary.tripCount).toBe(4)
+    expect(summary.dayCount / summary.tripCount).toBe(
+      calculateAverageTripLength(visits)
+    )
   })
 })
 

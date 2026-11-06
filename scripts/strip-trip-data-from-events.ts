@@ -126,8 +126,8 @@ async function main() {
           update: {
             $set: {
               'metadata.year': summary.year,
-              'metadata.visitCount': summary.visitCount,
               'metadata.dayCount': summary.dayCount,
+              'metadata.tripCount': summary.tripCount,
               'metadata.countryCount': summary.countryCount,
               'metadata.countries': summary.countries,
             },

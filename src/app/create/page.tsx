@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { getTrafficSource } from '@/lib/attribution/traffic-source'
 import { getCountryByCode } from '@/lib/countries'
 import type { FeedbackSource } from '@/lib/feedback/types'
 import { MONTH_NAMES, MONTH_NAMES_SHORT } from '@/lib/constants'
@@ -133,7 +134,7 @@ function Create() {
   })
 
   useEffect(() => {
-    trackEvent('create_page_view')
+    trackEvent('create_page_view', getTrafficSource())
   }, [])
 
   const handleDataChange = useCallback(

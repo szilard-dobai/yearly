@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 }
 
-const LAST_UPDATED = '6 November 2026'
+const LAST_UPDATED = '7 November 2026'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -89,6 +89,27 @@ export default function PrivacyPage() {
               separate trips that makes, so we can see which countries are most
               popular and how long people travel for. It never includes dates.
             </p>
+            <p>
+              When you open a page, the event also records how you found Yearly:
+            </p>
+            <List>
+              <li>
+                the address of the site or app that sent you, if your browser
+                shares it, without the part after a &quot;?&quot; or
+                &quot;#&quot;
+              </li>
+              <li>
+                any campaign tags in the link you followed, such as
+                utm_source=instagram
+              </li>
+              <li>
+                your browser&apos;s user agent, a line of text every browser
+                sends to websites. It names your browser and its version, your
+                operating system, sometimes your phone model, and the app
+                you&apos;re in if you opened Yearly inside an app such as
+                Instagram or TikTok. We also store the name of that app.
+              </li>
+            </List>
             <p>
               We also use Vercel Web Analytics and Speed Insights to count page
               views and measure loading speed. They don&apos;t use cookies.

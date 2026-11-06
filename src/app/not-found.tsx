@@ -1,5 +1,6 @@
 'use client'
 
+import { getTrafficSource } from '@/lib/attribution/traffic-source'
 import { trackEvent } from '@/lib/tracking'
 import { Home } from 'lucide-react'
 import Link from 'next/link'
@@ -10,6 +11,7 @@ export default function NotFound() {
     trackEvent('not_found_page_view', {
       path:
         typeof window !== 'undefined' ? window.location.pathname : undefined,
+      ...getTrafficSource(),
     })
   }, [])
 

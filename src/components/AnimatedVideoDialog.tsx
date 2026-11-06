@@ -8,13 +8,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { StatsVideo, STATS_DURATION } from '@/components/video/StatsVideo'
-import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
 import {
-  YEAR_FILL_DURATION,
-  YearFillVideo,
-  type VideoProps,
-} from '@/components/video/YearFillVideo'
+  PreviewVideo,
+  type PreviewVideoProps,
+} from '@/components/video/PreviewVideo'
+import { STATS_DURATION } from '@/components/video/StatsVideo'
+import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
+import { YEAR_FILL_DURATION } from '@/components/video/YearFillVideo'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
@@ -107,14 +107,15 @@ export default function AnimatedVideoDialog({
     () => buildYearVideoData(calendarData.visits, year),
     [calendarData.visits, year]
   )
-  const inputProps = useMemo<VideoProps>(
+  const inputProps = useMemo<PreviewVideoProps>(
     () => ({
+      kind,
       data,
       theme,
       flagMode: settings.flagDisplayMode,
       weekStartsOn: settings.weekStartsOn,
     }),
-    [data, theme, settings.flagDisplayMode, settings.weekStartsOn]
+    [kind, data, theme, settings.flagDisplayMode, settings.weekStartsOn]
   )
 
   const context = { exportType, videoKind: kind, year, price }
@@ -146,7 +147,7 @@ export default function AnimatedVideoDialog({
             <div className="relative aspect-9/16 w-full max-w-[26dvh] overflow-hidden rounded-xl shadow-2xl ring-1 ring-black/5 md:max-w-[38dvh] dark:ring-white/8">
               <Player
                 key={kind}
-                component={kind === 'year' ? YearFillVideo : StatsVideo}
+                component={PreviewVideo}
                 inputProps={inputProps}
                 durationInFrames={
                   kind === 'year' ? YEAR_FILL_DURATION : STATS_DURATION
@@ -162,14 +163,6 @@ export default function AnimatedVideoDialog({
                 acknowledgeRemotionLicense
                 style={{ width: '100%', height: '100%' }}
               />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 flex items-center justify-center"
-              >
-                <span className="-rotate-30 select-none font-serif text-3xl tracking-[0.3em] text-gray-500/45 md:text-5xl">
-                  PREVIEW
-                </span>
-              </div>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Segmented

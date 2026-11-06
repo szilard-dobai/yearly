@@ -12,6 +12,7 @@ import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
 import StatTile from '@/components/admin/StatTile'
 import TrafficSourcesPanel from '@/components/admin/TrafficSourcesPanel'
 import VideoOfferPanel from '@/components/admin/VideoOfferPanel'
+import YearEndReminderPanel from '@/components/admin/YearEndReminderPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -565,6 +566,8 @@ export default function AnalyticsPage() {
         />
 
         <VideoOfferPanel refreshKey={refreshKey} />
+
+        <YearEndReminderPanel refreshKey={refreshKey} />
 
         {eventsError && (
           <div className="p-4 border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 rounded-lg text-red-600 dark:text-red-400">

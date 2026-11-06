@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { getAllCountries, getCountryByCode } from '@/lib/countries'
-import { useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 interface CountryPickerDialogProps {
   open: boolean
@@ -32,6 +32,32 @@ export default function CountryPickerDialog({
   onSelect,
 }: CountryPickerDialogProps) {
   const [search, setSearch] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const dismissKeyboardOnDrag = useCallback((list: HTMLDivElement | null) => {
+    if (!list) return
+    let dismissing = false
+
+    const handleTouchStart = () => {
+      dismissing = false
+    }
+
+    const handleTouchMove = (event: TouchEvent) => {
+      const input = inputRef.current
+      if (!dismissing && input && document.activeElement === input) {
+        dismissing = true
+        input.blur()
+      }
+      if (dismissing && event.cancelable) event.preventDefault()
+    }
+
+    list.addEventListener('touchstart', handleTouchStart, { passive: true })
+    list.addEventListener('touchmove', handleTouchMove, { passive: false })
+    return () => {
+      list.removeEventListener('touchstart', handleTouchStart)
+      list.removeEventListener('touchmove', handleTouchMove)
+    }
+  }, [])
 
   const handleOpenChange = (next: boolean) => {
     if (!next) setSearch('')
@@ -59,13 +85,17 @@ export default function CountryPickerDialog({
         </DialogDescription>
         <Command>
           <CommandInput
+            ref={inputRef}
             value={search}
             onValueChange={setSearch}
             placeholder="Search countries..."
             autoFocus
             className="text-base sm:text-sm"
           />
-          <CommandList className="max-h-[min(60vh,24rem)]">
+          <CommandList
+            ref={dismissKeyboardOnDrag}
+            className="max-h-[min(60vh,24rem)]"
+          >
             <CommandEmpty>No country found.</CommandEmpty>
             {!search && suggestedCountries.length > 0 && (
               <CommandGroup heading="Suggested">

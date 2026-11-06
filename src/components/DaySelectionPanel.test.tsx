@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { toDayKey, type DaySelection } from '@/lib/selection'
@@ -251,6 +251,26 @@ describe('DaySelectionPanel', () => {
       suggested: false,
       emptyOnly: false,
     })
+  })
+
+  it('dismisses the keyboard instead of scrolling when dragging the country list', async () => {
+    const user = userEvent.setup()
+    renderPanel(range('2026-03-05', '2026-03-06'))
+
+    await user.click(screen.getByRole('button', { name: /other country/i }))
+    const input = screen.getByPlaceholderText('Search countries...')
+    const list = screen.getByRole('listbox')
+    expect(input).toHaveFocus()
+
+    const touchAt = (clientY: number) => {
+      const touch = { clientX: 100, clientY }
+      return { touches: [touch], changedTouches: [touch] }
+    }
+    fireEvent.touchStart(list, touchAt(300))
+    const drag = fireEvent.touchMove(list, touchAt(250))
+
+    expect(drag).toBe(false)
+    expect(input).not.toHaveFocus()
   })
 
   it('closes from the close button and with Escape', async () => {

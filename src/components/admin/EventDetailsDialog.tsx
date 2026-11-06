@@ -1,5 +1,6 @@
 'use client'
 
+import ConfirmDeleteButton from '@/components/admin/ConfirmDeleteButton'
 import CopyButton from '@/components/admin/CopyButton'
 import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
@@ -17,6 +18,7 @@ import {
   formatDateTime,
   formatLocation,
   getEventLabel,
+  shortDeviceId,
 } from '@/lib/admin/format'
 import type { StoredTrackingEvent } from '@/lib/tracking/types'
 import { Filter } from 'lucide-react'
@@ -27,6 +29,8 @@ interface EventDetailsDialogProps {
   onOpenChange: (open: boolean) => void
   isDeviceFiltered: boolean
   onShowDeviceEvents: (deviceId: string) => void
+  onDeleteEvent: (event: StoredTrackingEvent) => Promise<void>
+  onDeleteDevice: (deviceId: string) => Promise<void>
 }
 
 export default function EventDetailsDialog({
@@ -35,6 +39,8 @@ export default function EventDetailsDialog({
   onOpenChange,
   isDeviceFiltered,
   onShowDeviceEvents,
+  onDeleteEvent,
+  onDeleteDevice,
 }: EventDetailsDialogProps) {
   const metadata = event?.metadata
   const hasMetadata = !!metadata && Object.keys(metadata).length > 0
@@ -107,6 +113,23 @@ export default function EventDetailsDialog({
                 </p>
               )}
             </section>
+
+            <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-gray-200 dark:border-white/8">
+              <ConfirmDeleteButton
+                label="Delete all from this device"
+                title="Delete all activity from this device?"
+                description={`Every tracking event and feedback entry from device ${shortDeviceId(event.deviceId)} will be permanently deleted and removed from the stats.`}
+                confirmLabel="Delete device activity"
+                onConfirm={() => onDeleteDevice(event.deviceId)}
+              />
+              <ConfirmDeleteButton
+                label="Delete event"
+                title="Delete this event?"
+                description={`The "${getEventLabel(event.type)}" event from ${formatDateTime(event.timestamp, 'seconds')} will be permanently deleted and removed from the stats.`}
+                confirmLabel="Delete event"
+                onConfirm={() => onDeleteEvent(event)}
+              />
+            </div>
           </div>
         )}
       </DialogContent>

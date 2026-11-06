@@ -1,10 +1,19 @@
+import { ObjectId } from 'mongodb'
+import { NextResponse } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { PATCH } from './route'
+import { DELETE, PATCH } from './route'
 
 const collection = {
   findOneAndUpdate: vi.fn(),
+  deleteOne: vi.fn(),
 }
 const notifyFeedbackToSlack = vi.fn()
+const requireAdmin = vi.fn()
+
+vi.mock('@/lib/tracking/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/tracking/api')>()),
+  requireAdmin: (...args: unknown[]) => requireAdmin(...args),
+}))
 
 vi.mock('@/lib/mongodb', () => ({
   getFeedbackCollection: () => Promise.resolve(collection),
@@ -86,5 +95,47 @@ describe('PATCH /api/feedback/[id]', () => {
 
     expect(response.status).toBe(404)
     expect(notifyFeedbackToSlack).not.toHaveBeenCalled()
+  })
+})
+
+describe('DELETE /api/feedback/[id]', () => {
+  function deleteRequest(id = ID) {
+    return DELETE(
+      new Request(`http://localhost/api/feedback/${id}`, { method: 'DELETE' }),
+      { params: Promise.resolve({ id }) }
+    )
+  }
+
+  beforeEach(() => {
+    requireAdmin.mockReset().mockResolvedValue(null)
+    collection.deleteOne.mockReset().mockResolvedValue({ deletedCount: 1 })
+  })
+
+  it('requires an admin session', async () => {
+    requireAdmin.mockResolvedValue(
+      NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    )
+
+    const response = await deleteRequest()
+
+    expect(response.status).toBe(401)
+    expect(collection.deleteOne).not.toHaveBeenCalled()
+  })
+
+  it('deletes the feedback', async () => {
+    const response = await deleteRequest()
+
+    expect(response.status).toBe(200)
+    expect(collection.deleteOne).toHaveBeenCalledWith({
+      _id: new ObjectId(ID),
+    })
+  })
+
+  it('returns 404 when the feedback does not exist', async () => {
+    collection.deleteOne.mockResolvedValue({ deletedCount: 0 })
+
+    const response = await deleteRequest()
+
+    expect(response.status).toBe(404)
   })
 })

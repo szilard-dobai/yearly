@@ -1,14 +1,13 @@
 import { notifyFeedbackToSlack } from '@/lib/feedback/slack'
 import { updateFeedbackSchema } from '@/lib/feedback/types'
 import { type FeedbackDocument, getFeedbackCollection } from '@/lib/mongodb'
-import { validateSameOrigin } from '@/lib/tracking/api'
-import { ObjectId } from 'mongodb'
+import { parseObjectId } from '@/lib/object-id'
+import { requireAdmin, validateSameOrigin } from '@/lib/tracking/api'
 import { after, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
 const EDIT_WINDOW_MS = 60 * 60 * 1000
-const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i
 
 export async function PATCH(
   request: Request,
@@ -17,8 +16,8 @@ export async function PATCH(
   const forbidden = validateSameOrigin(request)
   if (forbidden) return forbidden
 
-  const { id } = await params
-  if (!OBJECT_ID_PATTERN.test(id)) {
+  const objectId = parseObjectId((await params).id)
+  if (!objectId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -46,7 +45,7 @@ export async function PATCH(
     const collection = await getFeedbackCollection()
     const updated = await collection.findOneAndUpdate(
       {
-        _id: new ObjectId(id),
+        _id: objectId,
         deviceId,
         createdAt: { $gte: new Date(Date.now() - EDIT_WINDOW_MS) },
       },
@@ -65,6 +64,36 @@ export async function PATCH(
     console.error('Failed to update feedback:', error)
     return NextResponse.json(
       { error: 'Failed to update feedback' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const denied = await requireAdmin(request)
+  if (denied) return denied
+
+  const objectId = parseObjectId((await params).id)
+  if (!objectId) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  try {
+    const collection = await getFeedbackCollection()
+    const { deletedCount } = await collection.deleteOne({ _id: objectId })
+
+    if (!deletedCount) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to delete feedback:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete feedback' },
       { status: 500 }
     )
   }

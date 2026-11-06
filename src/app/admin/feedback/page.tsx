@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { deleteDeviceActivity, deleteFeedbackEntry } from '@/lib/admin/client'
 import {
   formatDateTime,
   formatLocation,
@@ -337,6 +338,20 @@ function FeedbackDashboard({
     setIsDetailOpen(true)
   }
 
+  const handleDeleteFeedback = async (entry: FeedbackEntry) => {
+    await deleteFeedbackEntry(entry._id, onUnauthorized)
+    setIsDetailOpen(false)
+    setFeedback((previous) => previous.filter((item) => item._id !== entry._id))
+    setTotal((previous) => Math.max(previous - 1, 0))
+    loadStats()
+  }
+
+  const handleDeleteDevice = async (deviceId: string) => {
+    await deleteDeviceActivity(deviceId, onUnauthorized)
+    setIsDetailOpen(false)
+    handleRefresh()
+  }
+
   const hasActiveFilters =
     ratingFilter !== 'all' ||
     sourceFilter !== 'all' ||
@@ -577,6 +592,8 @@ function FeedbackDashboard({
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
         onUnauthorized={onUnauthorized}
+        onDeleteFeedback={handleDeleteFeedback}
+        onDeleteDevice={handleDeleteDevice}
       />
     </div>
   )

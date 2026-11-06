@@ -1,5 +1,6 @@
 'use client'
 
+import ConfirmDeleteButton from '@/components/admin/ConfirmDeleteButton'
 import CopyButton from '@/components/admin/CopyButton'
 import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
@@ -18,6 +19,7 @@ import {
   formatDateTime,
   formatLocation,
   formatRelativeTime,
+  shortDeviceId,
   summarizeMetadata,
 } from '@/lib/admin/format'
 import {
@@ -44,7 +46,12 @@ type TimelineItem =
   | { kind: 'event'; at: string; event: StoredTrackingEvent }
   | { kind: 'feedback'; at: string; feedback: FeedbackEntry }
 
-interface DeviceActivityDialogProps {
+interface DeleteHandlers {
+  onDeleteFeedback: (entry: FeedbackEntry) => Promise<void>
+  onDeleteDevice: (deviceId: string) => Promise<void>
+}
+
+interface DeviceActivityDialogProps extends DeleteHandlers {
   feedback: FeedbackEntry | null
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -69,10 +76,23 @@ function SummaryTile({ label, value }: { label: string; value: string }) {
   )
 }
 
+function describeDeviceDeletion(
+  deviceId: string,
+  totalEvents: number | undefined
+) {
+  const events =
+    totalEvents === undefined
+      ? 'Every tracking event'
+      : `All ${totalEvents.toLocaleString()} tracking events`
+  return `${events} and every feedback entry from device ${shortDeviceId(deviceId)} will be permanently deleted and removed from the stats.`
+}
+
 function DeviceActivityContent({
   feedback,
   onUnauthorized,
-}: {
+  onDeleteFeedback,
+  onDeleteDevice,
+}: DeleteHandlers & {
   feedback: FeedbackEntry
   onUnauthorized: () => void
 }) {
@@ -376,6 +396,26 @@ function DeviceActivityContent({
           </>
         ) : null}
       </section>
+
+      <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-gray-200 dark:border-white/8">
+        <ConfirmDeleteButton
+          label="Delete all from this device"
+          title="Delete all activity from this device?"
+          description={describeDeviceDeletion(
+            feedback.deviceId,
+            summary?.totalEvents
+          )}
+          confirmLabel="Delete device activity"
+          onConfirm={() => onDeleteDevice(feedback.deviceId)}
+        />
+        <ConfirmDeleteButton
+          label="Delete feedback"
+          title="Delete this feedback?"
+          description={`The feedback submitted ${formatDateTime(feedback.createdAt)} will be permanently deleted and removed from the stats.`}
+          confirmLabel="Delete feedback"
+          onConfirm={() => onDeleteFeedback(feedback)}
+        />
+      </div>
     </div>
   )
 }
@@ -385,6 +425,8 @@ export default function DeviceActivityDialog({
   open,
   onOpenChange,
   onUnauthorized,
+  onDeleteFeedback,
+  onDeleteDevice,
 }: DeviceActivityDialogProps) {
   return (
     <Dialog open={open && feedback !== null} onOpenChange={onOpenChange}>
@@ -394,6 +436,8 @@ export default function DeviceActivityDialog({
             key={feedback._id}
             feedback={feedback}
             onUnauthorized={onUnauthorized}
+            onDeleteFeedback={onDeleteFeedback}
+            onDeleteDevice={onDeleteDevice}
           />
         )}
       </DialogContent>

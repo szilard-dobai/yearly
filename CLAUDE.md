@@ -41,7 +41,7 @@ src/
 │   ├── create/page.tsx       - Main app page (calendar, exports, settings)
 │   ├── admin/analytics/      - Admin analytics dashboard
 │   ├── admin/feedback/       - Admin feedback review (device activity drill-down)
-│   └── api/                  - API routes (tracking, feedback, admin auth/devices)
+│   └── api/                  - API routes (tracking, feedback, admin auth/devices; admin-only DELETE on events, feedback and whole devices)
 ├── components/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (1080×1920)
@@ -53,7 +53,7 @@ src/
 │   ├── MobileFab.tsx         - Mobile floating action button
 │   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
-│   ├── admin/                - Admin-only components (login, nav, dialogs, shared event badges and tiles)
+│   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/
 │   ├── types.ts              - Core types (Country, CountryVisit, CalendarData)

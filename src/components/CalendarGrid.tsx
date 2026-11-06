@@ -11,6 +11,7 @@ import {
 } from '@/lib/selection'
 import type { CalendarData } from '@/lib/types'
 import { forwardRef, useRef, type KeyboardEvent } from 'react'
+import ExportWatermark from './ExportWatermark'
 import MonthGrid from './MonthGrid'
 
 const ARROW_KEY_OFFSETS: Record<string, number> = {
@@ -100,14 +101,7 @@ const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
             />
           ))}
         </div>
-        <div
-          data-export-watermark
-          className="hidden mt-6 pt-4 border-t border-gray-200 dark:border-white/10"
-        >
-          <p className="text-center text-gray-400 dark:text-gray-500 tracking-wide">
-            made with <span className="font-medium">yearly.world</span>
-          </p>
-        </div>
+        <ExportWatermark />
       </div>
     )
   }

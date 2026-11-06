@@ -91,10 +91,7 @@ export function useStatisticsExport({
         watermark.style.display = 'block'
         watermark.style.marginTop = 'auto'
         watermark.style.paddingTop = '2rem'
-        const watermarkText = watermark.querySelector('p') as HTMLElement
-        if (watermarkText) {
-          watermarkText.style.fontSize = '1.5rem'
-        }
+        watermark.style.fontSize = '2.5rem'
       }
 
       const allElements = clonedElement.querySelectorAll('*')

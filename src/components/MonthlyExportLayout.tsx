@@ -6,6 +6,7 @@ import { getCountryByCode } from '@/lib/countries'
 import { getMonthData, getVisitsForDate } from '@/lib/calendar'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { MONTH_NAMES } from '@/lib/constants'
+import ExportWatermark from './ExportWatermark'
 import Flag from './Flag'
 import {
   calculateTotalCountriesVisited,
@@ -260,14 +261,7 @@ const MonthlyExportLayout = forwardRef<
         </div>
       )}
 
-      <div
-        data-export-watermark
-        className="hidden mt-6 pt-4 border-t border-gray-200 dark:border-white/10"
-      >
-        <p className="text-center text-gray-400 dark:text-gray-500 tracking-wide">
-          made with <span className="font-medium">yearly.world</span>
-        </p>
-      </div>
+      <ExportWatermark />
     </div>
   )
 })

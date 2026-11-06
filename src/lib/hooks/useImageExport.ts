@@ -109,11 +109,9 @@ export function useImageExport({
       ) as HTMLElement
       if (watermark) {
         watermark.style.display = 'block'
-        // Scale up watermark text for high-res export
-        const watermarkText = watermark.querySelector('p') as HTMLElement
-        if (watermarkText) {
-          watermarkText.style.fontSize = '1.5rem'
-        }
+        watermark.style.marginTop = '2rem'
+        watermark.style.paddingTop = '2rem'
+        watermark.style.fontSize = '2.5rem'
       }
 
       // Override any responsive spacing/sizing

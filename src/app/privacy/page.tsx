@@ -125,6 +125,15 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
+          <Section title="How you heard about Yearly">
+            <p>
+              After you download an image, we may ask how you heard about
+              Yearly. If you answer, we store your answer as a usage event,
+              along with the note you typed if you chose Other. If you answer or
+              close the question, we won&apos;t ask again in that browser.
+            </p>
+          </Section>
+
           <Section title="Animated video waitlist">
             <p>
               If you join the waitlist for animated videos, we store your email
@@ -155,9 +164,9 @@ export default function PrivacyPage() {
             <p>
               Yearly uses your browser&apos;s local storage for your trips,
               settings and the random ID, and to remember small things such as
-              whether you&apos;ve seen a tip. It doesn&apos;t set cookies for
-              visitors. The only cookie is the sign-in cookie for Yearly&apos;s
-              admin pages.
+              whether you&apos;ve seen a tip or answered a question. It
+              doesn&apos;t set cookies for visitors. The only cookie is the
+              sign-in cookie for Yearly&apos;s admin pages.
             </p>
           </Section>
 

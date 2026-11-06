@@ -326,6 +326,7 @@ function Create() {
 
       <div>
         <main className="container mx-auto px-3 py-6">
+          <h1 className="sr-only">Make your travel calendar</h1>
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 mb-16">
             <div className="space-y-6">
               <StandardCard>

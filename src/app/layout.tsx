@@ -25,31 +25,18 @@ const newsreader = Newsreader({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
 
+const title = 'Yearly: Your Travel Year in Review, on One Calendar'
+const shareDescription =
+  'Add the countries you visited and your dates, and flags fill a 12-month calendar you can download and share.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Yearly - Visualize Your Travel Year in a Beautiful Calendar',
+    default: title,
     template: '%s | Yearly',
   },
   description:
-    'Create a stunning visual calendar of your travels. Add countries and dates, see flags replace days, and export a shareable image of your year in review. Free travel calendar maker.',
-  keywords: [
-    'travel calendar',
-    'year in review',
-    'travel tracker',
-    'countries visited',
-    'travel visualization',
-    'trip planner',
-    'travel journal',
-    'yearly travel summary',
-    'travel map',
-    'country flags calendar',
-    'travel memories',
-    'wanderlust',
-    'digital nomad',
-    'travel recap',
-    'annual travel summary',
-  ],
+    'Make your travel year in review. Add the countries you visited and your dates, and flags fill a 12-month calendar to download and share. Free, no sign-up.',
   authors: [{ name: 'Yearly' }],
   creator: 'Yearly',
   publisher: 'Yearly',
@@ -69,15 +56,13 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: siteUrl,
     siteName: 'Yearly',
-    title: 'Yearly - Visualize Your Travel Year in a Beautiful Calendar',
-    description:
-      'Create a stunning visual calendar of your travels. Add countries and dates, see flags replace days, and export a shareable image of your year in review.',
+    title,
+    description: shareDescription,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Yearly - Visualize Your Travel Year in a Beautiful Calendar',
-    description:
-      'Create a stunning visual calendar of your travels. Add countries and dates, see flags replace days, and export a shareable image.',
+    title,
+    description: shareDescription,
   },
   alternates: {
     canonical: '/',

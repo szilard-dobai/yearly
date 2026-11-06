@@ -3,6 +3,7 @@ import { toJpeg } from 'html-to-image'
 import { useStatusFeedback } from './useStatusFeedback'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { trackEvent } from '@/lib/tracking'
+import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
 
 const SELECTION_ATTRIBUTES = [
@@ -53,10 +54,7 @@ export function useImageExport({
       return
     }
 
-    trackEvent('image_export_click', {
-      year,
-      calendarData,
-    })
+    trackEvent('image_export_click', summarizeCalendar(calendarData, year))
 
     setLoading()
 

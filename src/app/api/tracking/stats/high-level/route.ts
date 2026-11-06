@@ -1,5 +1,6 @@
 import { getTrackingCollection } from '@/lib/mongodb'
 import { isAuthenticated, validateSameOrigin } from '@/lib/tracking/api'
+import { TRIP_SUMMARY_EVENTS } from '@/lib/tracking/trip-summary'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -35,6 +36,7 @@ export async function GET(request: Request) {
       pageViews,
       eventTypeBreakdown,
       countriesByDevices,
+      travelCountries,
     ] = await Promise.all([
       collection.countDocuments({}),
       collection.distinct('country').then((arr) => arr.filter(Boolean).length),
@@ -87,6 +89,41 @@ export async function GET(request: Request) {
             },
           },
           { $sort: { deviceCount: -1 } },
+        ])
+        .toArray(),
+      collection
+        .aggregate<{ country: string; deviceCount: number; dayCount: number }>([
+          {
+            $match: {
+              type: { $in: [...TRIP_SUMMARY_EVENTS] },
+              'metadata.countries.0': { $exists: true },
+            },
+          },
+          { $sort: { timestamp: -1 } },
+          {
+            $group: {
+              _id: { deviceId: '$deviceId', year: '$metadata.year' },
+              countries: { $first: '$metadata.countries' },
+            },
+          },
+          { $unwind: '$countries' },
+          {
+            $group: {
+              _id: '$countries.code',
+              devices: { $addToSet: '$_id.deviceId' },
+              dayCount: { $sum: '$countries.days' },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              country: '$_id',
+              deviceCount: { $size: '$devices' },
+              dayCount: 1,
+            },
+          },
+          { $sort: { deviceCount: -1, dayCount: -1, country: 1 } },
+          { $limit: 10 },
         ])
         .toArray(),
     ])
@@ -182,6 +219,7 @@ export async function GET(request: Request) {
       eventBreakdown,
       topCountriesByDevices,
       interestingMentions,
+      travelCountries,
     })
   } catch (error) {
     console.error('Failed to fetch high-level stats:', error)

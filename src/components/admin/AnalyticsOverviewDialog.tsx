@@ -21,6 +21,10 @@ interface CountryDeviceCount {
   deviceCount: number
 }
 
+interface TravelCountry extends CountryDeviceCount {
+  dayCount: number
+}
+
 export interface HighLevelStats {
   totalEvents: number
   uniqueCountries: number
@@ -51,6 +55,7 @@ export interface HighLevelStats {
   eventBreakdown: Record<string, number>
   topCountriesByDevices: CountryDeviceCount[]
   interestingMentions: CountryDeviceCount[]
+  travelCountries: TravelCountry[]
 }
 
 const DEVICE_ROWS: { type: DeviceType; label: string; barClass: string }[] = [
@@ -115,10 +120,14 @@ function CountRow({
   )
 }
 
-function CountryList({ items }: { items: CountryDeviceCount[] }) {
+function CountryList({
+  items,
+}: {
+  items: (CountryDeviceCount & { dayCount?: number })[]
+}) {
   return (
     <ol className="space-y-2 text-sm">
-      {items.slice(0, 5).map(({ country, deviceCount }, index) => (
+      {items.slice(0, 5).map(({ country, deviceCount, dayCount }, index) => (
         <li key={country} className="flex items-center justify-between gap-3">
           <span className="flex min-w-0 items-center gap-2 text-gray-900 dark:text-zinc-100">
             <span className="w-4 text-right text-gray-400 dark:text-zinc-500 tabular-nums">
@@ -132,6 +141,17 @@ function CountryList({ items }: { items: CountryDeviceCount[] }) {
             <span className="font-normal text-gray-500 dark:text-zinc-500">
               {deviceCount === 1 ? 'device' : 'devices'}
             </span>
+            {dayCount != null && (
+              <>
+                <span className="font-normal text-gray-400 dark:text-zinc-600">
+                  {' · '}
+                </span>
+                {dayCount.toLocaleString()}{' '}
+                <span className="font-normal text-gray-500 dark:text-zinc-500">
+                  {dayCount === 1 ? 'day' : 'days'}
+                </span>
+              </>
+            )}
           </span>
         </li>
       ))}
@@ -221,9 +241,15 @@ function OverviewContent({ stats }: { stats: HighLevelStats }) {
         </Panel>
       </div>
 
-      {(stats.topCountriesByDevices.length > 0 ||
+      {(stats.travelCountries.length > 0 ||
+        stats.topCountriesByDevices.length > 0 ||
         stats.interestingMentions.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {stats.travelCountries.length > 0 && (
+            <Panel title="Countries travelled to">
+              <CountryList items={stats.travelCountries} />
+            </Panel>
+          )}
           {stats.topCountriesByDevices.length > 0 && (
             <Panel title="Top countries by devices">
               <CountryList items={stats.topCountriesByDevices} />

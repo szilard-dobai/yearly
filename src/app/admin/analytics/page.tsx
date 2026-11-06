@@ -10,6 +10,7 @@ import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import EventDetailsDialog from '@/components/admin/EventDetailsDialog'
 import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
 import StatTile from '@/components/admin/StatTile'
+import VideoOfferPanel from '@/components/admin/VideoOfferPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -108,6 +109,7 @@ export default function AnalyticsPage() {
     null
   )
   const [isLoadingHighLevelStats, setIsLoadingHighLevelStats] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -291,6 +293,7 @@ export default function AnalyticsPage() {
   const handleRefresh = () => {
     fetchStats()
     fetchEvents(true)
+    setRefreshKey((key) => key + 1)
   }
 
   const fetchHighLevelStats = async () => {
@@ -537,6 +540,8 @@ export default function AnalyticsPage() {
             )}
           />
         </div>
+
+        <VideoOfferPanel refreshKey={refreshKey} />
 
         {eventsError && (
           <div className="p-4 border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 rounded-lg text-red-600 dark:text-red-400">

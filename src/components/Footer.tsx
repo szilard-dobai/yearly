@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 
 export default function Footer() {
@@ -21,6 +22,13 @@ export default function Footer() {
           >
             @yearly.world
           </a>
+          {' · '}
+          <Link
+            href="/privacy"
+            className="hover:opacity-80 transition-opacity underline"
+          >
+            Privacy
+          </Link>
         </p>
 
         <ThemeToggle />

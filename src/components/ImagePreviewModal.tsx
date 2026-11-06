@@ -13,12 +13,25 @@ import {
 } from '@/lib/feedback/prompt'
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
+import { getDeviceId } from '@/lib/tracking/device-id'
+import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
-import { Download } from 'lucide-react'
+import { getAnimatedVideoPrice } from '@/lib/video-offer'
+import { ChevronRight, Download, Play } from 'lucide-react'
 import { motion } from 'motion/react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Button } from './ui/button'
+
+const AnimatedVideoDialog = dynamic(() => import('./AnimatedVideoDialog'), {
+  ssr: false,
+})
+
+const VIDEO_OFFER_COPY: Partial<Record<ExportType, string>> = {
+  calendar: 'Watch your year fill up, flag by flag.',
+  statistics: 'Watch your travel stats count up.',
+}
 
 interface ImagePreviewModalProps {
   open: boolean
@@ -43,6 +56,20 @@ function ImagePreviewContent({
   exportType,
 }: ImagePreviewContentProps) {
   const [showFeedbackPrompt, setShowFeedbackPrompt] = useState(false)
+  const [videoOpen, setVideoOpen] = useState(false)
+  const [videoPrice, setVideoPrice] = useState<number | null>(null)
+
+  const videoOfferCopy = VIDEO_OFFER_COPY[exportType]
+  const showVideoOffer =
+    !!videoOfferCopy &&
+    calendarData.visits.some((v) => v.date.getFullYear() === year)
+
+  const openVideoPreview = () => {
+    const price = getAnimatedVideoPrice(getDeviceId())
+    trackEvent('animated_video_preview_open', { exportType, year, price })
+    setVideoPrice(price)
+    setVideoOpen(true)
+  }
 
   const maybeShowFeedbackPrompt = () => {
     if (showFeedbackPrompt || !shouldShowFeedbackPrompt()) return
@@ -59,8 +86,8 @@ function ImagePreviewContent({
     )
 
     trackEvent('image_download_click', {
-      year,
-      calendarData,
+      exportType,
+      ...summarizeCalendar(calendarData, year),
     })
 
     if (isMobileOrTablet && !!navigator.share) {
@@ -138,6 +165,41 @@ function ImagePreviewContent({
                 onDismiss={() => setShowFeedbackPrompt(false)}
               />
             </div>
+          )}
+
+          {showVideoOffer && (
+            <button
+              type="button"
+              onClick={openVideoPreview}
+              className="group mb-4 flex w-full cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-colors hover:bg-gray-50 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/8"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-gray-900 text-white dark:bg-zinc-100 dark:text-gray-900">
+                <Play className="size-4 fill-current" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-zinc-100">
+                  Make it a video
+                  <span className="rounded-full bg-red-500/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-red-600 uppercase dark:text-red-400">
+                    New
+                  </span>
+                </span>
+                <span className="block text-xs text-gray-600 dark:text-zinc-400">
+                  {videoOfferCopy} Preview it free.
+                </span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5 dark:text-zinc-500" />
+            </button>
+          )}
+
+          {videoPrice !== null && (
+            <AnimatedVideoDialog
+              open={videoOpen}
+              onOpenChange={setVideoOpen}
+              calendarData={calendarData}
+              year={year}
+              exportType={exportType}
+              price={videoPrice}
+            />
           )}
 
           <div className="hidden md:block bg-gray-50 dark:bg-white/5 rounded-lg p-4 border border-gray-200 dark:border-white/8">

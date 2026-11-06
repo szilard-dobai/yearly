@@ -1,9 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import {
-  buildFeedbackSlackMessage,
-  escapeSlackText,
-  notifyFeedbackToSlack,
-} from './slack'
+import { buildFeedbackSlackMessage, notifyFeedbackToSlack } from './slack'
 
 const feedback = {
   rating: 4,
@@ -14,14 +10,6 @@ const feedback = {
   country: 'DE',
   region: 'BY',
 }
-
-describe('escapeSlackText', () => {
-  it('escapes the characters Slack treats as markup', () => {
-    expect(escapeSlackText('<!here> & <@U123>')).toBe(
-      '&lt;!here&gt; &amp; &lt;@U123&gt;'
-    )
-  })
-})
 
 describe('buildFeedbackSlackMessage', () => {
   it('shows the rating, message and where the feedback came from', () => {

@@ -82,7 +82,13 @@ export type EventTone = 'view' | 'export' | 'feedback' | 'edit' | 'other'
 export function getEventTone(type: string): EventTone {
   if (type.startsWith('feedback_')) return 'feedback'
   if (type.endsWith('_view')) return 'view'
-  if (type.includes('export') || type.includes('download')) return 'export'
+  if (
+    type.includes('export') ||
+    type.includes('download') ||
+    type.startsWith('animated_video_')
+  ) {
+    return 'export'
+  }
   if (
     type.startsWith('visit_') ||
     type === 'calendar_reset' ||
@@ -117,6 +123,9 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   feedback_prompt_dismissed: 'Feedback prompt dismissed',
   feedback_dialog_open: 'Feedback form opened',
   feedback_submitted: 'Feedback submitted',
+  animated_video_preview_open: 'Video preview opened',
+  animated_video_buy_click: 'Video buy clicked',
+  animated_video_waitlist_join: 'Video waitlist joined',
 }
 
 export function getEventLabel(type: string): string {

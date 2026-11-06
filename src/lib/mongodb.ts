@@ -1,6 +1,7 @@
 import { type Collection, type Db, MongoClient, type ObjectId } from 'mongodb'
 import type { FeedbackContext, FeedbackSource } from './feedback/types'
 import type { DeviceType } from './tracking/types'
+import type { WaitlistContext, WaitlistFeature } from './waitlist/types'
 
 const options = {
   appName: 'devrel.vercel.integration',
@@ -85,5 +86,41 @@ export async function getFeedbackCollection() {
   const db = await getDb()
   const collection = db.collection<FeedbackDocument>('feedback')
   ensureFeedbackIndexes(collection)
+  return collection
+}
+
+export interface WaitlistDocument {
+  _id?: ObjectId
+  feature: WaitlistFeature
+  email: string
+  deviceId: string
+  context?: WaitlistContext
+  deviceType?: DeviceType
+  country?: string
+  region?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+let waitlistIndexesPromise: Promise<unknown> | null = null
+
+function ensureWaitlistIndexes(collection: Collection<WaitlistDocument>) {
+  if (!waitlistIndexesPromise) {
+    waitlistIndexesPromise = collection
+      .createIndexes([
+        { key: { feature: 1, email: 1 }, unique: true },
+        { key: { deviceId: 1, createdAt: -1 } },
+      ])
+      .catch((error) => {
+        console.error('Failed to create waitlist indexes:', error)
+        waitlistIndexesPromise = null
+      })
+  }
+}
+
+export async function getWaitlistCollection() {
+  const db = await getDb()
+  const collection = db.collection<WaitlistDocument>('waitlist')
+  ensureWaitlistIndexes(collection)
   return collection
 }

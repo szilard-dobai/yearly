@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { CountryVisit } from './types'
-import { buildYearVideoData, dayOfYear, daysInYear } from './video'
+import {
+  buildMonthVideoData,
+  buildYearVideoData,
+  dayOfYear,
+  daysInYear,
+} from './video'
 
 function visit(countryCode: string, y: number, m: number, d: number) {
   return {
@@ -92,5 +97,52 @@ describe('daysInYear', () => {
   it('handles leap years', () => {
     expect(daysInYear(2026)).toBe(365)
     expect(daysInYear(2028)).toBe(366)
+  })
+})
+
+describe('buildMonthVideoData', () => {
+  it('keeps only the selected month and computes its stats', () => {
+    const data = buildMonthVideoData(
+      [
+        visit('JP', 2026, 3, 20),
+        visit('JP', 2026, 3, 21),
+        visit('KR', 2026, 3, 21),
+        visit('GR', 2026, 3, 28),
+        visit('PT', 2026, 4, 1),
+        visit('JP', 2025, 3, 20),
+      ],
+      2026,
+      2
+    )
+
+    expect(data.year).toBe(2026)
+    expect(data.month).toBe(2)
+    expect(data.days).toEqual([
+      { date: '2026-03-20', codes: ['JP'] },
+      { date: '2026-03-21', codes: ['JP', 'KR'] },
+      { date: '2026-03-28', codes: ['GR'] },
+    ])
+    expect(data.countries).toEqual(['JP', 'KR', 'GR'])
+    expect(data.stats).toMatchObject({
+      totalCountries: 3,
+      totalDays: 3,
+      averageTripLength: 1.5,
+      topCountries: [
+        { countryCode: 'JP', days: 2 },
+        { countryCode: 'KR', days: 1 },
+        { countryCode: 'GR', days: 1 },
+      ],
+    })
+    expect(data.stats.percentTraveled).toBeCloseTo((3 / 31) * 100)
+  })
+
+  it('lists at most three top countries', () => {
+    const data = buildMonthVideoData(
+      ['AT', 'BE', 'CH', 'DE'].map((code, i) => visit(code, 2026, 5, i + 1)),
+      2026,
+      4
+    )
+
+    expect(data.stats.topCountries).toHaveLength(3)
   })
 })

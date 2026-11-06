@@ -28,9 +28,10 @@ const AnimatedVideoDialog = dynamic(() => import('./AnimatedVideoDialog'), {
   ssr: false,
 })
 
-const VIDEO_OFFER_COPY: Partial<Record<ExportType, string>> = {
+const VIDEO_OFFER_COPY: Record<ExportType, string> = {
   calendar: 'Watch your year fill up, flag by flag.',
   statistics: 'Watch your travel stats count up.',
+  monthly: 'Watch your month fill up, flag by flag.',
 }
 
 interface ImagePreviewModalProps {
@@ -38,6 +39,7 @@ interface ImagePreviewModalProps {
   imageDataUrl: string | null
   filename: string
   year: number
+  month?: number
   calendarData: CalendarData
   exportType: ExportType
   onOpenChange: (open: boolean) => void
@@ -52,6 +54,7 @@ function ImagePreviewContent({
   imageDataUrl,
   filename,
   year,
+  month,
   calendarData,
   exportType,
 }: ImagePreviewContentProps) {
@@ -59,14 +62,21 @@ function ImagePreviewContent({
   const [videoOpen, setVideoOpen] = useState(false)
   const [videoPrice, setVideoPrice] = useState<number | null>(null)
 
-  const videoOfferCopy = VIDEO_OFFER_COPY[exportType]
-  const showVideoOffer =
-    !!videoOfferCopy &&
-    calendarData.visits.some((v) => v.date.getFullYear() === year)
+  const isMonthly = exportType === 'monthly'
+  const showVideoOffer = calendarData.visits.some(
+    (v) =>
+      v.date.getFullYear() === year &&
+      (!isMonthly || v.date.getMonth() === month)
+  )
 
   const openVideoPreview = () => {
     const price = getAnimatedVideoPrice(getDeviceId())
-    trackEvent('animated_video_preview_open', { exportType, year, price })
+    trackEvent('animated_video_preview_open', {
+      exportType,
+      year,
+      ...(isMonthly && { month }),
+      price,
+    })
     setVideoPrice(price)
     setVideoOpen(true)
   }
@@ -184,7 +194,7 @@ function ImagePreviewContent({
                   </span>
                 </span>
                 <span className="block text-xs text-gray-600 dark:text-zinc-400">
-                  {videoOfferCopy} Preview it free.
+                  {VIDEO_OFFER_COPY[exportType]} Preview it free.
                 </span>
               </span>
               <ChevronRight className="size-4 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5 dark:text-zinc-500" />
@@ -197,6 +207,7 @@ function ImagePreviewContent({
               onOpenChange={setVideoOpen}
               calendarData={calendarData}
               year={year}
+              month={month}
               exportType={exportType}
               price={videoPrice}
             />

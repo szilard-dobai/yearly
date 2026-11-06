@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { MONTH_DURATION } from '@/components/video/MonthVideo'
 import {
   PreviewVideo,
   type PreviewVideoProps,
@@ -15,11 +16,13 @@ import {
 import { STATS_DURATION } from '@/components/video/StatsVideo'
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
 import { YEAR_FILL_DURATION } from '@/components/video/YearFillVideo'
+import { MONTH_NAMES } from '@/lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import {
+  buildMonthVideoData,
   buildYearVideoData,
   type VideoKind,
   type VideoTheme,
@@ -36,14 +39,20 @@ interface AnimatedVideoDialogProps {
   onOpenChange: (open: boolean) => void
   calendarData: CalendarData
   year: number
+  month?: number
   exportType: ExportType
   price: number
 }
 
 type Step = 'offer' | 'waitlist' | 'joined'
 
-const INCLUDED = [
-  'Both videos, in dark and light',
+const DURATIONS: Record<VideoKind, number> = {
+  year: YEAR_FILL_DURATION,
+  stats: STATS_DURATION,
+  month: MONTH_DURATION,
+}
+
+const FORMAT_AND_PAYMENT = [
   'Full HD 1080×1920 MP4, no watermark',
   'One-time payment, no account needed',
 ]
@@ -90,12 +99,14 @@ export default function AnimatedVideoDialog({
   onOpenChange,
   calendarData,
   year,
+  month,
   exportType,
   price,
 }: AnimatedVideoDialogProps) {
   const { settings } = useSettings()
+  const isMonthly = exportType === 'monthly' && month !== undefined
   const [kind, setKind] = useState<VideoKind>(
-    exportType === 'statistics' ? 'stats' : 'year'
+    isMonthly ? 'month' : exportType === 'statistics' ? 'stats' : 'year'
   )
   const [theme, setTheme] = useState<VideoTheme>(initialTheme)
   const [step, setStep] = useState<Step>('offer')
@@ -103,22 +114,51 @@ export default function AnimatedVideoDialog({
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const data = useMemo(
+  const yearData = useMemo(
     () => buildYearVideoData(calendarData.visits, year),
     [calendarData.visits, year]
   )
-  const inputProps = useMemo<PreviewVideoProps>(
-    () => ({
-      kind,
-      data,
+  const monthData = useMemo(
+    () =>
+      month === undefined
+        ? null
+        : buildMonthVideoData(calendarData.visits, year, month),
+    [calendarData.visits, year, month]
+  )
+  const inputProps = useMemo<PreviewVideoProps>(() => {
+    const shared = {
       theme,
       flagMode: settings.flagDisplayMode,
       weekStartsOn: settings.weekStartsOn,
-    }),
-    [kind, data, theme, settings.flagDisplayMode, settings.weekStartsOn]
-  )
+    }
+    if (kind === 'month' && monthData) {
+      return { ...shared, kind, data: monthData }
+    }
+    return {
+      ...shared,
+      kind: kind === 'stats' ? 'stats' : 'year',
+      data: yearData,
+    }
+  }, [
+    kind,
+    monthData,
+    yearData,
+    theme,
+    settings.flagDisplayMode,
+    settings.weekStartsOn,
+  ])
 
-  const context = { exportType, videoKind: kind, year, price }
+  const monthName = month === undefined ? '' : MONTH_NAMES[month]
+  const included = isMonthly
+    ? ['Dark and light versions', ...FORMAT_AND_PAYMENT]
+    : ['Both videos, in dark and light', ...FORMAT_AND_PAYMENT]
+  const context = {
+    exportType,
+    videoKind: kind,
+    year,
+    ...(isMonthly && { month }),
+    price,
+  }
 
   const handleBuy = () => {
     trackEvent('animated_video_buy_click', { ...context, theme })
@@ -149,9 +189,7 @@ export default function AnimatedVideoDialog({
                 key={kind}
                 component={PreviewVideo}
                 inputProps={inputProps}
-                durationInFrames={
-                  kind === 'year' ? YEAR_FILL_DURATION : STATS_DURATION
-                }
+                durationInFrames={DURATIONS[kind]}
                 compositionWidth={VIDEO_WIDTH}
                 compositionHeight={VIDEO_HEIGHT}
                 fps={FPS}
@@ -165,15 +203,17 @@ export default function AnimatedVideoDialog({
               />
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <Segmented
-                label="Video"
-                value={kind}
-                onChange={setKind}
-                options={[
-                  { value: 'year', label: 'Your year' },
-                  { value: 'stats', label: 'Your stats' },
-                ]}
-              />
+              {!isMonthly && (
+                <Segmented
+                  label="Video"
+                  value={kind}
+                  onChange={setKind}
+                  options={[
+                    { value: 'year', label: 'Your year' },
+                    { value: 'stats', label: 'Your stats' },
+                  ]}
+                />
+              )}
               <Segmented
                 label="Theme"
                 value={theme}
@@ -192,16 +232,17 @@ export default function AnimatedVideoDialog({
               New: animated video
             </span>
             <DialogTitle className="mb-2 font-serif text-2xl leading-tight font-normal text-gray-900 md:mb-3 md:text-3xl dark:text-zinc-100">
-              Your {year}, animated
+              Your {isMonthly ? monthName : year}, animated
             </DialogTitle>
             <DialogDescription className="mb-5 text-sm leading-relaxed text-gray-600 md:text-base dark:text-zinc-400">
-              Two short videos made from your trips: your calendar filling up
-              flag by flag, and your stats counting up. Made for Reels, Stories
-              and TikTok.
+              {isMonthly
+                ? `A short video made from your trips in ${monthName}: the month filling up flag by flag, then your numbers.`
+                : 'Two short videos made from your trips: your calendar filling up flag by flag, and your stats counting up.'}{' '}
+              Made for Reels, Stories and TikTok.
             </DialogDescription>
 
             <ul className="mb-6 space-y-2">
-              {INCLUDED.map((item) => (
+              {included.map((item) => (
                 <li
                   key={item}
                   className="flex items-center gap-2 text-sm text-gray-700 dark:text-zinc-300"
@@ -215,7 +256,8 @@ export default function AnimatedVideoDialog({
             {step === 'offer' && (
               <>
                 <Button size="lg" className="w-full" onClick={handleBuy}>
-                  Get the videos · {formatPrice(price)}
+                  Get the {isMonthly ? 'video' : 'videos'} ·{' '}
+                  {formatPrice(price)}
                 </Button>
                 <p className="mt-3 text-center text-xs text-gray-500 dark:text-zinc-500">
                   Your images stay free.
@@ -288,7 +330,8 @@ export default function AnimatedVideoDialog({
                   <span className="font-medium text-gray-900 dark:text-zinc-100">
                     You&apos;re on the list.
                   </span>{' '}
-                  We&apos;ll email you when you can get your videos.
+                  We&apos;ll email you when you can get your{' '}
+                  {isMonthly ? 'video' : 'videos'}.
                 </p>
               </div>
             )}

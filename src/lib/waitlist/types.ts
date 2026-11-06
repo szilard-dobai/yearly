@@ -10,6 +10,7 @@ export const waitlistContextSchema = z.object({
   exportType: z.enum(EXPORT_TYPES).optional(),
   videoKind: z.enum(VIDEO_KINDS).optional(),
   year: z.int().min(1900).max(2200).optional(),
+  month: z.int().min(0).max(11).optional(),
   price: z.number().positive().max(100).optional(),
 })
 

@@ -1,10 +1,13 @@
-import type { VideoKind, VideoTheme } from '@/lib/video'
+import type { VideoTheme } from '@/lib/video'
 import { AbsoluteFill } from 'remotion'
+import { MonthVideo, type MonthVideoProps } from './MonthVideo'
 import { StatsVideo } from './StatsVideo'
 import { SANS, VIDEO_HEIGHT, VIDEO_WIDTH } from './tokens'
 import { YearFillVideo, type VideoProps } from './YearFillVideo'
 
-export type PreviewVideoProps = VideoProps & { kind: VideoKind }
+export type PreviewVideoProps =
+  | (VideoProps & { kind: 'year' | 'stats' })
+  | (MonthVideoProps & { kind: 'month' })
 
 const ANGLE = -30
 const ROWS = 11
@@ -63,8 +66,13 @@ export function PreviewWatermark({ theme }: { theme: VideoTheme }) {
   )
 }
 
-export function PreviewVideo({ kind, ...props }: PreviewVideoProps) {
-  const Video = kind === 'year' ? YearFillVideo : StatsVideo
+function Video(props: PreviewVideoProps) {
+  if (props.kind === 'month') return <MonthVideo {...props} />
+  if (props.kind === 'stats') return <StatsVideo {...props} />
+  return <YearFillVideo {...props} />
+}
+
+export function PreviewVideo(props: PreviewVideoProps) {
   return (
     <AbsoluteFill>
       <Video {...props} />

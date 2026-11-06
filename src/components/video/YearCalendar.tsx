@@ -7,7 +7,7 @@ import { interpolate } from 'remotion'
 import { type Palette, clamp, popAt, SANS } from './tokens'
 import { DayFlags } from './VideoFlag'
 
-const SETTLED = 40
+export const SETTLED = 40
 
 type DayCellProps = {
   day: number
@@ -18,7 +18,7 @@ type DayCellProps = {
   flagMode: FlagDisplayMode
 }
 
-const DayCell = memo(function DayCell({
+export const DayCell = memo(function DayCell({
   day,
   codes,
   since,

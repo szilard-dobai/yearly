@@ -27,6 +27,26 @@ describe('buildWaitlistSlackMessage', () => {
     )
   })
 
+  it('names the month video', () => {
+    const message = buildWaitlistSlackMessage(
+      {
+        ...signup,
+        context: {
+          exportType: 'monthly',
+          videoKind: 'month',
+          year: 2026,
+          month: 10,
+          price: 1.99,
+        },
+      },
+      3
+    )
+
+    expect(JSON.stringify(message.blocks)).toContain(
+      'Saw $1.99 · on the month video'
+    )
+  })
+
   it('skips details it does not have', () => {
     const message = buildWaitlistSlackMessage({}, 1)
 

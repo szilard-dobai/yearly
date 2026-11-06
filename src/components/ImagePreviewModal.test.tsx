@@ -25,7 +25,7 @@ const calendarData: CalendarData = {
   visits: [{ id: '1', countryCode: 'JP', date: new Date(2026, 2, 20) }],
 }
 
-function renderModal(exportType: ExportType, year = 2026) {
+function renderModal(exportType: ExportType, year = 2026, month?: number) {
   return render(
     <ImagePreviewModal
       open
@@ -33,6 +33,7 @@ function renderModal(exportType: ExportType, year = 2026) {
       imageDataUrl="data:image/jpeg;base64,AAAA"
       filename="yearly.jpg"
       year={year}
+      month={month}
       calendarData={calendarData}
       exportType={exportType}
     />
@@ -55,8 +56,23 @@ describe('ImagePreviewModal video offer', () => {
     }
   )
 
-  it('does not offer a video for monthly exports', () => {
-    renderModal('monthly')
+  it('offers the month video for a monthly export with trips', async () => {
+    const user = userEvent.setup()
+    renderModal('monthly', 2026, 2)
+
+    await user.click(screen.getByRole('button', { name: /Make it a video/ }))
+
+    expect(screen.getByText(/Watch your month fill up/)).toBeInTheDocument()
+    expect(trackEvent).toHaveBeenCalledWith('animated_video_preview_open', {
+      exportType: 'monthly',
+      year: 2026,
+      month: 2,
+      price: getAnimatedVideoPrice('device-123'),
+    })
+  })
+
+  it('does not offer a video for a month without trips', () => {
+    renderModal('monthly', 2026, 3)
 
     expect(
       screen.queryByRole('button', { name: /Make it a video/ })

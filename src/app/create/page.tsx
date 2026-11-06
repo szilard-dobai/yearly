@@ -682,6 +682,7 @@ function Create() {
         imageDataUrl={monthlyImageDataUrl}
         filename={monthlyFilename}
         year={selectedYear}
+        month={selectedMonth}
         calendarData={calendarData}
         exportType="monthly"
       />

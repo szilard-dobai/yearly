@@ -129,6 +129,9 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   animated_video_preview_open: 'Video preview opened',
   animated_video_buy_click: 'Video buy clicked',
   animated_video_waitlist_join: 'Video waitlist joined',
+  year_end_reminder_open: 'Year-end reminder opened',
+  year_end_reminder_calendar_add: 'Year-end reminder added to calendar',
+  year_end_reminder_email_submit: 'Year-end reminder email added',
 }
 
 export function getEventLabel(type: string): string {

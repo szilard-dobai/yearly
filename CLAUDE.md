@@ -47,6 +47,8 @@ src/
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (1080×1920)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (1200×1739)
 │   ├── ImagePreviewModal.tsx - Export preview and download modal
+│   ├── ExportWatermark.tsx   - "made with yearly.world" signature revealed on exports
+│   ├── HomepageExamples.tsx  - Homepage section with real example exports
 │   ├── Flag.tsx              - Country flag component (emoji/icon modes)
 │   ├── CountryInput.tsx      - Country and date picker
 │   ├── Statistics.tsx        - Travel statistics display
@@ -82,7 +84,7 @@ All three export types (calendar, monthly, statistics) follow the same pattern:
 
 1. Clone the source DOM element
 2. Apply inline styles to scale up for export (the hooks map Tailwind classes to explicit sizes)
-3. Show the hidden watermark
+3. Show the hidden watermark (`ExportWatermark` is sized in `em`, so the hooks only set its root font size)
 4. Render to JPEG via `html-to-image` with `skipFonts: true` (avoids CORS errors with Google Fonts)
 5. Present in ImagePreviewModal for download/share
 

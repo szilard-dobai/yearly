@@ -17,6 +17,7 @@ import {
   shouldShowFeedbackPrompt,
 } from '@/lib/feedback/prompt'
 import type { ExportType } from '@/lib/feedback/types'
+import { buildShareText } from '@/lib/share'
 import { trackEvent } from '@/lib/tracking'
 import { getDeviceId } from '@/lib/tracking/device-id'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
@@ -121,7 +122,9 @@ function ImagePreviewContent({
       navigator.share({
         files: [file],
         title: 'My trips this year',
-        text: 'Created by Yearly',
+        text: buildShareText(
+          process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+        ),
       })
     } else {
       const link = document.createElement('a')

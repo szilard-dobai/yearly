@@ -148,10 +148,47 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
+          <Section title="Year-end reminder">
+            <p>
+              After you export an image, Yearly can remind you on 28 December to
+              make your full-year Yearly. You can choose how:
+            </p>
+            <List>
+              <li>
+                <span className="font-medium">Apple or Outlook calendar:</span>{' '}
+                your browser creates a calendar file and nothing is sent to us.
+              </li>
+              <li>
+                <span className="font-medium">Google Calendar:</span> we open
+                Google Calendar with the event filled in, and you save it to
+                your own calendar.
+              </li>
+              <li>
+                <span className="font-medium">Email:</span> we store your email
+                address with the year, the random ID, your device type,
+                approximate location and when you signed up.
+              </li>
+            </List>
+            <p>
+              We use your email to send you one reminder, on 28 December of that
+              year. Nothing else: no newsletters or marketing. To send it,
+              we&apos;ll pass your address to an email delivery service for that
+              one message. Ask us and we&apos;ll delete your email at any time.
+            </p>
+            <p>
+              Our usage events record when you open the reminder options or add
+              the reminder to a calendar, and which calendar, but never your
+              email address.
+            </p>
+          </Section>
+
           <Section title="Who handles the data">
             <List>
               <li>Vercel hosts Yearly and provides the analytics.</li>
-              <li>MongoDB stores usage events, feedback and the waitlist.</li>
+              <li>
+                MongoDB stores usage events, feedback, the waitlist and year-end
+                reminder emails.
+              </li>
               <li>
                 Slack receives our notifications about feedback and waitlist
                 sign-ups.
@@ -164,9 +201,9 @@ export default function PrivacyPage() {
             <p>
               Yearly uses your browser&apos;s local storage for your trips,
               settings and the random ID, and to remember small things such as
-              whether you&apos;ve seen a tip or answered a question. It
-              doesn&apos;t set cookies for visitors. The only cookie is the
-              sign-in cookie for Yearly&apos;s admin pages.
+              whether you&apos;ve seen a tip, answered a question or set a
+              year-end reminder. It doesn&apos;t set cookies for visitors. The
+              only cookie is the sign-in cookie for Yearly&apos;s admin pages.
             </p>
           </Section>
 
@@ -179,8 +216,8 @@ export default function PrivacyPage() {
                 app&apos;s settings.
               </li>
               <li>
-                To remove your email from the waitlist, or to ask about or
-                delete anything else we hold, message{' '}
+                To remove your email from the waitlist or the year-end reminder,
+                or to ask about or delete anything else we hold, message{' '}
                 <a
                   href="https://www.instagram.com/yearly.world"
                   target="_blank"

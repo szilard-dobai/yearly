@@ -66,6 +66,9 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+    types: {
+      'text/plain': '/llms.txt',
+    },
   },
   appleWebApp: {
     title: 'Yearly',

@@ -1,3 +1,4 @@
+import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
 import type { MetadataRoute } from 'next'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
@@ -9,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 1,
+      images: HOMEPAGE_EXAMPLES.map(({ src }) => new URL(src, siteUrl).href),
     },
     {
       url: `${siteUrl}/create`,

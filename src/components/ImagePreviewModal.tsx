@@ -28,6 +28,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Button } from './ui/button'
+import YearEndReminderCard from './YearEndReminderCard'
 
 const AnimatedVideoDialog = dynamic(() => import('./AnimatedVideoDialog'), {
   ssr: false,
@@ -231,6 +232,8 @@ function ImagePreviewContent({
               price={videoPrice}
             />
           )}
+
+          <YearEndReminderCard year={year} />
 
           <div className="hidden md:block bg-gray-50 dark:bg-white/5 rounded-lg p-4 border border-gray-200 dark:border-white/8">
             <p className="text-sm text-gray-600 dark:text-zinc-400">

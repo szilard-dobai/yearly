@@ -2,14 +2,16 @@
 
 import { Button } from '@/components/ui/button'
 import { Check, Copy } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 export default function CopyButton({
   value,
   label,
+  children,
 }: {
   value: string
   label: string
+  children?: ReactNode
 }) {
   const [copied, setCopied] = useState(false)
 
@@ -30,12 +32,14 @@ export default function CopyButton({
 
   return (
     <Button
-      variant="ghost"
-      size="icon-sm"
+      variant={children ? 'outline' : 'ghost'}
+      size={children ? 'sm' : 'icon-sm'}
       onClick={handleCopy}
-      aria-label={label}
+      aria-label={children ? undefined : label}
+      title={children ? label : undefined}
     >
       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+      {children}
     </Button>
   )
 }

@@ -1,0 +1,180 @@
+import Header from '@/components/Header'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import type { ReactNode } from 'react'
+
+export const metadata: Metadata = {
+  title: 'Privacy',
+  description:
+    'What Yearly stores, what it sends to its servers, and how to get your data deleted.',
+  alternates: { canonical: '/privacy' },
+}
+
+const LAST_UPDATED = '6 November 2026'
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="font-serif text-2xl font-normal text-gray-900 dark:text-zinc-100">
+        {title}
+      </h2>
+      {children}
+    </section>
+  )
+}
+
+function List({ children }: { children: ReactNode }) {
+  return <ul className="list-disc space-y-1.5 pl-5">{children}</ul>
+}
+
+const linkClassName =
+  'underline underline-offset-2 hover:text-gray-900 dark:hover:text-zinc-100'
+
+export default function PrivacyPage() {
+  return (
+    <>
+      <Header />
+      <main className="container mx-auto px-3 py-12 md:py-16">
+        <article className="mx-auto max-w-2xl space-y-10 leading-relaxed text-gray-700 dark:text-zinc-300">
+          <header className="space-y-3">
+            <h1 className="font-serif text-4xl font-normal text-gray-900 md:text-5xl dark:text-zinc-100">
+              Privacy
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-zinc-500">
+              Last updated {LAST_UPDATED}
+            </p>
+            <p>
+              Yearly is a personal project by Szilard Dobai. This page explains
+              what Yearly stores, what it sends to our servers, and how to get
+              your data deleted. There are no accounts and no ads, and we
+              don&apos;t sell your data.
+            </p>
+          </header>
+
+          <Section title="Your trips">
+            <p>
+              The trips and settings you add are saved in your browser&apos;s
+              local storage, on your device. They aren&apos;t linked to your
+              name, and images you export are created in your browser rather
+              than uploaded to us.
+            </p>
+            <p>
+              When you export or download your calendar image, or export a JSON
+              backup, a copy of your trips (the countries and dates) is sent to
+              us with the usage event for that action. We use it to understand
+              how people use Yearly.
+            </p>
+          </Section>
+
+          <Section title="Usage events">
+            <p>
+              We record what people do in Yearly, such as opening a page, adding
+              a trip or exporting an image. Each event includes:
+            </p>
+            <List>
+              <li>
+                a random ID created in your browser, which isn&apos;t linked to
+                your name
+              </li>
+              <li>
+                what happened and when, with details such as the year or how
+                many days you added
+              </li>
+              <li>your device type: mobile, tablet or desktop</li>
+              <li>
+                your approximate location (country and region), which our host
+                works out from your IP address. We don&apos;t store the IP
+                address itself.
+              </li>
+            </List>
+            <p>
+              We also use Vercel Web Analytics and Speed Insights to count page
+              views and measure loading speed. They don&apos;t use cookies.
+            </p>
+          </Section>
+
+          <Section title="Feedback">
+            <p>
+              If you send feedback, we store your rating and message with the
+              random ID, your browser&apos;s user agent, your device type and
+              approximate location. We get a Slack notification with your
+              rating, message and approximate location.
+            </p>
+          </Section>
+
+          <Section title="Animated video waitlist">
+            <p>
+              If you join the waitlist for animated videos, we store your email
+              address with the random ID, the video and price you were shown,
+              your device type and approximate location.
+            </p>
+            <p>
+              We only use your email to tell you when animated videos are
+              available. We won&apos;t send newsletters or marketing. The Slack
+              notification we get about a new sign-up doesn&apos;t include your
+              email. Ask us and we&apos;ll delete it.
+            </p>
+          </Section>
+
+          <Section title="Who handles the data">
+            <List>
+              <li>Vercel hosts Yearly and provides the analytics.</li>
+              <li>MongoDB stores usage events, feedback and the waitlist.</li>
+              <li>
+                Slack receives our notifications about feedback and waitlist
+                sign-ups.
+              </li>
+            </List>
+            <p>We don&apos;t share your data with anyone else.</p>
+          </Section>
+
+          <Section title="Storage on your device">
+            <p>
+              Yearly uses your browser&apos;s local storage for your trips,
+              settings and the random ID, and to remember small things such as
+              whether you&apos;ve seen a tip. It doesn&apos;t set cookies for
+              visitors. The only cookie is the sign-in cookie for Yearly&apos;s
+              admin pages.
+            </p>
+          </Section>
+
+          <Section title="Deleting your data">
+            <List>
+              <li>
+                To delete your trips and settings, clear your browser&apos;s
+                data for this site. You can also clear one year at a time with{' '}
+                <span className="font-medium">Reset Calendar</span> in the
+                app&apos;s settings.
+              </li>
+              <li>
+                To remove your email from the waitlist, or to ask about or
+                delete anything else we hold, message{' '}
+                <a
+                  href="https://www.instagram.com/yearly.world"
+                  target="_blank"
+                  rel="noreferrer"
+                  className={linkClassName}
+                >
+                  @yearly.world
+                </a>{' '}
+                on Instagram or send a message through the feedback form in{' '}
+                <Link href="/create" className={linkClassName}>
+                  the app
+                </Link>
+                . The feedback form includes your random ID, which lets us find
+                the events linked to your browser.
+              </li>
+            </List>
+          </Section>
+
+          <Section title="Changes">
+            <p>
+              If we change how Yearly handles data, we&apos;ll update this page
+              and the date at the top.
+            </p>
+          </Section>
+        </article>
+      </main>
+    </>
+  )
+}

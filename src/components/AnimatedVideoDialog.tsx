@@ -28,6 +28,7 @@ import { formatPrice } from '@/lib/video-offer'
 import { joinWaitlist } from '@/lib/waitlist/client'
 import { Player } from '@remotion/player'
 import { Check, CheckCircle2, Loader2, Sparkles } from 'lucide-react'
+import Link from 'next/link'
 import { type FormEvent, useMemo, useState } from 'react'
 
 interface AnimatedVideoDialogProps {
@@ -263,6 +264,16 @@ export default function AnimatedVideoDialog({
                     Notify me
                   </Button>
                 </div>
+                <p className="text-xs text-gray-500 dark:text-zinc-500">
+                  We&apos;ll only use your email for this.{' '}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    className="underline underline-offset-2 hover:text-gray-900 dark:hover:text-zinc-100"
+                  >
+                    Privacy
+                  </Link>
+                </p>
                 {error && (
                   <p
                     role="alert"

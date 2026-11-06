@@ -120,6 +120,10 @@ describe('AnimatedVideoDialog', () => {
     expect(
       screen.getByLabelText(/Video downloads aren't live yet/)
     ).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
+      'href',
+      '/privacy'
+    )
   })
 
   it('joins the waitlist with the email and offer context', async () => {

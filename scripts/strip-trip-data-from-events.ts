@@ -77,7 +77,11 @@ async function main() {
       .aggregate<{
         _id: string
         count: number
-      }>([{ $match: FILTER }, { $group: { _id: '$type', count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+      }>([
+        { $match: FILTER },
+        { $group: { _id: '$type', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ])
       .toArray()
     const total = byType.reduce((sum, row) => sum + row.count, 0)
 

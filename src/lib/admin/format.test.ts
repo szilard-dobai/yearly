@@ -55,6 +55,7 @@ describe('getEventTone', () => {
     ['create_page_view', 'view'],
     ['image_download_click', 'export'],
     ['monthly_export_click', 'export'],
+    ['animated_video_buy_click', 'export'],
     ['feedback_submitted', 'feedback'],
     ['visit_add_attempt', 'edit'],
     ['year_changed', 'other'],

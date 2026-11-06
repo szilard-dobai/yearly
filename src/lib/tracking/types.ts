@@ -28,6 +28,9 @@ export const TRACKING_EVENT_TYPES = [
   'feedback_prompt_dismissed',
   'feedback_dialog_open',
   'feedback_submitted',
+  'animated_video_preview_open',
+  'animated_video_buy_click',
+  'animated_video_waitlist_join',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]

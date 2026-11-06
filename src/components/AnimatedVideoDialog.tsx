@@ -8,14 +8,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { MONTH_DURATION } from '@/components/video/MonthVideo'
+import { monthTimeline } from '@/components/video/MonthVideo'
 import {
   PreviewVideo,
   type PreviewVideoProps,
 } from '@/components/video/PreviewVideo'
 import { STATS_DURATION } from '@/components/video/StatsVideo'
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
-import { YEAR_FILL_DURATION } from '@/components/video/YearFillVideo'
+import { yearFillTimeline } from '@/components/video/YearFillVideo'
 import { MONTH_NAMES } from '@/lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
@@ -45,12 +45,6 @@ interface AnimatedVideoDialogProps {
 }
 
 type Step = 'offer' | 'waitlist' | 'joined'
-
-const DURATIONS: Record<VideoKind, number> = {
-  year: YEAR_FILL_DURATION,
-  stats: STATS_DURATION,
-  month: MONTH_DURATION,
-}
 
 const FORMAT_AND_PAYMENT = [
   'Full HD 1080×1920 MP4, no watermark',
@@ -148,6 +142,13 @@ export default function AnimatedVideoDialog({
     settings.weekStartsOn,
   ])
 
+  const duration =
+    inputProps.kind === 'month'
+      ? monthTimeline(inputProps.data.days.length).duration
+      : inputProps.kind === 'year'
+        ? yearFillTimeline(inputProps.data.days.length).duration
+        : STATS_DURATION
+
   const monthName = month === undefined ? '' : MONTH_NAMES[month]
   const included = isMonthly
     ? ['Dark and light versions', ...FORMAT_AND_PAYMENT]
@@ -189,7 +190,7 @@ export default function AnimatedVideoDialog({
                 key={kind}
                 component={PreviewVideo}
                 inputProps={inputProps}
-                durationInFrames={DURATIONS[kind]}
+                durationInFrames={duration}
                 compositionWidth={VIDEO_WIDTH}
                 compositionHeight={VIDEO_HEIGHT}
                 fps={FPS}

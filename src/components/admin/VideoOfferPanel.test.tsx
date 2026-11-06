@@ -58,6 +58,43 @@ describe('VideoOfferPanel', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows that it is reloading while the dashboard refreshes', async () => {
+    respond({
+      total: 1,
+      lastSevenDays: 1,
+      funnel: [{ price: 1.99, previews: 4, buyClicks: 1, signups: 1 }],
+    })
+    const { rerender } = render(<VideoOfferPanel refreshKey={0} />)
+    const panel = screen.getByRole('region', { name: 'Animated video test' })
+    await screen.findByText('1 in the last 7 days')
+    expect(panel).toHaveAttribute('aria-busy', 'false')
+
+    let finish: (response: Response) => void = () => {}
+    fetchMock.mockReturnValue(
+      new Promise<Response>((resolve) => {
+        finish = resolve
+      })
+    )
+    rerender(<VideoOfferPanel refreshKey={1} />)
+
+    expect(panel).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByText('1 in the last 7 days')).not.toBeInTheDocument()
+    expect(screen.getByRole('table')).toBeInTheDocument()
+
+    finish(
+      new Response(
+        JSON.stringify({
+          total: 2,
+          lastSevenDays: 2,
+          funnel: [{ price: 1.99, previews: 5, buyClicks: 2, signups: 2 }],
+        })
+      )
+    )
+
+    expect(await screen.findByText('2 in the last 7 days')).toBeInTheDocument()
+    expect(panel).toHaveAttribute('aria-busy', 'false')
+  })
+
   it('reloads when the dashboard is refreshed', async () => {
     respond({ total: 1, lastSevenDays: 1, funnel: [] })
     const { rerender } = render(<VideoOfferPanel refreshKey={0} />)

@@ -84,9 +84,9 @@ export default function PrivacyPage() {
             <p>
               When you add or remove a trip, the event includes the country and
               how many days, but not the dates. When you export or download an
-              image, or export a JSON backup, it includes how many days and
-              countries you logged that year and an alphabetical list of the
-              countries, so we can see which countries are most popular. It
+              image, or export a JSON backup, it includes the countries you
+              logged that year and how many days you logged in each, so we can
+              see which countries are most popular and how long people stay. It
               never includes dates.
             </p>
             <p>

@@ -92,18 +92,26 @@ export async function GET(request: Request) {
         ])
         .toArray(),
       collection
-        .aggregate<{ country: string; deviceCount: number }>([
+        .aggregate<{ country: string; deviceCount: number; dayCount: number }>([
           {
             $match: {
               type: { $in: [...TRIP_SUMMARY_EVENTS] },
-              'metadata.countryCodes.0': { $exists: true },
+              'metadata.countries.0': { $exists: true },
             },
           },
-          { $unwind: '$metadata.countryCodes' },
+          { $sort: { timestamp: -1 } },
           {
             $group: {
-              _id: '$metadata.countryCodes',
-              devices: { $addToSet: '$deviceId' },
+              _id: { deviceId: '$deviceId', year: '$metadata.year' },
+              countries: { $first: '$metadata.countries' },
+            },
+          },
+          { $unwind: '$countries' },
+          {
+            $group: {
+              _id: '$countries.code',
+              devices: { $addToSet: '$_id.deviceId' },
+              dayCount: { $sum: '$countries.days' },
             },
           },
           {
@@ -111,9 +119,10 @@ export async function GET(request: Request) {
               _id: 0,
               country: '$_id',
               deviceCount: { $size: '$devices' },
+              dayCount: 1,
             },
           },
-          { $sort: { deviceCount: -1, country: 1 } },
+          { $sort: { deviceCount: -1, dayCount: -1, country: 1 } },
           { $limit: 10 },
         ])
         .toArray(),

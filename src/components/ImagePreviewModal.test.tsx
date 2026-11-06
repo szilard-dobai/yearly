@@ -83,7 +83,7 @@ describe('ImagePreviewModal video offer', () => {
       visitCount: 1,
       dayCount: 1,
       countryCount: 1,
-      countryCodes: ['JP'],
+      countries: [{ code: 'JP', days: 1 }],
     })
   })
 

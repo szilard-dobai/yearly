@@ -4,7 +4,7 @@
  * Events recorded before 6 November 2026 sent the whole calendar with
  * image exports, image downloads and JSON exports, and the add-trip form sent
  * the dates it added. This replaces the calendar with the summary the app
- * sends now (counts and country codes, no dates) and deletes the dates.
+ * sends now (counts and days per country, no dates) and deletes the dates.
  *
  * Usage:
  *   npx tsx scripts/strip-trip-data-from-events.ts           # dry run
@@ -95,11 +95,8 @@ async function main() {
     if (!apply) {
       const sample = await events.findOne(FILTER)
       if (sample) {
-        const { countryCodes, ...counts } = summaryFor(sample)
         console.log('\nExample replacement (one event):')
-        console.log(
-          `  ${JSON.stringify(counts)} with ${countryCodes.length} country codes`
-        )
+        console.log(`  ${JSON.stringify(summaryFor(sample))}`)
       }
       console.log('\nDry run only. Re-run with --apply to update the events.')
       return
@@ -132,7 +129,7 @@ async function main() {
               'metadata.visitCount': summary.visitCount,
               'metadata.dayCount': summary.dayCount,
               'metadata.countryCount': summary.countryCount,
-              'metadata.countryCodes': summary.countryCodes,
+              'metadata.countries': summary.countries,
             },
             $unset: { 'metadata.calendarData': '' },
           },

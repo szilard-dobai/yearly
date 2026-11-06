@@ -30,8 +30,8 @@ const stats: HighLevelStats = {
   ],
   interestingMentions: [],
   travelCountries: [
-    { country: 'JP', deviceCount: 18 },
-    { country: 'IS', deviceCount: 4 },
+    { country: 'JP', deviceCount: 18, dayCount: 240 },
+    { country: 'IS', deviceCount: 4, dayCount: 1 },
   ],
 }
 
@@ -94,6 +94,9 @@ describe('AnalyticsOverviewDialog', () => {
       .getAllByRole('listitem')
       .map((row) => row.textContent)
 
-    expect(rows).toEqual(['1🇯🇵Japan18 devices', '2🇮🇸Iceland4 devices'])
+    expect(rows).toEqual([
+      '1🇯🇵Japan18 devices · 240 days',
+      '2🇮🇸Iceland4 devices · 1 day',
+    ])
   })
 })

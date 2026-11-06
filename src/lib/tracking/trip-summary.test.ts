@@ -25,12 +25,16 @@ describe('summarizeCalendar', () => {
       visitCount: 4,
       dayCount: 3,
       countryCount: 3,
-      countryCodes: ['GR', 'JP', 'TR'],
+      countries: [
+        { code: 'GR', days: 2 },
+        { code: 'JP', days: 1 },
+        { code: 'TR', days: 1 },
+      ],
     })
     expect(JSON.stringify(summary)).not.toMatch(/\d{4}-\d{2}-\d{2}/)
   })
 
-  it('sorts country codes so their order says nothing about when you went', () => {
+  it('sorts countries so their order says nothing about when you went', () => {
     const later = summarizeTrips(
       [
         { countryCode: 'US', day: '2026-01-05' },
@@ -39,7 +43,7 @@ describe('summarizeCalendar', () => {
       2026
     )
 
-    expect(later.countryCodes).toEqual(['AT', 'US'])
+    expect(later.countries.map((c) => c.code)).toEqual(['AT', 'US'])
   })
 
   it('handles a year without trips', () => {
@@ -48,7 +52,7 @@ describe('summarizeCalendar', () => {
       visitCount: 0,
       dayCount: 0,
       countryCount: 0,
-      countryCodes: [],
+      countries: [],
     })
   })
 })

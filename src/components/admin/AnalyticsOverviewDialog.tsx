@@ -51,6 +51,7 @@ export interface HighLevelStats {
   eventBreakdown: Record<string, number>
   topCountriesByDevices: CountryDeviceCount[]
   interestingMentions: CountryDeviceCount[]
+  travelCountries: CountryDeviceCount[]
 }
 
 const DEVICE_ROWS: { type: DeviceType; label: string; barClass: string }[] = [
@@ -221,9 +222,15 @@ function OverviewContent({ stats }: { stats: HighLevelStats }) {
         </Panel>
       </div>
 
-      {(stats.topCountriesByDevices.length > 0 ||
+      {(stats.travelCountries.length > 0 ||
+        stats.topCountriesByDevices.length > 0 ||
         stats.interestingMentions.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {stats.travelCountries.length > 0 && (
+            <Panel title="Countries travelled to">
+              <CountryList items={stats.travelCountries} />
+            </Panel>
+          )}
           {stats.topCountriesByDevices.length > 0 && (
             <Panel title="Top countries by devices">
               <CountryList items={stats.topCountriesByDevices} />

@@ -71,6 +71,22 @@ describe('ImagePreviewModal video offer', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('records the download without sending any trip dates', async () => {
+    const user = userEvent.setup()
+    renderModal('calendar')
+
+    await user.click(screen.getByRole('button', { name: /Download Image/ }))
+
+    expect(trackEvent).toHaveBeenCalledWith('image_download_click', {
+      exportType: 'calendar',
+      year: 2026,
+      visitCount: 1,
+      dayCount: 1,
+      countryCount: 1,
+      countryCodes: ['JP'],
+    })
+  })
+
   it('opens the preview with the device price and records it', async () => {
     const user = userEvent.setup()
     renderModal('calendar')

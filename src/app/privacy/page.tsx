@@ -54,15 +54,9 @@ export default function PrivacyPage() {
           <Section title="Your trips">
             <p>
               The trips and settings you add are saved in your browser&apos;s
-              local storage, on your device. They aren&apos;t linked to your
-              name, and images you export are created in your browser rather
+              local storage, on your device. We never receive the dates of your
+              trips, and images you export are created in your browser rather
               than uploaded to us.
-            </p>
-            <p>
-              When you export or download your calendar image, or export a JSON
-              backup, a copy of your trips (the countries and dates) is sent to
-              us with the usage event for that action. We use it to understand
-              how people use Yearly.
             </p>
           </Section>
 
@@ -87,6 +81,14 @@ export default function PrivacyPage() {
                 address itself.
               </li>
             </List>
+            <p>
+              When you add or remove a trip, the event includes the country and
+              how many days, but not the dates. When you export or download an
+              image, or export a JSON backup, it includes how many days and
+              countries you logged that year and an alphabetical list of the
+              countries, so we can see which countries are most popular. It
+              never includes dates.
+            </p>
             <p>
               We also use Vercel Web Analytics and Speed Insights to count page
               views and measure loading speed. They don&apos;t use cookies.

@@ -2,7 +2,9 @@
  * Tracking event types for analytics
  */
 
+import type { ExportType } from '@/lib/feedback/types'
 import type { SelectionMethod } from '@/lib/selection'
+import type { TripSummary } from './trip-summary'
 
 export const TRACKING_EVENT_TYPES = [
   'homepage_view',
@@ -77,13 +79,10 @@ export interface VisitDeletedMetadata {
   dateCount?: number
 }
 
-export interface ImageExportClickMetadata {
-  year: number
-  visitCount: number
-}
+export type ImageExportClickMetadata = TripSummary
 
-export interface ImageDownloadClickMetadata {
-  year: number
+export type ImageDownloadClickMetadata = TripSummary & {
+  exportType: ExportType
 }
 
 export interface DeveloperModeToggleMetadata {
@@ -96,8 +95,7 @@ export interface JsonImportMetadata {
   success: boolean
 }
 
-export interface JsonExportMetadata {
-  visitCount: number
+export type JsonExportMetadata = TripSummary & {
   success: boolean
 }
 

@@ -14,6 +14,7 @@ import {
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import { getDeviceId } from '@/lib/tracking/device-id'
+import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
 import { getAnimatedVideoPrice } from '@/lib/video-offer'
 import { ChevronRight, Download, Play } from 'lucide-react'
@@ -85,8 +86,8 @@ function ImagePreviewContent({
     )
 
     trackEvent('image_download_click', {
-      year,
-      calendarData,
+      exportType,
+      ...summarizeCalendar(calendarData, year),
     })
 
     if (isMobileOrTablet && !!navigator.share) {

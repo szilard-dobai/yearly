@@ -120,7 +120,6 @@ export default function CountryInput({
         trackEvent('visit_add_attempt', {
           success: false,
           countryCode: selectedCountry.code,
-          dates: [date],
           dateCount: dates.length,
           errorReason: 'duplicate_country',
         })
@@ -132,7 +131,6 @@ export default function CountryInput({
         trackEvent('visit_add_attempt', {
           success: false,
           countryCode: selectedCountry.code,
-          dates: [date],
           dateCount: dates.length,
           errorReason: 'max_countries_exceeded',
         })
@@ -154,7 +152,6 @@ export default function CountryInput({
 
     trackEvent('visit_add_attempt', {
       success: true,
-      dates,
       countryCode: selectedCountry.code,
       dateCount: dates.length,
     })

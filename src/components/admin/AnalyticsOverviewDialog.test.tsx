@@ -29,6 +29,10 @@ const stats: HighLevelStats = {
     { country: 'FR', deviceCount: 1 },
   ],
   interestingMentions: [],
+  travelCountries: [
+    { country: 'JP', deviceCount: 18 },
+    { country: 'IS', deviceCount: 4 },
+  ],
 }
 
 describe('AnalyticsOverviewDialog', () => {
@@ -71,5 +75,25 @@ describe('AnalyticsOverviewDialog', () => {
     expect(
       screen.queryByRole('heading', { name: 'Interesting mentions' })
     ).not.toBeInTheDocument()
+  })
+
+  it('lists the countries people travelled to, separately from visitor locations', () => {
+    render(
+      <AnalyticsOverviewDialog
+        open
+        onOpenChange={vi.fn()}
+        stats={stats}
+        isLoading={false}
+      />
+    )
+
+    const panel = screen.getByRole('heading', {
+      name: 'Countries travelled to',
+    }).parentElement as HTMLElement
+    const rows = within(panel)
+      .getAllByRole('listitem')
+      .map((row) => row.textContent)
+
+    expect(rows).toEqual(['1🇯🇵Japan18 devices', '2🇮🇸Iceland4 devices'])
   })
 })

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 }
 
-const LAST_UPDATED = '6 November 2026'
+const LAST_UPDATED = '7 November 2026'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -90,6 +90,27 @@ export default function PrivacyPage() {
               popular and how long people travel for. It never includes dates.
             </p>
             <p>
+              When you open a page, the event also records how you found Yearly:
+            </p>
+            <List>
+              <li>
+                the address of the site or app that sent you, if your browser
+                shares it, without the part after a &quot;?&quot; or
+                &quot;#&quot;
+              </li>
+              <li>
+                any campaign tags in the link you followed, such as
+                utm_source=instagram
+              </li>
+              <li>
+                your browser&apos;s user agent, a line of text every browser
+                sends to websites. It names your browser and its version, your
+                operating system, sometimes your phone model, and the app
+                you&apos;re in if you opened Yearly inside an app such as
+                Instagram or TikTok. We also store the name of that app.
+              </li>
+            </List>
+            <p>
               We also use Vercel Web Analytics and Speed Insights to count page
               views and measure loading speed. They don&apos;t use cookies.
             </p>
@@ -101,6 +122,15 @@ export default function PrivacyPage() {
               random ID, your browser&apos;s user agent, your device type and
               approximate location. We get a Slack notification with your
               rating, message and approximate location.
+            </p>
+          </Section>
+
+          <Section title="How you heard about Yearly">
+            <p>
+              After you download an image, we may ask how you heard about
+              Yearly. If you answer, we store your answer as a usage event,
+              along with the note you typed if you chose Other. If you answer or
+              close the question, we won&apos;t ask again in that browser.
             </p>
           </Section>
 
@@ -134,9 +164,9 @@ export default function PrivacyPage() {
             <p>
               Yearly uses your browser&apos;s local storage for your trips,
               settings and the random ID, and to remember small things such as
-              whether you&apos;ve seen a tip. It doesn&apos;t set cookies for
-              visitors. The only cookie is the sign-in cookie for Yearly&apos;s
-              admin pages.
+              whether you&apos;ve seen a tip or answered a question. It
+              doesn&apos;t set cookies for visitors. The only cookie is the
+              sign-in cookie for Yearly&apos;s admin pages.
             </p>
           </Section>
 

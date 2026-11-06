@@ -1,5 +1,6 @@
 'use client'
 
+import AcquisitionSurvey from '@/components/AcquisitionSurvey'
 import FeedbackPrompt from '@/components/FeedbackPrompt'
 import {
   Dialog,
@@ -7,6 +8,10 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  markAcquisitionSurveyShown,
+  shouldShowAcquisitionSurvey,
+} from '@/lib/attribution/survey'
 import {
   markFeedbackPromptShown,
   shouldShowFeedbackPrompt,
@@ -58,7 +63,9 @@ function ImagePreviewContent({
   calendarData,
   exportType,
 }: ImagePreviewContentProps) {
-  const [showFeedbackPrompt, setShowFeedbackPrompt] = useState(false)
+  const [prompt, setPrompt] = useState<'survey' | 'feedback' | 'closed' | null>(
+    null
+  )
   const [videoOpen, setVideoOpen] = useState(false)
   const [videoPrice, setVideoPrice] = useState<number | null>(null)
 
@@ -81,11 +88,17 @@ function ImagePreviewContent({
     setVideoOpen(true)
   }
 
-  const maybeShowFeedbackPrompt = () => {
-    if (showFeedbackPrompt || !shouldShowFeedbackPrompt()) return
-    markFeedbackPromptShown()
-    trackEvent('feedback_prompt_shown', { exportType, year })
-    setShowFeedbackPrompt(true)
+  const maybeShowPrompt = () => {
+    if (prompt) return
+    if (shouldShowAcquisitionSurvey()) {
+      const showCount = markAcquisitionSurveyShown()
+      trackEvent('acquisition_survey_shown', { exportType, year, showCount })
+      setPrompt('survey')
+    } else if (shouldShowFeedbackPrompt()) {
+      markFeedbackPromptShown()
+      trackEvent('feedback_prompt_shown', { exportType, year })
+      setPrompt('feedback')
+    }
   }
 
   const handleDownload = async () => {
@@ -118,7 +131,7 @@ function ImagePreviewContent({
       document.body.removeChild(link)
     }
 
-    maybeShowFeedbackPrompt()
+    maybeShowPrompt()
   }
 
   return (
@@ -168,11 +181,17 @@ function ImagePreviewContent({
             Download Image
           </Button>
 
-          {showFeedbackPrompt && (
+          {prompt === 'survey' && (
+            <div className="mb-4">
+              <AcquisitionSurvey onDismiss={() => setPrompt('closed')} />
+            </div>
+          )}
+
+          {prompt === 'feedback' && (
             <div className="mb-4">
               <FeedbackPrompt
                 context={{ exportType, year }}
-                onDismiss={() => setShowFeedbackPrompt(false)}
+                onDismiss={() => setPrompt('closed')}
               />
             </div>
           )}

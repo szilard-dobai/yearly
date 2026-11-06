@@ -1,11 +1,12 @@
 'use client'
 
+import { getTrafficSource } from '@/lib/attribution/traffic-source'
 import { trackEvent, type HomepageCtaClickMetadata } from '@/lib/tracking'
 import { useEffect } from 'react'
 
 export function useHomepageTracking() {
   useEffect(() => {
-    trackEvent('homepage_view')
+    trackEvent('homepage_view', getTrafficSource())
   }, [])
 }
 

@@ -1,10 +1,5 @@
 import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
-import {
-  dayOfYear,
-  daysInYear,
-  type VideoTheme,
-  type YearVideoData,
-} from '@/lib/video'
+import type { VideoTheme, YearVideoData } from '@/lib/video'
 import { useMemo } from 'react'
 import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from 'remotion'
 import { EndCard, WordReveal } from './Brand'
@@ -18,6 +13,12 @@ import {
   SANS,
   smooth,
 } from './tokens'
+import {
+  END_CARD_LENGTH,
+  FILL_START,
+  fillLength,
+  revealFrames,
+} from './timeline'
 import { YearCalendar } from './YearCalendar'
 
 export type VideoProps = {
@@ -27,10 +28,11 @@ export type VideoProps = {
   weekStartsOn: number
 }
 
-const FILL_START = 72
-const FILL_END = 252
-const END_CARD = 336
-export const YEAR_FILL_DURATION = 400
+export function yearFillTimeline(dayCount: number) {
+  const fillEnd = FILL_START + fillLength(dayCount, 30, 180)
+  const endCard = fillEnd + 84
+  return { fillEnd, endCard, duration: endCard + END_CARD_LENGTH }
+}
 
 export function YearFillVideo({
   data,
@@ -40,33 +42,30 @@ export function YearFillVideo({
 }: VideoProps) {
   const palette = PALETTES[theme]
   const frame = useCurrentFrame()
-  const yearLength = daysInYear(data.year)
+  const { fillEnd, endCard } = yearFillTimeline(data.days.length)
 
-  const { codesByDay, reveals } = useMemo(() => {
-    const frameFor = (key: string) =>
-      Math.round(
-        FILL_START + (dayOfYear(key) / yearLength) * (FILL_END - FILL_START)
-      )
+  const { codesByDay, reveals, monthReachedAt } = useMemo(() => {
+    const reveals = revealFrames(data.days, FILL_START, fillEnd - FILL_START)
+    const monthReachedAt = Array.from({ length: 12 }, (_, month) => {
+      const firstDay = `${data.year}-${String(month + 1).padStart(2, '0')}-01`
+      return reveals.find((r) => r.date >= firstDay)?.frame ?? fillEnd
+    })
     return {
       codesByDay: new Map(data.days.map((d) => [d.date, d.codes])),
-      reveals: data.days.map((d) => ({ ...d, frame: frameFor(d.date) })),
+      reveals,
+      monthReachedAt,
     }
-  }, [data.days, yearLength])
+  }, [data.days, data.year, fillEnd])
 
   const revealAt = useMemo(() => {
     const byKey = new Map(reveals.map((r) => [r.date, r.frame]))
     return (key: string) => byKey.get(key)
   }, [reveals])
 
-  const monthReachedAt = (month: number) => {
-    const firstOfMonth = Date.UTC(data.year, month, 1)
-    const doy = (firstOfMonth - Date.UTC(data.year, 0, 1)) / 86400000
-    return FILL_START + (doy / yearLength) * (FILL_END - FILL_START)
-  }
   const monthOpacity = (month: number) =>
     interpolate(
       frame,
-      [monthReachedAt(month) - 6, monthReachedAt(month) + 4],
+      [monthReachedAt[month] - 6, monthReachedAt[month] + 4],
       [0.32, 1],
       clamp
     )
@@ -74,17 +73,12 @@ export function YearFillVideo({
   const lift = smooth(frame, 36, 24)
   const hookY = interpolate(lift, [0, 1], [760, 92])
   const hookScale = interpolate(lift, [0, 1], [1, 0.56])
-  const hookOut = interpolate(
-    frame,
-    [FILL_END + 6, FILL_END + 16],
-    [1, 0],
-    clamp
-  )
+  const hookOut = interpolate(frame, [fillEnd + 6, fillEnd + 16], [1, 0], clamp)
   const calIn = interpolate(frame, [46, 70], [0, 1], {
     ...clamp,
     easing: easeOut,
   })
-  const zoom = interpolate(frame, [FILL_END, END_CARD], [1, 1.035], {
+  const zoom = interpolate(frame, [fillEnd, endCard], [1, 1.035], {
     ...clamp,
     easing: easeInOut,
   })
@@ -119,7 +113,7 @@ export function YearFillVideo({
       <div style={{ position: 'absolute', left: 0, right: 0, top: 112 }}>
         <WordReveal
           lines={['Your year, at a glance.']}
-          start={FILL_END + 16}
+          start={fillEnd + 16}
           size={80}
           color={palette.heading}
           italicWords={['glance']}
@@ -175,7 +169,7 @@ export function YearFillVideo({
         </span>
       </div>
 
-      <Sequence from={END_CARD}>
+      <Sequence from={endCard}>
         <EndCard palette={palette} />
       </Sequence>
     </AbsoluteFill>

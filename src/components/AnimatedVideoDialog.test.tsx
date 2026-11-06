@@ -1,4 +1,4 @@
-import { MONTH_DURATION } from '@/components/video/MonthVideo'
+import { monthTimeline } from '@/components/video/MonthVideo'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
@@ -111,7 +111,10 @@ describe('AnimatedVideoDialog', () => {
 
     const player = screen.getByTestId('player')
     expect(player).toHaveAttribute('data-days', '2')
-    expect(player).toHaveAttribute('data-duration', String(MONTH_DURATION))
+    expect(player).toHaveAttribute(
+      'data-duration',
+      String(monthTimeline(2).duration)
+    )
     expect(
       screen.getByRole('heading', { name: 'Your March, animated' })
     ).toBeInTheDocument()

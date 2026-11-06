@@ -17,6 +17,12 @@ import {
   SANS,
   smooth,
 } from './tokens'
+import {
+  END_CARD_LENGTH,
+  FILL_START,
+  fillLength,
+  revealFrames,
+} from './timeline'
 import { DayCell, SETTLED } from './YearCalendar'
 
 export type MonthVideoProps = {
@@ -37,13 +43,21 @@ const FILL_AREA_TOP = 270
 const FILL_AREA_BOTTOM = 1740
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const FILL_START = 72
-const FILL_END = 192
-const SETTLE = FILL_END + 14
-const STATS = SETTLE + 18
-const LIST = STATS + 26
-const END_CARD = 336
-export const MONTH_DURATION = 400
+export function monthTimeline(dayCount: number) {
+  const fillEnd = FILL_START + fillLength(dayCount, 30, 120)
+  const settle = fillEnd + 14
+  const stats = settle + 18
+  const list = stats + 26
+  const endCard = fillEnd + 144
+  return {
+    fillEnd,
+    settle,
+    stats,
+    list,
+    endCard,
+    duration: endCard + END_CARD_LENGTH,
+  }
+}
 
 function fitSize(line: string, max: number, budget: number) {
   return Math.min(max, Math.floor(budget / line.length))
@@ -68,18 +82,17 @@ export function MonthVideo({
     [data.year, data.month, weekStartsOn]
   )
 
+  const { fillEnd, settle, stats, list, endCard } = monthTimeline(
+    data.days.length
+  )
+
   const { codesByDay, revealAt } = useMemo(() => {
-    const monthLength = new Date(data.year, data.month + 1, 0).getDate()
-    const frameFor = (key: string) =>
-      Math.round(
-        FILL_START +
-          ((Number(key.slice(8)) - 1) / monthLength) * (FILL_END - FILL_START)
-      )
+    const reveals = revealFrames(data.days, FILL_START, fillEnd - FILL_START)
     return {
       codesByDay: new Map(data.days.map((d) => [d.date, d.codes])),
-      revealAt: new Map(data.days.map((d) => [d.date, frameFor(d.date)])),
+      revealAt: new Map(reveals.map((r) => [r.date, r.frame])),
     }
-  }, [data.days, data.year, data.month])
+  }, [data.days, fillEnd])
 
   const sinceFor = (key: string) => {
     const reveal = revealAt.get(key)
@@ -94,12 +107,7 @@ export function MonthVideo({
   const lift = smooth(frame, 36, 24)
   const hookY = interpolate(lift, [0, 1], [760, 92])
   const hookScale = interpolate(lift, [0, 1], [1, 0.56])
-  const hookOut = interpolate(
-    frame,
-    [FILL_END + 6, FILL_END + 16],
-    [1, 0],
-    clamp
-  )
+  const hookOut = interpolate(frame, [fillEnd + 6, fillEnd + 16], [1, 0], clamp)
   const calIn = interpolate(frame, [46, 70], [0, 1], {
     ...clamp,
     easing: easeOut,
@@ -107,17 +115,17 @@ export function MonthVideo({
   const gridHeight = HEADER + WEEKDAY_ROW + weeks.length * ROW
   const fillTop =
     FILL_AREA_TOP + (FILL_AREA_BOTTOM - FILL_AREA_TOP - gridHeight) / 2
-  const settle = smooth(frame, SETTLE, 26)
-  const gridScale = interpolate(settle, [0, 1], [1, SETTLED_SCALE])
-  const top = interpolate(settle, [0, 1], [fillTop, 250])
+  const settled = smooth(frame, settle, 26)
+  const gridScale = interpolate(settled, [0, 1], [1, SETTLED_SCALE])
+  const top = interpolate(settled, [0, 1], [fillTop, 250])
   const counterIn = fadeUp(frame, FILL_START, 16, 20)
-  const counterOut = interpolate(frame, [SETTLE, SETTLE + 10], [1, 0], clamp)
+  const counterOut = interpolate(frame, [settle, settle + 10], [1, 0], clamp)
   const hook = `Where did ${monthName}`
   const title = `Your ${monthName}, at a glance.`
 
   const num = (value: number, i: number, digits = 0) =>
-    countUp(frame, STATS + i * 5, 30, value).toFixed(digits)
-  const tile = (i: number) => fadeUp(frame, STATS + i * 5, 18, 36)
+    countUp(frame, stats + i * 5, 30, value).toFixed(digits)
+  const tile = (i: number) => fadeUp(frame, stats + i * 5, 18, 36)
   const value = (children: ReactNode) => (
     <div
       style={{
@@ -157,7 +165,7 @@ export function MonthVideo({
       <div style={{ position: 'absolute', left: 0, right: 0, top: 112 }}>
         <WordReveal
           lines={[title]}
-          start={FILL_END + 16}
+          start={fillEnd + 16}
           size={fitSize(title, 76, 2050)}
           color={palette.heading}
           italicWords={['glance']}
@@ -318,7 +326,7 @@ export function MonthVideo({
               days={country.days}
               palette={palette}
               flagMode={flagMode}
-              style={fadeUp(frame, LIST + i * 5, 18, 36)}
+              style={fadeUp(frame, list + i * 5, 18, 36)}
             />
           ))}
         </div>
@@ -351,7 +359,7 @@ export function MonthVideo({
         </span>
       </div>
 
-      <Sequence from={END_CARD}>
+      <Sequence from={endCard}>
         <EndCard palette={palette} />
       </Sequence>
     </AbsoluteFill>

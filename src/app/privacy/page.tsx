@@ -44,10 +44,10 @@ export default function PrivacyPage() {
               Last updated {LAST_UPDATED}
             </p>
             <p>
-              Yearly is a personal project by Szilard Dobai. This page explains
-              what Yearly stores, what it sends to our servers, and how to get
-              your data deleted. There are no accounts and no ads, and we
-              don&apos;t sell your data.
+              Yearly is a small, independent project. This page explains what
+              Yearly stores, what it sends to our servers, and how to get your
+              data deleted. There are no accounts and no ads, and we don&apos;t
+              sell your data.
             </p>
           </header>
 

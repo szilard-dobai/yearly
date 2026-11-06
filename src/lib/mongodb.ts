@@ -124,3 +124,38 @@ export async function getWaitlistCollection() {
   ensureWaitlistIndexes(collection)
   return collection
 }
+
+export interface ReminderDocument {
+  _id?: ObjectId
+  email: string
+  year: number
+  deviceId: string
+  deviceType?: DeviceType
+  country?: string
+  region?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+let reminderIndexesPromise: Promise<unknown> | null = null
+
+function ensureReminderIndexes(collection: Collection<ReminderDocument>) {
+  if (!reminderIndexesPromise) {
+    reminderIndexesPromise = collection
+      .createIndexes([
+        { key: { year: 1, email: 1 }, unique: true },
+        { key: { deviceId: 1, createdAt: -1 } },
+      ])
+      .catch((error) => {
+        console.error('Failed to create reminder indexes:', error)
+        reminderIndexesPromise = null
+      })
+  }
+}
+
+export async function getRemindersCollection() {
+  const db = await getDb()
+  const collection = db.collection<ReminderDocument>('reminders')
+  ensureReminderIndexes(collection)
+  return collection
+}

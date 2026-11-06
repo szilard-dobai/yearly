@@ -1,11 +1,11 @@
 import { buildTrafficSourceStats } from '@/lib/attribution/stats'
 import {
-  fireEvent,
-  render,
+  renderWithSettings as render,
   screen,
   waitFor,
   within,
-} from '@testing-library/react'
+} from '@/test/test-utils'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TrafficSourcesPanel from './TrafficSourcesPanel'
 
@@ -62,6 +62,7 @@ describe('TrafficSourcesPanel', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.useRealTimers()
   })
 
   it('shows each source by unique devices', async () => {
@@ -89,6 +90,9 @@ describe('TrafficSourcesPanel', () => {
   })
 
   it('narrows to the country, region and days chosen', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 10, 15, 12))
+    const user = userEvent.setup()
     respond(stats)
     render(<TrafficSourcesPanel refreshKey={0} country="SG" region="all" />)
     const panel = screen.getByRole('region', { name: 'Traffic sources' })
@@ -97,20 +101,31 @@ describe('TrafficSourcesPanel', () => {
     expect(lastUrl().searchParams.get('country')).toBe('SG')
     expect(lastUrl().searchParams.has('region')).toBe(false)
 
-    fireEvent.change(screen.getByLabelText('From'), {
-      target: { value: '2026-10-27' },
-    })
-    fireEvent.change(screen.getByLabelText('To'), {
-      target: { value: '2026-10-30' },
-    })
+    expect(lastUrl().searchParams.has('from')).toBe(false)
+
+    await user.click(
+      screen.getByRole('button', { name: 'Date range: All time' })
+    )
+    await user.click(screen.getByRole('button', { name: /November 2nd, 2026/ }))
+    await user.click(screen.getByRole('button', { name: /November 5th, 2026/ }))
 
     await waitFor(() => expect(panel).toHaveAttribute('aria-busy', 'false'))
-    expect(lastUrl().searchParams.get('to')).toBe(
-      new Date(2026, 9, 31).toISOString()
-    )
     expect(lastUrl().searchParams.get('from')).toBe(
-      new Date(2026, 9, 27).toISOString()
+      new Date(2026, 10, 2).toISOString()
     )
+    expect(lastUrl().searchParams.get('to')).toBe(
+      new Date(2026, 10, 6).toISOString()
+    )
+    expect(lastUrl().searchParams.get('country')).toBe('SG')
+
+    await user.click(screen.getByRole('button', { name: 'Clear date range' }))
+
+    await waitFor(() => expect(panel).toHaveAttribute('aria-busy', 'false'))
+    expect(lastUrl().searchParams.has('from')).toBe(false)
+    expect(lastUrl().searchParams.has('to')).toBe(false)
+    expect(
+      screen.getByRole('button', { name: 'Date range: All time' })
+    ).toBeInTheDocument()
   })
 
   it('shows an error when the stats fail to load', async () => {

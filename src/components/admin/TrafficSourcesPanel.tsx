@@ -1,7 +1,6 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import DateRangePicker from '@/components/admin/DateRangePicker'
 import { formatDateTime } from '@/lib/admin/format'
 import {
   buildDateRangeParams,
@@ -13,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { formatRate } from '@/lib/waitlist/stats'
 import { Loader2 } from 'lucide-react'
 import { type ReactNode, useEffect, useState } from 'react'
+import type { DateRange } from 'react-day-picker'
 
 type Result =
   | { key: string; stats: TrafficSourceStats; failed: false }
@@ -110,11 +110,10 @@ export default function TrafficSourcesPanel({
   country?: string
   region?: string
 }) {
-  const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
+  const [range, setRange] = useState<DateRange | undefined>()
   const [result, setResult] = useState<Result | null>(null)
 
-  const params = buildDateRangeParams(from, to)
+  const params = buildDateRangeParams(range)
   if (country !== 'all') params.set('country', country)
   if (region !== 'all') params.set('region', region)
   const query = params.toString()
@@ -148,7 +147,7 @@ export default function TrafficSourcesPanel({
       aria-busy={!result || isRefreshing}
       className="rounded-xl border border-gray-200 bg-white p-4 dark:border-white/8 dark:bg-[#141414]"
     >
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2
             id="traffic-sources-heading"
@@ -161,34 +160,11 @@ export default function TrafficSourcesPanel({
             Follows the country and region filters.
           </p>
         </div>
-        <div className="flex gap-2">
-          <div className="space-y-1">
-            <Label htmlFor="traffic-sources-from" className="text-xs">
-              From
-            </Label>
-            <Input
-              id="traffic-sources-from"
-              type="date"
-              value={from}
-              max={to || undefined}
-              onChange={(event) => setFrom(event.target.value)}
-              className="h-8 w-36 dark:scheme-dark"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="traffic-sources-to" className="text-xs">
-              To
-            </Label>
-            <Input
-              id="traffic-sources-to"
-              type="date"
-              value={to}
-              min={from || undefined}
-              onChange={(event) => setTo(event.target.value)}
-              className="h-8 w-36 dark:scheme-dark"
-            />
-          </div>
-        </div>
+        <DateRangePicker
+          value={range}
+          onChange={setRange}
+          className="w-full sm:w-auto sm:min-w-56"
+        />
       </div>
 
       {!result || (result.failed && isRefreshing) ? (

@@ -27,14 +27,26 @@ describe('buildTrafficSourceStats', () => {
 
 describe('buildDateRangeParams', () => {
   it('covers whole local days, with the end day included', () => {
-    const params = buildDateRangeParams('2026-10-27', '2026-10-30')
+    const params = buildDateRangeParams({
+      from: new Date(2026, 9, 27, 15, 30),
+      to: new Date(2026, 9, 30),
+    })
 
     expect(params.get('from')).toBe(new Date(2026, 9, 27).toISOString())
     expect(params.get('to')).toBe(new Date(2026, 9, 31).toISOString())
   })
 
-  it('leaves out empty or invalid days', () => {
-    expect(buildDateRangeParams('', '').toString()).toBe('')
-    expect(buildDateRangeParams('2026-10-27', 'soon').has('to')).toBe(false)
+  it('covers a single day', () => {
+    const params = buildDateRangeParams({ from: new Date(2026, 9, 28) })
+
+    expect(params.get('from')).toBe(new Date(2026, 9, 28).toISOString())
+    expect(params.get('to')).toBe(new Date(2026, 9, 29).toISOString())
+  })
+
+  it('means all time without a start day', () => {
+    expect(buildDateRangeParams().toString()).toBe('')
+    expect(buildDateRangeParams({ to: new Date(2026, 9, 30) }).toString()).toBe(
+      ''
+    )
   })
 })

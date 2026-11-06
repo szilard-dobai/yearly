@@ -86,19 +86,15 @@ export function buildTrafficSourceStats(
   }
 }
 
-function startOfLocalDay(date: string): Date | null {
-  const day = new Date(`${date}T00:00:00`)
-  return Number.isNaN(day.getTime()) ? null : day
-}
-
-export function buildDateRangeParams(from: string, to: string) {
+export function buildDateRangeParams(range?: { from?: Date; to?: Date }) {
   const params = new URLSearchParams()
-  const start = from ? startOfLocalDay(from) : null
-  if (start) params.set('from', start.toISOString())
-  const end = to ? startOfLocalDay(to) : null
-  if (end) {
-    end.setDate(end.getDate() + 1)
-    params.set('to', end.toISOString())
-  }
+  if (!range?.from) return params
+  const start = new Date(range.from)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(range.to ?? range.from)
+  end.setHours(0, 0, 0, 0)
+  end.setDate(end.getDate() + 1)
+  params.set('from', start.toISOString())
+  params.set('to', end.toISOString())
   return params
 }

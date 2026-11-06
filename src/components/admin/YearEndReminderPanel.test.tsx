@@ -42,7 +42,7 @@ describe('YearEndReminderPanel', () => {
     expect(metric('Apple / Outlook')).toHaveTextContent('9')
     expect(metric('Google Calendar')).toHaveTextContent('4')
     expect(metric('Card opens')).toHaveTextContent('40')
-    expect(screen.getByText(/For 28 Dec 2026/)).toBeInTheDocument()
+    expect(screen.getByText(/For 1 Dec 2026/)).toBeInTheDocument()
   })
 
   it('copies the emails one per line', async () => {

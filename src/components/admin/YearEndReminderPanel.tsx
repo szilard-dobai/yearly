@@ -1,6 +1,7 @@
 'use client'
 
 import CopyButton from '@/components/admin/CopyButton'
+import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
 import type { ReminderStats } from '@/lib/reminders/stats'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
@@ -78,8 +79,8 @@ export default function YearEndReminderPanel({
             Year-end reminders
           </h2>
           <p className="text-xs text-gray-500 dark:text-zinc-400">
-            {stats && `For 28 Dec ${stats.year}. `}Calendar adds and card opens
-            are unique devices
+            {stats && `For ${REMINDER_DATE_LABEL} ${stats.year}. `}Calendar adds
+            and card opens are unique devices
           </p>
         </div>
         {stats && stats.emails.length > 0 && (

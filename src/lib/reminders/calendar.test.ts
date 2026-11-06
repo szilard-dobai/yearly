@@ -17,16 +17,16 @@ function unfold(ics: string) {
 }
 
 describe('shouldOfferYearEndReminder', () => {
-  it('offers the reminder for the current year until the end of 27 Dec', () => {
+  it('offers the reminder for the current year until the end of 30 Nov', () => {
     expect(shouldOfferYearEndReminder(2026, new Date(2026, 0, 1))).toBe(true)
     expect(shouldOfferYearEndReminder(2026, new Date(2026, 10, 7))).toBe(true)
     expect(
-      shouldOfferYearEndReminder(2026, new Date(2026, 11, 27, 23, 59, 59, 999))
+      shouldOfferYearEndReminder(2026, new Date(2026, 10, 30, 23, 59, 59, 999))
     ).toBe(true)
   })
 
-  it('stops offering it from 28 Dec', () => {
-    expect(shouldOfferYearEndReminder(2026, new Date(2026, 11, 28))).toBe(false)
+  it('stops offering it from 1 Dec', () => {
+    expect(shouldOfferYearEndReminder(2026, new Date(2026, 11, 1))).toBe(false)
     expect(shouldOfferYearEndReminder(2026, new Date(2026, 11, 31, 18))).toBe(
       false
     )
@@ -98,9 +98,9 @@ describe('buildReminderIcs', () => {
     expect(lines.at(-2)).toBe('END:VCALENDAR')
   })
 
-  it('runs from 10:00 to 10:15 on 28 Dec in floating local time', () => {
-    expect(lines).toContain('DTSTART:20261228T100000')
-    expect(lines).toContain('DTEND:20261228T101500')
+  it('runs from 10:00 to 10:15 on 1 Dec in floating local time', () => {
+    expect(lines).toContain('DTSTART:20261201T100000')
+    expect(lines).toContain('DTEND:20261201T101500')
     expect(ics).not.toContain('TZID')
     expect(ics).not.toContain('VTIMEZONE')
   })
@@ -117,7 +117,7 @@ describe('buildReminderIcs', () => {
     expect(alarm).toEqual([
       'BEGIN:VALARM',
       'ACTION:DISPLAY',
-      'DESCRIPTION:Make your 2026 Yearly',
+      'DESCRIPTION:Time for your 2026 Yearly',
       'TRIGGER:PT0M',
       'END:VALARM',
     ])
@@ -127,9 +127,9 @@ describe('buildReminderIcs', () => {
   })
 
   it('describes the event and links back to Yearly', () => {
-    expect(lines).toContain('SUMMARY:Make your 2026 Yearly')
+    expect(lines).toContain('SUMMARY:Time for your 2026 Yearly')
     expect(lines).toContain(
-      `DESCRIPTION:2026 is almost over. Add your last trips\\, then make your full-year Yearly: ${LINK}`
+      `DESCRIPTION:Year-in-review season is here. Add your latest trips\\, then share your 2026 Yearly: ${LINK}`
     )
     expect(lines).toContain(`URL:${LINK}`)
   })
@@ -144,9 +144,9 @@ describe('buildGoogleCalendarUrl', () => {
     )
     expect(Object.fromEntries(url.searchParams)).toEqual({
       action: 'TEMPLATE',
-      text: 'Make your 2026 Yearly',
-      dates: '20261228T100000/20261228T101500',
-      details: `2026 is almost over. Add your last trips, then make your full-year Yearly: ${LINK}`,
+      text: 'Time for your 2026 Yearly',
+      dates: '20261201T100000/20261201T101500',
+      details: `Year-in-review season is here. Add your latest trips, then share your 2026 Yearly: ${LINK}`,
     })
   })
 })

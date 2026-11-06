@@ -1,5 +1,4 @@
-export const REMINDER_MONTH = 11
-export const REMINDER_DAY = 28
+import { REMINDER_DATE } from './date'
 
 const START_HOUR = 10
 const DURATION_MINUTES = 15
@@ -13,7 +12,7 @@ export function shouldOfferYearEndReminder(
 ): boolean {
   return (
     year === now.getFullYear() &&
-    now < new Date(year, REMINDER_MONTH, REMINDER_DAY)
+    now < new Date(year, REMINDER_DATE.monthIndex, REMINDER_DATE.day)
   )
 }
 
@@ -30,7 +29,7 @@ const pad = (value: number) => String(value).padStart(2, '0')
 
 function formatFloating(year: number, minutesAfterStart: number): string {
   const minutes = START_HOUR * 60 + minutesAfterStart
-  return `${year}${pad(REMINDER_MONTH + 1)}${pad(REMINDER_DAY)}T${pad(Math.floor(minutes / 60))}${pad(minutes % 60)}00`
+  return `${year}${pad(REMINDER_DATE.monthIndex + 1)}${pad(REMINDER_DATE.day)}T${pad(Math.floor(minutes / 60))}${pad(minutes % 60)}00`
 }
 
 function formatUtc(date: Date): string {
@@ -43,8 +42,8 @@ function formatUtc(date: Date): string {
 function reminderEvent(year: number, siteUrl: string) {
   const url = getReminderLink(year, siteUrl)
   return {
-    title: `Make your ${year} Yearly`,
-    description: `${year} is almost over. Add your last trips, then make your full-year Yearly: ${url}`,
+    title: `Time for your ${year} Yearly`,
+    description: `Year-in-review season is here. Add your latest trips, then share your ${year} Yearly: ${url}`,
     url,
     start: formatFloating(year, 0),
     end: formatFloating(year, DURATION_MINUTES),

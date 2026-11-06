@@ -8,6 +8,7 @@ import {
   shouldOfferYearEndReminder,
 } from '@/lib/reminders/calendar'
 import { createYearEndReminder } from '@/lib/reminders/client'
+import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
 import { getSavedReminder, saveReminder } from '@/lib/reminders/storage'
 import type { CalendarProvider, ReminderMethod } from '@/lib/reminders/types'
 import { trackEvent } from '@/lib/tracking'
@@ -96,8 +97,8 @@ export default function YearEndReminderCard({ year }: { year: number }) {
             Reminder set
           </span>{' '}
           {saved === 'email'
-            ? "We'll email you on 28\u00a0Dec."
-            : 'for 28\u00a0Dec in your calendar.'}
+            ? `We'll email you on ${REMINDER_DATE_LABEL}.`
+            : `for ${REMINDER_DATE_LABEL} in your calendar.`}
         </p>
         {saved !== 'email' && (
           <button
@@ -132,7 +133,8 @@ export default function YearEndReminderCard({ year }: { year: number }) {
             Your {year} isn&apos;t over yet
           </span>
           <span className="block text-xs text-gray-600 dark:text-zinc-400">
-            Get a reminder on 28&nbsp;Dec to make your full-year Yearly.
+            Get a reminder on {REMINDER_DATE_LABEL} for{' '}
+            <span className="whitespace-nowrap">year-in-review</span> season.
           </span>
         </span>
         <ChevronDown
@@ -202,7 +204,7 @@ export default function YearEndReminderCard({ year }: { year: number }) {
               </Button>
             </div>
             <p className="mt-2 text-xs text-gray-500 dark:text-zinc-500">
-              We&apos;ll email you once, on 28&nbsp;Dec. Nothing else.{' '}
+              We&apos;ll email you once, on {REMINDER_DATE_LABEL}. Nothing else.{' '}
               <Link
                 href="/privacy"
                 target="_blank"

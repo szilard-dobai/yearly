@@ -150,8 +150,8 @@ export default function PrivacyPage() {
 
           <Section title="Year-end reminder">
             <p>
-              After you export an image, Yearly can remind you on 28 December to
-              make your full-year Yearly. You can choose how:
+              After you export an image, Yearly can remind you on 1 December,
+              when year-in-review season starts. You can choose how:
             </p>
             <List>
               <li>
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
               </li>
             </List>
             <p>
-              We use your email to send you one reminder, on 28 December of that
+              We use your email to send you one reminder, on 1 December of that
               year. Nothing else: no newsletters or marketing. To send it,
               we&apos;ll pass your address to an email delivery service for that
               one message. Ask us and we&apos;ll delete your email at any time.

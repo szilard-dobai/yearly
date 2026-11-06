@@ -53,9 +53,9 @@ describe('YearEndReminderCard', () => {
     render(<YearEndReminderCard year={2026} />)
 
     expect(cardButton()).toHaveAttribute('aria-expanded', 'false')
-    expect(
-      screen.getByText(/Get a reminder on 28 Dec to make your full-year Yearly/)
-    ).toBeInTheDocument()
+    expect(cardButton()).toHaveTextContent(
+      'Get a reminder on 1 Dec for year-in-review season.'
+    )
   })
 
   it('stays hidden for other years', () => {
@@ -64,15 +64,15 @@ describe('YearEndReminderCard', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('stays hidden from 28 Dec', () => {
-    setToday(new Date(2026, 11, 28))
+  it('stays hidden from 1 Dec', () => {
+    setToday(new Date(2026, 11, 1))
     const { container } = render(<YearEndReminderCard year={2026} />)
 
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('shows on 27 Dec', () => {
-    setToday(new Date(2026, 11, 27, 23, 59))
+  it('shows on 30 Nov', () => {
+    setToday(new Date(2026, 10, 30, 23, 59))
     render(<YearEndReminderCard year={2026} />)
 
     expect(cardButton()).toBeInTheDocument()
@@ -106,7 +106,7 @@ describe('YearEndReminderCard', () => {
       'email'
     )
     expect(
-      screen.getByText(/We'll email you once, on 28 Dec. Nothing else./)
+      screen.getByText(/We'll email you once, on 1 Dec. Nothing else./)
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
       'href',
@@ -134,7 +134,7 @@ describe('YearEndReminderCard', () => {
       year: 2026,
     })
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Reminder set for 28 Dec in your calendar.'
+      'Reminder set for 1 Dec in your calendar.'
     )
 
     unmount()
@@ -189,7 +189,7 @@ describe('YearEndReminderCard', () => {
       deviceType: 'mobile',
     })
     expect(await screen.findByRole('status')).toHaveTextContent(
-      "Reminder set We'll email you on 28 Dec."
+      "Reminder set We'll email you on 1 Dec."
     )
     expect(trackEvent).toHaveBeenCalledWith('year_end_reminder_email_submit', {
       year: 2026,
@@ -229,7 +229,7 @@ describe('YearEndReminderCard', () => {
     render(<YearEndReminderCard year={2026} />)
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      "Reminder set We'll email you on 28 Dec."
+      "Reminder set We'll email you on 1 Dec."
     )
   })
 

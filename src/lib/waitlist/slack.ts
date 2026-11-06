@@ -54,9 +54,7 @@ export async function notifyWaitlistToSlack(
   signup: NotifiedSignup,
   total: number
 ): Promise<void> {
-  const webhookUrl =
-    process.env.SLACK_WAITLIST_WEBHOOK_URL ||
-    process.env.SLACK_FEEDBACK_WEBHOOK_URL
+  const webhookUrl = process.env.SLACK_FEEDBACK_WEBHOOK_URL
   if (!webhookUrl) return
 
   await postSlackMessage(

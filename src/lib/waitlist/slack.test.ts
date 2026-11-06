@@ -43,7 +43,6 @@ describe('notifyWaitlistToSlack', () => {
   })
 
   it('does nothing when no webhook is configured', async () => {
-    vi.stubEnv('SLACK_WAITLIST_WEBHOOK_URL', '')
     vi.stubEnv('SLACK_FEEDBACK_WEBHOOK_URL', '')
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
@@ -53,22 +52,7 @@ describe('notifyWaitlistToSlack', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('prefers the waitlist webhook', async () => {
-    vi.stubEnv('SLACK_WAITLIST_WEBHOOK_URL', 'https://hooks.slack.test/wait')
-    vi.stubEnv('SLACK_FEEDBACK_WEBHOOK_URL', 'https://hooks.slack.test/feed')
-    const fetchMock = vi.fn().mockResolvedValue(new Response('ok'))
-    vi.stubGlobal('fetch', fetchMock)
-
-    await notifyWaitlistToSlack(signup, 1)
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://hooks.slack.test/wait',
-      expect.objectContaining({ method: 'POST' })
-    )
-  })
-
-  it('falls back to the feedback webhook', async () => {
-    vi.stubEnv('SLACK_WAITLIST_WEBHOOK_URL', '')
+  it('posts to the same webhook as feedback', async () => {
     vi.stubEnv('SLACK_FEEDBACK_WEBHOOK_URL', 'https://hooks.slack.test/feed')
     const fetchMock = vi.fn().mockResolvedValue(new Response('ok'))
     vi.stubGlobal('fetch', fetchMock)
@@ -77,7 +61,7 @@ describe('notifyWaitlistToSlack', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://hooks.slack.test/feed',
-      expect.anything()
+      expect.objectContaining({ method: 'POST' })
     )
   })
 })

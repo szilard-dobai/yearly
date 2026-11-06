@@ -1,5 +1,5 @@
 import type { StoredTrackingEvent } from '@/lib/tracking/types'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import EventDetailsDialog from './EventDetailsDialog'
@@ -21,6 +21,8 @@ function renderDialog(
   const handlers = {
     onOpenChange: vi.fn(),
     onShowDeviceEvents: vi.fn(),
+    onDeleteEvent: vi.fn().mockResolvedValue(undefined),
+    onDeleteDevice: vi.fn().mockResolvedValue(undefined),
   }
   render(
     <EventDetailsDialog
@@ -69,6 +71,56 @@ describe('EventDetailsDialog', () => {
     expect(
       screen.queryByRole('button', { name: 'Show this device only' })
     ).not.toBeInTheDocument()
+  })
+
+  it('deletes the event after confirmation', async () => {
+    const user = userEvent.setup()
+    const { onDeleteEvent, onDeleteDevice } = renderDialog()
+
+    await user.click(screen.getByRole('button', { name: 'Delete event' }))
+    expect(onDeleteEvent).not.toHaveBeenCalled()
+
+    const confirm = screen.getByRole('alertdialog', {
+      name: 'Delete this event?',
+    })
+    await user.click(
+      within(confirm).getByRole('button', { name: 'Delete event' })
+    )
+
+    expect(onDeleteEvent).toHaveBeenCalledWith(event)
+    expect(onDeleteDevice).not.toHaveBeenCalled()
+  })
+
+  it('deletes all activity from the event device after confirmation', async () => {
+    const user = userEvent.setup()
+    const { onDeleteDevice } = renderDialog()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Delete all from this device' })
+    )
+    await user.click(
+      screen.getByRole('button', { name: 'Delete device activity' })
+    )
+
+    expect(onDeleteDevice).toHaveBeenCalledWith(event.deviceId)
+  })
+
+  it('keeps the confirmation open and shows the error when deletion fails', async () => {
+    const user = userEvent.setup()
+    renderDialog({
+      onDeleteEvent: vi.fn().mockRejectedValue(new Error('Failed to delete')),
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Delete event' }))
+    const confirm = screen.getByRole('alertdialog')
+    await user.click(
+      within(confirm).getByRole('button', { name: 'Delete event' })
+    )
+
+    expect(await within(confirm).findByRole('alert')).toHaveTextContent(
+      'Failed to delete'
+    )
+    expect(confirm).toBeInTheDocument()
   })
 
   it('says when an event has no metadata', () => {

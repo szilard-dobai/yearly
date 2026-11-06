@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { deleteDeviceActivity, deleteTrackingEvent } from '@/lib/admin/client'
 import {
   formatDateTime,
   formatLocation,
@@ -329,6 +330,21 @@ export default function AnalyticsPage() {
   const handleShowDeviceEvents = (deviceId: string) => {
     setDeviceIdFilter(deviceId)
     setIsEventOpen(false)
+  }
+
+  const handleDeleteEvent = async (event: StoredTrackingEvent) => {
+    await deleteTrackingEvent(event._id, markUnauthenticated)
+    setIsEventOpen(false)
+    setEvents((previous) => previous.filter((item) => item._id !== event._id))
+    setOffset((previous) => Math.max(previous - 1, 0))
+    fetchStats()
+    setRefreshKey((key) => key + 1)
+  }
+
+  const handleDeleteDevice = async (deviceId: string) => {
+    await deleteDeviceActivity(deviceId, markUnauthenticated)
+    setIsEventOpen(false)
+    handleRefresh()
   }
 
   const sortedCountries = useMemo(
@@ -663,6 +679,8 @@ export default function AnalyticsPage() {
         onOpenChange={setIsEventOpen}
         isDeviceFiltered={deviceIdFilter === selectedEvent?.deviceId}
         onShowDeviceEvents={handleShowDeviceEvents}
+        onDeleteEvent={handleDeleteEvent}
+        onDeleteDevice={handleDeleteDevice}
       />
 
       <AnalyticsOverviewDialog

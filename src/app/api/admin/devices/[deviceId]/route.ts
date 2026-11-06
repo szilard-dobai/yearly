@@ -13,6 +13,10 @@ function toIsoString(value: Date | string | null | undefined) {
   return value ? new Date(value).toISOString() : null
 }
 
+function isValidDeviceId(deviceId: string) {
+  return deviceId.length > 0 && deviceId.length <= 100
+}
+
 interface SummaryFacet {
   totals: {
     totalEvents: number
@@ -32,7 +36,7 @@ export async function GET(
   if (denied) return denied
 
   const { deviceId } = await params
-  if (!deviceId || deviceId.length > 100) {
+  if (!isValidDeviceId(deviceId)) {
     return NextResponse.json({ error: 'Invalid device id' }, { status: 400 })
   }
 
@@ -125,6 +129,42 @@ export async function GET(
     console.error('Failed to fetch device activity:', error)
     return NextResponse.json(
       { error: 'Failed to fetch device activity' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ deviceId: string }> }
+) {
+  const denied = await requireAdmin(request)
+  if (denied) return denied
+
+  const { deviceId } = await params
+  if (!isValidDeviceId(deviceId)) {
+    return NextResponse.json({ error: 'Invalid device id' }, { status: 400 })
+  }
+
+  try {
+    const [trackingCollection, feedbackCollection] = await Promise.all([
+      getTrackingCollection(),
+      getFeedbackCollection(),
+    ])
+
+    const [events, feedback] = await Promise.all([
+      trackingCollection.deleteMany({ deviceId }),
+      feedbackCollection.deleteMany({ deviceId }),
+    ])
+
+    return NextResponse.json({
+      deletedEvents: events.deletedCount,
+      deletedFeedback: feedback.deletedCount,
+    })
+  } catch (error) {
+    console.error('Failed to delete device activity:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete device activity' },
       { status: 500 }
     )
   }

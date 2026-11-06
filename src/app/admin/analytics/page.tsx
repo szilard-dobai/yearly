@@ -10,6 +10,7 @@ import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import EventDetailsDialog from '@/components/admin/EventDetailsDialog'
 import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
 import StatTile from '@/components/admin/StatTile'
+import TrafficSourcesPanel from '@/components/admin/TrafficSourcesPanel'
 import VideoOfferPanel from '@/components/admin/VideoOfferPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -556,6 +557,12 @@ export default function AnalyticsPage() {
             )}
           />
         </div>
+
+        <TrafficSourcesPanel
+          refreshKey={refreshKey}
+          country={countryFilter}
+          region={regionFilter}
+        />
 
         <VideoOfferPanel refreshKey={refreshKey} />
 

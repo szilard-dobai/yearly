@@ -18,15 +18,17 @@ export const STATS_CARD_SIZE = { width: 1200, height: 1739 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-function StatTile({
+export function StatTile({
   label,
   children,
   palette,
+  labelSize = 20,
   style,
 }: {
   label: string
   children: ReactNode
   palette: Palette
+  labelSize?: number
   style?: CSSProperties
 }) {
   return (
@@ -40,7 +42,9 @@ function StatTile({
         ...style,
       }}
     >
-      <div style={{ fontSize: 20, color: palette.muted, marginBottom: 8 }}>
+      <div
+        style={{ fontSize: labelSize, color: palette.muted, marginBottom: 8 }}
+      >
         {label}
       </div>
       {children}
@@ -48,7 +52,7 @@ function StatTile({
   )
 }
 
-function RankRow({
+export function RankRow({
   rank,
   code,
   days,

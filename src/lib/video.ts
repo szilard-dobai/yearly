@@ -3,13 +3,14 @@ import {
   calculateAverageTripLength,
   calculateBusiestMonth,
   calculateCountriesByDays,
+  calculatePercentageOfMonthTraveled,
   calculatePercentageOfYearTraveled,
   calculateTotalCountriesVisited,
   calculateTotalDaysTraveled,
 } from '@/lib/statistics'
 import type { CountryVisit } from '@/lib/types'
 
-export const VIDEO_KINDS = ['year', 'stats'] as const
+export const VIDEO_KINDS = ['year', 'stats', 'month'] as const
 export const VIDEO_THEMES = ['dark', 'light'] as const
 
 export type VideoKind = (typeof VIDEO_KINDS)[number]
@@ -36,28 +37,45 @@ export type YearVideoData = {
   stats: YearVideoStats
 }
 
-export function buildYearVideoData(
-  visits: CountryVisit[],
-  year: number
-): YearVideoData {
-  const yearVisits = visits.filter((v) => v.date.getFullYear() === year)
+export type MonthVideoStats = Omit<YearVideoStats, 'busiestMonth'>
 
+export type MonthVideoData = {
+  year: number
+  month: number
+  days: VideoDay[]
+  countries: string[]
+  stats: MonthVideoStats
+}
+
+function groupByDay(visits: CountryVisit[]): VideoDay[] {
   const byDay = new Map<string, string[]>()
-  for (const visit of yearVisits) {
+  for (const visit of visits) {
     const key = toDayKey(visit.date)
     const codes = byDay.get(key) ?? []
     if (!codes.includes(visit.countryCode)) codes.push(visit.countryCode)
     byDay.set(key, codes)
   }
 
-  const days = [...byDay.entries()]
+  return [...byDay.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, codes]) => ({ date, codes }))
+}
+
+function countriesInOrder(days: VideoDay[]): string[] {
+  return [...new Set(days.flatMap((d) => d.codes))]
+}
+
+export function buildYearVideoData(
+  visits: CountryVisit[],
+  year: number
+): YearVideoData {
+  const yearVisits = visits.filter((v) => v.date.getFullYear() === year)
+  const days = groupByDay(yearVisits)
 
   return {
     year,
     days,
-    countries: [...new Set(days.flatMap((d) => d.codes))],
+    countries: countriesInOrder(days),
     stats: {
       totalCountries: calculateTotalCountriesVisited(yearVisits),
       totalDays: calculateTotalDaysTraveled(yearVisits),
@@ -65,6 +83,35 @@ export function buildYearVideoData(
       percentTraveled: calculatePercentageOfYearTraveled(yearVisits, year),
       busiestMonth: calculateBusiestMonth(yearVisits, year),
       topCountries: calculateCountriesByDays(yearVisits, 5),
+    },
+  }
+}
+
+export function buildMonthVideoData(
+  visits: CountryVisit[],
+  year: number,
+  month: number
+): MonthVideoData {
+  const monthVisits = visits.filter(
+    (v) => v.date.getFullYear() === year && v.date.getMonth() === month
+  )
+  const days = groupByDay(monthVisits)
+
+  return {
+    year,
+    month,
+    days,
+    countries: countriesInOrder(days),
+    stats: {
+      totalCountries: calculateTotalCountriesVisited(monthVisits),
+      totalDays: calculateTotalDaysTraveled(monthVisits),
+      averageTripLength: calculateAverageTripLength(monthVisits),
+      percentTraveled: calculatePercentageOfMonthTraveled(
+        monthVisits,
+        year,
+        month
+      ),
+      topCountries: calculateCountriesByDays(monthVisits, 3),
     },
   }
 }

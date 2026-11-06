@@ -13,7 +13,11 @@ type NotifiedSignup = Pick<
   'context' | 'deviceType' | 'country' | 'region'
 >
 
-const VIDEO_KIND_LABELS = { year: 'year video', stats: 'stats video' }
+const VIDEO_KIND_LABELS = {
+  year: 'year video',
+  stats: 'stats video',
+  month: 'month video',
+}
 
 export function buildWaitlistSlackMessage(
   signup: NotifiedSignup,

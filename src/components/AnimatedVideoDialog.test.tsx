@@ -1,4 +1,6 @@
+import { MONTH_DURATION } from '@/components/video/MonthVideo'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
+import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { render, screen } from '@testing-library/react'
@@ -42,7 +44,7 @@ const calendarData: CalendarData = {
   ],
 }
 
-function renderDialog(exportType: 'calendar' | 'statistics' = 'calendar') {
+function renderDialog(exportType: ExportType = 'calendar', month?: number) {
   return render(
     <SettingsProvider>
       <AnimatedVideoDialog
@@ -50,6 +52,7 @@ function renderDialog(exportType: 'calendar' | 'statistics' = 'calendar') {
         onOpenChange={vi.fn()}
         calendarData={calendarData}
         year={2026}
+        month={month}
         exportType={exportType}
         price={2.99}
       />
@@ -100,6 +103,34 @@ describe('AnimatedVideoDialog', () => {
     const player = screen.getByTestId('player')
     expect(player).toHaveAttribute('data-theme', 'light')
     expect(player.getAttribute('data-duration')).not.toBe(statsDuration)
+  })
+
+  it('previews only the month video for a monthly export', async () => {
+    const user = userEvent.setup()
+    renderDialog('monthly', 2)
+
+    const player = screen.getByTestId('player')
+    expect(player).toHaveAttribute('data-days', '2')
+    expect(player).toHaveAttribute('data-duration', String(MONTH_DURATION))
+    expect(
+      screen.getByRole('heading', { name: 'Your March, animated' })
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('radio', { name: 'Your year' })
+    ).not.toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Get the video · $2.99' })
+    )
+
+    expect(trackEvent).toHaveBeenCalledWith('animated_video_buy_click', {
+      exportType: 'monthly',
+      videoKind: 'month',
+      year: 2026,
+      month: 2,
+      price: 2.99,
+      theme: 'dark',
+    })
   })
 
   it('records the buy click and offers the waitlist', async () => {

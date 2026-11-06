@@ -1,5 +1,6 @@
 import { AnimatedSection } from '@/components/AnimatedSection'
 import { CalendarMockup } from '@/components/CalendarMockup'
+import { Faq } from '@/components/Faq'
 import { FeatureIcon } from '@/components/FeatureIcon'
 import Header from '@/components/Header'
 import { HomepageTracker, TrackingLink } from '@/components/HomepageClient'
@@ -188,6 +189,8 @@ export default function Home() {
             </TrackingLink>
           </AnimatedSection>
         </section>
+
+        <Faq />
       </main>
     </>
   )

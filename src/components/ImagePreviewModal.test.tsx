@@ -2,7 +2,7 @@ import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { getAnimatedVideoPrice } from '@/lib/video-offer'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ImagePreviewModal from './ImagePreviewModal'
@@ -101,6 +101,36 @@ describe('ImagePreviewModal video offer', () => {
       countryCount: 1,
       countries: [{ code: 'JP', days: 1 }],
     })
+  })
+
+  it('shares the image with a tagged link on mobile', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.yearly.world')
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)'
+    )
+    const share = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'share', {
+      value: share,
+      configurable: true,
+    })
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(new Blob(['image'], { type: 'image/jpeg' }))
+    )
+    const user = userEvent.setup()
+    renderModal('calendar')
+
+    try {
+      await user.click(screen.getByRole('button', { name: /Download Image/ }))
+
+      await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
+      expect(share.mock.calls[0][0]).toMatchObject({
+        text: 'Made with Yearly: https://www.yearly.world/?utm_source=share',
+      })
+    } finally {
+      vi.unstubAllEnvs()
+      vi.restoreAllMocks()
+      Reflect.deleteProperty(navigator, 'share')
+    }
   })
 
   it('opens the preview with the device price and records it', async () => {

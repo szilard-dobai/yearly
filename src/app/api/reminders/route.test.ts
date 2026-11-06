@@ -6,9 +6,22 @@ const collection = {
   countDocuments: vi.fn(),
   updateOne: vi.fn(),
 }
+const calendarCollection = { countDocuments: vi.fn() }
+
+const notifyReminderToSlack = vi.fn()
 
 vi.mock('@/lib/mongodb', () => ({
   getRemindersCollection: () => Promise.resolve(collection),
+  getCalendarRemindersCollection: () => Promise.resolve(calendarCollection),
+}))
+
+vi.mock('@/lib/reminders/slack', () => ({
+  notifyReminderToSlack: (...args: unknown[]) => notifyReminderToSlack(...args),
+}))
+
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/server')>()),
+  after: (callback: () => unknown) => callback(),
 }))
 
 function postRequest(
@@ -35,8 +48,10 @@ describe('POST /api/reminders', () => {
       toFake: ['Date'],
       now: new Date('2026-11-07T12:00:00Z'),
     })
+    notifyReminderToSlack.mockReset()
     collection.countDocuments.mockReset().mockResolvedValue(0)
     collection.updateOne.mockReset().mockResolvedValue({ upsertedCount: 1 })
+    calendarCollection.countDocuments.mockReset().mockResolvedValue(30)
   })
 
   afterEach(() => {
@@ -69,12 +84,41 @@ describe('POST /api/reminders', () => {
     )
   })
 
-  it('succeeds again when the same email signs up twice', async () => {
+  it('pings Slack with the running totals for a new reminder', async () => {
+    collection.countDocuments.mockResolvedValueOnce(0).mockResolvedValueOnce(12)
+
+    await POST(
+      postRequest(validBody, {
+        'sec-fetch-site': 'same-origin',
+        'x-vercel-ip-country': 'SG',
+      })
+    )
+    await vi.waitFor(() => expect(notifyReminderToSlack).toHaveBeenCalled())
+
+    expect(collection.countDocuments).toHaveBeenLastCalledWith({ year: 2026 })
+    expect(calendarCollection.countDocuments).toHaveBeenCalledWith({
+      year: 2026,
+    })
+    expect(notifyReminderToSlack).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'email',
+        deviceType: 'mobile',
+        country: 'SG',
+      }),
+      { emails: 12, calendarAdds: 30 }
+    )
+    expect(JSON.stringify(notifyReminderToSlack.mock.calls)).not.toContain(
+      'traveller'
+    )
+  })
+
+  it('succeeds again without a ping when the same email signs up twice', async () => {
     collection.updateOne.mockResolvedValue({ upsertedCount: 0 })
 
     const response = await POST(postRequest(validBody))
 
     expect(response.status).toBe(201)
+    expect(notifyReminderToSlack).not.toHaveBeenCalled()
   })
 
   it('rejects requests from other sites', async () => {

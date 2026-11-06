@@ -22,6 +22,12 @@ function jsonResponse(body: unknown, status = 200) {
   return Promise.resolve(new Response(JSON.stringify(body), { status }))
 }
 
+function calendarRequests() {
+  return fetchMock.mock.calls
+    .filter(([url]) => url === '/api/reminders/calendar')
+    .map(([, init]) => JSON.parse(init.body))
+}
+
 function setToday(date: Date) {
   vi.useFakeTimers({ toFake: ['Date'], now: date })
 }
@@ -33,7 +39,7 @@ describe('YearEndReminderCard', () => {
   beforeEach(() => {
     setToday(new Date(2026, 10, 7, 12))
     localStorage.clear()
-    fetchMock.mockReset()
+    fetchMock.mockReset().mockImplementation(() => jsonResponse({}, 201))
     createObjectURL.mockClear()
     vi.mocked(trackEvent).mockClear()
     vi.stubGlobal('fetch', fetchMock)
@@ -133,6 +139,14 @@ describe('YearEndReminderCard', () => {
       provider: 'ics',
       year: 2026,
     })
+    expect(calendarRequests()).toEqual([
+      {
+        year: 2026,
+        provider: 'ics',
+        deviceId: 'device-123',
+        deviceType: 'mobile',
+      },
+    ])
     expect(screen.getByRole('status')).toHaveTextContent(
       'Reminder set for 1 Dec in your calendar.'
     )
@@ -160,10 +174,28 @@ describe('YearEndReminderCard', () => {
       provider: 'google',
       year: 2026,
     })
+    expect(calendarRequests()).toEqual([
+      expect.objectContaining({ year: 2026, provider: 'google' }),
+    ])
     expect(await screen.findByRole('status')).toHaveTextContent('Reminder set')
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual({
       2026: 'google',
     })
+  })
+
+  it('still confirms a calendar add when recording it fails', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    fetchMock.mockImplementation(() => Promise.reject(new Error('offline')))
+    render(<YearEndReminderCard year={2026} />)
+
+    await user.click(cardButton())
+    await user.click(screen.getByRole('button', { name: 'Apple / Outlook' }))
+
+    expect(calendarRequests()).toHaveLength(1)
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Reminder set for 1 Dec in your calendar.'
+    )
   })
 
   it('emails a reminder without tracking the address', async () => {

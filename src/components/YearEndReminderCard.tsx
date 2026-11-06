@@ -7,7 +7,10 @@ import {
   downloadReminderIcs,
   shouldOfferYearEndReminder,
 } from '@/lib/reminders/calendar'
-import { createYearEndReminder } from '@/lib/reminders/client'
+import {
+  createYearEndReminder,
+  recordCalendarReminder,
+} from '@/lib/reminders/client'
 import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
 import { getSavedReminder, saveReminder } from '@/lib/reminders/storage'
 import type { CalendarProvider, ReminderMethod } from '@/lib/reminders/types'
@@ -54,8 +57,10 @@ export default function YearEndReminderCard({ year }: { year: number }) {
     setExpanded(!expanded)
   }
 
-  const trackCalendarAdd = (provider: CalendarProvider) =>
+  const trackCalendarAdd = (provider: CalendarProvider) => {
     trackEvent('year_end_reminder_calendar_add', { provider, year })
+    recordCalendarReminder({ year, provider })
+  }
 
   const handleIcs = () => {
     trackCalendarAdd('ics')

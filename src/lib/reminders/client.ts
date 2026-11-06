@@ -1,5 +1,24 @@
 import { getDeviceType, trackEvent } from '@/lib/tracking'
 import { getDeviceId } from '@/lib/tracking/device-id'
+import type { CalendarProvider } from './types'
+
+export function recordCalendarReminder(input: {
+  year: number
+  provider: CalendarProvider
+}): void {
+  try {
+    fetch('/api/reminders/calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...input,
+        deviceId: getDeviceId(),
+        deviceType: getDeviceType(),
+      }),
+      keepalive: true,
+    }).catch(() => {})
+  } catch {}
+}
 
 export async function createYearEndReminder(input: {
   email: string

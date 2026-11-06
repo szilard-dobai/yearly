@@ -1,19 +1,16 @@
 import { getRemindersCollection, type ReminderDocument } from '@/lib/mongodb'
+import { getReminderTotals, isOpenReminderYear } from '@/lib/reminders/server'
+import { notifyReminderToSlack } from '@/lib/reminders/slack'
 import { createReminderSchema } from '@/lib/reminders/types'
 import { validateSameOrigin } from '@/lib/tracking/api'
 import { MongoServerError } from 'mongodb'
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
 const MAX_BODY_BYTES = 4 * 1024
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000
 const RATE_LIMIT_MAX_SIGNUPS = 5
-
-function isOpenYear(year: number) {
-  const currentYear = new Date().getUTCFullYear()
-  return year === currentYear || year === currentYear + 1
-}
 
 export async function POST(request: Request) {
   const forbidden = validateSameOrigin(request)
@@ -49,7 +46,7 @@ export async function POST(request: Request) {
   }
 
   const { email, deviceId, year, deviceType } = parsed.data
-  if (!isOpenYear(year)) {
+  if (!isOpenReminderYear(year)) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 
@@ -75,11 +72,20 @@ export async function POST(request: Request) {
     if (country) latest.country = country
     if (region) latest.region = region
 
-    await collection.updateOne(
+    const result = await collection.updateOne(
       { year, email },
       { $set: latest, $setOnInsert: { deviceId, createdAt: now } },
       { upsert: true }
     )
+
+    if (result.upsertedCount > 0) {
+      after(async () =>
+        notifyReminderToSlack(
+          { ...latest, method: 'email' },
+          await getReminderTotals(year)
+        )
+      )
+    }
 
     return NextResponse.json({ success: true }, { status: 201 })
   } catch (error) {

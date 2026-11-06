@@ -156,7 +156,7 @@ export default function PrivacyPage() {
             <List>
               <li>
                 <span className="font-medium">Apple or Outlook calendar:</span>{' '}
-                your browser creates a calendar file and nothing is sent to us.
+                your browser creates a calendar file.
               </li>
               <li>
                 <span className="font-medium">Google Calendar:</span> we open
@@ -170,15 +170,22 @@ export default function PrivacyPage() {
               </li>
             </List>
             <p>
+              When you add the reminder to a calendar, we store the random ID,
+              which calendar, the year, your device type and approximate
+              location. We never see anything in your calendar.
+            </p>
+            <p>
               We use your email to send you one reminder, on 1 December of that
               year. Nothing else: no newsletters or marketing. To send it,
               we&apos;ll pass your address to an email delivery service for that
               one message. Ask us and we&apos;ll delete your email at any time.
             </p>
             <p>
-              Our usage events record when you open the reminder options or add
-              the reminder to a calendar, and which calendar, but never your
-              email address.
+              Each new reminder, by email or calendar, is posted to a private
+              Slack channel with your approximate location, your device type and
+              how you set it. Our usage events record when you open the reminder
+              options or add the reminder to a calendar, and which calendar.
+              Neither ever includes your email address.
             </p>
           </Section>
 
@@ -187,11 +194,11 @@ export default function PrivacyPage() {
               <li>Vercel hosts Yearly and provides the analytics.</li>
               <li>
                 MongoDB stores usage events, feedback, the waitlist and year-end
-                reminder emails.
+                reminders.
               </li>
               <li>
-                Slack receives our notifications about feedback and waitlist
-                sign-ups.
+                Slack receives our notifications about feedback, waitlist
+                sign-ups and year-end reminders.
               </li>
             </List>
             <p>We don&apos;t share your data with anyone else.</p>

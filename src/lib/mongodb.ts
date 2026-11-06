@@ -1,5 +1,6 @@
 import { type Collection, type Db, MongoClient, type ObjectId } from 'mongodb'
 import type { FeedbackContext, FeedbackSource } from './feedback/types'
+import type { CalendarProvider } from './reminders/types'
 import type { DeviceType } from './tracking/types'
 import type { WaitlistContext, WaitlistFeature } from './waitlist/types'
 
@@ -157,5 +158,45 @@ export async function getRemindersCollection() {
   const db = await getDb()
   const collection = db.collection<ReminderDocument>('reminders')
   ensureReminderIndexes(collection)
+  return collection
+}
+
+export interface CalendarReminderDocument {
+  _id?: ObjectId
+  deviceId: string
+  year: number
+  provider: CalendarProvider
+  deviceType?: DeviceType
+  country?: string
+  region?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+let calendarReminderIndexesPromise: Promise<unknown> | null = null
+
+function ensureCalendarReminderIndexes(
+  collection: Collection<CalendarReminderDocument>
+) {
+  if (!calendarReminderIndexesPromise) {
+    calendarReminderIndexesPromise = collection
+      .createIndexes([
+        { key: { deviceId: 1, year: 1, provider: 1 }, unique: true },
+        { key: { deviceId: 1, createdAt: -1 } },
+        { key: { year: 1, provider: 1 } },
+      ])
+      .catch((error) => {
+        console.error('Failed to create calendar reminder indexes:', error)
+        calendarReminderIndexesPromise = null
+      })
+  }
+}
+
+export async function getCalendarRemindersCollection() {
+  const db = await getDb()
+  const collection = db.collection<CalendarReminderDocument>(
+    'reminder_calendar_adds'
+  )
+  ensureCalendarReminderIndexes(collection)
   return collection
 }

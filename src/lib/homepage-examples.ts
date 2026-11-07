@@ -4,11 +4,20 @@ export interface HomepageExampleImage {
   height: number
 }
 
-export interface HomepageExample {
+export interface HomepageImagePair {
   light: HomepageExampleImage
   dark: HomepageExampleImage
   alt: string
+}
+
+export interface HomepageExample extends HomepageImagePair {
   caption: string
+}
+
+export const HERO_IMAGE: HomepageImagePair = {
+  light: { src: '/example_light.jpg', width: 2400, height: 3696 },
+  dark: { src: '/example_dark.jpg', width: 2400, height: 3696 },
+  alt: 'A 2026 travel calendar made with Yearly, with country flags on the days spent in Germany, Romania, Hungary, Spain, Serbia, Greece, Italy and the UK',
 }
 
 export const HOMEPAGE_EXAMPLES: HomepageExample[] = [

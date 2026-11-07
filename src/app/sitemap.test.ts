@@ -13,13 +13,15 @@ describe('sitemap', () => {
     vi.unstubAllEnvs()
   })
 
-  it('lists the light and dark example images on the homepage entry', async () => {
+  it('lists the light and dark hero and example images on the homepage entry', async () => {
     const entries = await loadSitemap('https://www.yearly.world')
     const homepage = entries.find(
       (entry) => entry.url === 'https://www.yearly.world'
     )
 
     expect(homepage?.images).toEqual([
+      'https://www.yearly.world/example_light.jpg',
+      'https://www.yearly.world/example_dark.jpg',
       'https://www.yearly.world/examples/travel-calendar-2026-yearly.jpg',
       'https://www.yearly.world/examples/travel-calendar-2026-yearly-dark.jpg',
       'https://www.yearly.world/examples/travel-calendar-june-2026-yearly.jpg',
@@ -27,7 +29,7 @@ describe('sitemap', () => {
       'https://www.yearly.world/examples/travel-stats-2026-yearly.jpg',
       'https://www.yearly.world/examples/travel-stats-2026-yearly-dark.jpg',
     ])
-    expect(homepage?.images).toHaveLength(HOMEPAGE_EXAMPLES.length * 2)
+    expect(homepage?.images).toHaveLength((HOMEPAGE_EXAMPLES.length + 1) * 2)
   })
 
   it('keeps image entries off the other pages', async () => {

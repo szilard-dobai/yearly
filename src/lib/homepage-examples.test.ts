@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HOMEPAGE_EXAMPLES } from './homepage-examples'
+import { HERO_IMAGE, HOMEPAGE_EXAMPLES } from './homepage-examples'
 
 function readJpegSize(file: string) {
   const data = readFileSync(file)
@@ -24,9 +24,9 @@ function readJpegSize(file: string) {
   throw new Error(`No JPEG frame header in ${file}`)
 }
 
-const variants = HOMEPAGE_EXAMPLES.flatMap((example) => [
-  { theme: 'light', ...example.light },
-  { theme: 'dark', ...example.dark },
+const variants = [HERO_IMAGE, ...HOMEPAGE_EXAMPLES].flatMap((image) => [
+  { theme: 'light', ...image.light },
+  { theme: 'dark', ...image.dark },
 ])
 
 describe('HOMEPAGE_EXAMPLES', () => {

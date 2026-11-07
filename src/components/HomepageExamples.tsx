@@ -27,13 +27,13 @@ export function HomepageExamples() {
       </AnimatedSection>
 
       <ul
-        className="-mx-3 flex snap-x snap-mandatory scroll-px-3 gap-4 overflow-x-auto px-3 pb-4 md:mx-auto md:grid md:max-w-5xl md:grid-cols-(--example-columns) md:gap-8 md:overflow-visible md:px-0"
+        className="-mx-3 flex snap-x snap-mandatory gap-4 overflow-x-auto px-[11vw] pb-4 md:mx-auto md:grid md:max-w-5xl md:grid-cols-(--example-columns) md:gap-8 md:overflow-visible md:px-0"
         style={{ '--example-columns': columns } as CSSProperties}
       >
         {HOMEPAGE_EXAMPLES.map((example, idx) => (
           <li
             key={example.src}
-            className="w-[78%] shrink-0 snap-start md:w-auto"
+            className="w-[78vw] shrink-0 snap-center md:w-auto"
           >
             <AnimatedSection
               animation="fadeInUpOnViewWithDelay"

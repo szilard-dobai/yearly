@@ -186,8 +186,19 @@ describe('getStatsLayout', () => {
           layout.tileLabelSize * 1.2 +
           layout.tileValueSize
       ).toBeLessThan(layout.tileHeight)
+      expect(
+        'Countries Visited'.length * layout.tileLabelSize * 0.53
+      ).toBeLessThanOrEqual(layout.tileContentWidth)
     }
   )
+
+  it('sets the tile labels at least as large as the list heading', () => {
+    for (const format of EXPORT_FORMATS) {
+      const layout = getStatsLayout(format, 5)
+
+      expect(layout.tileLabelSize).toBeGreaterThanOrEqual(layout.listHeaderSize)
+    }
+  })
 
   it('grows the tiles when there are fewer countries to list', () => {
     const five = getStatsLayout('story', 5)

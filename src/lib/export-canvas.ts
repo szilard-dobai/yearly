@@ -256,7 +256,7 @@ const STATS_SPEC = {
   story: {
     tileGap: 24,
     sectionGap: 48,
-    tileLabelSize: 24,
+    tileLabelSize: 34,
     listHeaderSize: 32,
     listHeaderHeight: 56,
     rowHeight: 112,
@@ -265,7 +265,7 @@ const STATS_SPEC = {
   feed: {
     tileGap: 20,
     sectionGap: 32,
-    tileLabelSize: 21,
+    tileLabelSize: 28,
     listHeaderSize: 28,
     listHeaderHeight: 48,
     rowHeight: 84,

@@ -24,8 +24,21 @@ function readJpegSize(file: string) {
   throw new Error(`No JPEG frame header in ${file}`)
 }
 
+const variants = HOMEPAGE_EXAMPLES.flatMap((example) => [
+  { theme: 'light', ...example.light },
+  { theme: 'dark', ...example.dark },
+])
+
 describe('HOMEPAGE_EXAMPLES', () => {
   it.each(HOMEPAGE_EXAMPLES)(
+    '$caption has separate light and dark images',
+    ({ light, dark }) => {
+      expect(dark.src).not.toBe(light.src)
+      expect(dark.src).toBe(light.src.replace(/\.jpg$/, '-dark.jpg'))
+    }
+  )
+
+  it.each(variants)(
     '$src exists with the declared size',
     ({ src, width, height }) => {
       const file = path.join(process.cwd(), 'public', src)

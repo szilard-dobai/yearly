@@ -49,6 +49,7 @@ src/
 │   ├── ImagePreviewModal.tsx - Export preview and download modal
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature revealed on exports
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
+│   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads
 │   ├── Flag.tsx              - Country flag component (emoji/icon modes)
 │   ├── CountryInput.tsx      - Country and date picker
 │   ├── Statistics.tsx        - Travel statistics display

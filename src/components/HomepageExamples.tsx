@@ -1,10 +1,10 @@
 import { AnimatedSection } from '@/components/AnimatedSection'
+import { HomepageExampleImage } from '@/components/HomepageExampleImage'
 import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
-import Image from 'next/image'
 import type { CSSProperties } from 'react'
 
 const columns = HOMEPAGE_EXAMPLES.map(
-  ({ width, height }) => `minmax(0, ${(width / height).toFixed(4)}fr)`
+  ({ light }) => `minmax(0, ${(light.width / light.height).toFixed(4)}fr)`
 ).join(' ')
 
 export function HomepageExamples() {
@@ -32,7 +32,7 @@ export function HomepageExamples() {
       >
         {HOMEPAGE_EXAMPLES.map((example, idx) => (
           <li
-            key={example.src}
+            key={example.light.src}
             className="w-[78vw] shrink-0 snap-center md:w-auto"
           >
             <AnimatedSection
@@ -41,15 +41,7 @@ export function HomepageExamples() {
             >
               <figure>
                 <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/8 shadow-lg dark:shadow-[0_0_40px_rgba(255,255,255,0.06)]">
-                  <Image
-                    src={example.src}
-                    alt={example.alt}
-                    width={example.width}
-                    height={example.height}
-                    sizes="(min-width: 1024px) 350px, (min-width: 768px) 34vw, 78vw"
-                    loading="lazy"
-                    className="block w-full h-auto"
-                  />
+                  <HomepageExampleImage example={example} />
                 </div>
                 <figcaption className="mt-4 text-center text-gray-600 dark:text-zinc-400">
                   {example.caption}

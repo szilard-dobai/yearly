@@ -10,7 +10,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 1,
-      images: HOMEPAGE_EXAMPLES.map(({ src }) => new URL(src, siteUrl).href),
+      images: HOMEPAGE_EXAMPLES.flatMap(({ light, dark }) => [
+        new URL(light.src, siteUrl).href,
+        new URL(dark.src, siteUrl).href,
+      ]),
     },
     {
       url: `${siteUrl}/create`,

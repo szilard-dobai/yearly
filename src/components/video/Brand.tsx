@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { AbsoluteFill, interpolate, useCurrentFrame } from 'remotion'
+import { LogoMark as WatermarkLogo } from '../ExportWatermark'
 import {
   type Palette,
   clamp,
@@ -47,6 +48,52 @@ function Wordmark({ size, color }: { size: number; color: string }) {
         }}
       >
         Yearly
+      </span>
+    </div>
+  )
+}
+
+export function VideoWatermark({
+  palette,
+  size,
+}: {
+  palette: Palette
+  size: number
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        justifyContent: 'center',
+        gap: '0.14em',
+        fontFamily: SANS,
+        fontSize: size,
+        lineHeight: 1,
+      }}
+    >
+      <span style={{ fontSize: '0.62em', color: palette.label }}>
+        made with
+      </span>
+      <span
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: '0.22em',
+          fontWeight: 600,
+          letterSpacing: '-0.025em',
+          color: palette.heading,
+        }}
+      >
+        <WatermarkLogo
+          style={{
+            width: '1.15em',
+            height: '1.15em',
+            flexShrink: 0,
+            alignSelf: 'center',
+          }}
+        />
+        <span>yearly.world</span>
       </span>
     </div>
   )

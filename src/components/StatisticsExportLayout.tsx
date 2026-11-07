@@ -1,202 +1,137 @@
-'use client'
-
-import { forwardRef, useMemo } from 'react'
-import type { CalendarData } from '@/lib/types'
-import { getCountryByCode } from '@/lib/countries'
-import { useSettings } from '@/lib/contexts/SettingsContext'
-import ExportWatermark from './ExportWatermark'
-import Flag from './Flag'
+import { MONTH_NAMES } from '@/lib/constants'
+import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import {
-  calculateTotalCountriesVisited,
-  calculateTotalDaysTraveled,
-  calculateCountriesByDays,
+  fitRankNameSize,
+  fitStatValueSize,
+  getStatsLayout,
+  STATS_MAX_COUNTRIES,
+  type ExportFormat,
+} from '@/lib/export-canvas'
+import {
   calculateAverageTripLength,
   calculateBusiestMonth,
+  calculateCountriesByDays,
   calculatePercentageOfYearTraveled,
+  calculateTotalCountriesVisited,
+  calculateTotalDaysTraveled,
 } from '@/lib/statistics'
-
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-]
+import type { CalendarData } from '@/lib/types'
+import {
+  ExportRankRow,
+  ExportStatTile,
+  getCountryName,
+} from './export/ExportBlocks'
+import ExportFrame from './export/ExportFrame'
 
 interface StatisticsExportLayoutProps {
   calendarData: CalendarData
   year: number
+  format: ExportFormat
+  flagDisplayMode: FlagDisplayMode
 }
 
-const StatisticsExportLayout = forwardRef<
-  HTMLDivElement,
-  StatisticsExportLayoutProps
->(({ calendarData, year }, ref) => {
-  const { settings } = useSettings()
+export default function StatisticsExportLayout({
+  calendarData,
+  year,
+  format,
+  flagDisplayMode,
+}: StatisticsExportLayoutProps) {
+  const visits = calendarData.visits.filter(
+    (visit) => visit.date.getFullYear() === year
+  )
+  const topCountries = calculateCountriesByDays(visits, STATS_MAX_COUNTRIES)
+  const busiestMonth = calculateBusiestMonth(visits, year)
+  const layout = getStatsLayout(format, topCountries.length)
 
-  const visits = useMemo(
-    () =>
-      calendarData.visits.filter((visit) => visit.date.getFullYear() === year),
-    [calendarData.visits, year]
+  const tiles = [
+    {
+      label: 'Countries Visited',
+      value: { value: String(calculateTotalCountriesVisited(visits)) },
+    },
+    {
+      label: 'Days Abroad',
+      value: { value: String(calculateTotalDaysTraveled(visits)) },
+    },
+    {
+      label: 'Average Trip',
+      value: {
+        value: calculateAverageTripLength(visits).toFixed(1),
+        unit: 'days',
+      },
+    },
+    {
+      label: 'Year Abroad',
+      value: {
+        value: `${calculatePercentageOfYearTraveled(visits, year).toFixed(1)}%`,
+      },
+    },
+    {
+      label: 'Busiest Month',
+      value: busiestMonth
+        ? {
+            value: MONTH_NAMES[busiestMonth.month],
+            unit: `${busiestMonth.days} ${busiestMonth.days === 1 ? 'day' : 'days'}`,
+          }
+        : { value: '–' },
+      wide: true,
+    },
+  ]
+  const valueSize = fitStatValueSize(
+    tiles.map(({ value, wide }) => ({
+      value,
+      width: wide ? layout.wideTileContentWidth : layout.tileContentWidth,
+    })),
+    layout.tileValueSize
+  )
+  const nameSize = fitRankNameSize(
+    topCountries.map(({ countryCode }) => getCountryName(countryCode)),
+    layout.rank,
+    layout.rowWidth
   )
 
-  const stats = useMemo(() => {
-    const totalCountries = calculateTotalCountriesVisited(visits)
-    const totalDays = calculateTotalDaysTraveled(visits)
-    const averageTripLength = calculateAverageTripLength(visits)
-    const countriesByDays = calculateCountriesByDays(visits, 5)
-    const busiestMonth = calculateBusiestMonth(visits, year)
-    const percentTraveled = calculatePercentageOfYearTraveled(visits, year)
-
-    return {
-      totalCountries,
-      totalDays,
-      averageTripLength,
-      countriesByDays,
-      busiestMonth,
-      percentTraveled,
-    }
-  }, [visits, year])
-
-  const getRankDisplay = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <span className="text-2xl leading-none">🥇</span>
-      case 2:
-        return <span className="text-2xl leading-none">🥈</span>
-      case 3:
-        return <span className="text-2xl leading-none">🥉</span>
-      default:
-        return (
-          <span className="text-xl font-semibold text-gray-500 dark:text-gray-400">
-            {rank}.
-          </span>
-        )
-    }
-  }
-
   return (
-    <div
-      ref={ref}
-      data-export-target="statistics"
-      className="flex flex-col min-h-full"
-    >
-      <div className="mb-4 border-b border-gray-200 dark:border-white/10 pb-6">
-        <h2 className="text-4xl font-bold text-red-500">{year}</h2>
+    <ExportFrame format={format} title={String(year)}>
+      <div className="grid grid-cols-2" style={{ gap: layout.tileGap }}>
+        {tiles.map((tile) => (
+          <ExportStatTile
+            key={tile.label}
+            label={tile.label}
+            value={tile.value}
+            labelSize={layout.tileLabelSize}
+            valueSize={valueSize}
+            height={layout.tileHeight}
+            padding={layout.tilePadding}
+            className={tile.wide ? 'col-span-2' : undefined}
+          />
+        ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Countries Visited
-          </p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.totalCountries}
-          </p>
-        </div>
-
-        <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Days Abroad
-          </p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.totalDays}
-          </p>
-        </div>
-
-        <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Average Trip
-          </p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.averageTripLength.toFixed(1)}
-            <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-1">
-              days
-            </span>
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        {stats.busiestMonth && (
-          <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Busiest Month
-            </p>
-            <p className="text-3xl leading-tight font-bold text-gray-900 dark:text-white">
-              {MONTH_NAMES[stats.busiestMonth.month]}
-            </p>
-            <p className="text-lg text-gray-500 dark:text-gray-400">
-              {stats.busiestMonth.days} days
-            </p>
-          </div>
-        )}
-
-        {stats.totalDays > 0 && (
-          <div className="stat-card p-5 rounded-2xl border bg-gray-100 dark:bg-white/5">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-              Year Abroad
-            </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {stats.percentTraveled.toFixed(1)}%
-            </p>
-          </div>
-        )}
-      </div>
-
-      {stats.countriesByDays.length > 0 && (
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+      {layout.countries > 0 && (
+        <div style={{ marginTop: layout.sectionGap }}>
+          <h3
+            className="font-semibold leading-none text-gray-900 dark:text-white"
+            style={{
+              fontSize: layout.listHeaderSize,
+              height: layout.listHeaderHeight,
+            }}
+          >
             Top Countries
           </h3>
-          <div className="space-y-3">
-            {stats.countriesByDays.map((item, index) => {
-              const country = getCountryByCode(item.countryCode)
-              const countryName = country?.name || item.countryCode
-
-              return (
-                <div
-                  key={item.countryCode}
-                  className="flex items-center gap-4 p-4 border rounded-2xl bg-gray-100 dark:bg-white/5"
-                >
-                  <div className="w-10 flex items-center justify-center shrink-0">
-                    {getRankDisplay(index + 1)}
-                  </div>
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="w-8 h-6 flex items-center shrink-0">
-                      <Flag
-                        countryCode={item.countryCode}
-                        displayMode={settings.flagDisplayMode}
-                        className="text-2xl"
-                        size="lg"
-                      />
-                    </div>
-                    <span className="text-xl font-medium text-gray-900 dark:text-white truncate">
-                      {countryName}
-                    </span>
-                  </div>
-                  <span className="px-3 py-1.5 rounded-full bg-gray-200 dark:bg-white/10 text-base font-medium text-gray-600 dark:text-gray-300 shrink-0">
-                    {item.days} {item.days === 1 ? 'day' : 'days'}
-                  </span>
-                </div>
-              )
-            })}
+          <div className="flex flex-col" style={{ gap: layout.rowGap }}>
+            {topCountries.map((item, index) => (
+              <ExportRankRow
+                key={item.countryCode}
+                rank={index + 1}
+                code={item.countryCode}
+                days={item.days}
+                sizes={layout.rank}
+                nameSize={nameSize}
+                flagMode={flagDisplayMode}
+              />
+            ))}
           </div>
         </div>
       )}
-
-      <ExportWatermark />
-    </div>
+    </ExportFrame>
   )
-})
-
-StatisticsExportLayout.displayName = 'StatisticsExportLayout'
-
-export default StatisticsExportLayout
+}

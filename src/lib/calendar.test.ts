@@ -9,6 +9,7 @@ import {
   getYear,
   isToday,
   formatDate,
+  getCountryCodesByDay,
 } from './calendar'
 import type { CountryVisit } from './types'
 
@@ -378,5 +379,19 @@ describe('calendar utilities', () => {
         'Monday, May 15, 2023'
       )
     })
+  })
+})
+
+describe('getCountryCodesByDay', () => {
+  it('groups visits by day and keeps the order they were added', () => {
+    const codes = getCountryCodesByDay([
+      { id: '1', countryCode: 'FR', date: new Date(2026, 5, 23) },
+      { id: '2', countryCode: 'FR', date: new Date(2026, 5, 24) },
+      { id: '3', countryCode: 'IT', date: new Date(2026, 5, 24, 18) },
+    ])
+
+    expect(codes.get('2026-06-23')).toEqual(['FR'])
+    expect(codes.get('2026-06-24')).toEqual(['FR', 'IT'])
+    expect(codes.has('2026-06-25')).toBe(false)
   })
 })

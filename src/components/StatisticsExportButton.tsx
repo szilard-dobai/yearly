@@ -1,4 +1,3 @@
-import { RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import { BarChart3, XCircle, Loader2 } from 'lucide-react'
 import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
@@ -6,13 +5,11 @@ import type { CalendarData } from '@/lib/types'
 import ImagePreviewModal from './ImagePreviewModal'
 
 interface StatisticsExportButtonProps {
-  statisticsRef: RefObject<HTMLDivElement | null>
   calendarData: CalendarData
   year: number
 }
 
 export default function StatisticsExportButton({
-  statisticsRef,
   calendarData,
   year,
 }: StatisticsExportButtonProps) {
@@ -23,7 +20,9 @@ export default function StatisticsExportButton({
     setPreviewOpen,
     imageDataUrl,
     filename,
-  } = useStatisticsExport({ statisticsRef, calendarData, year })
+    format,
+    changeFormat,
+  } = useStatisticsExport({ calendarData, year })
 
   const isDisabled = status === 'loading'
 
@@ -63,6 +62,9 @@ export default function StatisticsExportButton({
         year={year}
         calendarData={calendarData}
         exportType="statistics"
+        format={format}
+        onFormatChange={changeFormat}
+        isRendering={status === 'loading'}
       />
     </>
   )

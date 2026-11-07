@@ -1,9 +1,22 @@
 import { MONTH_NAMES } from '@/lib/constants'
 import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
-import { getCountryByCode } from '@/lib/countries'
+import {
+  EXPORT_CANVAS,
+  EXPORT_FRAME,
+  EXPORT_WATERMARK_LINE,
+  fitRankNameSize,
+  fitStatValueSize,
+  getExportContentBox,
+  getStatsLayout,
+  UNIT_SCALE,
+  type RankRowSizes,
+  type StatValue,
+} from '@/lib/export-canvas'
 import type { YearVideoData } from '@/lib/video'
 import type { CSSProperties, ReactNode } from 'react'
 import { useCurrentFrame } from 'remotion'
+import { getCountryName } from '../export/ExportBlocks'
+import { VideoWatermark } from './Brand'
 import {
   countUp,
   EMOJI_FONT,
@@ -13,8 +26,6 @@ import {
   SANS,
 } from './tokens'
 import { VideoFlag } from './VideoFlag'
-
-export const STATS_CARD_SIZE = { width: 1200, height: 1739 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
@@ -114,7 +125,7 @@ export function RankRow({
             whiteSpace: 'nowrap',
           }}
         >
-          {getCountryByCode(code)?.name ?? code}
+          {getCountryName(code)}
         </span>
       </div>
       <span
@@ -126,6 +137,177 @@ export function RankRow({
           fontWeight: 500,
           color: palette.pillText,
           whiteSpace: 'nowrap',
+        }}
+      >
+        {days} {plural(days, 'day', 'days')}
+      </span>
+    </div>
+  )
+}
+
+function CardTile({
+  label,
+  value,
+  palette,
+  labelSize,
+  valueSize,
+  height,
+  padding,
+  wide,
+  style,
+}: {
+  label: string
+  value: StatValue
+  palette: Palette
+  labelSize: number
+  valueSize: number
+  height: number
+  padding: number
+  wide?: boolean
+  style?: CSSProperties
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        boxSizing: 'border-box',
+        minWidth: 0,
+        height,
+        padding,
+        borderRadius: 32,
+        border: `1px solid ${palette.border}`,
+        background: palette.statBg,
+        gridColumn: wide ? 'span 2' : undefined,
+        ...style,
+      }}
+    >
+      <div
+        style={{
+          fontSize: labelSize,
+          lineHeight: 1.2,
+          color: palette.label,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: valueSize,
+          lineHeight: 1,
+          fontWeight: 700,
+          color: palette.text,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {value.value}
+        {value.unit && (
+          <span
+            style={{
+              marginLeft: '0.2em',
+              fontSize: `${UNIT_SCALE}em`,
+              fontWeight: 400,
+              color: palette.label,
+            }}
+          >
+            {value.unit}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function CardRankRow({
+  rank,
+  code,
+  days,
+  sizes,
+  nameSize,
+  palette,
+  flagMode,
+  style,
+}: {
+  rank: number
+  code: string
+  days: number
+  sizes: RankRowSizes
+  nameSize: number
+  palette: Palette
+  flagMode: FlagDisplayMode
+  style?: CSSProperties
+}) {
+  const medal = rank <= MEDALS.length
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        height: sizes.height,
+        paddingInline: sizes.paddingX,
+        gap: sizes.gap,
+        borderRadius: 32,
+        border: `1px solid ${palette.border}`,
+        background: palette.statBg,
+        ...style,
+      }}
+    >
+      <span
+        style={{
+          display: 'flex',
+          flexShrink: 0,
+          justifyContent: 'center',
+          width: sizes.rankWidth,
+          fontFamily: medal ? EMOJI_FONT : SANS,
+          fontSize: medal ? sizes.medalSize : sizes.rankSize,
+          fontWeight: 600,
+          lineHeight: 1,
+          color: palette.label,
+        }}
+      >
+        {medal ? MEDALS[rank - 1] : `${rank}.`}
+      </span>
+      <span
+        style={{
+          display: 'flex',
+          flexShrink: 0,
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: sizes.flagSize,
+        }}
+      >
+        <VideoFlag code={code} size={sizes.flagSize} mode={flagMode} />
+      </span>
+      <span
+        style={{
+          flex: 1,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          fontSize: nameSize,
+          lineHeight: 1.2,
+          fontWeight: 500,
+          color: palette.text,
+        }}
+      >
+        {getCountryName(code)}
+      </span>
+      <span
+        style={{
+          flexShrink: 0,
+          borderRadius: 999,
+          background: palette.pill,
+          fontSize: sizes.pillSize,
+          fontWeight: 500,
+          lineHeight: 1,
+          color: palette.pillText,
+          whiteSpace: 'nowrap',
+          padding: `${sizes.pillSize * 0.4}px ${sizes.pillSize * 0.7}px`,
         }}
       >
         {days} {plural(days, 'day', 'days')}
@@ -149,30 +331,74 @@ export function StatsCard({
 }) {
   const frame = useCurrentFrame()
   const s = data.stats
+  const { width, height } = EXPORT_CANVAS.story
+  const content = getExportContentBox('story')
+  const layout = getStatsLayout('story', s.topCountries.length)
+  const topCountries = s.topCountries.slice(0, layout.countries)
 
-  const num = (v: number, i: number, digits = 0) =>
-    countUp(frame, statsStart + i * 5, 36, v).toFixed(digits)
+  const count = (i: number, to: number, digits = 0) =>
+    countUp(frame, statsStart + i * 5, 36, to).toFixed(digits)
   const tileStyle = (i: number) => fadeUp(frame, statsStart + i * 5, 18, 36)
   const rowStyle = (i: number) => fadeUp(frame, listStart + i * 5, 18, 36)
 
-  const value = (children: ReactNode) => (
-    <div
-      style={{
-        fontSize: 64,
-        fontWeight: 700,
-        color: palette.text,
-        lineHeight: 1.15,
-      }}
-    >
-      {children}
-    </div>
+  const busiestMonth: StatValue = s.busiestMonth
+    ? {
+        value: MONTH_NAMES[s.busiestMonth.month],
+        unit: `${s.busiestMonth.days} ${plural(s.busiestMonth.days, 'day', 'days')}`,
+      }
+    : { value: '–' }
+  const tiles: {
+    label: string
+    final: StatValue
+    shown: StatValue
+    wide?: boolean
+  }[] = [
+    {
+      label: 'Countries Visited',
+      final: { value: String(s.totalCountries) },
+      shown: { value: count(0, s.totalCountries) },
+    },
+    {
+      label: 'Days Abroad',
+      final: { value: String(s.totalDays) },
+      shown: { value: count(1, s.totalDays) },
+    },
+    {
+      label: 'Average Trip',
+      final: { value: s.averageTripLength.toFixed(1), unit: 'days' },
+      shown: { value: count(2, s.averageTripLength, 1), unit: 'days' },
+    },
+    {
+      label: 'Year Abroad',
+      final: { value: `${s.percentTraveled.toFixed(1)}%` },
+      shown: { value: `${count(3, s.percentTraveled, 1)}%` },
+    },
+    {
+      label: 'Busiest Month',
+      final: busiestMonth,
+      shown: busiestMonth,
+      wide: true,
+    },
+  ]
+  const valueSize = fitStatValueSize(
+    tiles.map(({ final, wide }) => ({
+      value: final,
+      width: wide ? layout.wideTileContentWidth : layout.tileContentWidth,
+    })),
+    layout.tileValueSize
+  )
+  const nameSize = fitRankNameSize(
+    topCountries.map(({ countryCode }) => getCountryName(countryCode)),
+    layout.rank,
+    layout.rowWidth
   )
 
   return (
     <div
       style={{
-        ...STATS_CARD_SIZE,
-        padding: '64px 48px',
+        width,
+        height,
+        padding: EXPORT_FRAME.padding,
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
@@ -183,13 +409,15 @@ export function StatsCard({
     >
       <div
         style={{
-          borderBottom: `2px solid ${palette.divider}`,
-          paddingBottom: 24,
-          marginBottom: 24,
-          fontSize: 80,
+          boxSizing: 'border-box',
+          fontSize: EXPORT_FRAME.titleSize,
+          lineHeight: `${EXPORT_FRAME.titleSize}px`,
           fontWeight: 700,
           color: palette.red,
-          lineHeight: 1.1,
+          whiteSpace: 'nowrap',
+          paddingBottom: EXPORT_FRAME.titleGap,
+          borderBottom: `${EXPORT_FRAME.divider}px solid ${palette.divider}`,
+          marginBottom: EXPORT_FRAME.headerGap,
         }}
       >
         {data.year}
@@ -197,104 +425,86 @@ export function StatsCard({
 
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 24,
-          marginBottom: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          width: content.width,
+          height: content.height,
         }}
       >
-        <StatTile
-          label="Countries Visited"
-          palette={palette}
-          style={tileStyle(0)}
-        >
-          {value(num(s.totalCountries, 0))}
-        </StatTile>
-        <StatTile label="Days Abroad" palette={palette} style={tileStyle(1)}>
-          {value(num(s.totalDays, 1))}
-        </StatTile>
-        <StatTile label="Average Trip" palette={palette} style={tileStyle(2)}>
-          {value(
-            <>
-              {num(s.averageTripLength, 2, 1)}
-              <span
-                style={{
-                  fontSize: 28,
-                  fontWeight: 400,
-                  color: palette.muted,
-                  marginLeft: 8,
-                }}
-              >
-                days
-              </span>
-            </>
-          )}
-        </StatTile>
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 24,
-          marginBottom: 40,
-        }}
-      >
-        {s.busiestMonth && (
-          <StatTile
-            label="Busiest Month"
-            palette={palette}
-            style={tileStyle(3)}
-          >
-            {value(MONTH_NAMES[s.busiestMonth.month])}
-            <div style={{ fontSize: 28, color: palette.muted }}>
-              {s.busiestMonth.days} {plural(s.busiestMonth.days, 'day', 'days')}
-            </div>
-          </StatTile>
-        )}
-        <StatTile label="Year Abroad" palette={palette} style={tileStyle(4)}>
-          {value(`${num(s.percentTraveled, 4, 1)}%`)}
-        </StatTile>
-      </div>
-
-      <div style={{ flex: 1 }}>
         <div
           style={{
-            fontSize: 32,
-            fontWeight: 600,
-            marginBottom: 24,
-            ...rowStyle(0),
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: layout.tileGap,
           }}
         >
-          Top Countries
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {s.topCountries.map((item, i) => (
-            <RankRow
-              key={item.countryCode}
-              rank={i + 1}
-              code={item.countryCode}
-              days={item.days}
+          {tiles.map((tile, i) => (
+            <CardTile
+              key={tile.label}
+              label={tile.label}
+              value={tile.shown}
               palette={palette}
-              flagMode={flagMode}
-              style={rowStyle(i + 1)}
+              labelSize={layout.tileLabelSize}
+              valueSize={valueSize}
+              height={layout.tileHeight}
+              padding={layout.tilePadding}
+              wide={tile.wide}
+              style={tileStyle(i)}
             />
           ))}
         </div>
+
+        {layout.countries > 0 && (
+          <div style={{ marginTop: layout.sectionGap }}>
+            <div
+              style={{
+                height: layout.listHeaderHeight,
+                fontSize: layout.listHeaderSize,
+                fontWeight: 600,
+                lineHeight: 1,
+                ...rowStyle(0),
+              }}
+            >
+              Top Countries
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: layout.rowGap,
+              }}
+            >
+              {topCountries.map((item, i) => (
+                <CardRankRow
+                  key={item.countryCode}
+                  rank={i + 1}
+                  code={item.countryCode}
+                  days={item.days}
+                  sizes={layout.rank}
+                  nameSize={nameSize}
+                  palette={palette}
+                  flagMode={flagMode}
+                  style={rowStyle(i + 1)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div
         style={{
-          marginTop: 'auto',
-          paddingTop: 32,
-          borderTop: `2px solid ${palette.divider}`,
-          textAlign: 'center',
-          fontSize: 24,
-          color: palette.muted,
-          letterSpacing: 0.5,
+          boxSizing: 'border-box',
+          marginTop: EXPORT_FRAME.watermarkGap,
+          paddingTop: EXPORT_FRAME.watermarkGap,
+          borderTop: `${EXPORT_FRAME.divider}px solid ${palette.divider}`,
+          height:
+            EXPORT_FRAME.watermarkGap +
+            EXPORT_FRAME.divider +
+            EXPORT_WATERMARK_LINE,
         }}
       >
-        made with <span style={{ fontWeight: 500 }}>yearly.world</span>
+        <VideoWatermark palette={palette} size={EXPORT_FRAME.watermarkSize} />
       </div>
     </div>
   )

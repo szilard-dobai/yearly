@@ -33,6 +33,9 @@ function renderModal() {
       year={2026}
       calendarData={calendarData}
       exportType="calendar"
+      format="story"
+      onFormatChange={vi.fn()}
+      isRendering={false}
     />
   )
 }

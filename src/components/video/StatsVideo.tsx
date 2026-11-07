@@ -1,8 +1,9 @@
 import { MONTH_NAMES } from '@/lib/constants'
+import { EXPORT_CANVAS } from '@/lib/export-canvas'
 import type { ReactNode } from 'react'
 import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from 'remotion'
 import { EndCard, WordReveal } from './Brand'
-import { STATS_CARD_SIZE, StatsCard } from './StatsCard'
+import { StatsCard } from './StatsCard'
 import {
   clamp,
   countUp,
@@ -24,7 +25,9 @@ const BEATS = [56, 104, 152, 200] as const
 const BEAT_LEN = 48
 const CARD = 250
 const END_CARD = 352
-const CARD_SCALE = 0.84
+const CARD_SCALE = 0.83
+const CARD_TOP = 256
+const CARD_SIZE = EXPORT_CANVAS.story
 export const STATS_DURATION = 418
 
 function valueFontSize(value: string) {
@@ -214,10 +217,10 @@ export function StatsVideo({ data, theme, flagMode }: VideoProps) {
         <div
           style={{
             position: 'absolute',
-            left: (VIDEO_WIDTH - STATS_CARD_SIZE.width * CARD_SCALE) / 2,
-            top: 290,
-            width: STATS_CARD_SIZE.width * CARD_SCALE,
-            height: STATS_CARD_SIZE.height * CARD_SCALE,
+            left: (VIDEO_WIDTH - CARD_SIZE.width * CARD_SCALE) / 2,
+            top: CARD_TOP,
+            width: CARD_SIZE.width * CARD_SCALE,
+            height: CARD_SIZE.height * CARD_SCALE,
             borderRadius: 36,
             overflow: 'hidden',
             boxShadow:

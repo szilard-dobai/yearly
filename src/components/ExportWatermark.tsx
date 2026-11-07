@@ -1,10 +1,19 @@
-function LogoMark({ className }: { className?: string }) {
+import type { CSSProperties } from 'react'
+
+export function LogoMark({
+  className,
+  style,
+}: {
+  className?: string
+  style?: CSSProperties
+}) {
   return (
     <svg
       viewBox="0 0 40 40"
       fill="none"
       aria-hidden="true"
       className={className}
+      style={style}
     >
       <rect
         x="4"

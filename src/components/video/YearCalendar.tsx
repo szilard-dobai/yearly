@@ -1,9 +1,11 @@
 import { getMonthData } from '@/lib/calendar'
 import { MONTH_NAMES_SHORT } from '@/lib/constants'
 import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
+import { EXPORT_FRAME, getExportContentBox } from '@/lib/export-canvas'
 import { toDayKey } from '@/lib/selection'
 import { memo, useMemo } from 'react'
 import { interpolate } from 'remotion'
+import { VideoWatermark } from './Brand'
 import { type Palette, clamp, popAt, SANS } from './tokens'
 import { DayFlags } from './VideoFlag'
 
@@ -180,14 +182,16 @@ export function YearCalendar({
         style={{
           marginTop: cell * 0.5,
           paddingTop: cell * 0.4,
-          borderTop: `2px solid ${palette.divider}`,
-          textAlign: 'center',
-          fontSize: cell * 0.36,
-          color: palette.muted,
-          letterSpacing: cell * 0.01,
+          borderTop: `${EXPORT_FRAME.divider}px solid ${palette.divider}`,
         }}
       >
-        made with <span style={{ fontWeight: 500 }}>yearly.world</span>
+        <VideoWatermark
+          palette={palette}
+          size={
+            (EXPORT_FRAME.watermarkSize * width) /
+            getExportContentBox('story').width
+          }
+        />
       </div>
     </div>
   )

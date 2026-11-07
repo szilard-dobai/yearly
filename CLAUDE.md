@@ -50,6 +50,7 @@ src/
 │   ├── export/               - Shared export frame (padding, title, watermark), flags, stat tiles and ranking rows
 │   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
+│   ├── video/                - Remotion compositions for the animated video preview (year, month, stats)
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
 │   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads
 │   ├── Flag.tsx              - Country flag component (emoji/icon modes)
@@ -99,6 +100,8 @@ All three exports (calendar, monthly, statistics) come in two fixed canvas sizes
 4. Present in ImagePreviewModal, where the Story/Feed picker re-renders the image in the other format
 
 Every layout sits in `ExportFrame`, which owns the outer padding, the title and divider, and the watermark at a fixed canvas pixel size. All sizes and the fill-the-canvas maths live in `lib/export-canvas.ts`; layouts take explicit pixel sizes from there, never responsive Tailwind sizes, so exports look the same from any screen width.
+
+The stats video in the animated video preview ends on a copy of the Story stats export. Its `StatsCard` takes the same sizes from `getStatsLayout('story', …)` and the same fitting helpers, but sets colours inline from the video palette rather than reusing the Tailwind export components, because the video's Dark/Light switch is independent of the site's `.dark` class. `VideoCards.test.tsx` fails if the card and the export drift apart.
 
 ### Dark Mode
 

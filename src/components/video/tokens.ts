@@ -20,6 +20,7 @@ export type Palette = {
   heading: string
   secondary: string
   muted: string
+  label: string
   red: string
   statBg: string
   pill: string
@@ -39,6 +40,7 @@ export const PALETTES: Record<VideoTheme, Palette> = {
     heading: '#f4f4f5',
     secondary: '#a1a1aa',
     muted: '#71717a',
+    label: '#99a1af',
     red: '#fb2c36',
     statBg: 'rgba(255,255,255,0.05)',
     pill: 'rgba(255,255,255,0.10)',
@@ -56,6 +58,7 @@ export const PALETTES: Record<VideoTheme, Palette> = {
     heading: '#101828',
     secondary: '#4a5565',
     muted: '#6a7282',
+    label: '#6a7282',
     red: '#fb2c36',
     statBg: '#f3f4f6',
     pill: '#e5e7eb',

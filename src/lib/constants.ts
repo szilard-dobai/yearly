@@ -45,3 +45,8 @@ export const FLAG_SIZES = {
 } as const
 
 export type FlagSize = keyof typeof FLAG_SIZES
+
+export const EXPORT_BACKGROUND = {
+  light: '#ffffff',
+  dark: '#000000',
+} as const

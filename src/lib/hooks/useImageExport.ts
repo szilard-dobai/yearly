@@ -4,6 +4,7 @@ import { useStatusFeedback } from './useStatusFeedback'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { trackEvent } from '@/lib/tracking'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
+import { EXPORT_BACKGROUND } from '@/lib/constants'
 import type { CalendarData } from '@/lib/types'
 
 const SELECTION_ATTRIBUTES = [
@@ -86,7 +87,8 @@ export function useImageExport({
       clonedElement.style.borderRadius = '1rem'
 
       const darkMode = isDarkMode()
-      clonedElement.style.backgroundColor = darkMode ? '#000000' : '#ffffff'
+      const background = EXPORT_BACKGROUND[darkMode ? 'dark' : 'light']
+      clonedElement.style.backgroundColor = background
 
       // Set text color for dark mode
       if (darkMode) {
@@ -174,7 +176,7 @@ export function useImageExport({
       const dataUrl = await toJpeg(clonedElement, {
         quality: 0.95,
         pixelRatio: 2,
-        backgroundColor: darkMode ? '#000000' : '#ffffff',
+        backgroundColor: background,
         cacheBust: true,
         width: 1200,
         skipFonts: true,

@@ -96,6 +96,7 @@ Uses Material Design elevation hierarchy:
 - Zinc color scale for text: zinc-100 (headings), zinc-400 (secondary), zinc-500 (muted)
 - Borders: `white/8` throughout
 - Calendar and exports use pure black (`#000000`) background in dark mode
+- Light-mode exports use pure white (`#ffffff`); both export backgrounds live in `EXPORT_BACKGROUND` (`lib/constants.ts`)
 
 ### Data Flow
 

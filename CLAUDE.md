@@ -44,10 +44,12 @@ src/
 │   └── api/                  - API routes (tracking, feedback, admin auth/devices; admin-only DELETE on events, feedback and whole devices)
 ├── components/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
-│   ├── MonthlyExportLayout.tsx - Monthly export layout (1080×1920)
-│   ├── StatisticsExportLayout.tsx - Statistics export layout (1200×1739)
-│   ├── ImagePreviewModal.tsx - Export preview and download modal
-│   ├── ExportWatermark.tsx   - "made with yearly.world" signature revealed on exports
+│   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
+│   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
+│   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
+│   ├── export/               - Shared export frame (padding, title, watermark), flags, stat tiles and ranking rows
+│   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal
+│   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
 │   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads
 │   ├── Flag.tsx              - Country flag component (emoji/icon modes)
@@ -62,16 +64,19 @@ src/
 │   ├── types.ts              - Core types (Country, CountryVisit, CalendarData)
 │   ├── constants.ts          - Month names, flag sizes
 │   ├── calendar.ts           - Calendar grid calculations
+│   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
+│   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── statistics.ts         - 30+ statistics calculation functions
 │   ├── countries.ts          - Country data and lookup
 │   ├── storage.ts            - LocalStorage persistence with Zod validation
 │   ├── hooks/
+│   │   ├── useExportImage.ts       - Shared export state: format, preview, re-render on format change
 │   │   ├── useImageExport.ts       - Full-year calendar export
 │   │   ├── useMonthlyExport.ts     - Monthly calendar export
 │   │   ├── useStatisticsExport.ts  - Statistics image export
 │   │   └── useStatusFeedback.ts    - Loading/error state management
 │   ├── contexts/
-│   │   └── SettingsContext.tsx      - User preferences (theme, flags, week start)
+│   │   └── SettingsContext.tsx      - User preferences (theme, flags, week start, export format)
 │   ├── feedback/             - Feedback schemas, client API, prompt cooldowns, Slack notifications (`SLACK_FEEDBACK_WEBHOOK_URL`)
 │   └── tracking/             - Event tracking and analytics
 └── test/                     - Test setup and utilities
@@ -81,13 +86,19 @@ src/
 
 ### Image Export
 
-All three export types (calendar, monthly, statistics) follow the same pattern:
+All three exports (calendar, monthly, statistics) come in two fixed canvas sizes, saved at `pixelRatio: 2`:
 
-1. Clone the source DOM element
-2. Apply inline styles to scale up for export (the hooks map Tailwind classes to explicit sizes)
-3. Show the hidden watermark (`ExportWatermark` is sized in `em`, so the hooks only set its root font size)
-4. Render to JPEG via `html-to-image` with `skipFonts: true` (avoids CORS errors with Google Fonts)
-5. Present in ImagePreviewModal for download/share
+| Format                | Canvas    | JPEG      |
+| --------------------- | --------- | --------- |
+| Story (9:16, default) | 1080×1920 | 2160×3840 |
+| Feed (3:4)            | 1080×1440 | 2160×2880 |
+
+1. The hook builds the export's layout component for the chosen format (`settings.exportFormat`)
+2. `renderExportImage` mounts it off-screen in its own React root at the exact canvas size
+3. Render to JPEG via `html-to-image` with `skipFonts: true` (avoids CORS errors with Google Fonts)
+4. Present in ImagePreviewModal, where the Story/Feed picker re-renders the image in the other format
+
+Every layout sits in `ExportFrame`, which owns the outer padding, the title and divider, and the watermark at a fixed canvas pixel size. All sizes and the fill-the-canvas maths live in `lib/export-canvas.ts`; layouts take explicit pixel sizes from there, never responsive Tailwind sizes, so exports look the same from any screen width.
 
 ### Dark Mode
 

@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og'
 import LogoSvg from '@/assets/logo.svg'
 
-export const alt = 'Yearly - Visualize Your Travel Year in a Beautiful Calendar'
+export const alt =
+  'Yearly logo, the line "Your year, at a glance." and a row of country flags'
 export const size = {
   width: 1200,
   height: 630,

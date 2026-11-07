@@ -111,7 +111,7 @@ export function useImageExport({
         watermark.style.display = 'block'
         watermark.style.marginTop = '2rem'
         watermark.style.paddingTop = '2rem'
-        watermark.style.fontSize = '2.5rem'
+        watermark.style.fontSize = '2rem'
       }
 
       // Override any responsive spacing/sizing

@@ -10,7 +10,7 @@ export const HOMEPAGE_EXAMPLES: HomepageExample[] = [
   {
     src: '/examples/travel-calendar-2026-yearly.jpg',
     width: 1200,
-    height: 1861,
+    height: 1848,
     alt: 'A 2026 travel calendar where country flags replace the days spent in Malaysia, Japan, France, Italy, South Korea and Australia, made with Yearly',
     caption: 'Full year',
   },

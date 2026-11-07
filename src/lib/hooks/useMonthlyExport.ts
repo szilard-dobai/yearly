@@ -97,7 +97,7 @@ export function useMonthlyExport({
           watermark.style.display = 'block'
           watermark.style.marginTop = 'auto'
           watermark.style.paddingTop = '2rem'
-          watermark.style.fontSize = '2.25rem'
+          watermark.style.fontSize = '1.8rem'
         }
 
         const allElements = clonedElement.querySelectorAll('*')

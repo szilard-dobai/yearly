@@ -15,8 +15,8 @@ export interface HomepageExample extends HomepageImagePair {
 }
 
 export const HERO_IMAGE: HomepageImagePair = {
-  light: { src: '/example_light.jpg', width: 2400, height: 3696 },
-  dark: { src: '/example_dark.jpg', width: 2400, height: 3696 },
+  light: { src: '/example_light.jpg', width: 2160, height: 2880 },
+  dark: { src: '/example_dark.jpg', width: 2160, height: 2880 },
   alt: 'A 2026 travel calendar made with Yearly, with country flags on the days spent in Germany, Romania, Hungary, Spain, Serbia, Greece, Italy and the UK',
 }
 
@@ -24,13 +24,13 @@ export const HOMEPAGE_EXAMPLES: HomepageExample[] = [
   {
     light: {
       src: '/examples/travel-calendar-2026-yearly.jpg',
-      width: 1200,
-      height: 1848,
+      width: 1080,
+      height: 1920,
     },
     dark: {
       src: '/examples/travel-calendar-2026-yearly-dark.jpg',
-      width: 1200,
-      height: 1848,
+      width: 1080,
+      height: 1920,
     },
     alt: 'A 2026 travel calendar where country flags replace the days spent in Malaysia, Japan, France, Italy, South Korea and Australia, made with Yearly',
     caption: 'Full year',
@@ -52,13 +52,13 @@ export const HOMEPAGE_EXAMPLES: HomepageExample[] = [
   {
     light: {
       src: '/examples/travel-stats-2026-yearly.jpg',
-      width: 1200,
-      height: 1739,
+      width: 1080,
+      height: 1920,
     },
     dark: {
       src: '/examples/travel-stats-2026-yearly-dark.jpg',
-      width: 1200,
-      height: 1739,
+      width: 1080,
+      height: 1920,
     },
     alt: 'Travel statistics for 2026 made with Yearly: 10 countries, 67 days abroad, June as the busiest month, and Australia, Malaysia and South Korea as the top countries',
     caption: 'Travel stats',

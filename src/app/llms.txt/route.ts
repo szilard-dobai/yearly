@@ -9,19 +9,19 @@ export function GET() {
 
 > Yearly (yearly.world) is a free web app that turns the countries you visited into a travel calendar. You add each country and the dates you were there, flags fill those days on a 12-month calendar, and you download your travel year in review as an image to share.
 
-Yearly runs in the browser on phones and computers, with no account and nothing to install. Trips are saved in the browser's local storage on the user's device. Yearly never receives travel dates, and images are created in the browser.
+Yearly runs in the browser on phones and computers, with no account and nothing to install. Trips are saved in the browser's local storage on the user's device. Yearly never receives travel dates, and images are created in the browser. Usage analytics record which countries are added and how many days, without dates.
 
 ## What you can make
 
 - Full-year calendar: all 12 months on a 3×4 grid, with a country flag on every day spent in that country (JPEG)
 - Single month: a 9:16 image, the shape of an Instagram or TikTok story (JPEG)
-- Statistics card: countries visited, days abroad, average trip length and busiest month (JPEG)
+- Statistics card: countries visited, days abroad, average trip length, busiest month, share of the year abroad and top countries (JPEG)
 
 ## How it works
 
-1. Pick a country and choose a day or a date range, or tap days on the calendar first and pick the country after.
+1. Pick a country and choose a day or a date range, or select the first and last day of a trip on the calendar and then pick the country.
 2. Add the rest of your trips. A day can hold two countries, shown as two flags split diagonally.
-3. Download the full year, one month or your statistics as a JPEG. On a phone, Yearly opens the share options.
+3. Download the full year, one month or your statistics as a JPEG. On most phones, the download button opens the share options.
 
 ## FAQ
 

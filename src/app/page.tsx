@@ -13,13 +13,13 @@ const features = [
     icon: Calendar,
     title: 'All 12 months on one page',
     description:
-      'Your year on a 3×4 grid, January to December, so you can see when you traveled as well as where.',
+      'The image shows all 12 months on a 3×4 grid, January to December, so you can see when you traveled as well as where.',
   },
   {
     icon: Sparkles,
-    title: 'A flag on every day away',
+    title: 'Flags instead of dates',
     description:
-      'Pick a country and your dates, and its flag replaces the date on each of those days.',
+      'Pick a country and your dates, and its flag replaces the number on each of those days.',
   },
   {
     icon: Share2,
@@ -34,19 +34,19 @@ const steps = [
     step: '01',
     title: 'Pick a country and dates',
     description:
-      'Search for a country and choose a day or a date range. You can also tap days on the calendar first and pick the country after.',
+      'Search for a country and choose a day or a date range. Or select the first and last day of a trip on the calendar, then pick the country.',
   },
   {
     step: '02',
     title: 'Add the rest of your trips',
     description:
-      'Keep going until the year is filled in. Trips save in your browser as you go, so you can come back and add more later.',
+      'Keep adding countries until every trip is in. Trips save in this browser as you go, so you can come back and add more later.',
   },
   {
     step: '03',
     title: 'Download and share',
     description:
-      'Save the full year, one month or your stats as a JPEG. On a phone, Yearly opens your share options so you can post it straight away.',
+      'Save the full year, one month or your stats as a JPEG. On most phones, the download button opens your share options so you can post it straight away.',
   },
 ]
 
@@ -75,9 +75,10 @@ export default function Home() {
             </h1>
 
             <p className="text-gray-600 dark:text-zinc-400 mb-12 max-w-2xl mx-auto text-xl leading-relaxed">
-              Add the countries you visited and your dates, and Yearly fills
-              those days with flags. Download the whole year as an image to
-              share. It&apos;s free, and you don&apos;t need an account.
+              Yearly turns the countries you visited into a calendar, with a
+              flag on every day you were there. Download the whole year as an
+              image to share. It&apos;s free, and you don&apos;t need an
+              account.
             </p>
 
             <div className="flex gap-4 justify-center items-center flex-wrap">
@@ -177,8 +178,8 @@ export default function Home() {
               Make your {new Date().getFullYear()} travel calendar
             </h2>
             <p className="mb-8 text-gray-300 dark:text-zinc-400 text-lg leading-relaxed">
-              Add your trips, watch the flags fill in, and download your year in
-              a few minutes.
+              Add your trips, watch the flags fill in, and download your travel
+              recap.
             </p>
             <TrackingLink
               href="/create"

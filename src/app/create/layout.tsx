@@ -14,7 +14,7 @@ export async function generateMetadata(
   return {
     title,
     description:
-      "Pick a country and dates, and its flag fills those days. Download the year, a month or your stats as a JPEG. It's free, and trips stay on your device.",
+      'Pick a country and dates, and its flag fills those days. Download the year, a month or your stats as a JPEG. Free, and your trip dates stay on your device.',
     openGraph: {
       type: 'website',
       locale: 'en_US',

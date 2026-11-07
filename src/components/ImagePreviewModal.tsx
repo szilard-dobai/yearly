@@ -16,6 +16,11 @@ import {
   markFeedbackPromptShown,
   shouldShowFeedbackPrompt,
 } from '@/lib/feedback/prompt'
+import {
+  EXPORT_CANVAS,
+  EXPORT_FORMATS,
+  type ExportFormat,
+} from '@/lib/export-canvas'
 import type { ExportType } from '@/lib/feedback/types'
 import { buildShareText } from '@/lib/share'
 import { trackEvent } from '@/lib/tracking'
@@ -23,11 +28,12 @@ import { getDeviceId } from '@/lib/tracking/device-id'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
 import { getAnimatedVideoPrice } from '@/lib/video-offer'
-import { ChevronRight, Download, Play } from 'lucide-react'
+import { ChevronRight, Download, Loader2, Play } from 'lucide-react'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useState } from 'react'
+import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 import YearEndReminderCard from './YearEndReminderCard'
 
@@ -49,6 +55,9 @@ interface ImagePreviewModalProps {
   month?: number
   calendarData: CalendarData
   exportType: ExportType
+  format: ExportFormat
+  onFormatChange: (format: ExportFormat) => void
+  isRendering: boolean
   onOpenChange: (open: boolean) => void
 }
 
@@ -57,6 +66,76 @@ type ImagePreviewContentProps = Omit<
   'open' | 'onOpenChange'
 >
 
+const FORMAT_HINTS: Record<ExportFormat, string> = {
+  story: 'Stories & TikTok',
+  feed: 'Instagram feed',
+}
+
+function FormatPicker({
+  format,
+  disabled,
+  onChange,
+}: {
+  format: ExportFormat
+  disabled: boolean
+  onChange: (format: ExportFormat) => void
+}) {
+  return (
+    <div
+      role="group"
+      aria-label="Image format"
+      className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5"
+    >
+      {EXPORT_FORMATS.map((option) => {
+        const { width, height, label, ratio } = EXPORT_CANVAS[option]
+        const selected = option === format
+        return (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={selected}
+            data-export-format={option}
+            disabled={disabled}
+            onClick={() => !selected && onChange(option)}
+            className={cn(
+              'flex cursor-pointer items-center gap-3 rounded-md px-3 py-2 text-left transition-colors disabled:cursor-default',
+              selected
+                ? 'bg-white shadow-sm dark:bg-[#222222]'
+                : 'hover:bg-white/60 dark:hover:bg-white/5'
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                'h-6 shrink-0 rounded-sm border-2',
+                selected
+                  ? 'border-gray-900 dark:border-zinc-100'
+                  : 'border-gray-400 dark:border-zinc-500'
+              )}
+              style={{ aspectRatio: `${width} / ${height}` }}
+            />
+            <span className="min-w-0">
+              <span
+                className={cn(
+                  'block text-sm font-medium',
+                  selected
+                    ? 'text-gray-900 dark:text-zinc-100'
+                    : 'text-gray-600 dark:text-zinc-400'
+                )}
+              >
+                {label} <span className="font-normal">{ratio}</span>
+              </span>
+              <span className="block truncate text-xs text-gray-500 dark:text-zinc-500">
+                {FORMAT_HINTS[option]}
+              </span>
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function ImagePreviewContent({
   imageDataUrl,
   filename,
@@ -64,6 +143,9 @@ function ImagePreviewContent({
   month,
   calendarData,
   exportType,
+  format,
+  onFormatChange,
+  isRendering,
 }: ImagePreviewContentProps) {
   const [prompt, setPrompt] = useState<'survey' | 'feedback' | 'closed' | null>(
     null
@@ -113,6 +195,7 @@ function ImagePreviewContent({
     trackEvent('image_download_click', {
       exportType,
       ...summarizeCalendar(calendarData, year),
+      format,
     })
 
     if (isMobileOrTablet && !!navigator.share) {
@@ -145,15 +228,23 @@ function ImagePreviewContent({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          className="w-full max-w-md"
+          className="relative w-full max-w-md"
         >
           {imageDataUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageDataUrl}
               alt="Your Yearly calendar"
-              className="w-full rounded-lg shadow-2xl"
+              className={cn(
+                'w-full rounded-lg shadow-2xl transition-opacity',
+                isRendering && 'opacity-40'
+              )}
             />
+          )}
+          {isRendering && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="size-8 animate-spin text-gray-600 dark:text-zinc-400" />
+            </div>
           )}
         </motion.div>
       </div>
@@ -175,11 +266,18 @@ function ImagePreviewContent({
             </p>
           </div>
 
+          <FormatPicker
+            format={format}
+            disabled={isRendering}
+            onChange={onFormatChange}
+          />
+
           <Button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="w-full mb-4"
             onClick={handleDownload}
+            disabled={isRendering}
           >
             <Download className="w-5 h-5" />
             Download Image

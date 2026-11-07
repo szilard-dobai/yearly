@@ -14,7 +14,6 @@ import Header from '@/components/Header'
 import CalendarExportButton from '@/components/CalendarExportButton'
 import ImagePreviewModal from '@/components/ImagePreviewModal'
 import MobileFab from '@/components/MobileFab'
-import MonthlyExportLayout from '@/components/MonthlyExportLayout'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
@@ -87,9 +86,6 @@ function Create() {
   const toastIdRef = useRef(0)
   const selectionPanelRef = useRef<HTMLDivElement>(null)
   const hintDismissed = useCalendarHintDismissed()
-  const calendarRef = useRef<HTMLDivElement>(null)
-  const statisticsRef = useRef<HTMLDivElement>(null)
-  const monthlyExportRef = useRef<HTMLDivElement>(null)
   const [selectedMonth, setSelectedMonth] = useState<number>(
     new Date().getMonth()
   )
@@ -106,19 +102,25 @@ function Create() {
 
   const {
     exportImage,
+    status: mobileExportStatus,
     previewOpen: mobilePreviewOpen,
     setPreviewOpen: setMobilePreviewOpen,
     imageDataUrl: mobileImageDataUrl,
     filename: mobileFilename,
-  } = useImageExport({ calendarRef, calendarData, year: selectedYear })
+    format: mobileFormat,
+    changeFormat: changeMobileFormat,
+  } = useImageExport({ calendarData, year: selectedYear })
 
   const {
     exportStatistics,
+    status: statsExportStatus,
     previewOpen: statsPreviewOpen,
     setPreviewOpen: setStatsPreviewOpen,
     imageDataUrl: statsImageDataUrl,
     filename: statsFilename,
-  } = useStatisticsExport({ statisticsRef, calendarData, year: selectedYear })
+    format: statsFormat,
+    changeFormat: changeStatsFormat,
+  } = useStatisticsExport({ calendarData, year: selectedYear })
 
   const {
     exportMonth,
@@ -127,8 +129,10 @@ function Create() {
     setPreviewOpen: setMonthlyPreviewOpen,
     imageDataUrl: monthlyImageDataUrl,
     filename: monthlyFilename,
+    format: monthlyFormat,
+    changeFormat: changeMonthlyFormat,
   } = useMonthlyExport({
-    monthlyExportRef,
+    calendarData,
     year: selectedYear,
     month: selectedMonth,
   })
@@ -335,7 +339,6 @@ function Create() {
                     <CalendarHint onDismiss={dismissCalendarHint} />
                   )}
                   <CalendarGrid
-                    ref={calendarRef}
                     year={selectedYear}
                     calendarData={calendarData}
                     selection={selection}
@@ -344,14 +347,6 @@ function Create() {
                   />
                 </CardContent>
               </StandardCard>
-              <div className="hidden">
-                <MonthlyExportLayout
-                  ref={monthlyExportRef}
-                  calendarData={calendarData}
-                  year={selectedYear}
-                  month={selectedMonth}
-                />
-              </div>
             </div>
 
             <aside className="space-y-4">
@@ -398,12 +393,10 @@ function Create() {
                         Download high-quality images to share
                       </p>
                       <CalendarExportButton
-                        calendarRef={calendarRef}
                         calendarData={calendarData}
                         year={selectedYear}
                       />
                       <StatisticsExportButton
-                        statisticsRef={statisticsRef}
                         calendarData={calendarData}
                         year={selectedYear}
                       />
@@ -460,11 +453,7 @@ function Create() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Statistics
-                    calendarData={calendarData}
-                    year={selectedYear}
-                    exportRef={statisticsRef}
-                  />
+                  <Statistics calendarData={calendarData} year={selectedYear} />
                 </CardContent>
               </StandardCard>
 
@@ -666,6 +655,9 @@ function Create() {
         year={selectedYear}
         calendarData={calendarData}
         exportType="calendar"
+        format={mobileFormat}
+        onFormatChange={changeMobileFormat}
+        isRendering={mobileExportStatus === 'loading'}
       />
 
       <ImagePreviewModal
@@ -676,6 +668,9 @@ function Create() {
         year={selectedYear}
         calendarData={calendarData}
         exportType="statistics"
+        format={statsFormat}
+        onFormatChange={changeStatsFormat}
+        isRendering={statsExportStatus === 'loading'}
       />
 
       <ImagePreviewModal
@@ -687,6 +682,9 @@ function Create() {
         month={selectedMonth}
         calendarData={calendarData}
         exportType="monthly"
+        format={monthlyFormat}
+        onFormatChange={changeMonthlyFormat}
+        isRendering={monthlyExportStatus === 'loading'}
       />
     </>
   )

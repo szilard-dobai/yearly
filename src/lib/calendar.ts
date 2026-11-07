@@ -5,6 +5,7 @@
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import isLeapYear from 'dayjs/plugin/isLeapYear'
+import { toDayKey } from './selection'
 import type { CountryVisit } from './types'
 
 // Enable plugins
@@ -173,4 +174,15 @@ export function isToday(date: Date): boolean {
  */
 export function formatDate(date: Date, format = 'YYYY-MM-DD'): string {
   return dayjs(date).format(format)
+}
+
+export function getCountryCodesByDay(
+  visits: CountryVisit[]
+): Map<string, string[]> {
+  const codesByDay = new Map<string, string[]>()
+  for (const visit of visits) {
+    const key = toDayKey(visit.date)
+    codesByDay.set(key, [...(codesByDay.get(key) ?? []), visit.countryCode])
+  }
+  return codesByDay
 }

@@ -8,6 +8,11 @@ import {
   useReducer,
   type ReactNode,
 } from 'react'
+import {
+  DEFAULT_EXPORT_FORMAT,
+  isExportFormat,
+  type ExportFormat,
+} from '@/lib/export-canvas'
 
 export type FlagDisplayMode = 'emoji' | 'icon'
 export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6
@@ -18,6 +23,7 @@ export interface Settings {
   weekStartsOn: WeekStartsOn
   colorScheme: ColorScheme
   highlightToday: boolean
+  exportFormat: ExportFormat
 }
 
 const SETTINGS_STORAGE_KEY = 'countries-in-year-settings'
@@ -27,6 +33,7 @@ const DEFAULT_SETTINGS: Settings = {
   weekStartsOn: 1,
   colorScheme: 'system',
   highlightToday: true,
+  exportFormat: DEFAULT_EXPORT_FORMAT,
 }
 
 function saveSettingsToStorage(settings: Settings): void {
@@ -54,6 +61,9 @@ function loadSettingsFromStorage(): Settings {
           : DEFAULT_SETTINGS.weekStartsOn,
       colorScheme: parsed.colorScheme || DEFAULT_SETTINGS.colorScheme,
       highlightToday: parsed.highlightToday ?? DEFAULT_SETTINGS.highlightToday,
+      exportFormat: isExportFormat(parsed.exportFormat)
+        ? parsed.exportFormat
+        : DEFAULT_SETTINGS.exportFormat,
     }
   } catch (error) {
     console.error('Failed to load settings:', error)

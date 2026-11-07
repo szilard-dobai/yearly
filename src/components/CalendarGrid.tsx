@@ -10,8 +10,7 @@ import {
   type DaySelection,
 } from '@/lib/selection'
 import type { CalendarData } from '@/lib/types'
-import { forwardRef, useRef, type KeyboardEvent } from 'react'
-import ExportWatermark from './ExportWatermark'
+import { useRef, type KeyboardEvent } from 'react'
 import MonthGrid from './MonthGrid'
 
 const ARROW_KEY_OFFSETS: Record<string, number> = {
@@ -36,77 +35,71 @@ interface CalendarGridProps {
   onMonthExport?: (month: number) => void
 }
 
-const CalendarGrid = forwardRef<HTMLDivElement, CalendarGridProps>(
-  (
-    { year, calendarData, selection = null, onSelectionChange, onMonthExport },
-    ref
-  ) => {
-    const visits = calendarData.visits
-    const gridRef = useRef<HTMLDivElement>(null)
-    const bounds = selection ? getSelectionBounds(selection) : null
-    const focusKey = selection?.focus ?? getDefaultFocusKey(year)
+export default function CalendarGrid({
+  year,
+  calendarData,
+  selection = null,
+  onSelectionChange,
+  onMonthExport,
+}: CalendarGridProps) {
+  const visits = calendarData.visits
+  const gridRef = useRef<HTMLDivElement>(null)
+  const bounds = selection ? getSelectionBounds(selection) : null
+  const focusKey = selection?.focus ?? getDefaultFocusKey(year)
 
-    useDayGestures(
-      gridRef,
-      {
-        onTap: (key) => onSelectionChange?.(applyTap(selection, key)),
-        onDrag: (anchor, focus, method) =>
-          onSelectionChange?.({ anchor, focus, method }),
-      },
-      Boolean(onSelectionChange)
+  useDayGestures(
+    gridRef,
+    {
+      onTap: (key) => onSelectionChange?.(applyTap(selection, key)),
+      onDrag: (anchor, focus, method) =>
+        onSelectionChange?.({ anchor, focus, method }),
+    },
+    Boolean(onSelectionChange)
+  )
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const offset = ARROW_KEY_OFFSETS[event.key]
+    const key =
+      event.target instanceof HTMLElement ? event.target.dataset.day : null
+    if (!offset || !key) return
+    const next = fromDayKey(key)
+    next.setDate(next.getDate() + offset)
+    const target = gridRef.current?.querySelector<HTMLElement>(
+      `[data-day="${toDayKey(next)}"]`
     )
-
-    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-      const offset = ARROW_KEY_OFFSETS[event.key]
-      const key =
-        event.target instanceof HTMLElement ? event.target.dataset.day : null
-      if (!offset || !key) return
-      const next = fromDayKey(key)
-      next.setDate(next.getDate() + offset)
-      const target = gridRef.current?.querySelector<HTMLElement>(
-        `[data-day="${toDayKey(next)}"]`
-      )
-      if (!target) return
-      event.preventDefault()
-      target.focus()
-    }
-
-    return (
-      <div ref={ref} data-export-target="calendar">
-        <div className="mb-4 border-b border-gray-200 dark:border-white/10 pb-4">
-          <h2 className="text-4xl sm:text-6xl font-bold text-red-500">
-            {year}
-          </h2>
-        </div>
-        <div
-          ref={gridRef}
-          onKeyDown={handleKeyDown}
-          className="grid grid-cols-1 min-[25rem]:grid-cols-2 lg:grid-cols-3 gap-x-4 min-[25rem]:gap-x-6 lg:gap-x-8 gap-y-4 min-[25rem]:gap-y-6 select-none [-webkit-touch-callout:none]"
-        >
-          {Array.from({ length: 12 }, (_, month) => (
-            <MonthGrid
-              key={month}
-              year={year}
-              month={month}
-              visits={visits}
-              selectionStartKey={bounds?.startKey ?? null}
-              selectionEndKey={bounds?.endKey ?? null}
-              focusKey={focusKey}
-              onSelectMonth={
-                onSelectionChange
-                  ? () => onSelectionChange(getMonthSelection(year, month))
-                  : undefined
-              }
-              onExport={onMonthExport ? () => onMonthExport(month) : undefined}
-            />
-          ))}
-        </div>
-        <ExportWatermark />
-      </div>
-    )
+    if (!target) return
+    event.preventDefault()
+    target.focus()
   }
-)
 
-CalendarGrid.displayName = 'CalendarGrid'
-
-export default CalendarGrid
+  return (
+    <div>
+      <div className="mb-4 border-b border-gray-200 dark:border-white/10 pb-4">
+        <h2 className="text-4xl sm:text-6xl font-bold text-red-500">{year}</h2>
+      </div>
+      <div
+        ref={gridRef}
+        onKeyDown={handleKeyDown}
+        className="grid grid-cols-1 min-[25rem]:grid-cols-2 lg:grid-cols-3 gap-x-4 min-[25rem]:gap-x-6 lg:gap-x-8 gap-y-4 min-[25rem]:gap-y-6 select-none [-webkit-touch-callout:none]"
+      >
+        {Array.from({ length: 12 }, (_, month) => (
+          <MonthGrid
+            key={month}
+            year={year}
+            month={month}
+            visits={visits}
+            selectionStartKey={bounds?.startKey ?? null}
+            selectionEndKey={bounds?.endKey ?? null}
+            focusKey={focusKey}
+            onSelectMonth={
+              onSelectionChange
+                ? () => onSelectionChange(getMonthSelection(year, month))
+                : undefined
+            }
+            onExport={onMonthExport ? () => onMonthExport(month) : undefined}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}

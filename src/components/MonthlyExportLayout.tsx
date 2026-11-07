@@ -1,271 +1,191 @@
-'use client'
-
-import { forwardRef, useMemo } from 'react'
-import type { CalendarData } from '@/lib/types'
-import { getCountryByCode } from '@/lib/countries'
-import { getMonthData, getVisitsForDate } from '@/lib/calendar'
-import { useSettings } from '@/lib/contexts/SettingsContext'
+import { getCountryCodesByDay, getMonthData } from '@/lib/calendar'
 import { MONTH_NAMES } from '@/lib/constants'
-import ExportWatermark from './ExportWatermark'
-import Flag from './Flag'
+import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import {
+  fitRankNameSize,
+  fitStatValueSize,
+  getMonthLayout,
+  type ExportFormat,
+} from '@/lib/export-canvas'
+import { toDayKey } from '@/lib/selection'
+import {
+  calculateAverageTripLength,
+  calculateCountriesByDays,
+  calculatePercentageOfMonthTraveled,
   calculateTotalCountriesVisited,
   calculateTotalDaysTraveled,
-  calculateCountriesByDays,
-  calculateAverageTripLength,
-  calculatePercentageOfMonthTraveled,
 } from '@/lib/statistics'
+import type { CalendarData } from '@/lib/types'
+import {
+  ExportRankRow,
+  ExportStatTile,
+  getCountryName,
+} from './export/ExportBlocks'
+import { ExportDayFlags } from './export/ExportFlag'
+import ExportFrame from './export/ExportFrame'
+
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 interface MonthlyExportLayoutProps {
   calendarData: CalendarData
   year: number
   month: number
+  format: ExportFormat
+  flagDisplayMode: FlagDisplayMode
+  weekStartsOn: number
 }
 
-const MonthlyExportLayout = forwardRef<
-  HTMLDivElement,
-  MonthlyExportLayoutProps
->(({ calendarData, year, month }, ref) => {
-  const { settings } = useSettings()
-
-  const monthVisits = useMemo(
-    () =>
-      calendarData.visits.filter(
-        (visit) =>
-          visit.date.getFullYear() === year && visit.date.getMonth() === month
-      ),
-    [calendarData.visits, year, month]
+export default function MonthlyExportLayout({
+  calendarData,
+  year,
+  month,
+  format,
+  flagDisplayMode,
+  weekStartsOn,
+}: MonthlyExportLayoutProps) {
+  const visits = calendarData.visits.filter(
+    (visit) =>
+      visit.date.getFullYear() === year && visit.date.getMonth() === month
   )
-
-  const weeks = useMemo(
-    () => getMonthData(year, month, settings.weekStartsOn),
-    [year, month, settings.weekStartsOn]
+  const rankedCountries = calculateCountriesByDays(visits, 5)
+  const layout = getMonthLayout(
+    year,
+    month,
+    weekStartsOn,
+    format,
+    rankedCountries.length
   )
+  const topCountries = rankedCountries.slice(0, layout.countries)
+  const codesByDay = getCountryCodesByDay(visits)
 
-  const stats = useMemo(() => {
-    const totalCountries = calculateTotalCountriesVisited(monthVisits)
-    const totalDays = calculateTotalDaysTraveled(monthVisits)
-    const averageTripLength = calculateAverageTripLength(monthVisits)
-    const countriesByDays = calculateCountriesByDays(monthVisits, 5)
-    const percentTraveled = calculatePercentageOfMonthTraveled(
-      monthVisits,
-      year,
-      month
-    )
-
-    return {
-      totalCountries,
-      totalDays,
-      averageTripLength,
-      countriesByDays,
-      percentTraveled,
-    }
-  }, [monthVisits, year, month])
-
-  const dayLabels = useMemo(() => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    const reordered = []
-    for (let i = 0; i < 7; i++) {
-      reordered.push(days[(settings.weekStartsOn + i) % 7])
-    }
-    return reordered
-  }, [settings.weekStartsOn])
-
-  const getRankDisplay = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <span className="text-2xl leading-none">🥇</span>
-      case 2:
-        return <span className="text-2xl leading-none">🥈</span>
-      case 3:
-        return <span className="text-2xl leading-none">🥉</span>
-      default:
-        return (
-          <span className="text-xl font-semibold text-gray-500 dark:text-gray-400">
-            {rank}.
-          </span>
-        )
-    }
-  }
+  const tiles = [
+    {
+      label: 'Countries Visited',
+      value: { value: String(calculateTotalCountriesVisited(visits)) },
+    },
+    {
+      label: 'Days Abroad',
+      value: { value: String(calculateTotalDaysTraveled(visits)) },
+    },
+    {
+      label: 'Average Trip',
+      value: {
+        value: calculateAverageTripLength(visits).toFixed(1),
+        unit: 'days',
+      },
+    },
+    {
+      label: 'Month Abroad',
+      value: {
+        value: `${calculatePercentageOfMonthTraveled(visits, year, month).toFixed(1)}%`,
+      },
+    },
+  ]
+  const valueSize = fitStatValueSize(
+    tiles.map(({ value }) => ({ value, width: layout.tileContentWidth })),
+    layout.tileValueSize
+  )
+  const nameSize = fitRankNameSize(
+    topCountries.map(({ countryCode }) => getCountryName(countryCode)),
+    layout.rank,
+    layout.rowWidth
+  )
 
   return (
-    <div
-      ref={ref}
-      data-export-target="monthly"
-      className="flex flex-col min-h-full"
-    >
-      <div className="mb-4 border-b border-gray-200 dark:border-white/10 pb-6">
-        <h2 className="text-4xl font-bold text-red-500">
-          {MONTH_NAMES[month]} {year}
-        </h2>
-      </div>
-
-      <div className="mb-16">
-        <div className="grid grid-cols-7 gap-0 mb-1">
-          {dayLabels.map((day) => (
-            <div
-              key={day}
-              className="text-center text-sm text-gray-500 dark:text-gray-400 font-medium py-1"
-            >
-              {day}
-            </div>
-          ))}
-        </div>
-        {weeks.map((week, weekIndex) => (
-          <div key={weekIndex} className="grid grid-cols-7 gap-0">
-            {week.map((date, dayIndex) => {
-              if (!date) {
-                return <div key={dayIndex} className="h-20 p-1" />
-              }
-
-              const cellVisits = getVisitsForDate(date, monthVisits)
-              const hasVisits = cellVisits.length > 0
-              const hasTwoCountries = cellVisits.length === 2
-
-              return (
-                <div
-                  key={dayIndex}
-                  className="h-20 p-0.5 flex items-center justify-center"
-                >
-                  <div className="flex items-center justify-center w-full h-full">
-                    {hasVisits ? (
-                      hasTwoCountries ? (
-                        <div className="relative w-10 h-8">
-                          <div
-                            className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                            style={{
-                              clipPath: 'polygon(0 0, 100% 0, 0 100%)',
-                            }}
-                          >
-                            <Flag
-                              countryCode={cellVisits[0].countryCode}
-                              displayMode={settings.flagDisplayMode}
-                              size="lg"
-                              className="text-3xl"
-                            />
-                          </div>
-                          <div
-                            className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                            style={{
-                              clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
-                            }}
-                          >
-                            <Flag
-                              countryCode={cellVisits[1].countryCode}
-                              displayMode={settings.flagDisplayMode}
-                              size="lg"
-                              className="text-3xl"
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <Flag
-                          displayMode={settings.flagDisplayMode}
-                          countryCode={cellVisits[0].countryCode}
-                          size="lg"
-                          className="text-3xl"
-                        />
-                      )
-                    ) : (
-                      <span className="text-lg font-medium text-gray-900 dark:text-white">
-                        {date.getDate()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+    <ExportFrame format={format} title={`${MONTH_NAMES[month]} ${year}`}>
+      <div
+        className="grid grid-cols-7"
+        style={{ height: layout.weekdayHeight }}
+      >
+        {Array.from({ length: 7 }, (_, i) => (
+          <span
+            key={i}
+            className="text-center font-medium text-gray-500 dark:text-gray-400"
+            style={{ fontSize: layout.weekdaySize }}
+          >
+            {DAY_LABELS[(weekStartsOn + i) % 7]}
+          </span>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-            Countries Visited
-          </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {stats.totalCountries}
-          </p>
+      {getMonthData(year, month, weekStartsOn).map((week, weekIndex) => (
+        <div key={weekIndex} className="flex">
+          {week.map((date, dayIndex) => {
+            const codes = date ? codesByDay.get(toDayKey(date)) : null
+            return (
+              <div
+                key={dayIndex}
+                className="flex shrink-0 items-center justify-center"
+                style={{ width: layout.dayWidth, height: layout.dayHeight }}
+              >
+                {date &&
+                  (codes ? (
+                    <ExportDayFlags
+                      codes={codes}
+                      size={layout.flagSize}
+                      mode={flagDisplayMode}
+                    />
+                  ) : (
+                    <span
+                      className="font-medium leading-none"
+                      style={{ fontSize: layout.daySize }}
+                    >
+                      {date.getDate()}
+                    </span>
+                  ))}
+              </div>
+            )
+          })}
         </div>
+      ))}
 
-        <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-            Days Abroad
-          </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {stats.totalDays}
-          </p>
-        </div>
-
-        <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-            Average Trip
-          </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {stats.averageTripLength.toFixed(1)}
-            <span className="text-base font-normal text-gray-500 dark:text-gray-400 ml-1">
-              days
-            </span>
-          </p>
-        </div>
-
-        <div className="stat-card p-3 rounded-2xl border bg-gray-100 dark:bg-white/5">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-            Month Abroad
-          </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {stats.percentTraveled.toFixed(1)}%
-          </p>
-        </div>
+      <div
+        className="grid"
+        style={{
+          marginTop: layout.sectionGap,
+          gridTemplateColumns: `repeat(${layout.tileColumns}, minmax(0, 1fr))`,
+          gap: layout.tileGap,
+        }}
+      >
+        {tiles.map((tile) => (
+          <ExportStatTile
+            key={tile.label}
+            label={tile.label}
+            value={tile.value}
+            labelSize={layout.tileLabelSize}
+            valueSize={valueSize}
+            height={layout.tileHeight}
+            padding={layout.tilePadding}
+          />
+        ))}
       </div>
 
-      {stats.countriesByDays.length > 0 && (
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+      {layout.countries > 0 && (
+        <div style={{ marginTop: layout.sectionGap }}>
+          <h3
+            className="font-semibold leading-none text-gray-900 dark:text-white"
+            style={{
+              fontSize: layout.listHeaderSize,
+              height: layout.listHeaderHeight,
+            }}
+          >
             Top Countries
           </h3>
-          <div className="space-y-2">
-            {stats.countriesByDays.map((item, index) => {
-              const country = getCountryByCode(item.countryCode)
-              const countryName = country?.name || item.countryCode
-
-              return (
-                <div
-                  key={item.countryCode}
-                  className="flex items-center gap-4 p-3 border rounded-2xl bg-gray-100 dark:bg-white/5"
-                >
-                  <div className="w-10 flex items-center justify-center shrink-0">
-                    {getRankDisplay(index + 1)}
-                  </div>
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="w-8 h-6 flex items-center shrink-0">
-                      <Flag
-                        countryCode={item.countryCode}
-                        displayMode={settings.flagDisplayMode}
-                        className="text-2xl"
-                        size="lg"
-                      />
-                    </div>
-                    <span className="text-xl font-medium text-gray-900 dark:text-white truncate">
-                      {countryName}
-                    </span>
-                  </div>
-                  <span className="px-3 py-1.5 rounded-full bg-gray-200 dark:bg-white/10 text-base font-medium text-gray-600 dark:text-gray-300 shrink-0">
-                    {item.days} {item.days === 1 ? 'day' : 'days'}
-                  </span>
-                </div>
-              )
-            })}
+          <div className="flex flex-col" style={{ gap: layout.rowGap }}>
+            {topCountries.map((item, index) => (
+              <ExportRankRow
+                key={item.countryCode}
+                rank={index + 1}
+                code={item.countryCode}
+                days={item.days}
+                sizes={layout.rank}
+                nameSize={nameSize}
+                flagMode={flagDisplayMode}
+              />
+            ))}
           </div>
         </div>
       )}
-
-      <ExportWatermark />
-    </div>
+    </ExportFrame>
   )
-})
-
-MonthlyExportLayout.displayName = 'MonthlyExportLayout'
-
-export default MonthlyExportLayout
+}

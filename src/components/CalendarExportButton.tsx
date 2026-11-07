@@ -1,4 +1,3 @@
-import { RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import { Calendar, XCircle, Loader2 } from 'lucide-react'
 import { useImageExport } from '@/lib/hooks/useImageExport'
@@ -6,13 +5,11 @@ import type { CalendarData } from '@/lib/types'
 import ImagePreviewModal from './ImagePreviewModal'
 
 interface CalendarExportButtonProps {
-  calendarRef: RefObject<HTMLDivElement | null>
   calendarData: CalendarData
   year: number
 }
 
 export default function CalendarExportButton({
-  calendarRef,
   calendarData,
   year,
 }: CalendarExportButtonProps) {
@@ -23,7 +20,9 @@ export default function CalendarExportButton({
     setPreviewOpen,
     imageDataUrl,
     filename,
-  } = useImageExport({ calendarRef, calendarData, year })
+    format,
+    changeFormat,
+  } = useImageExport({ calendarData, year })
 
   const isDisabled = status === 'loading'
 
@@ -63,6 +62,9 @@ export default function CalendarExportButton({
         year={year}
         calendarData={calendarData}
         exportType="calendar"
+        format={format}
+        onFormatChange={changeFormat}
+        isRendering={status === 'loading'}
       />
     </>
   )

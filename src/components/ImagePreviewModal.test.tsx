@@ -1,8 +1,9 @@
+import type { ExportFormat } from '@/lib/export-canvas'
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { getAnimatedVideoPrice } from '@/lib/video-offer'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ImagePreviewModal from './ImagePreviewModal'
@@ -25,7 +26,13 @@ const calendarData: CalendarData = {
   visits: [{ id: '1', countryCode: 'JP', date: new Date(2026, 2, 20) }],
 }
 
-function renderModal(exportType: ExportType, year = 2026, month?: number) {
+function renderModal(
+  exportType: ExportType,
+  year = 2026,
+  month?: number,
+  format: ExportFormat = 'story',
+  { onFormatChange = vi.fn(), isRendering = false } = {}
+) {
   return render(
     <ImagePreviewModal
       open
@@ -36,6 +43,9 @@ function renderModal(exportType: ExportType, year = 2026, month?: number) {
       month={month}
       calendarData={calendarData}
       exportType={exportType}
+      format={format}
+      onFormatChange={onFormatChange}
+      isRendering={isRendering}
     />
   )
 }
@@ -87,9 +97,9 @@ describe('ImagePreviewModal video offer', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('records the download without sending any trip dates', async () => {
+  it('records the download and its format without sending any trip dates', async () => {
     const user = userEvent.setup()
-    renderModal('calendar')
+    renderModal('calendar', 2026, undefined, 'feed')
 
     await user.click(screen.getByRole('button', { name: /Download Image/ }))
 
@@ -100,6 +110,7 @@ describe('ImagePreviewModal video offer', () => {
       tripCount: 1,
       countryCount: 1,
       countries: [{ code: 'JP', days: 1 }],
+      format: 'feed',
     })
   })
 
@@ -149,5 +160,35 @@ describe('ImagePreviewModal video offer', () => {
       year: 2026,
       price,
     })
+  })
+})
+
+describe('ImagePreviewModal format picker', () => {
+  it('marks the current format and switches to the other one', async () => {
+    const user = userEvent.setup()
+    const onFormatChange = vi.fn()
+    renderModal('statistics', 2026, undefined, 'story', { onFormatChange })
+
+    const group = screen.getByRole('group', { name: 'Image format' })
+    const story = within(group).getByRole('button', { name: /Story/ })
+    const feed = within(group).getByRole('button', { name: /Feed/ })
+
+    expect(story).toHaveAttribute('aria-pressed', 'true')
+    expect(feed).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(story)
+    expect(onFormatChange).not.toHaveBeenCalled()
+
+    await user.click(feed)
+    expect(onFormatChange).toHaveBeenCalledWith('feed')
+  })
+
+  it('locks the picker and the download while the new image renders', () => {
+    renderModal('monthly', 2026, 2, 'feed', { isRendering: true })
+
+    expect(screen.getByRole('button', { name: /Story/ })).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: /Download Image/ })
+    ).toBeDisabled()
   })
 })

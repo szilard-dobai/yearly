@@ -49,7 +49,7 @@ export const PALETTES: Record<VideoTheme, Palette> = {
   light: {
     name: 'light',
     canvas: '#ffffff',
-    card: '#fafafa',
+    card: '#ffffff',
     border: '#e5e7eb',
     divider: '#e5e7eb',
     text: '#101828',

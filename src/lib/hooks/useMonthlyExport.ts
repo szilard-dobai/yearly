@@ -3,7 +3,7 @@ import { toJpeg } from 'html-to-image'
 import { useStatusFeedback } from './useStatusFeedback'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { trackEvent } from '@/lib/tracking'
-import { MONTH_NAMES } from '@/lib/constants'
+import { EXPORT_BACKGROUND, MONTH_NAMES } from '@/lib/constants'
 
 interface UseMonthlyExportOptions {
   monthlyExportRef: RefObject<HTMLDivElement | null>
@@ -83,7 +83,8 @@ export function useMonthlyExport({
         clonedElement.style.minHeight = `${exportHeight}px`
 
         const darkMode = isDarkMode()
-        clonedElement.style.backgroundColor = darkMode ? '#000000' : '#fafafa'
+        const background = EXPORT_BACKGROUND[darkMode ? 'dark' : 'light']
+        clonedElement.style.backgroundColor = background
 
         if (darkMode) {
           clonedElement.style.color = '#ffffff'
@@ -97,10 +98,7 @@ export function useMonthlyExport({
           watermark.style.display = 'block'
           watermark.style.marginTop = 'auto'
           watermark.style.paddingTop = '2rem'
-          const watermarkText = watermark.querySelector('p') as HTMLElement
-          if (watermarkText) {
-            watermarkText.style.fontSize = '1.5rem'
-          }
+          watermark.style.fontSize = '1.8rem'
         }
 
         const allElements = clonedElement.querySelectorAll('*')
@@ -236,7 +234,7 @@ export function useMonthlyExport({
         const dataUrl = await toJpeg(clonedElement, {
           quality: 0.95,
           pixelRatio: 2,
-          backgroundColor: darkMode ? '#000000' : '#fafafa',
+          backgroundColor: background,
           cacheBust: true,
           width: exportWidth,
           height: exportHeight,

@@ -1,7 +1,9 @@
 import { useSyncExternalStore } from 'react'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 
-const DARK_QUERY = '(prefers-color-scheme: dark)'
+export const DARK_QUERY = '(prefers-color-scheme: dark)'
+
+type ColorScheme = 'light' | 'dark'
 
 function subscribe(onChange: () => void) {
   const media = window.matchMedia(DARK_QUERY)
@@ -13,11 +15,17 @@ function prefersDark() {
   return window.matchMedia(DARK_QUERY).matches
 }
 
-export function useResolvedColorScheme(): 'light' | 'dark' | null {
+export function useSystemColorScheme(): ColorScheme {
+  return useSyncExternalStore(subscribe, prefersDark, () => false)
+    ? 'dark'
+    : 'light'
+}
+
+export function useResolvedColorScheme(): ColorScheme | null {
   const { settings, isLoaded } = useSettings()
-  const systemDark = useSyncExternalStore(subscribe, prefersDark, () => false)
+  const system = useSystemColorScheme()
 
   if (!isLoaded) return null
-  if (settings.colorScheme === 'system') return systemDark ? 'dark' : 'light'
+  if (settings.colorScheme === 'system') return system
   return settings.colorScheme
 }

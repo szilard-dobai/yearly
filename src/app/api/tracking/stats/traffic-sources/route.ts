@@ -4,6 +4,7 @@ import {
   SURVEY_EVENTS,
   type TrafficSourceFacets,
 } from '@/lib/attribution/stats'
+import { parseStatsFilters } from '@/lib/admin/stats-filters'
 import { getTrackingCollection } from '@/lib/mongodb'
 import { requireAdmin } from '@/lib/tracking/api'
 import type { Document } from 'mongodb'
@@ -15,12 +16,6 @@ const TOP_LIMIT = 15
 const NOTES_LIMIT = 50
 
 const nonEmptyString = { $type: 'string', $ne: '' }
-
-function parseInstant(value: string | null): Date | null | undefined {
-  if (!value) return undefined
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? null : date
-}
 
 function countDevices(match: Document): Document[] {
   return [
@@ -48,26 +43,15 @@ export async function GET(request: Request) {
   const denied = await requireAdmin(request)
   if (denied) return denied
 
-  const url = new URL(request.url)
-  const from = parseInstant(url.searchParams.get('from'))
-  const to = parseInstant(url.searchParams.get('to'))
-  if (from === null || to === null) {
+  const filters = parseStatsFilters(new URL(request.url).searchParams)
+  if (!filters) {
     return NextResponse.json({ error: 'Invalid date range' }, { status: 400 })
   }
-  const country = url.searchParams.get('country')
-  const region = url.searchParams.get('region')
 
   const match: Document = {
     type: { $in: [...PAGE_VIEW_EVENTS, ...SURVEY_EVENTS] },
+    ...filters,
   }
-  if (from || to) {
-    match.timestamp = {
-      ...(from && { $gte: from }),
-      ...(to && { $lt: to }),
-    }
-  }
-  if (country && country !== 'all') match.country = country
-  if (region && region !== 'all') match.region = region
 
   const pageViews = { $in: PAGE_VIEW_EVENTS }
 

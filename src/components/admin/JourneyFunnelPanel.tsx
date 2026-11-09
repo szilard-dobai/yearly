@@ -33,7 +33,6 @@ const SEGMENTS: { value: FunnelSegment; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'mobile', label: 'Mobile' },
   { value: 'desktop', label: 'Desktop' },
-  { value: 'tablet', label: 'Tablet' },
 ]
 
 function segmentDevices(segment: FunnelSegment) {
@@ -51,7 +50,7 @@ function SegmentPicker({
     <div
       role="group"
       aria-label="Device type"
-      className="grid grid-cols-4 gap-1 rounded-lg bg-gray-100 p-1 sm:flex dark:bg-white/5"
+      className="grid grid-cols-3 gap-1 rounded-lg bg-gray-100 p-1 sm:flex dark:bg-white/5"
     >
       {SEGMENTS.map((segment) => {
         const selected = segment.value === value

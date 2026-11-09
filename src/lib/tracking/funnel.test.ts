@@ -35,7 +35,7 @@ describe('buildFunnelStats', () => {
     ])
   })
 
-  it('splits by device type and adds devices with no type to the total only', () => {
+  it('splits mobile and desktop, and counts tablets and unknown devices in the total only', () => {
     const stats = buildFunnelStats([
       row('mobile', 700, 500, 300, 150, 90),
       row('desktop', 250, 220, 180, 120, 100),
@@ -46,7 +46,7 @@ describe('buildFunnelStats', () => {
     expect(counts(stats.all)).toEqual([1000, 750, 495, 275, 192])
     expect(counts(stats.mobile)).toEqual([700, 500, 300, 150, 90])
     expect(counts(stats.desktop)).toEqual([250, 220, 180, 120, 100])
-    expect(counts(stats.tablet)).toEqual([30, 20, 10, 5, 2])
+    expect(stats).not.toHaveProperty('tablet')
   })
 
   it('treats a missing device type as an empty funnel', () => {

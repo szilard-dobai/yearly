@@ -112,12 +112,23 @@ describe('JourneyFunnelPanel', () => {
       )
     ).toBeInTheDocument()
 
-    await user.click(within(devices).getByRole('button', { name: 'Tablet' }))
+    expect(
+      within(devices).queryByRole('button', { name: 'Tablet' })
+    ).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('says when a device type has no visits', async () => {
+    const user = userEvent.setup()
+    respond(buildFunnelStats([funnel('mobile', 700, 400, 80, 60, 30)]))
+    render(<JourneyFunnelPanel refreshKey={0} />)
+    await screen.findByText(SUMMARY)
+
+    await user.click(screen.getByRole('button', { name: 'Desktop' }))
 
     expect(
-      screen.getByText('No visits from tablet devices in this range yet.')
+      screen.getByText('No visits from desktop devices in this range yet.')
     ).toBeInTheDocument()
-    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it('says when nobody has arrived yet', async () => {

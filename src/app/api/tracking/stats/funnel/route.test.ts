@@ -71,7 +71,7 @@ describe('GET /api/tracking/stats/funnel', () => {
     ])
     expect(devices(stats.mobile)).toEqual([90, 60, 35, 20, 10])
     expect(devices(stats.desktop)).toEqual([30, 20, 15, 10, 8])
-    expect(devices(stats.tablet)).toEqual([0, 0, 0, 0, 0])
+    expect(stats).not.toHaveProperty('tablet')
   })
 
   it('returns zeros when nothing matches', async () => {

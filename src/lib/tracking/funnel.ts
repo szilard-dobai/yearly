@@ -57,7 +57,7 @@ export const FUNNEL_STEPS: readonly FunnelStepDefinition[] = [
 
 export type FunnelStep = { key: FunnelStepKey; devices: number }
 
-export type FunnelSegment = 'all' | DeviceType
+export type FunnelSegment = 'all' | 'mobile' | 'desktop'
 
 export type FunnelStats = Record<FunnelSegment, FunnelStep[]>
 
@@ -132,7 +132,6 @@ export function buildFunnelStats(rows: Document[] = []): FunnelStats {
   return {
     all: sumSteps(rows),
     mobile: forType('mobile'),
-    tablet: forType('tablet'),
     desktop: forType('desktop'),
   }
 }

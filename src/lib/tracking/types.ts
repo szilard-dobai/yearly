@@ -43,7 +43,9 @@ export const TRACKING_EVENT_TYPES = [
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]
 
-export type DeviceType = 'mobile' | 'tablet' | 'desktop'
+export const DEVICE_TYPES = ['mobile', 'tablet', 'desktop'] as const
+
+export type DeviceType = (typeof DEVICE_TYPES)[number]
 
 export interface TrackingEvent {
   type: TrackingEventType

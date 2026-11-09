@@ -20,18 +20,29 @@ function respondWith(rows: unknown[]) {
   tracking.aggregate.mockReturnValue({ toArray: () => Promise.resolve(rows) })
 }
 
+const devices = (steps: { devices: number }[]) =>
+  steps.map((step) => step.devices)
+
 describe('GET /api/tracking/stats/funnel', () => {
   beforeEach(() => {
     requireAdmin.mockReset().mockResolvedValue(null)
     tracking.aggregate.mockReset()
     respondWith([
       {
-        _id: null,
-        arrived: 120,
-        opened: 80,
-        added: 50,
-        exported: 30,
-        downloaded: 18,
+        _id: 'mobile',
+        arrived: 90,
+        opened: 60,
+        added: 35,
+        exported: 20,
+        downloaded: 10,
+      },
+      {
+        _id: 'desktop',
+        arrived: 30,
+        opened: 20,
+        added: 15,
+        exported: 10,
+        downloaded: 8,
       },
     ])
   })
@@ -47,29 +58,28 @@ describe('GET /api/tracking/stats/funnel', () => {
     expect(tracking.aggregate).not.toHaveBeenCalled()
   })
 
-  it('returns the devices at each step', async () => {
+  it('returns the devices at each step, overall and by device type', async () => {
     const response = await GET(request())
+    const stats = await response.json()
 
-    expect(await response.json()).toEqual({
-      steps: [
-        { key: 'arrived', devices: 120 },
-        { key: 'opened', devices: 80 },
-        { key: 'added', devices: 50 },
-        { key: 'exported', devices: 30 },
-        { key: 'downloaded', devices: 18 },
-      ],
-    })
+    expect(stats.all).toEqual([
+      { key: 'arrived', devices: 120 },
+      { key: 'opened', devices: 80 },
+      { key: 'added', devices: 50 },
+      { key: 'exported', devices: 30 },
+      { key: 'downloaded', devices: 18 },
+    ])
+    expect(devices(stats.mobile)).toEqual([90, 60, 35, 20, 10])
+    expect(devices(stats.desktop)).toEqual([30, 20, 15, 10, 8])
+    expect(devices(stats.tablet)).toEqual([0, 0, 0, 0, 0])
   })
 
   it('returns zeros when nothing matches', async () => {
     respondWith([])
 
     const response = await GET(request())
-    const { steps } = await response.json()
 
-    expect(steps.map((step: { devices: number }) => step.devices)).toEqual([
-      0, 0, 0, 0, 0,
-    ])
+    expect(devices((await response.json()).all)).toEqual([0, 0, 0, 0, 0])
   })
 
   it('applies the date range and location filters', async () => {

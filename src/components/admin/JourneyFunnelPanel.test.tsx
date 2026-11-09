@@ -15,13 +15,19 @@ function respond(body: unknown, status = 200) {
   fetchMock.mockResolvedValue(new Response(JSON.stringify(body), { status }))
 }
 
-const stats = buildFunnelStats({
-  arrived: 1000,
-  opened: 600,
-  added: 150,
-  exported: 120,
-  downloaded: 60,
+const funnel = (_id: string, ...devices: number[]) => ({
+  _id,
+  arrived: devices[0],
+  opened: devices[1],
+  added: devices[2],
+  exported: devices[3],
+  downloaded: devices[4],
 })
+
+const stats = buildFunnelStats([
+  funnel('mobile', 700, 400, 80, 60, 30),
+  funnel('desktop', 300, 200, 70, 60, 30),
+])
 
 function steps() {
   return within(screen.getByRole('list', { name: 'Journey funnel' }))
@@ -64,6 +70,54 @@ describe('JourneyFunnelPanel', () => {
       '50% continued · 60 dropped offDownloadedDownloaded or shared the image606%',
     ])
     expect(screen.getAllByText('Biggest drop')).toHaveLength(1)
+  })
+
+  it('switches between device types without reloading', async () => {
+    const user = userEvent.setup()
+    respond(stats)
+    render(<JourneyFunnelPanel refreshKey={0} />)
+    await screen.findByText(SUMMARY)
+    const devices = screen.getByRole('group', { name: 'Device type' })
+
+    expect(
+      within(devices).getByRole('button', { name: 'All' })
+    ).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(within(devices).getByRole('button', { name: 'Mobile' }))
+
+    expect(
+      within(devices).getByRole('button', { name: 'Mobile' })
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      within(devices).getByRole('button', { name: 'All' })
+    ).toHaveAttribute('aria-pressed', 'false')
+    expect(
+      screen.getByText(
+        '30 of 700 mobile devices that arrived downloaded an image'
+      )
+    ).toBeInTheDocument()
+    expect(steps()).toEqual([
+      'ArrivedViewed any page700100%',
+      '57% continued · 300 dropped offOpened the appLoaded the create page40057%',
+      '20% continued · 320 dropped offBiggest dropAdded a tripSaved at least one country visit8011%',
+      '75% continued · 20 dropped offMade an imageGenerated a calendar, monthly or statistics image609%',
+      '50% continued · 30 dropped offDownloadedDownloaded or shared the image304%',
+    ])
+
+    await user.click(within(devices).getByRole('button', { name: 'Desktop' }))
+
+    expect(
+      screen.getByText(
+        '30 of 300 desktop devices that arrived downloaded an image'
+      )
+    ).toBeInTheDocument()
+
+    await user.click(within(devices).getByRole('button', { name: 'Tablet' }))
+
+    expect(
+      screen.getByText('No visits from tablet devices in this range yet.')
+    ).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it('says when nobody has arrived yet', async () => {
@@ -137,13 +191,10 @@ describe('JourneyFunnelPanel', () => {
     finish(
       new Response(
         JSON.stringify(
-          buildFunnelStats({
-            arrived: 1000,
-            opened: 600,
-            added: 150,
-            exported: 120,
-            downloaded: 90,
-          })
+          buildFunnelStats([
+            funnel('mobile', 700, 400, 80, 60, 60),
+            funnel('desktop', 300, 200, 70, 60, 30),
+          ])
         )
       )
     )

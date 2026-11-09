@@ -1,10 +1,12 @@
 'use client'
 
 import DateRangePicker from '@/components/admin/DateRangePicker'
+import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import { buildDateRangeParams } from '@/lib/attribution/stats'
 import {
   FUNNEL_STEPS,
   findBiggestDrop,
+  type FunnelSegment,
   type FunnelStats,
   type FunnelStep,
   type FunnelStepKey,
@@ -25,6 +27,59 @@ const STEP_BAR_CLASSES: Record<FunnelStepKey, string> = {
   added: 'bg-blue-600 dark:bg-blue-400',
   exported: 'bg-blue-800 dark:bg-blue-300',
   downloaded: 'bg-blue-950 dark:bg-blue-200',
+}
+
+const SEGMENTS: { value: FunnelSegment; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'mobile', label: 'Mobile' },
+  { value: 'desktop', label: 'Desktop' },
+  { value: 'tablet', label: 'Tablet' },
+]
+
+function segmentDevices(segment: FunnelSegment) {
+  return segment === 'all' ? 'devices' : `${segment} devices`
+}
+
+function SegmentPicker({
+  value,
+  onChange,
+}: {
+  value: FunnelSegment
+  onChange: (segment: FunnelSegment) => void
+}) {
+  return (
+    <div
+      role="group"
+      aria-label="Device type"
+      className="grid grid-cols-4 gap-1 rounded-lg bg-gray-100 p-1 sm:flex dark:bg-white/5"
+    >
+      {SEGMENTS.map((segment) => {
+        const selected = segment.value === value
+        return (
+          <button
+            key={segment.value}
+            type="button"
+            aria-pressed={selected}
+            onClick={() => onChange(segment.value)}
+            className={cn(
+              'inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors',
+              selected
+                ? 'bg-white text-gray-900 shadow-sm dark:bg-[#222222] dark:text-zinc-100'
+                : 'text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+            )}
+          >
+            {segment.value !== 'all' && (
+              <DeviceTypeIcon
+                type={segment.value}
+                className="hidden size-3.5 sm:block"
+              />
+            )}
+            {segment.label}
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
 function StepTransition({
@@ -59,9 +114,11 @@ function StepTransition({
 
 function FunnelChart({
   steps,
+  segment,
   isRefreshing,
 }: {
   steps: FunnelStep[]
+  segment: FunnelSegment
   isRefreshing: boolean
 }) {
   const start = steps[0].devices
@@ -83,7 +140,7 @@ function FunnelChart({
         </div>
         {!isRefreshing && (
           <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">
-            {`${end.toLocaleString()} of ${start.toLocaleString()} devices that arrived downloaded an image`}
+            {`${end.toLocaleString()} of ${start.toLocaleString()} ${segmentDevices(segment)} that arrived downloaded an image`}
           </p>
         )}
       </div>
@@ -155,6 +212,7 @@ export default function JourneyFunnelPanel({
   region?: string
 }) {
   const [range, setRange] = useState<DateRange | undefined>()
+  const [segment, setSegment] = useState<FunnelSegment>('all')
   const [result, setResult] = useState<Result | null>(null)
 
   const params = buildDateRangeParams(range)
@@ -184,7 +242,7 @@ export default function JourneyFunnelPanel({
 
   const isRefreshing = !!result && result.key !== requestKey
   const devicesByStep = new Map(
-    (result?.stats?.steps ?? []).map((step) => [step.key, step.devices])
+    (result?.stats?.[segment] ?? []).map((step) => [step.key, step.devices])
   )
   const steps = FUNNEL_STEPS.map(({ key }) => ({
     key,
@@ -210,11 +268,14 @@ export default function JourneyFunnelPanel({
             Follows the country and region filters.
           </p>
         </div>
-        <DateRangePicker
-          value={range}
-          onChange={setRange}
-          className="w-full sm:w-auto sm:min-w-56"
-        />
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <SegmentPicker value={segment} onChange={setSegment} />
+          <DateRangePicker
+            value={range}
+            onChange={setRange}
+            className="w-full sm:w-auto sm:min-w-56"
+          />
+        </div>
       </div>
 
       {!result || (result.failed && isRefreshing) ? (
@@ -230,10 +291,16 @@ export default function JourneyFunnelPanel({
             isRefreshing && 'opacity-40'
           )}
         >
-          No visits in this range yet.
+          {segment === 'all'
+            ? 'No visits in this range yet.'
+            : `No visits from ${segment} devices in this range yet.`}
         </p>
       ) : (
-        <FunnelChart steps={steps} isRefreshing={isRefreshing} />
+        <FunnelChart
+          steps={steps}
+          segment={segment}
+          isRefreshing={isRefreshing}
+        />
       )}
     </section>
   )

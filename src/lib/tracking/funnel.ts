@@ -1,6 +1,6 @@
 import { PAGE_VIEW_EVENTS } from '@/lib/attribution/stats'
 import type { Document } from 'mongodb'
-import type { TrackingEventType } from './types'
+import { DEVICE_TYPES, type DeviceType, type TrackingEventType } from './types'
 
 export type FunnelStepKey =
   | 'arrived'
@@ -57,7 +57,9 @@ export const FUNNEL_STEPS: readonly FunnelStepDefinition[] = [
 
 export type FunnelStep = { key: FunnelStepKey; devices: number }
 
-export type FunnelStats = { steps: FunnelStep[] }
+export type FunnelSegment = 'all' | DeviceType
+
+export type FunnelStats = Record<FunnelSegment, FunnelStep[]>
 
 function stepQuery(step: FunnelStepDefinition): Document {
   return {
@@ -80,6 +82,15 @@ export function buildFunnelPipeline(filters: Document = {}): Document[] {
     {
       $group: {
         _id: '$deviceId',
+        deviceType: {
+          $max: {
+            $cond: [
+              { $in: ['$deviceType', [...DEVICE_TYPES]] },
+              '$deviceType',
+              null,
+            ],
+          },
+        },
         ...Object.fromEntries(
           FUNNEL_STEPS.map((step) => [step.key, reachedStep(step)])
         ),
@@ -87,7 +98,7 @@ export function buildFunnelPipeline(filters: Document = {}): Document[] {
     },
     {
       $group: {
-        _id: null,
+        _id: '$deviceType',
         ...Object.fromEntries(
           FUNNEL_STEPS.map((step, index) => [
             step.key,
@@ -105,12 +116,24 @@ export function buildFunnelPipeline(filters: Document = {}): Document[] {
   ]
 }
 
-export function buildFunnelStats(totals: Document = {}): FunnelStats {
+function sumSteps(rows: Document[]): FunnelStep[] {
+  return FUNNEL_STEPS.map(({ key }) => ({
+    key,
+    devices: rows.reduce(
+      (total, row) => total + (typeof row[key] === 'number' ? row[key] : 0),
+      0
+    ),
+  }))
+}
+
+export function buildFunnelStats(rows: Document[] = []): FunnelStats {
+  const forType = (type: DeviceType) =>
+    sumSteps(rows.filter((row) => row._id === type))
   return {
-    steps: FUNNEL_STEPS.map(({ key }) => ({
-      key,
-      devices: typeof totals[key] === 'number' ? totals[key] : 0,
-    })),
+    all: sumSteps(rows),
+    mobile: forType('mobile'),
+    tablet: forType('tablet'),
+    desktop: forType('desktop'),
   }
 }
 

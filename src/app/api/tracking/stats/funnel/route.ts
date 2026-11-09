@@ -17,11 +17,11 @@ export async function GET(request: Request) {
 
   try {
     const collection = await getTrackingCollection()
-    const [totals] = await collection
+    const rows = await collection
       .aggregate(buildFunnelPipeline(filters))
       .toArray()
 
-    return NextResponse.json(buildFunnelStats(totals))
+    return NextResponse.json(buildFunnelStats(rows))
   } catch (error) {
     console.error('Failed to fetch funnel stats:', error)
     return NextResponse.json(

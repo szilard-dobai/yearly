@@ -9,6 +9,7 @@ import AnalyticsOverviewDialog, {
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import EventDetailsDialog from '@/components/admin/EventDetailsDialog'
 import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
+import JourneyFunnelPanel from '@/components/admin/JourneyFunnelPanel'
 import StatTile from '@/components/admin/StatTile'
 import TrafficSourcesPanel from '@/components/admin/TrafficSourcesPanel'
 import VideoOfferPanel from '@/components/admin/VideoOfferPanel'
@@ -558,6 +559,12 @@ export default function AnalyticsPage() {
             )}
           />
         </div>
+
+        <JourneyFunnelPanel
+          refreshKey={refreshKey}
+          country={countryFilter}
+          region={regionFilter}
+        />
 
         <TrafficSourcesPanel
           refreshKey={refreshKey}

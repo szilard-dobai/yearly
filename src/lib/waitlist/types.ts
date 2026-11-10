@@ -4,6 +4,8 @@ import { z } from 'zod'
 
 export const WAITLIST_FEATURES = ['animated_video'] as const
 
+export const LAUNCH_OFFERS = ['first_video_free'] as const
+
 export type WaitlistFeature = (typeof WAITLIST_FEATURES)[number]
 
 export const waitlistContextSchema = z.object({
@@ -12,6 +14,7 @@ export const waitlistContextSchema = z.object({
   year: z.int().min(1900).max(2200).optional(),
   month: z.int().min(0).max(11).optional(),
   price: z.number().positive().max(100).optional(),
+  launchOffer: z.enum(LAUNCH_OFFERS).optional(),
 })
 
 export type WaitlistContext = z.infer<typeof waitlistContextSchema>

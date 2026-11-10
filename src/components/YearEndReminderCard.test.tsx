@@ -32,8 +32,7 @@ function setToday(date: Date) {
   vi.useFakeTimers({ toFake: ['Date'], now: date })
 }
 
-const cardButton = () =>
-  screen.getByRole('button', { name: /Your 2026 isn't over yet/ })
+const TITLE = 'More trips before New Year?'
 
 describe('YearEndReminderCard', () => {
   beforeEach(() => {
@@ -55,19 +54,23 @@ describe('YearEndReminderCard', () => {
     vi.restoreAllMocks()
   })
 
-  it('offers a reminder for the current year', () => {
+  it('offers a reminder for the current year and records that it was shown', () => {
     render(<YearEndReminderCard year={2026} />)
 
-    expect(cardButton()).toHaveAttribute('aria-expanded', 'false')
-    expect(cardButton()).toHaveTextContent(
-      'Get a reminder on 1 Dec for year-in-review season.'
+    expect(screen.getByText(TITLE)).toBeVisible()
+    expect(screen.getByText(/We'll remind you on 1/)).toHaveTextContent(
+      "We'll remind you on 1 Dec, when year-in-review season starts, to add them and share your 2026."
     )
+    expect(trackEvent).toHaveBeenCalledWith('year_end_reminder_shown', {
+      year: 2026,
+    })
   })
 
   it('stays hidden for other years', () => {
     const { container } = render(<YearEndReminderCard year={2025} />)
 
     expect(container).toBeEmptyDOMElement()
+    expect(trackEvent).not.toHaveBeenCalled()
   })
 
   it('stays hidden from 1 Dec', () => {
@@ -81,21 +84,14 @@ describe('YearEndReminderCard', () => {
     setToday(new Date(2026, 10, 30, 23, 59))
     render(<YearEndReminderCard year={2026} />)
 
-    expect(cardButton()).toBeInTheDocument()
+    expect(screen.getByText(TITLE)).toBeInTheDocument()
   })
 
-  it('expands into calendar and email options', async () => {
-    const user = userEvent.setup()
+  it('shows the email form and calendar options without a click', () => {
     render(<YearEndReminderCard year={2026} />)
 
-    await user.click(cardButton())
-
-    expect(cardButton()).toHaveAttribute('aria-expanded', 'true')
-    expect(trackEvent).toHaveBeenCalledWith('year_end_reminder_open', {
-      year: 2026,
-    })
     const calendars = within(
-      screen.getByRole('group', { name: 'Add to your calendar' })
+      screen.getByRole('group', { name: 'Or add it to your calendar' })
     )
     expect(
       calendars.getByRole('button', { name: 'Apple / Outlook' })
@@ -107,7 +103,7 @@ describe('YearEndReminderCard', () => {
     expect(google.getAttribute('href')).toContain(
       encodeURIComponent('https://yearly.world/create?utm_source=reminder')
     )
-    expect(screen.getByLabelText('Or email me')).toHaveAttribute(
+    expect(screen.getByLabelText('Email for your reminder')).toHaveAttribute(
       'type',
       'email'
     )
@@ -127,7 +123,6 @@ describe('YearEndReminderCard', () => {
       .mockImplementation(() => {})
     const { unmount } = render(<YearEndReminderCard year={2026} />)
 
-    await user.click(cardButton())
     await user.click(screen.getByRole('button', { name: 'Apple / Outlook' }))
 
     const blob = createObjectURL.mock.calls[0][0]
@@ -155,9 +150,7 @@ describe('YearEndReminderCard', () => {
     render(<YearEndReminderCard year={2026} />)
 
     expect(screen.getByRole('status')).toHaveTextContent('Reminder set')
-    expect(
-      screen.queryByRole('button', { name: /Your 2026 isn't over yet/ })
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText(TITLE)).not.toBeInTheDocument()
   })
 
   it('opens Google Calendar and shows the reminder as set', async () => {
@@ -166,7 +159,6 @@ describe('YearEndReminderCard', () => {
     document.addEventListener('click', stopNavigation)
     render(<YearEndReminderCard year={2026} />)
 
-    await user.click(cardButton())
     await user.click(screen.getByRole('link', { name: 'Google' }))
     document.removeEventListener('click', stopNavigation)
 
@@ -189,7 +181,6 @@ describe('YearEndReminderCard', () => {
     fetchMock.mockImplementation(() => Promise.reject(new Error('offline')))
     render(<YearEndReminderCard year={2026} />)
 
-    await user.click(cardButton())
     await user.click(screen.getByRole('button', { name: 'Apple / Outlook' }))
 
     expect(calendarRequests()).toHaveLength(1)
@@ -203,9 +194,8 @@ describe('YearEndReminderCard', () => {
     fetchMock.mockReturnValue(jsonResponse({ success: true }, 201))
     render(<YearEndReminderCard year={2026} />)
 
-    await user.click(cardButton())
     await user.type(
-      screen.getByLabelText('Or email me'),
+      screen.getByLabelText('Email for your reminder'),
       ' traveller@example.com '
     )
     await user.click(screen.getByRole('button', { name: 'Remind me' }))
@@ -241,8 +231,10 @@ describe('YearEndReminderCard', () => {
     )
     render(<YearEndReminderCard year={2026} />)
 
-    await user.click(cardButton())
-    await user.type(screen.getByLabelText('Or email me'), 'a@example.com')
+    await user.type(
+      screen.getByLabelText('Email for your reminder'),
+      'a@example.com'
+    )
     await user.click(screen.getByRole('button', { name: 'Remind me' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -263,6 +255,7 @@ describe('YearEndReminderCard', () => {
     expect(screen.getByRole('status')).toHaveTextContent(
       "Reminder set We'll email you on 1 Dec."
     )
+    expect(trackEvent).not.toHaveBeenCalled()
   })
 
   it('lets people try another way if the calendar add did not work', async () => {
@@ -272,7 +265,7 @@ describe('YearEndReminderCard', () => {
 
     await user.click(screen.getByRole('button', { name: "Didn't work?" }))
 
-    expect(cardButton()).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText(TITLE)).toBeVisible()
     expect(screen.getByRole('link', { name: 'Google' })).toBeInTheDocument()
     expect(trackEvent).not.toHaveBeenCalled()
   })
@@ -285,7 +278,6 @@ describe('YearEndReminderCard', () => {
     })
     render(<YearEndReminderCard year={2026} />)
 
-    await user.click(cardButton())
     await user.click(screen.getByRole('button', { name: 'Apple / Outlook' }))
 
     expect(screen.getByRole('status')).toHaveTextContent('Reminder set')

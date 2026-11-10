@@ -37,6 +37,7 @@ export const TRACKING_EVENT_TYPES = [
   'animated_video_buy_click',
   'animated_video_waitlist_join',
   'year_end_reminder_open',
+  'year_end_reminder_shown',
   'year_end_reminder_calendar_add',
   'year_end_reminder_email_submit',
 ] as const
@@ -58,7 +59,7 @@ export interface TrackingEvent {
 }
 
 export interface HomepageCtaClickMetadata {
-  linkType: 'header' | 'hero' | 'cta_section'
+  linkType: 'header' | 'hero' | 'cta_section' | 'video_teaser'
 }
 
 export interface YearChangedMetadata {

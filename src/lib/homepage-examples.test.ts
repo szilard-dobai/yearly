@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { HERO_IMAGE, HOMEPAGE_EXAMPLES } from './homepage-examples'
+import { buildYearVideoData } from './video'
+import {
+  EXAMPLE_YEAR,
+  getExampleVisits,
+  HERO_IMAGE,
+  HOMEPAGE_EXAMPLES,
+} from './homepage-examples'
 
 function readJpegSize(file: string) {
   const data = readFileSync(file)
@@ -46,4 +52,31 @@ describe('HOMEPAGE_EXAMPLES', () => {
       expect(readJpegSize(file)).toEqual({ width, height })
     }
   )
+})
+
+describe('getExampleVisits', () => {
+  it('matches the trips and stats in the example images', () => {
+    const { stats, countries } = buildYearVideoData(
+      getExampleVisits(),
+      EXAMPLE_YEAR
+    )
+
+    expect(countries).toHaveLength(10)
+    expect(stats.totalCountries).toBe(10)
+    expect(stats.totalDays).toBe(67)
+    expect(stats.busiestMonth?.month).toBe(5)
+    expect(stats.topCountries.slice(0, 3)).toEqual(
+      expect.arrayContaining([
+        { countryCode: 'AU', days: 10 },
+        { countryCode: 'MY', days: 9 },
+        { countryCode: 'KR', days: 9 },
+      ])
+    )
+  })
+
+  it('gives every visit a unique id', () => {
+    const visits = getExampleVisits()
+
+    expect(new Set(visits.map((visit) => visit.id)).size).toBe(visits.length)
+  })
 })

@@ -27,7 +27,7 @@ import {
   type VideoKind,
   type VideoTheme,
 } from '@/lib/video'
-import { formatPrice } from '@/lib/video-offer'
+import { formatPrice, VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
 import { joinWaitlist } from '@/lib/waitlist/client'
 import { Player } from '@remotion/player'
 import { Check, CheckCircle2, Loader2, Sparkles } from 'lucide-react'
@@ -171,7 +171,11 @@ export default function AnimatedVideoDialog({
     setIsSending(true)
     setError(null)
     try {
-      await joinWaitlist({ email, feature: 'animated_video', context })
+      await joinWaitlist({
+        email,
+        feature: 'animated_video',
+        context: { ...context, launchOffer: 'first_video_free' },
+      })
       setStep('joined')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -273,14 +277,17 @@ export default function AnimatedVideoDialog({
               >
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-zinc-100">
-                    You&apos;re early!
+                    Launching in {VIDEO_LAUNCH_LABEL}
                   </p>
                   <label
                     htmlFor="video-waitlist-email"
                     className="block text-xs text-gray-600 dark:text-zinc-400"
                   >
-                    Video downloads aren&apos;t live yet. Leave your email and
-                    we&apos;ll send you one message when they are.
+                    Join the list to get your{' '}
+                    <span className="font-medium text-gray-900 dark:text-zinc-100">
+                      first video free
+                    </span>{' '}
+                    at launch. We&apos;ll email you once, when videos are ready.
                   </label>
                 </div>
                 <div className="flex gap-2">
@@ -331,8 +338,8 @@ export default function AnimatedVideoDialog({
                   <span className="font-medium text-gray-900 dark:text-zinc-100">
                     You&apos;re on the list.
                   </span>{' '}
-                  We&apos;ll email you when you can get your{' '}
-                  {isMonthly ? 'video' : 'videos'}.
+                  We&apos;ll email you when videos launch in{' '}
+                  {VIDEO_LAUNCH_LABEL}. Your first video is free.
                 </p>
               </div>
             )}

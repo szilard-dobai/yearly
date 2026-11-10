@@ -151,8 +151,11 @@ describe('AnimatedVideoDialog', () => {
       price: 2.99,
       theme: 'dark',
     })
+    expect(screen.getByText('Launching in early December')).toBeVisible()
     expect(
-      screen.getByLabelText(/Video downloads aren't live yet/)
+      screen.getByLabelText(
+        "Join the list to get your first video free at launch. We'll email you once, when videos are ready."
+      )
     ).toBeVisible()
     expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
       'href',
@@ -167,13 +170,13 @@ describe('AnimatedVideoDialog', () => {
 
     await user.click(screen.getByRole('button', { name: /Get the videos/ }))
     await user.type(
-      screen.getByLabelText(/Video downloads aren't live yet/),
+      screen.getByLabelText(/Join the list to get your first video free/),
       'me@example.com'
     )
     await user.click(screen.getByRole('button', { name: 'Notify me' }))
 
     expect(await screen.findByRole('status')).toHaveTextContent(
-      "You're on the list."
+      "You're on the list. We'll email you when videos launch in early December. Your first video is free."
     )
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/waitlist',
@@ -187,6 +190,7 @@ describe('AnimatedVideoDialog', () => {
         videoKind: 'year',
         year: 2026,
         price: 2.99,
+        launchOffer: 'first_video_free',
       },
       deviceId: 'device-123',
       deviceType: 'mobile',
@@ -196,6 +200,7 @@ describe('AnimatedVideoDialog', () => {
       videoKind: 'year',
       year: 2026,
       price: 2.99,
+      launchOffer: 'first_video_free',
     })
   })
 
@@ -208,7 +213,7 @@ describe('AnimatedVideoDialog', () => {
 
     await user.click(screen.getByRole('button', { name: /Get the videos/ }))
     await user.type(
-      screen.getByLabelText(/Video downloads aren't live yet/),
+      screen.getByLabelText(/Join the list to get your first video free/),
       'me@example.com'
     )
     await user.click(screen.getByRole('button', { name: 'Notify me' }))

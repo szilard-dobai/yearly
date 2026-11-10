@@ -66,6 +66,8 @@ type ImagePreviewContentProps = Omit<
   'open' | 'onOpenChange'
 >
 
+type VideoOfferEntry = 'card' | 'preview_image'
+
 type PostDownloadPrompt =
   | 'survey'
   | 'feedback'
@@ -164,13 +166,14 @@ function ImagePreviewContent({
       (!isMonthly || v.date.getMonth() === month)
   )
 
-  const openVideoPreview = () => {
+  const openVideoPreview = (entry: VideoOfferEntry) => {
     const price = getAnimatedVideoPrice(getDeviceId())
     trackEvent('animated_video_preview_open', {
       exportType,
       year,
       ...(isMonthly && { month }),
       price,
+      entry,
     })
     setVideoPrice(price)
     setVideoOpen(true)
@@ -245,22 +248,36 @@ function ImagePreviewContent({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          className="relative w-full max-w-md"
+          className="w-full max-w-md"
         >
-          {imageDataUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageDataUrl}
-              alt="Your Yearly calendar"
-              className={cn(
-                'w-full rounded-lg shadow-2xl transition-opacity',
-                isRendering && 'opacity-40'
-              )}
-            />
-          )}
-          {isRendering && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="size-8 animate-spin text-gray-600 dark:text-zinc-400" />
+          <div className="relative">
+            {imageDataUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageDataUrl}
+                alt="Your Yearly calendar"
+                className={cn(
+                  'w-full rounded-lg shadow-2xl transition-opacity',
+                  isRendering && 'opacity-40'
+                )}
+              />
+            )}
+            {isRendering && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="size-8 animate-spin text-gray-600 dark:text-zinc-400" />
+              </div>
+            )}
+          </div>
+          {showVideoOffer && imageDataUrl && (
+            <div className="sticky bottom-4 mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => openVideoPreview('preview_image')}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-zinc-100 dark:text-gray-900 dark:hover:bg-white"
+              >
+                <Play className="size-3.5 fill-current" />
+                See it animated
+              </button>
             </div>
           )}
         </motion.div>
@@ -328,7 +345,7 @@ function ImagePreviewContent({
           {showVideoOffer && (
             <button
               type="button"
-              onClick={openVideoPreview}
+              onClick={() => openVideoPreview('card')}
               className="group mb-4 flex w-full cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-colors hover:bg-gray-50 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/8"
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-gray-900 text-white dark:bg-zinc-100 dark:text-gray-900">

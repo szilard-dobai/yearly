@@ -51,7 +51,10 @@ function shownPrompts() {
   return vi
     .mocked(trackEvent)
     .mock.calls.map(([type]) => type)
-    .filter((type) => type.endsWith('_shown'))
+    .filter(
+      (type) =>
+        type === 'acquisition_survey_shown' || type === 'feedback_prompt_shown'
+    )
 }
 
 describe('ImagePreviewModal post-download prompts', () => {

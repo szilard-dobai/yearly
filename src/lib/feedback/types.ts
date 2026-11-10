@@ -7,6 +7,7 @@ export const FEEDBACK_SOURCES = [
   'post_export',
   'feedback_button',
   'mobile_fab',
+  'create_card',
 ] as const
 export const EXPORT_TYPES = ['calendar', 'statistics', 'monthly'] as const
 export const FEEDBACK_SORT_FIELDS = ['createdAt', 'rating'] as const
@@ -19,11 +20,49 @@ export const FEEDBACK_SOURCE_LABELS: Record<FeedbackSource, string> = {
   post_export: 'After export',
   feedback_button: 'Feedback button',
   mobile_fab: 'Mobile menu',
+  create_card: 'Rating card',
+}
+
+export const LOW_RATING_TAGS = [
+  'adding_trips',
+  'export_design',
+  'missing_feature',
+  'bug',
+] as const
+export const HIGH_RATING_TAGS = [
+  'design',
+  'easy_to_use',
+  'stats',
+  'sharing',
+] as const
+export const FEEDBACK_TAGS = [...LOW_RATING_TAGS, ...HIGH_RATING_TAGS] as const
+
+export type FeedbackTag = (typeof FEEDBACK_TAGS)[number]
+
+export const FEEDBACK_TAG_LABELS: Record<FeedbackTag, string> = {
+  adding_trips: 'Adding trips is fiddly',
+  export_design: "Export doesn't look right",
+  missing_feature: 'Missing a feature',
+  bug: "Something's broken",
+  design: 'Looks great',
+  easy_to_use: 'Easy to use',
+  stats: 'Love the stats',
+  sharing: 'Fun to share',
+}
+
+export function getFeedbackTagsForRating(
+  rating: number
+): readonly FeedbackTag[] {
+  return rating <= 3 ? LOW_RATING_TAGS : HIGH_RATING_TAGS
 }
 
 const deviceIdSchema = z.string().trim().min(1).max(100)
 const ratingSchema = z.int().min(1).max(5)
 const messageSchema = z.string().trim().max(FEEDBACK_MESSAGE_MAX_LENGTH)
+const tagsSchema = z
+  .array(z.enum(FEEDBACK_TAGS))
+  .max(FEEDBACK_TAGS.length)
+  .transform((tags) => [...new Set(tags)])
 
 export const feedbackContextSchema = z.object({
   exportType: z.enum(EXPORT_TYPES).optional(),
@@ -37,13 +76,15 @@ export const createFeedbackSchema = z
     deviceId: deviceIdSchema,
     rating: ratingSchema.nullish(),
     message: messageSchema.nullish(),
+    tags: tagsSchema.optional(),
     source: z.enum(FEEDBACK_SOURCES),
     context: feedbackContextSchema.optional(),
     deviceType: z.enum(['mobile', 'tablet', 'desktop']).optional(),
   })
-  .refine((data) => data.rating != null || !!data.message, {
-    message: 'A rating or a message is required',
-  })
+  .refine(
+    (data) => data.rating != null || !!data.message || !!data.tags?.length,
+    { message: 'A rating or a message is required' }
+  )
 
 export type CreateFeedbackInput = z.infer<typeof createFeedbackSchema>
 
@@ -52,10 +93,12 @@ export const updateFeedbackSchema = z
     deviceId: deviceIdSchema,
     rating: ratingSchema.optional(),
     message: messageSchema.optional(),
+    tags: tagsSchema.optional(),
   })
-  .refine((data) => data.rating != null || !!data.message, {
-    message: 'A rating or a message is required',
-  })
+  .refine(
+    (data) => data.rating != null || !!data.message || !!data.tags?.length,
+    { message: 'A rating or a message is required' }
+  )
 
 export const feedbackListQuerySchema = z.object({
   rating: z.enum(['all', 'none', '1', '2', '3', '4', '5']).default('all'),
@@ -75,6 +118,7 @@ export interface FeedbackEntry {
   deviceId: string
   rating: number | null
   message: string | null
+  tags?: FeedbackTag[]
   source: FeedbackSource
   context?: FeedbackContext
   deviceType?: DeviceType

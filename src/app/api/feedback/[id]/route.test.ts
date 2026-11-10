@@ -78,6 +78,34 @@ describe('PATCH /api/feedback/[id]', () => {
     )
   })
 
+  it('stores quick-reply tags without a message and sends them to Slack', async () => {
+    const response = await patchRequest({
+      deviceId: 'device-123',
+      tags: ['design', 'design', 'stats'],
+    })
+
+    expect(response.status).toBe(200)
+    expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.anything(),
+      { $set: { tags: ['design', 'stats'], updatedAt: expect.any(Date) } },
+      { returnDocument: 'after' }
+    )
+    expect(notifyFeedbackToSlack).toHaveBeenCalledWith(
+      storedFeedback,
+      'message_added'
+    )
+  })
+
+  it('rejects unknown tags', async () => {
+    const response = await patchRequest({
+      deviceId: 'device-123',
+      tags: ['not_a_tag'],
+    })
+
+    expect(response.status).toBe(400)
+    expect(collection.findOneAndUpdate).not.toHaveBeenCalled()
+  })
+
   it('does not notify Slack when only the rating changes', async () => {
     const response = await patchRequest({ deviceId: 'device-123', rating: 2 })
 

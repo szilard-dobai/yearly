@@ -5,7 +5,7 @@ import {
   postSlackMessage,
   slackAdminLink,
 } from '@/lib/slack'
-import { FEEDBACK_SOURCE_LABELS } from './types'
+import { FEEDBACK_SOURCE_LABELS, FEEDBACK_TAG_LABELS } from './types'
 
 export type FeedbackNotificationKind = 'created' | 'message_added'
 
@@ -13,6 +13,7 @@ type NotifiedFeedback = Pick<
   FeedbackDocument,
   | 'rating'
   | 'message'
+  | 'tags'
   | 'source'
   | 'context'
   | 'deviceType'
@@ -22,7 +23,7 @@ type NotifiedFeedback = Pick<
 
 const TITLES: Record<FeedbackNotificationKind, string> = {
   created: 'New feedback',
-  message_added: 'Message added to feedback',
+  message_added: 'Details added to feedback',
 }
 
 const PREVIEW_LENGTH = 120
@@ -57,9 +58,12 @@ export function buildFeedbackSlackMessage(
     .filter(Boolean)
     .join(' · ')
   const adminLink = slackAdminLink('/admin/feedback', siteUrl)
+  const tags = feedback.tags?.map((tag) => FEEDBACK_TAG_LABELS[tag]) ?? []
   const preview = feedback.message
     ? ` – “${truncate(feedback.message, PREVIEW_LENGTH)}”`
-    : ''
+    : tags.length > 0
+      ? ` – ${tags.join(', ')}`
+      : ''
 
   return {
     text: escapeSlackText(`${title}: ${rating}${preview}`),
@@ -73,6 +77,17 @@ export function buildFeedbackSlackMessage(
             {
               type: 'section',
               text: { type: 'plain_text', text: feedback.message, emoji: true },
+            },
+          ]
+        : []),
+      ...(tags.length > 0
+        ? [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: tags.map((tag) => `\`${tag}\``).join('  '),
+              },
             },
           ]
         : []),

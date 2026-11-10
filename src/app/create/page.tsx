@@ -9,6 +9,7 @@ import DaySelectionPanel, {
 } from '@/components/DaySelectionPanel'
 import DeveloperMode from '@/components/DeveloperMode'
 import FeedbackButton from '@/components/FeedbackButton'
+import FeedbackCard from '@/components/FeedbackCard'
 import FeedbackDialog from '@/components/FeedbackDialog'
 import Header from '@/components/Header'
 import CalendarExportButton from '@/components/CalendarExportButton'
@@ -456,6 +457,10 @@ function Create() {
                   <Statistics calendarData={calendarData} year={selectedYear} />
                 </CardContent>
               </StandardCard>
+
+              {calendarData.visits.length > 0 && (
+                <FeedbackCard year={selectedYear} />
+              )}
 
               <StandardCard>
                 <CardHeader>

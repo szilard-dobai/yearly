@@ -7,6 +7,8 @@ export const PROMPT_COOLDOWNS_MS = {
   shown: 3 * DAY_MS,
 } as const
 
+const listeners = new Set<() => void>()
+
 interface PromptState {
   shownAt?: number
   dismissedAt?: number
@@ -41,6 +43,14 @@ function writeState(patch: PromptState): void {
   } catch {
     // Storage can be unavailable (private mode, quota); prompting is best-effort
   }
+  listeners.forEach((listener) => listener())
+}
+
+export function subscribeToFeedbackPrompt(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
 }
 
 function isWithin(
@@ -51,12 +61,18 @@ function isWithin(
   return timestamp !== undefined && now - timestamp < windowMs
 }
 
-export function shouldShowFeedbackPrompt(now = Date.now()): boolean {
+export function canAskForFeedback(now = Date.now()): boolean {
   const state = readState()
   return !(
     isWithin(state.submittedAt, PROMPT_COOLDOWNS_MS.submitted, now) ||
-    isWithin(state.dismissedAt, PROMPT_COOLDOWNS_MS.dismissed, now) ||
-    isWithin(state.shownAt, PROMPT_COOLDOWNS_MS.shown, now)
+    isWithin(state.dismissedAt, PROMPT_COOLDOWNS_MS.dismissed, now)
+  )
+}
+
+export function shouldShowFeedbackPrompt(now = Date.now()): boolean {
+  return (
+    canAskForFeedback(now) &&
+    !isWithin(readState().shownAt, PROMPT_COOLDOWNS_MS.shown, now)
   )
 }
 

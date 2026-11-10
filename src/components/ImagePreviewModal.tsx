@@ -66,6 +66,12 @@ type ImagePreviewContentProps = Omit<
   'open' | 'onOpenChange'
 >
 
+type PostDownloadPrompt =
+  | 'survey'
+  | 'feedback'
+  | 'feedback_after_survey'
+  | 'closed'
+
 const FORMAT_HINTS: Record<ExportFormat, string> = {
   story: 'Stories & TikTok',
   feed: 'Instagram feed',
@@ -147,9 +153,7 @@ function ImagePreviewContent({
   onFormatChange,
   isRendering,
 }: ImagePreviewContentProps) {
-  const [prompt, setPrompt] = useState<'survey' | 'feedback' | 'closed' | null>(
-    null
-  )
+  const [prompt, setPrompt] = useState<PostDownloadPrompt | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
   const [videoPrice, setVideoPrice] = useState<number | null>(null)
 
@@ -172,6 +176,17 @@ function ImagePreviewContent({
     setVideoOpen(true)
   }
 
+  const showFeedbackPrompt = (afterSurvey: boolean) => {
+    markFeedbackPromptShown()
+    trackEvent('feedback_prompt_shown', {
+      source: 'post_export',
+      exportType,
+      year,
+      ...(afterSurvey && { afterSurvey }),
+    })
+    setPrompt(afterSurvey ? 'feedback_after_survey' : 'feedback')
+  }
+
   const maybeShowPrompt = () => {
     if (prompt) return
     if (shouldShowAcquisitionSurvey()) {
@@ -179,10 +194,12 @@ function ImagePreviewContent({
       trackEvent('acquisition_survey_shown', { exportType, year, showCount })
       setPrompt('survey')
     } else if (shouldShowFeedbackPrompt()) {
-      markFeedbackPromptShown()
-      trackEvent('feedback_prompt_shown', { exportType, year })
-      setPrompt('feedback')
+      showFeedbackPrompt(false)
     }
+  }
+
+  const handleSurveyAnswered = () => {
+    if (shouldShowFeedbackPrompt()) showFeedbackPrompt(true)
   }
 
   const handleDownload = async () => {
@@ -285,14 +302,24 @@ function ImagePreviewContent({
 
           {prompt === 'survey' && (
             <div className="mb-4">
-              <AcquisitionSurvey onDismiss={() => setPrompt('closed')} />
+              <AcquisitionSurvey
+                onAnswered={handleSurveyAnswered}
+                onDismiss={() => setPrompt('closed')}
+              />
             </div>
           )}
 
-          {prompt === 'feedback' && (
+          {(prompt === 'feedback' || prompt === 'feedback_after_survey') && (
             <div className="mb-4">
               <FeedbackPrompt
+                source="post_export"
                 context={{ exportType, year }}
+                {...(prompt === 'feedback_after_survey' && {
+                  title: 'Thanks! One more tap: enjoying Yearly?',
+                  description:
+                    'Your rating helps us decide what to build next.',
+                  expandIn: false,
+                })}
                 onDismiss={() => setPrompt('closed')}
               />
             </div>

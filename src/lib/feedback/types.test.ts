@@ -3,6 +3,9 @@ import {
   createFeedbackSchema,
   feedbackListQuerySchema,
   FEEDBACK_MESSAGE_MAX_LENGTH,
+  FEEDBACK_TAG_LABELS,
+  FEEDBACK_TAGS,
+  getFeedbackTagsForRating,
   updateFeedbackSchema,
 } from './types'
 
@@ -85,6 +88,40 @@ describe('updateFeedbackSchema', () => {
       updateFeedbackSchema.safeParse({ deviceId: 'device-1', message: ' ' })
         .success
     ).toBe(false)
+    expect(
+      updateFeedbackSchema.safeParse({ deviceId: 'device-1', tags: [] }).success
+    ).toBe(false)
+  })
+
+  it('accepts quick-reply tags on their own and drops duplicates', () => {
+    const result = updateFeedbackSchema.safeParse({
+      deviceId: 'device-1',
+      tags: ['bug', 'bug', 'missing_feature'],
+    })
+    expect(result.success).toBe(true)
+    expect(result.data?.tags).toEqual(['bug', 'missing_feature'])
+  })
+
+  it('rejects unknown tags', () => {
+    expect(
+      updateFeedbackSchema.safeParse({ deviceId: 'device-1', tags: ['spam'] })
+        .success
+    ).toBe(false)
+  })
+})
+
+describe('feedback tags', () => {
+  it('offers problems for low ratings and praise for high ones', () => {
+    expect(getFeedbackTagsForRating(1)).toContain('bug')
+    expect(getFeedbackTagsForRating(3)).toContain('bug')
+    expect(getFeedbackTagsForRating(4)).toContain('design')
+    expect(getFeedbackTagsForRating(5)).toContain('design')
+  })
+
+  it('labels every tag', () => {
+    for (const tag of FEEDBACK_TAGS) {
+      expect(FEEDBACK_TAG_LABELS[tag]).toBeTruthy()
+    }
   })
 })
 

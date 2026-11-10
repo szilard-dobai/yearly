@@ -99,6 +99,28 @@ describe('POST /api/feedback', () => {
     )
   })
 
+  it('stores quick-reply tags from the rating card', async () => {
+    const response = await POST(
+      postRequest({
+        ...validBody,
+        message: null,
+        tags: ['adding_trips', 'bug'],
+        source: 'create_card',
+        context: { year: 2026 },
+      })
+    )
+
+    expect(response.status).toBe(201)
+    expect(collection.insertOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: null,
+        tags: ['adding_trips', 'bug'],
+        source: 'create_card',
+        context: { year: 2026 },
+      })
+    )
+  })
+
   it('rejects cross-site requests', async () => {
     const response = await POST(
       postRequest(validBody, { 'sec-fetch-site': 'cross-site' })

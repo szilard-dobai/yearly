@@ -1,5 +1,6 @@
 'use client'
 
+import ChoiceChip from '@/components/ChoiceChip'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -11,12 +12,12 @@ import {
   type SurveyAnswer,
 } from '@/lib/attribution/survey'
 import { trackEvent } from '@/lib/tracking'
-import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 
 interface AcquisitionSurveyProps {
+  onAnswered?: () => void
   onDismiss: () => void
 }
 
@@ -29,10 +30,8 @@ const stepTransition = {
   transition: { duration: 0.2 },
 }
 
-const chipClassName =
-  'cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors'
-
 export default function AcquisitionSurvey({
+  onAnswered,
   onDismiss,
 }: AcquisitionSurveyProps) {
   const [step, setStep] = useState<Step>('ask')
@@ -42,6 +41,7 @@ export default function AcquisitionSurvey({
     markAcquisitionSurveyAnswered()
     trackEvent('acquisition_survey_answered', buildSurveyAnswer(answer, text))
     setStep('done')
+    onAnswered?.()
   }
 
   const handleChoose = (answer: SurveyAnswer) => {
@@ -110,20 +110,14 @@ export default function AcquisitionSurvey({
                   const isOther = value === 'other'
                   const isActive = isOther && step === 'other'
                   return (
-                    <button
+                    <ChoiceChip
                       key={value}
-                      type="button"
+                      selected={isActive}
                       onClick={() => handleChoose(value)}
                       aria-expanded={isOther ? isActive : undefined}
-                      className={cn(
-                        chipClassName,
-                        isActive
-                          ? 'border-gray-900 bg-gray-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-gray-900'
-                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-[#141414] dark:text-zinc-300 dark:hover:bg-[#222222]'
-                      )}
                     >
                       {label}
-                    </button>
+                    </ChoiceChip>
                   )
                 })}
               </div>

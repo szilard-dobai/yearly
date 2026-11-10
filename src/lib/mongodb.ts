@@ -1,5 +1,9 @@
 import { type Collection, type Db, MongoClient, type ObjectId } from 'mongodb'
-import type { FeedbackContext, FeedbackSource } from './feedback/types'
+import type {
+  FeedbackContext,
+  FeedbackSource,
+  FeedbackTag,
+} from './feedback/types'
 import type { CalendarProvider } from './reminders/types'
 import type { DeviceType } from './tracking/types'
 import type { WaitlistContext, WaitlistFeature } from './waitlist/types'
@@ -56,6 +60,7 @@ export interface FeedbackDocument {
   deviceId: string
   rating: number | null
   message: string | null
+  tags?: FeedbackTag[]
   source: FeedbackSource
   context?: FeedbackContext
   deviceType?: DeviceType

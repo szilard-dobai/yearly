@@ -63,7 +63,7 @@ describe('buildFeedbackSlackMessage', () => {
     )
 
     expect(message.text).toBe(
-      `Message added to feedback: No rating – “${'a'.repeat(119)}…”`
+      `Details added to feedback: No rating – “${'a'.repeat(119)}…”`
     )
     expect(message.blocks[2]).toEqual({
       type: 'context',
@@ -81,6 +81,21 @@ describe('buildFeedbackSlackMessage', () => {
 
     expect(message.blocks).toHaveLength(2)
     expect(message.text).toBe('New feedback: ★★★★☆')
+  })
+
+  it('lists quick-reply tags and previews them when there is no message', () => {
+    const message = buildFeedbackSlackMessage(
+      { ...feedback, message: null, tags: ['design', 'easy_to_use'] },
+      'message_added'
+    )
+
+    expect(message.text).toBe(
+      'Details added to feedback: ★★★★☆ – Looks great, Easy to use'
+    )
+    expect(message.blocks[1]).toEqual({
+      type: 'section',
+      text: { type: 'mrkdwn', text: '`Looks great`  `Easy to use`' },
+    })
   })
 })
 

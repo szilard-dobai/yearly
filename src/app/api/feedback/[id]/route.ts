@@ -36,10 +36,11 @@ export async function PATCH(
     )
   }
 
-  const { deviceId, rating, message } = parsed.data
+  const { deviceId, rating, message, tags } = parsed.data
   const update: Partial<FeedbackDocument> = { updatedAt: new Date() }
   if (rating != null) update.rating = rating
   if (message) update.message = message
+  if (tags?.length) update.tags = tags
 
   try {
     const collection = await getFeedbackCollection()
@@ -57,7 +58,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    if (message) after(() => notifyFeedbackToSlack(updated, 'message_added'))
+    if (message || tags?.length) {
+      after(() => notifyFeedbackToSlack(updated, 'message_added'))
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

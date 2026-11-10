@@ -59,6 +59,7 @@ src/
 │   ├── MobileFab.tsx         - Mobile floating action button
 │   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
+│   ├── FeedbackCard.tsx      - Rating card on the create page, hidden once the user rates or dismisses
 │   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/

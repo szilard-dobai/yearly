@@ -22,6 +22,7 @@ const calendarData: CalendarData = {
 
 const SURVEY = 'How did you hear about Yearly?'
 const FEEDBACK = 'Enjoying Yearly?'
+const FEEDBACK_AFTER_SURVEY = 'Thanks! One more tap: enjoying Yearly?'
 
 function renderModal() {
   return render(
@@ -81,6 +82,39 @@ describe('ImagePreviewModal post-download prompts', () => {
 
     expect(screen.queryByText(SURVEY)).not.toBeInTheDocument()
     expect(screen.queryByText(FEEDBACK)).not.toBeInTheDocument()
+    expect(shownPrompts()).toEqual(['acquisition_survey_shown'])
+  })
+
+  it('moves straight on to the rating once the survey is answered', async () => {
+    renderModal()
+    const user = await download()
+    await user.click(screen.getByRole('button', { name: 'Instagram' }))
+
+    expect(screen.queryByText(SURVEY)).not.toBeInTheDocument()
+    expect(screen.getByText(FEEDBACK_AFTER_SURVEY)).toBeInTheDocument()
+    expect(trackEvent).toHaveBeenCalledWith('feedback_prompt_shown', {
+      source: 'post_export',
+      exportType: 'calendar',
+      year: 2026,
+      afterSurvey: true,
+    })
+    expect(shownPrompts()).toEqual([
+      'acquisition_survey_shown',
+      'feedback_prompt_shown',
+    ])
+  })
+
+  it('just thanks the user for answering when feedback was given recently', async () => {
+    localStorage.setItem(
+      'yearly_feedback_prompt',
+      JSON.stringify({ submittedAt: Date.now() })
+    )
+    renderModal()
+    const user = await download()
+    await user.click(screen.getByRole('button', { name: 'Instagram' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Thanks!')
+    expect(screen.queryByText(FEEDBACK_AFTER_SURVEY)).not.toBeInTheDocument()
     expect(shownPrompts()).toEqual(['acquisition_survey_shown'])
   })
 

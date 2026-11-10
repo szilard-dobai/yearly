@@ -1,11 +1,12 @@
 import { getDeviceType, trackEvent } from '@/lib/tracking'
 import { getDeviceId } from '@/lib/tracking/device-id'
 import { markFeedbackSubmitted } from './prompt'
-import type { FeedbackContext, FeedbackSource } from './types'
+import type { FeedbackContext, FeedbackSource, FeedbackTag } from './types'
 
 interface SubmitFeedbackInput {
   rating: number | null
   message: string | null
+  tags?: FeedbackTag[]
   source: FeedbackSource
   context?: FeedbackContext
 }
@@ -13,6 +14,7 @@ interface SubmitFeedbackInput {
 interface UpdateFeedbackInput {
   rating?: number
   message?: string
+  tags?: FeedbackTag[]
 }
 
 async function readError(response: Response): Promise<Error> {
@@ -28,12 +30,14 @@ export async function submitFeedback(
   input: SubmitFeedbackInput
 ): Promise<{ id: string }> {
   const message = input.message?.trim() || null
+  const tags = input.tags?.length ? input.tags : undefined
   const response = await fetch('/api/feedback', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       ...input,
       message,
+      tags,
       deviceId: getDeviceId(),
       deviceType: getDeviceType(),
     }),
@@ -50,6 +54,7 @@ export async function submitFeedback(
     source: input.source,
     rating: input.rating,
     hasMessage: !!message,
+    ...(tags && { tags }),
     ...input.context,
   })
   return data
@@ -60,10 +65,11 @@ export async function updateFeedback(
   input: UpdateFeedbackInput
 ): Promise<void> {
   const message = input.message?.trim() || undefined
+  const tags = input.tags?.length ? input.tags : undefined
   const response = await fetch(`/api/feedback/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...input, message, deviceId: getDeviceId() }),
+    body: JSON.stringify({ ...input, message, tags, deviceId: getDeviceId() }),
   })
 
   if (!response.ok) {
@@ -74,6 +80,7 @@ export async function updateFeedback(
     feedbackId: id,
     rating: input.rating ?? null,
     hasMessage: !!message,
+    ...(tags && { tags }),
     isFollowUp: true,
   })
 }

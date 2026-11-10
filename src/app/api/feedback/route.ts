@@ -46,7 +46,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const { deviceId, rating, message, source, context, deviceType } = parsed.data
+  const { deviceId, rating, message, tags, source, context, deviceType } =
+    parsed.data
 
   try {
     const collection = await getFeedbackCollection()
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
     const country = request.headers.get('x-vercel-ip-country')
     const region = request.headers.get('x-vercel-ip-country-region')
 
+    if (tags?.length) document.tags = tags
     if (context && Object.keys(context).length > 0) document.context = context
     if (deviceType) document.deviceType = deviceType
     if (userAgent)

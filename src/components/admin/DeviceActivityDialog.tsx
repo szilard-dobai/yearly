@@ -5,6 +5,7 @@ import CopyButton from '@/components/admin/CopyButton'
 import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
+import FeedbackTagList from '@/components/admin/FeedbackTagList'
 import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
 import StarRating, { RATING_LABELS } from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
@@ -226,8 +227,13 @@ function DeviceActivityContent({
             {feedback.message}
           </p>
         ) : (
-          <p className="italic text-gray-500 dark:text-zinc-500">No message</p>
+          !feedback.tags?.length && (
+            <p className="italic text-gray-500 dark:text-zinc-500">
+              No message
+            </p>
+          )
         )}
+        <FeedbackTagList tags={feedback.tags} />
         <dl className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-gray-100 dark:border-white/8">
           <DetailRow
             label="Device"

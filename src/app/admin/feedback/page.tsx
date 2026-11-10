@@ -5,6 +5,7 @@ import AdminNav from '@/components/admin/AdminNav'
 import CountryFlag from '@/components/admin/CountryFlag'
 import DeviceActivityDialog from '@/components/admin/DeviceActivityDialog'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
+import FeedbackTagList from '@/components/admin/FeedbackTagList'
 import StatTile from '@/components/admin/StatTile'
 import StarRating from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
@@ -175,10 +176,13 @@ function FeedbackListItem({
             {entry.message}
           </p>
         ) : (
-          <p className="mt-3 text-sm italic text-gray-400 dark:text-zinc-500">
-            Rating only, no message
-          </p>
+          !entry.tags?.length && (
+            <p className="mt-3 text-sm italic text-gray-400 dark:text-zinc-500">
+              Rating only, no message
+            </p>
+          )
         )}
+        <FeedbackTagList tags={entry.tags} className="mt-3" />
 
         <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-zinc-500">
           <span className="font-mono">

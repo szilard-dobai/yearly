@@ -44,6 +44,31 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+@theme {
+  --animate-sheen: sheen 3.5s ease-in-out infinite;
+  --animate-glow: glow 2.4s ease-in-out infinite;
+
+  @keyframes sheen {
+    0% {
+      transform: translateX(-150%) skewX(-20deg);
+    }
+    45%,
+    100% {
+      transform: translateX(450%) skewX(-20deg);
+    }
+  }
+
+  @keyframes glow {
+    0%,
+    100% {
+      box-shadow: 0 8px 24px -6px rgb(239 68 68 / 0.45);
+    }
+    50% {
+      box-shadow: 0 10px 32px -4px rgb(239 68 68 / 0.75);
+    }
+  }
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

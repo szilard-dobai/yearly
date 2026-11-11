@@ -14,7 +14,7 @@ const stats = {
   total: 12,
   lastSevenDays: 3,
   emails: ['a@example.com', 'b@example.com'],
-  opens: 40,
+  shown: 40,
   calendarAdds: { ics: 9, google: 4 },
 }
 
@@ -32,7 +32,7 @@ describe('YearEndReminderPanel', () => {
     vi.unstubAllGlobals()
   })
 
-  it('shows sign-ups, calendar adds and card opens', async () => {
+  it('shows sign-ups, calendar adds and how many saw the card', async () => {
     respond(stats)
     render(<YearEndReminderPanel refreshKey={0} />)
 
@@ -41,7 +41,7 @@ describe('YearEndReminderPanel', () => {
     expect(metric('Email sign-ups')).toHaveTextContent('12')
     expect(metric('Apple / Outlook')).toHaveTextContent('9')
     expect(metric('Google Calendar')).toHaveTextContent('4')
-    expect(metric('Card opens')).toHaveTextContent('40')
+    expect(metric('Cards shown')).toHaveTextContent('40')
     expect(screen.getByText(/For 1 Dec 2026/)).toBeInTheDocument()
   })
 

@@ -138,7 +138,8 @@ export default function PrivacyPage() {
             <p>
               If you join the waitlist for animated videos, we store your email
               address with the random ID, the video and price you were shown,
-              your device type and approximate location.
+              the launch offer we made you, your device type and approximate
+              location.
             </p>
             <p>
               We only use your email to tell you when animated videos are

@@ -78,6 +78,7 @@ describe('ImagePreviewModal video offer', () => {
       year: 2026,
       month: 2,
       price: getAnimatedVideoPrice('device-123'),
+      entry: 'card',
     })
   })
 
@@ -94,6 +95,9 @@ describe('ImagePreviewModal video offer', () => {
 
     expect(
       screen.queryByRole('button', { name: /Make it a video/ })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'See it animated' })
     ).not.toBeInTheDocument()
   })
 
@@ -159,6 +163,22 @@ describe('ImagePreviewModal video offer', () => {
       exportType: 'calendar',
       year: 2026,
       price,
+      entry: 'card',
+    })
+  })
+
+  it('opens the preview from under the image and records where it came from', async () => {
+    const user = userEvent.setup()
+    renderModal('statistics')
+
+    await user.click(screen.getByRole('button', { name: 'See it animated' }))
+
+    expect(await screen.findByTestId('video-dialog')).toBeInTheDocument()
+    expect(trackEvent).toHaveBeenCalledWith('animated_video_preview_open', {
+      exportType: 'statistics',
+      year: 2026,
+      price: getAnimatedVideoPrice('device-123'),
+      entry: 'preview_image',
     })
   })
 })

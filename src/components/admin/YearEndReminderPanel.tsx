@@ -80,7 +80,7 @@ export default function YearEndReminderPanel({
           </h2>
           <p className="text-xs text-gray-500 dark:text-zinc-400">
             {stats && `For ${REMINDER_DATE_LABEL} ${stats.year}. `}Calendar adds
-            and card opens are unique devices
+            and cards shown count unique devices
           </p>
         </div>
         {stats && stats.emails.length > 0 && (
@@ -113,7 +113,7 @@ export default function YearEndReminderPanel({
           />
           <Metric label="Apple / Outlook" value={stats.calendarAdds.ics} />
           <Metric label="Google Calendar" value={stats.calendarAdds.google} />
-          <Metric label="Card opens" value={stats.opens} />
+          <Metric label="Cards shown" value={stats.shown} />
         </dl>
       )}
     </section>

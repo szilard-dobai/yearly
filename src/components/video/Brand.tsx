@@ -205,7 +205,7 @@ export function EndCard({ palette }: { palette: Palette }) {
           yearly.world
         </div>
         <div style={{ fontFamily: SANS, fontSize: 28, color: palette.muted }}>
-          Make your own, free
+          Make your own travel calendar
         </div>
       </div>
     </AbsoluteFill>

@@ -28,7 +28,7 @@ import { getDeviceId } from '@/lib/tracking/device-id'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
 import { getAnimatedVideoPrice } from '@/lib/video-offer'
-import { ChevronRight, Download, Loader2, Play } from 'lucide-react'
+import { ChevronRight, Download, Loader2, Play, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -65,6 +65,8 @@ type ImagePreviewContentProps = Omit<
   ImagePreviewModalProps,
   'open' | 'onOpenChange'
 >
+
+type VideoOfferEntry = 'card' | 'preview_image'
 
 type PostDownloadPrompt =
   | 'survey'
@@ -164,13 +166,14 @@ function ImagePreviewContent({
       (!isMonthly || v.date.getMonth() === month)
   )
 
-  const openVideoPreview = () => {
+  const openVideoPreview = (entry: VideoOfferEntry) => {
     const price = getAnimatedVideoPrice(getDeviceId())
     trackEvent('animated_video_preview_open', {
       exportType,
       year,
       ...(isMonthly && { month }),
       price,
+      entry,
     })
     setVideoPrice(price)
     setVideoOpen(true)
@@ -245,22 +248,43 @@ function ImagePreviewContent({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3 }}
-          className="relative w-full max-w-md"
+          className="w-full max-w-md"
         >
-          {imageDataUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageDataUrl}
-              alt="Your Yearly calendar"
-              className={cn(
-                'w-full rounded-lg shadow-2xl transition-opacity',
-                isRendering && 'opacity-40'
-              )}
-            />
-          )}
-          {isRendering && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="size-8 animate-spin text-gray-600 dark:text-zinc-400" />
+          <div className="relative">
+            {imageDataUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageDataUrl}
+                alt="Your Yearly calendar"
+                className={cn(
+                  'w-full rounded-lg shadow-2xl transition-opacity',
+                  isRendering && 'opacity-40'
+                )}
+              />
+            )}
+            {isRendering && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="size-8 animate-spin text-gray-600 dark:text-zinc-400" />
+              </div>
+            )}
+          </div>
+          {showVideoOffer && imageDataUrl && (
+            <div className="sticky bottom-4 mt-4 flex justify-center">
+              <button
+                type="button"
+                onClick={() => openVideoPreview('preview_image')}
+                className="group relative inline-flex cursor-pointer items-center gap-2.5 overflow-hidden rounded-full bg-linear-to-r from-red-500 to-rose-500 py-2 pr-5 pl-2 text-base font-semibold text-white shadow-lg shadow-red-500/40 transition-transform hover:scale-105 active:scale-95 motion-safe:animate-glow"
+              >
+                <span className="flex size-8 items-center justify-center rounded-full bg-white text-red-500 transition-transform group-hover:scale-110">
+                  <Play className="size-3.5 translate-x-px fill-current" />
+                </span>
+                See it animated
+                <Sparkles className="size-4 text-white/90" />
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-transparent via-white/45 to-transparent motion-safe:animate-sheen"
+                />
+              </button>
             </div>
           )}
         </motion.div>
@@ -328,7 +352,7 @@ function ImagePreviewContent({
           {showVideoOffer && (
             <button
               type="button"
-              onClick={openVideoPreview}
+              onClick={() => openVideoPreview('card')}
               className="group mb-4 flex w-full cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition-colors hover:bg-gray-50 dark:border-white/8 dark:bg-white/5 dark:hover:bg-white/8"
             >
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-gray-900 text-white dark:bg-zinc-100 dark:text-gray-900">

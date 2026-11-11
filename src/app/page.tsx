@@ -5,6 +5,7 @@ import { FeatureIcon } from '@/components/FeatureIcon'
 import Header from '@/components/Header'
 import { HomepageTracker, TrackingLink } from '@/components/HomepageClient'
 import { HomepageExamples } from '@/components/HomepageExamples'
+import { HomepageVideoTeaser } from '@/components/HomepageVideoTeaser'
 import { ArrowRight, Calendar, Share2, Sparkles } from 'lucide-react'
 
 export const revalidate = 86400
@@ -100,6 +101,8 @@ export default function Home() {
         </section>
 
         <HomepageExamples />
+
+        <HomepageVideoTeaser />
 
         <section className="py-24" aria-labelledby="features-heading">
           <h2 id="features-heading" className="sr-only">

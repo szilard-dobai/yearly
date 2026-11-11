@@ -51,6 +51,7 @@ export default function HomepageVideoPlayer({ theme }: { theme: VideoTheme }) {
         fps={FPS}
         initialFrame={reducedMotion ? timeline.fillEnd + 30 : 0}
         loop
+        initiallyMuted
         controls={reducedMotion}
         clickToPlay={reducedMotion}
         showVolumeControls={false}

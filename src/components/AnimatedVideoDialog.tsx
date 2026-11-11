@@ -200,6 +200,7 @@ export default function AnimatedVideoDialog({
                 fps={FPS}
                 autoPlay
                 loop
+                initiallyMuted
                 controls
                 clickToPlay
                 showVolumeControls={false}

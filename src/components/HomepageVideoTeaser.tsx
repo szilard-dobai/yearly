@@ -2,15 +2,36 @@
 
 import { AnimatedSection } from '@/components/AnimatedSection'
 import { TrackingLink } from '@/components/HomepageClient'
+import { HomepageExampleImage } from '@/components/HomepageExampleImage'
+import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
 import { useResolvedColorScheme } from '@/lib/hooks/useResolvedColorScheme'
 import { VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useEffect, useRef, useState } from 'react'
 
+const [YEAR_EXAMPLE] = HOMEPAGE_EXAMPLES
+
+function Poster() {
+  return <HomepageExampleImage example={YEAR_EXAMPLE} />
+}
+
 const HomepageVideoPlayer = dynamic(() => import('./HomepageVideoPlayer'), {
   ssr: false,
+  loading: Poster,
 })
+
+function usePreloadWhenIdle() {
+  useEffect(() => {
+    const preload = () => void import('./HomepageVideoPlayer')
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(preload, { timeout: 3000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = setTimeout(preload, 2000)
+    return () => clearTimeout(id)
+  }, [])
+}
 
 function useNearViewport() {
   const ref = useRef<HTMLElement>(null)
@@ -23,7 +44,7 @@ function useNearViewport() {
       ([entry]) => {
         if (entry.isIntersecting) setIsNear(true)
       },
-      { rootMargin: '300px' }
+      { rootMargin: '800px' }
     )
     observer.observe(element)
     return () => observer.disconnect()
@@ -35,6 +56,7 @@ function useNearViewport() {
 export function HomepageVideoTeaser() {
   const colorScheme = useResolvedColorScheme()
   const { ref, isNear } = useNearViewport()
+  usePreloadWhenIdle()
 
   return (
     <section className="pb-24" aria-labelledby="video-teaser-heading">
@@ -47,7 +69,11 @@ export function HomepageVideoTeaser() {
           aria-label="An example video: a 2026 travel calendar filling up with flags, day by day"
           className="mx-auto aspect-9/16 w-full max-w-60 overflow-hidden rounded-2xl border border-gray-200 bg-white md:max-w-none dark:border-white/8 dark:bg-black"
         >
-          {isNear && colorScheme && <HomepageVideoPlayer theme={colorScheme} />}
+          {isNear && colorScheme ? (
+            <HomepageVideoPlayer theme={colorScheme} />
+          ) : (
+            <Poster />
+          )}
         </figure>
 
         <div className="text-center md:text-left">
@@ -75,7 +101,8 @@ export function HomepageVideoTeaser() {
             <ArrowRight className="size-4" />
           </TrackingLink>
           <p className="mt-3 text-sm text-gray-500 dark:text-zinc-500">
-            The preview is free, and your images stay free.
+            Join the waitlist from your preview and your first video is free.
+            Your images stay free.
           </p>
         </div>
       </AnimatedSection>

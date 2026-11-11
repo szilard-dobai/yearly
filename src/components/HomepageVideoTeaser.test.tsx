@@ -1,3 +1,4 @@
+import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
 import { trackEvent } from '@/lib/tracking'
 import { act, renderWithSettings, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
@@ -56,9 +57,14 @@ describe('HomepageVideoTeaser', () => {
       screen.getByRole('region', { name: 'Your year, animated' })
     ).toBeInTheDocument()
     expect(screen.getByText('Coming in early December')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Join the waitlist from your preview and your first video is free. Your images stay free.'
+      )
+    ).toBeInTheDocument()
   })
 
-  it('loads the example video only once it is close to the screen', async () => {
+  it('shows the year example until the video is close to the screen', async () => {
     localStorage.setItem(
       'countries-in-year-settings',
       JSON.stringify({ colorScheme: 'dark' })
@@ -66,6 +72,7 @@ describe('HomepageVideoTeaser', () => {
     renderWithSettings(<HomepageVideoTeaser />)
 
     expect(screen.queryByTestId('example-video')).not.toBeInTheDocument()
+    expect(screen.getAllByAltText(HOMEPAGE_EXAMPLES[0].alt)).toHaveLength(2)
 
     act(() => reportIntersection(true))
 
@@ -73,6 +80,9 @@ describe('HomepageVideoTeaser', () => {
       'data-theme',
       'dark'
     )
+    expect(
+      screen.queryByAltText(HOMEPAGE_EXAMPLES[0].alt)
+    ).not.toBeInTheDocument()
   })
 
   it('sends people to the create page and records the click', async () => {

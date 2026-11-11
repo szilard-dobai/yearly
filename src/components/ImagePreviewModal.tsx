@@ -28,7 +28,7 @@ import { getDeviceId } from '@/lib/tracking/device-id'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
 import { getAnimatedVideoPrice } from '@/lib/video-offer'
-import { ChevronRight, Download, Loader2, Play } from 'lucide-react'
+import { ChevronRight, Download, Loader2, Play, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
@@ -273,10 +273,17 @@ function ImagePreviewContent({
               <button
                 type="button"
                 onClick={() => openVideoPreview('preview_image')}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-lg transition-colors hover:bg-gray-800 dark:bg-zinc-100 dark:text-gray-900 dark:hover:bg-white"
+                className="group relative inline-flex cursor-pointer items-center gap-2.5 overflow-hidden rounded-full bg-linear-to-r from-red-500 to-rose-500 py-2 pr-5 pl-2 text-base font-semibold text-white shadow-lg shadow-red-500/40 transition-transform hover:scale-105 active:scale-95 motion-safe:animate-glow"
               >
-                <Play className="size-3.5 fill-current" />
+                <span className="flex size-8 items-center justify-center rounded-full bg-white text-red-500 transition-transform group-hover:scale-110">
+                  <Play className="size-3.5 translate-x-px fill-current" />
+                </span>
                 See it animated
+                <Sparkles className="size-4 text-white/90" />
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-transparent via-white/45 to-transparent motion-safe:animate-sheen"
+                />
               </button>
             </div>
           )}

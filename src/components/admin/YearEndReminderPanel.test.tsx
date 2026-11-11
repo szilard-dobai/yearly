@@ -15,6 +15,7 @@ const stats = {
   lastSevenDays: 3,
   emails: ['a@example.com', 'b@example.com'],
   shown: 40,
+  opens: 2,
   calendarAdds: { ics: 9, google: 4 },
 }
 
@@ -42,6 +43,9 @@ describe('YearEndReminderPanel', () => {
     expect(metric('Apple / Outlook')).toHaveTextContent('9')
     expect(metric('Google Calendar')).toHaveTextContent('4')
     expect(metric('Cards shown')).toHaveTextContent('40')
+    expect(metric('Cards shown')).toHaveTextContent(
+      '2 opened the old closed card'
+    )
     expect(screen.getByText(/For 1 Dec 2026/)).toBeInTheDocument()
   })
 

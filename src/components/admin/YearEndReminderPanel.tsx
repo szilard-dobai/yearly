@@ -113,7 +113,15 @@ export default function YearEndReminderPanel({
           />
           <Metric label="Apple / Outlook" value={stats.calendarAdds.ics} />
           <Metric label="Google Calendar" value={stats.calendarAdds.google} />
-          <Metric label="Cards shown" value={stats.shown} />
+          <Metric
+            label="Cards shown"
+            value={stats.shown}
+            hint={
+              stats.opens > 0
+                ? `${stats.opens.toLocaleString()} opened the old closed card`
+                : undefined
+            }
+          />
         </dl>
       )}
     </section>

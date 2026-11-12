@@ -49,6 +49,7 @@ src/
 │   ├── badges/               - Badges card, badge medal and the unlock pop-up shown when an edit earns a badge
 │   ├── YearCompareDialog.tsx - "vs last year" button in Statistics and the year-on-year comparison dialog
 │   ├── map/                  - World map card (flags or shaded by days, zoom per continent), map export layout and button
+│   ├── wrapped/              - "Play your year story": tap-through year-in-review slides, opened from the Export card
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)

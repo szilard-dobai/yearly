@@ -25,6 +25,7 @@ import StatisticsExportButton from '@/components/StatisticsExportButton'
 import MapExportButton from '@/components/map/MapExportButton'
 import WorldMapCard from '@/components/map/WorldMapCard'
 import UndoToast from '@/components/UndoToast'
+import WrappedButton from '@/components/wrapped/WrappedButton'
 import YearCompareDialog from '@/components/YearCompareDialog'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -431,6 +432,12 @@ function Create() {
                       <p className="text-gray-300 dark:text-zinc-400 leading-relaxed">
                         Download high-quality images to share
                       </p>
+                      <WrappedButton
+                        calendarData={calendarData}
+                        year={selectedYear}
+                        badges={badges}
+                        onDownloadCalendar={exportImage}
+                      />
                       <CalendarExportButton
                         calendarData={calendarData}
                         year={selectedYear}

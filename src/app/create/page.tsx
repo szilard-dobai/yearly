@@ -22,6 +22,7 @@ import ImagePreviewModal from '@/components/ImagePreviewModal'
 import MobileFab from '@/components/MobileFab'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
+import TravelNudgeCard from '@/components/TravelNudgeCard'
 import TripCountdown from '@/components/TripCountdown'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
 import UndoToast from '@/components/UndoToast'
@@ -429,6 +430,11 @@ function Create() {
                   />
                 </CardContent>
               </StandardCard>
+
+              <TravelNudgeCard
+                calendarData={calendarData}
+                onPlanTrip={() => setIsMobileAddDialogOpen(true)}
+              />
 
               {visitsForSelectedYear > 0 && (
                 <DarkCard>

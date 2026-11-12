@@ -17,6 +17,7 @@ import ImagePreviewModal from '@/components/ImagePreviewModal'
 import MobileFab from '@/components/MobileFab'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
+import TripCountdown from '@/components/TripCountdown'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
 import UndoToast from '@/components/UndoToast'
 import { Button } from '@/components/ui/button'
@@ -333,7 +334,8 @@ function Create() {
         <main className="container mx-auto px-3 py-6">
           <h1 className="sr-only">Make your travel calendar</h1>
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 mb-16">
-            <div className="space-y-6">
+            <div className="min-w-0 space-y-4">
+              <TripCountdown calendarData={calendarData} />
               <StandardCard>
                 <CardContent>
                   {!hintDismissed && (

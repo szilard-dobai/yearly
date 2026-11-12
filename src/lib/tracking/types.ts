@@ -40,6 +40,7 @@ export const TRACKING_EVENT_TYPES = [
   'year_end_reminder_shown',
   'year_end_reminder_calendar_add',
   'year_end_reminder_email_submit',
+  'trip_countdown_shown',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]

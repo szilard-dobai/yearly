@@ -9,7 +9,12 @@ export const FEEDBACK_SOURCES = [
   'mobile_fab',
   'create_card',
 ] as const
-export const EXPORT_TYPES = ['calendar', 'statistics', 'monthly'] as const
+export const EXPORT_TYPES = [
+  'calendar',
+  'statistics',
+  'monthly',
+  'map',
+] as const
 export const FEEDBACK_SORT_FIELDS = ['createdAt', 'rating'] as const
 
 export type FeedbackSource = (typeof FEEDBACK_SOURCES)[number]

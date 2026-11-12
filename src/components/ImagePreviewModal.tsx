@@ -45,6 +45,7 @@ const VIDEO_OFFER_COPY: Record<ExportType, string> = {
   calendar: 'Watch your year fill up, flag by flag.',
   statistics: 'Watch your travel stats count up.',
   monthly: 'Watch your month fill up, flag by flag.',
+  map: 'Watch your year fill up, flag by flag.',
 }
 
 interface ImagePreviewModalProps {

@@ -144,6 +144,8 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   wrapped_open: 'Year story opened',
   wrapped_complete: 'Year story watched to the end',
   wrapped_share: 'Year story shared',
+  schengen_counter_shown: 'Schengen counter shown',
+  schengen_passport_set: 'Schengen passport answered',
 }
 
 export function getEventLabel(type: string): string {

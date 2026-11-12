@@ -51,6 +51,8 @@ export const TRACKING_EVENT_TYPES = [
   'wrapped_open',
   'wrapped_complete',
   'wrapped_share',
+  'schengen_counter_shown',
+  'schengen_passport_set',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]

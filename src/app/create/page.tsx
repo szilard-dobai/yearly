@@ -17,6 +17,7 @@ import Header from '@/components/Header'
 import CalendarExportButton from '@/components/CalendarExportButton'
 import ImagePreviewModal from '@/components/ImagePreviewModal'
 import MobileFab from '@/components/MobileFab'
+import SchengenCard from '@/components/SchengenCard'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
 import TravelNudgeCard from '@/components/TravelNudgeCard'
@@ -382,6 +383,7 @@ function Create() {
                 </CardContent>
               </StandardCard>
               <WorldMapCard calendarData={calendarData} year={selectedYear} />
+              <SchengenCard calendarData={calendarData} />
             </div>
 
             <aside className="space-y-4">

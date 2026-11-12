@@ -48,6 +48,7 @@ src/
 │   ├── TravelNudgeCard.tsx   - Compares the last two months and nudges towards planning a trip
 │   ├── badges/               - Badges card, badge medal and the unlock pop-up shown when an edit earns a badge
 │   ├── YearCompareDialog.tsx - "vs last year" button in Statistics and the year-on-year comparison dialog
+│   ├── map/                  - World map card (flags or shaded by days, zoom per continent), map export layout and button
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
@@ -75,6 +76,8 @@ src/
 │   ├── badges.ts             - Badge definitions and when each was earned, worked out from the calendar
 │   ├── continents.ts         - Continent of each country
 │   ├── year-summary.ts       - One year's days, countries, trips, months and new countries; comparison headline
+│   ├── world-map.ts          - Loads world-atlas outlines (50m, lazy) and projects them; countries per year; zoom box
+│   ├── iso-numeric.ts        - ISO 3166 numeric code of each country, to match world-atlas outlines
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── statistics.ts         - 30+ statistics calculation functions
@@ -97,7 +100,7 @@ src/
 
 ### Image Export
 
-All three exports (calendar, monthly, statistics) come in two fixed canvas sizes, saved at `pixelRatio: 2`:
+All four exports (calendar, monthly, statistics, map) come in two fixed canvas sizes, saved at `pixelRatio: 2`:
 
 | Format                | Canvas    | JPEG      |
 | --------------------- | --------- | --------- |

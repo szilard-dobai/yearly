@@ -22,6 +22,8 @@ import Statistics from '@/components/Statistics'
 import TravelNudgeCard from '@/components/TravelNudgeCard'
 import TripCountdown from '@/components/TripCountdown'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
+import MapExportButton from '@/components/map/MapExportButton'
+import WorldMapCard from '@/components/map/WorldMapCard'
 import UndoToast from '@/components/UndoToast'
 import YearCompareDialog from '@/components/YearCompareDialog'
 import { Button } from '@/components/ui/button'
@@ -54,6 +56,7 @@ import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
 import { computeBadges, newlyEarned, type Badge } from '@/lib/badges'
 import { toDayKey, type DaySelection } from '@/lib/selection'
 import { buildDayMap } from '@/lib/trips'
+import { countriesInScope } from '@/lib/world-map'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
@@ -155,6 +158,10 @@ function Create() {
     [calendarData.visits, todayKey]
   )
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([])
+  const yearCountries = useMemo(
+    () => countriesInScope(buildDayMap(calendarData.visits), selectedYear),
+    [calendarData.visits, selectedYear]
+  )
 
   const handleDataChange = useCallback(
     (newData: CalendarData) => {
@@ -373,6 +380,7 @@ function Create() {
                   />
                 </CardContent>
               </StandardCard>
+              <WorldMapCard calendarData={calendarData} year={selectedYear} />
             </div>
 
             <aside className="space-y-4">
@@ -430,6 +438,12 @@ function Create() {
                       <StatisticsExportButton
                         calendarData={calendarData}
                         year={selectedYear}
+                      />
+                      <MapExportButton
+                        calendarData={calendarData}
+                        countries={yearCountries}
+                        year={selectedYear}
+                        mode="flags"
                       />
                       <div className="border-t border-white/20 dark:border-white/8 pt-3">
                         <div className="flex items-center gap-2">

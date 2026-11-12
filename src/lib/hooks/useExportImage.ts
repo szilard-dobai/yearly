@@ -2,12 +2,16 @@ import { useCallback, useRef, useState, type ReactElement } from 'react'
 import { useSettings, type Settings } from '@/lib/contexts/SettingsContext'
 import type { ExportFormat } from '@/lib/export-canvas'
 import { renderExportImage } from '@/lib/export-render'
+import type { EXPORT_BACKGROUND } from '@/lib/constants'
+
+export type ExportTheme = keyof typeof EXPORT_BACKGROUND
 import { useStatusFeedback, type StatusState } from './useStatusFeedback'
 
 export interface ExportLayoutOptions {
   format: ExportFormat
   flagDisplayMode: Settings['flagDisplayMode']
   weekStartsOn: Settings['weekStartsOn']
+  theme: ExportTheme
 }
 
 interface UseExportImageOptions {
@@ -49,14 +53,16 @@ export function useExportImage({
       const request = ++latestRequest.current
       setLoading()
       try {
+        const theme = isDarkMode(settings.colorScheme) ? 'dark' : 'light'
         const dataUrl = await renderExportImage(
           layout({
             format,
             flagDisplayMode: settings.flagDisplayMode,
             weekStartsOn: settings.weekStartsOn,
+            theme,
           }),
           format,
-          isDarkMode(settings.colorScheme) ? 'dark' : 'light'
+          theme
         )
         if (request !== latestRequest.current) return
         setImage({ dataUrl, format })

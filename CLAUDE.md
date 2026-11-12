@@ -50,6 +50,7 @@ src/
 │   ├── YearCompareDialog.tsx - "vs last year" button in Statistics and the year-on-year comparison dialog
 │   ├── map/                  - World map card (flags or shaded by days, zoom per continent), map export layout and button
 │   ├── wrapped/              - "Play your year story": tap-through year-in-review slides, opened from the Export card
+│   ├── SchengenCard.tsx      - Schengen 90/180 counter, stay planner and days per country (shown after Schengen trips)
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
@@ -79,6 +80,7 @@ src/
 │   ├── year-summary.ts       - One year's days, countries, trips, months and new countries; comparison headline
 │   ├── world-map.ts          - Loads world-atlas outlines (50m, lazy) and projects them; countries per year; zoom box
 │   ├── iso-numeric.ts        - ISO 3166 numeric code of each country, to match world-atlas outlines
+│   ├── schengen.ts           - Schengen 90/180 rolling window, projections, stay check, days per country
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── statistics.ts         - 30+ statistics calculation functions

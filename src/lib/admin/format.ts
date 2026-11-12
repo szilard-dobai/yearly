@@ -141,6 +141,9 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   badge_unlocked: 'Badge unlocked',
   year_compare_open: 'Year comparison opened',
   map_export_click: 'Map export clicked',
+  wrapped_open: 'Year story opened',
+  wrapped_complete: 'Year story watched to the end',
+  wrapped_share: 'Year story shared',
 }
 
 export function getEventLabel(type: string): string {

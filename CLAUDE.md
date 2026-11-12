@@ -47,6 +47,7 @@ src/
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
 │   ├── TravelNudgeCard.tsx   - Compares the last two months and nudges towards planning a trip
 │   ├── badges/               - Badges card, badge medal and the unlock pop-up shown when an edit earns a badge
+│   ├── YearCompareDialog.tsx - "vs last year" button in Statistics and the year-on-year comparison dialog
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
@@ -73,6 +74,7 @@ src/
 │   ├── nudges.ts             - Month-on-month comparison behind the travel nudge
 │   ├── badges.ts             - Badge definitions and when each was earned, worked out from the calendar
 │   ├── continents.ts         - Continent of each country
+│   ├── year-summary.ts       - One year's days, countries, trips, months and new countries; comparison headline
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── statistics.ts         - 30+ statistics calculation functions

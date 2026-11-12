@@ -46,6 +46,7 @@ export const TRACKING_EVENT_TYPES = [
   'travel_nudge_dismissed',
   'badges_open',
   'badge_unlocked',
+  'year_compare_open',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]

@@ -23,6 +23,7 @@ import TravelNudgeCard from '@/components/TravelNudgeCard'
 import TripCountdown from '@/components/TripCountdown'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
 import UndoToast from '@/components/UndoToast'
+import YearCompareDialog from '@/components/YearCompareDialog'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
@@ -477,10 +478,16 @@ function Create() {
 
               <StandardCard>
                 <CardHeader>
-                  <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
-                    <span className="text-2xl">📊</span>
-                    Statistics
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
+                      <span className="text-2xl">📊</span>
+                      Statistics
+                    </CardTitle>
+                    <YearCompareDialog
+                      calendarData={calendarData}
+                      year={selectedYear}
+                    />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <Statistics calendarData={calendarData} year={selectedYear} />

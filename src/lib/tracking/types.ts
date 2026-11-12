@@ -51,6 +51,7 @@ export const TRACKING_EVENT_TYPES = [
   'account_calendar_linked',
   'sign_out',
   'account_deleted',
+  'trip_countdown_shown',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]

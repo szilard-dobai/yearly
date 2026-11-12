@@ -144,6 +144,7 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   account_calendar_linked: 'Device linked to an account',
   sign_out: 'Signed out',
   account_deleted: 'Account deleted',
+  trip_countdown_shown: 'Trip countdown shown',
 }
 
 export function getEventLabel(type: string): string {

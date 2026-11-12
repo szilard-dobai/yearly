@@ -44,6 +44,7 @@ src/
 │   └── api/                  - API routes (tracking, feedback, admin auth/devices; admin-only DELETE on events, feedback and whole devices)
 ├── components/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
+│   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
@@ -66,6 +67,7 @@ src/
 │   ├── types.ts              - Core types (Country, CountryVisit, CalendarData)
 │   ├── constants.ts          - Month names, flag sizes
 │   ├── calendar.ts           - Calendar grid calculations
+│   ├── trips.ts              - Day map and trip grouping (back-to-back days = one trip), trip status
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── statistics.ts         - 30+ statistics calculation functions

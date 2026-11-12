@@ -133,6 +133,7 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   year_end_reminder_shown: 'Year-end reminder shown',
   year_end_reminder_calendar_add: 'Year-end reminder added to calendar',
   year_end_reminder_email_submit: 'Year-end reminder email added',
+  trip_countdown_shown: 'Trip countdown shown',
 }
 
 export function getEventLabel(type: string): string {

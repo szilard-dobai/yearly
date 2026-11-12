@@ -1,5 +1,7 @@
 'use client'
 
+import BadgesCard from '@/components/badges/BadgesCard'
+import BadgeUnlockedDialog from '@/components/badges/BadgeUnlockedDialog'
 import CalendarGrid from '@/components/CalendarGrid'
 import CalendarHint from '@/components/CalendarHint'
 import CountryInput from '@/components/CountryInput'
@@ -48,7 +50,9 @@ import {
 import { useImageExport } from '@/lib/hooks/useImageExport'
 import { useMonthlyExport } from '@/lib/hooks/useMonthlyExport'
 import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
-import type { DaySelection } from '@/lib/selection'
+import { computeBadges, newlyEarned, type Badge } from '@/lib/badges'
+import { toDayKey, type DaySelection } from '@/lib/selection'
+import { buildDayMap } from '@/lib/trips'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
@@ -60,7 +64,7 @@ import {
 } from '@/lib/visits'
 import { CalendarDays, Loader2, Undo2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 function getInitialData(): CalendarData {
   if (typeof window === 'undefined') {
@@ -144,13 +148,30 @@ function Create() {
     trackEvent('create_page_view', getTrafficSource())
   }, [])
 
+  const todayKey = toDayKey(new Date())
+  const badges = useMemo(
+    () => computeBadges(buildDayMap(calendarData.visits), todayKey),
+    [calendarData.visits, todayKey]
+  )
+  const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([])
+
   const handleDataChange = useCallback(
     (newData: CalendarData) => {
+      const unlocked = newlyEarned(
+        badges,
+        computeBadges(buildDayMap(newData.visits), todayKey)
+      )
+      if (unlocked.length > 0) {
+        setUnlockedBadges(unlocked)
+        trackEvent('badge_unlocked', {
+          badgeIds: unlocked.map((badge) => badge.id),
+        })
+      }
       setUndoStack((prev) => [...prev.slice(-9), calendarData])
       setCalendarData(newData)
       saveCalendarData(newData)
     },
-    [calendarData]
+    [calendarData, badges, todayKey]
   )
 
   const handleUndo = useCallback(() => {
@@ -466,6 +487,8 @@ function Create() {
                 </CardContent>
               </StandardCard>
 
+              <BadgesCard badges={badges} />
+
               {calendarData.visits.length > 0 && (
                 <FeedbackCard year={selectedYear} />
               )}
@@ -651,6 +674,11 @@ function Create() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BadgeUnlockedDialog
+        badges={unlockedBadges}
+        onClose={() => setUnlockedBadges([])}
+      />
 
       <FeedbackDialog
         open={feedbackDialog.open}

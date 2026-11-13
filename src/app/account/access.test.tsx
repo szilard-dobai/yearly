@@ -14,6 +14,10 @@ vi.mock('@/lib/auth/client', () => ({ authClient: {} }))
 
 vi.mock('@/components/Header', () => ({ default: () => null }))
 
+vi.mock('@/components/account/AccountCalendar', () => ({
+  default: () => null,
+}))
+
 vi.mock('next/headers', () => ({
   headers: async () => new Headers({ 'user-agent': userAgent.value }),
 }))
@@ -28,7 +32,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
 }))
 
-const SESSION = { user: { email: 'ana@example.com' } }
+const SESSION = { user: { id: 'ana', email: 'ana@example.com' } }
 
 function signInPage(params: Record<string, string> = {}) {
   return SignInPage({ searchParams: Promise.resolve(params) })

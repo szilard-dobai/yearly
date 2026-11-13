@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth/client'
+import { forgetSyncedCalendar } from '@/lib/calendar-sync/sign-out'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -17,6 +18,7 @@ export default function AccountDetails({ email }: AccountDetailsProps) {
   const handleSignOut = async () => {
     setIsSigningOut(true)
     await authClient.signOut()
+    forgetSyncedCalendar()
     router.replace('/')
     router.refresh()
   }
@@ -30,6 +32,10 @@ export default function AccountDetails({ email }: AccountDetailsProps) {
         {isSigningOut && <Loader2 className="size-4 animate-spin" />}
         Sign out
       </Button>
+      <p className="text-sm text-gray-500 dark:text-zinc-500">
+        Signing out removes your trips from this device. They stay saved in your
+        account.
+      </p>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import AccountCalendar from '@/components/account/AccountCalendar'
 import AccountDetails from '@/components/account/AccountDetails'
 import Header from '@/components/Header'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,6 +27,17 @@ export default async function AccountPage() {
           <h1 className="font-serif text-4xl font-normal text-gray-900 dark:text-zinc-100">
             Your account
           </h1>
+
+          <StandardCard>
+            <CardHeader>
+              <CardTitle className="text-base font-medium">
+                Your trips
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AccountCalendar userId={session.user.id} />
+            </CardContent>
+          </StandardCard>
 
           <StandardCard>
             <CardHeader>

@@ -34,7 +34,7 @@ We chose codes over emailed links. Trips live only in the browser that made them
 ### Product rules
 
 1. **Making and exporting never needs an account**, so "free, no sign-up" stays true. Anyone can create an account, not only buyers.
-2. **Signing in saves your calendars to your account** (a later PR). Until that ships, trips stay on the device. The privacy page must describe it before accounts go live.
+2. **Signing in saves your calendars to your account** and keeps every signed-in device in sync (see Calendar sync). The privacy page must describe this before accounts go live.
 3. **Sign in before paying.** Claiming the waitlist's free first video needs a checked email, and downloading again needs an account.
 4. **No IP addresses at rest.** Better Auth's session IP is dropped before saving, and rate-limit keys are hashed. This keeps the privacy page's promise.
 5. **Accounts stay switched off in production until launch.** `ACCOUNTS_ENABLED=true` turns on `/sign-in`, `/account` and `/api/auth`; otherwise all three return 404. It is on for Preview and local development. The privacy page changes in the PR that turns it on in production.
@@ -68,7 +68,25 @@ Rules:
 5. **Download again:** from the receipt email or the header's "Your videos" link, to `/account`.
 6. **Delete account:** from `/account`. Required by UK GDPR from the day accounts are visible.
 
-## Alternatives considered
+## Calendar sync
+
+- **What's stored:** one row per account in `calendar`, holding a map from day to countries, such as `{"2026-03-10": ["FR", "DE"]}`. Days are plain dates rather than timestamps, so a trip lands on the same day on a device in any timezone. Each device converts them to its own local dates.
+- **When it syncs:**
+  - When a signed-in person opens `/create` or `/account`.
+  - About a second after each change on `/create`.
+  - Every 15 seconds after a failure, until a save gets through.
+- **Two devices:**
+  - Each save carries the version it was based on. If the account has moved on, the API answers 409 with the latest copy.
+  - The device then merges three copies day by day: its own, the account's, and the last one both agreed on, which it keeps in local storage.
+  - A change made on only one side wins. If both sides changed the same day, removals and additions are combined, keeping this device's countries first when a day would have more than two.
+  - Edits made while a save is in flight are kept.
+- **First sign-in on a device:**
+  - Usually silent: when one side is empty, or the device adds nothing the account lacks, the two are simply combined.
+  - Otherwise people are asked once: "This device has trips that aren't in your account". The dialog shows how many days each side has and warns about days that would have more than two countries.
+  - **Add them to my account** combines both, keeping this device's countries on crowded days. **Use my account only** replaces this device's trips with the account's.
+  - The dialog can't be dismissed without choosing, so a borrowed device's trips never end up in someone's account by accident.
+- **Signing out:** removes the trips from the device if they're saved in the account. Changes that never reached the account stay on the device.
+- **Database load:** only signed-in people call `/api/calendar`, so anonymous visitors never wake the database.
 
 - **Supabase** (Postgres + auth + storage). Well regarded and its free database doesn't count compute hours. Not chosen because it's a whole platform we would mostly not use, the free database is 500 MB, free projects pause after a week without activity, preview branches are a paid feature and the paid plan is a flat $25/month.
 - **Clerk.** The best ready-made sign-in screens. Not chosen because users would live in Clerk and need syncing to our database through webhooks, passkeys and removing the Clerk branding need the $25/month plan, and Clerk Billing isn't a merchant of record.

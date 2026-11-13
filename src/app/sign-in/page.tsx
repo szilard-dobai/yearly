@@ -7,6 +7,7 @@ import { getGoogleCredentials, isAccountsEnabled } from '@/lib/auth/config'
 import { safeNextPath } from '@/lib/auth/next-path'
 import { getSession } from '@/lib/auth/server'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
@@ -21,6 +22,9 @@ interface SignInPageProps {
     error?: string | string[]
   }>
 }
+
+const linkClassName =
+  'underline underline-offset-2 hover:text-gray-900 dark:hover:text-zinc-100'
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   if (!isAccountsEnabled()) notFound()
@@ -48,7 +52,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
               Sign in
             </h1>
             <p className="text-gray-600 dark:text-zinc-400">
-              We&apos;ll email you a 6-digit code. No password needed.
+              Save your calendar to a free account and see it on any phone or
+              computer. New here? Signing in creates your account.
             </p>
           </div>
 
@@ -62,13 +67,31 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           )}
 
           <StandardCard>
-            <CardContent>
+            <CardContent className="space-y-4">
               <SignInForm googleEnabled={googleEnabled} next={next} />
+              <p className="text-xs text-gray-500 dark:text-zinc-500">
+                By signing in, you agree to the{' '}
+                <Link href="/terms" className={linkClassName}>
+                  Terms
+                </Link>{' '}
+                and the{' '}
+                <Link href="/privacy" className={linkClassName}>
+                  Privacy policy
+                </Link>
+                .
+              </p>
             </CardContent>
           </StandardCard>
 
           <p className="text-sm text-gray-500 dark:text-zinc-500">
-            You don&apos;t need an account to make or download your calendar.
+            You can keep using Yearly without an account. Your trips stay in
+            this browser.{' '}
+            <Link
+              href={next === '/account' ? '/create' : next}
+              className={linkClassName}
+            >
+              Continue without an account
+            </Link>
           </p>
         </div>
       </main>

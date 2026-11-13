@@ -113,7 +113,10 @@ describe('runCalendarSync', () => {
     vi.mocked(server.api.fetch).mockClear()
     vi.mocked(server.api.push).mockClear()
 
-    expect(await sync(server, device, false)).toEqual({ pending: false })
+    expect(await sync(server, device, false)).toEqual({
+      pending: false,
+      firstSync: null,
+    })
     expect(server.api.fetch).not.toHaveBeenCalled()
     expect(server.api.push).not.toHaveBeenCalled()
   })
@@ -176,7 +179,7 @@ describe('runCalendarSync', () => {
       [D2]: ['DE'],
       '2026-03-12': ['ES'],
     })
-    expect(result).toEqual({ pending: true })
+    expect(result).toEqual({ pending: true, firstSync: 'auto' })
     expect(loadSyncState()?.base).toEqual({ [D1]: ['FR'], [D2]: ['DE'] })
   })
 
@@ -234,7 +237,7 @@ describe('runCalendarSync on a first sign-in with trips on both sides', () => {
     const device = fakeDevice({ [D1]: ['FR'] })
 
     const { chooseFirstSync, result } = syncWithChoice(server, device, 'merge')
-    await result
+    expect(await result).toEqual({ pending: false, firstSync: 'merge' })
 
     expect(chooseFirstSync).toHaveBeenCalledWith({
       newDays: 1,
@@ -250,7 +253,7 @@ describe('runCalendarSync on a first sign-in with trips on both sides', () => {
     const device = fakeDevice({ [D1]: ['FR'] })
 
     const { result } = syncWithChoice(server, device, 'account')
-    await result
+    expect(await result).toEqual({ pending: false, firstSync: 'account' })
 
     expect(device.get()).toEqual({ [D2]: ['DE'] })
     expect(server.api.push).not.toHaveBeenCalled()

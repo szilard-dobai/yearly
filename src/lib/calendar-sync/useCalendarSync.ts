@@ -1,6 +1,7 @@
 'use client'
 
 import { authClient } from '@/lib/auth/client'
+import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fromCalendarDays, toCalendarDays } from './days'
@@ -35,6 +36,7 @@ export function useCalendarSync({
   onRemoteChange,
 }: CalendarSyncOptions) {
   const [account, setAccount] = useState<SyncAccount | null>(null)
+  const [sessionChecked, setSessionChecked] = useState(false)
   const [status, setStatus] = useState<SyncStatus>('saving')
   const [firstSyncRequest, setFirstSyncRequest] =
     useState<FirstSyncRequest | null>(null)
@@ -85,7 +87,7 @@ export function useCalendarSync({
       let followUp: boolean | null = null
 
       try {
-        const { pending } = await runCalendarSync({
+        const { pending, firstSync } = await runCalendarSync({
           userId: current.id,
           refresh,
           chooseFirstSync,
@@ -99,6 +101,12 @@ export function useCalendarSync({
           },
         })
         setStatus('saved')
+        if (firstSync) {
+          trackEvent('account_calendar_linked', {
+            choice: firstSync,
+            source: 'create',
+          })
+        }
         if (pending) followUp = false
       } catch (error) {
         if (error instanceof UnauthorizedError) {
@@ -126,7 +134,9 @@ export function useCalendarSync({
     authClient
       .getSession()
       .then(({ data }) => {
-        if (cancelled || !data) return
+        if (cancelled) return
+        setSessionChecked(true)
+        if (!data) return
         const next = { id: data.user.id, email: data.user.email }
         accountRef.current = next
         setAccount(next)
@@ -147,5 +157,5 @@ export function useCalendarSync({
     return () => clearTimeout(timer)
   }, [account, calendarData, run])
 
-  return { account, status, firstSyncRequest }
+  return { account, sessionChecked, status, firstSyncRequest }
 }

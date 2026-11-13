@@ -40,6 +40,15 @@ export const TRACKING_EVENT_TYPES = [
   'year_end_reminder_shown',
   'year_end_reminder_calendar_add',
   'year_end_reminder_email_submit',
+  'account_prompt_shown',
+  'account_prompt_click',
+  'account_prompt_dismissed',
+  'sign_in_code_sent',
+  'sign_in_google_click',
+  'sign_in_completed',
+  'account_calendar_linked',
+  'sign_out',
+  'account_deleted',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]

@@ -1,15 +1,12 @@
 'use client'
 
-import {
-  countCalendarDays,
-  fromCalendarDays,
-  toCalendarDays,
-} from '@/lib/calendar-sync/days'
+import { countCalendarDays } from '@/lib/calendar-sync/days'
+import { readStoredDays, writeStoredDays } from '@/lib/calendar-sync/local'
 import {
   type FirstSyncRequest,
   runCalendarSync,
 } from '@/lib/calendar-sync/sync'
-import { loadCalendarData, saveCalendarData } from '@/lib/storage'
+import { trackEvent } from '@/lib/tracking'
 import Link from 'next/link'
 import FirstSyncDialog from './FirstSyncDialog'
 import { useEffect, useState } from 'react'
@@ -18,10 +15,6 @@ type State =
   | { status: 'loading' }
   | { status: 'saved'; days: number }
   | { status: 'error' }
-
-function readLocal() {
-  return toCalendarDays(loadCalendarData()?.visits ?? [])
-}
 
 export default function AccountCalendar({ userId }: { userId: string }) {
   const [state, setState] = useState<State>({ status: 'loading' })
@@ -33,7 +26,7 @@ export default function AccountCalendar({ userId }: { userId: string }) {
     runCalendarSync({
       userId,
       refresh: true,
-      readLocal,
+      readLocal: readStoredDays,
       chooseFirstSync: (summary) =>
         new Promise((resolve) => {
           setFirstSyncRequest({
@@ -44,14 +37,20 @@ export default function AccountCalendar({ userId }: { userId: string }) {
             },
           })
         }),
-      writeLocal: (days) =>
-        saveCalendarData({
-          visits: fromCalendarDays(days, loadCalendarData()?.visits ?? []),
-        }),
+      writeLocal: writeStoredDays,
     })
-      .then(() => {
+      .then(({ firstSync }) => {
+        if (firstSync) {
+          trackEvent('account_calendar_linked', {
+            choice: firstSync,
+            source: 'account',
+          })
+        }
         if (!cancelled) {
-          setState({ status: 'saved', days: countCalendarDays(readLocal()) })
+          setState({
+            status: 'saved',
+            days: countCalendarDays(readStoredDays()),
+          })
         }
       })
       .catch((error: unknown) => {
@@ -80,7 +79,7 @@ export default function AccountCalendar({ userId }: { userId: string }) {
           {state.days > 0
             ? `${state.days} ${state.days === 1 ? 'day of trips is' : 'days of trips are'} saved to your account.`
             : 'Trips you add are saved to your account.'}{' '}
-          They show up on any device where you sign in.
+          Sign in on your phone or computer to see the same calendar there.
         </p>
       )}
       <FirstSyncDialog request={firstSyncRequest} />

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth/client'
 import { SIGN_IN_CODE_MINUTES } from '@/lib/email/sign-in-code'
+import { trackEvent } from '@/lib/tracking'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -61,6 +62,7 @@ export default function SignInForm({ googleEnabled, next }: SignInFormProps) {
       setError(sendErrorMessage(sendError))
       return
     }
+    trackEvent('sign_in_code_sent')
     setCode('')
     setSentTo(address)
   }
@@ -84,12 +86,14 @@ export default function SignInForm({ googleEnabled, next }: SignInFormProps) {
       setError(verifyErrorMessage(verifyError))
       return
     }
+    trackEvent('sign_in_completed', { method: 'email' })
     router.replace(next)
     router.refresh()
   }
 
   const handleGoogle = async () => {
     setError('')
+    trackEvent('sign_in_google_click')
     setIsRedirecting(true)
     const { error: googleError } = await authClient.signIn.social({
       provider: 'google',
@@ -203,6 +207,10 @@ export default function SignInForm({ googleEnabled, next }: SignInFormProps) {
             Email me a code
           </Button>
         </div>
+        <p className="text-xs text-gray-500 dark:text-zinc-500">
+          We&apos;ll email you a 6-digit code. There&apos;s no password to
+          remember.
+        </p>
       </form>
 
       {googleEnabled && (

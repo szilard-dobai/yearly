@@ -63,6 +63,18 @@ describe('storage utilities', () => {
       expect(loaded?.visits[1].countryCode).toBe('FR')
     })
 
+    it('should load calendars covering several years of trips', () => {
+      const visits = Array.from({ length: 366 * 2 * 3 }, (_, index) => ({
+        id: `${index}`,
+        countryCode: index % 2 === 0 ? 'FR' : 'DE',
+        date: new Date(2024, 0, 1 + Math.floor(index / 2)),
+      }))
+
+      saveCalendarData({ visits })
+
+      expect(loadCalendarData()?.visits).toHaveLength(visits.length)
+    })
+
     it('should preserve date objects', () => {
       const originalDate = new Date('2023-05-15T10:30:00')
       const data: CalendarData = {

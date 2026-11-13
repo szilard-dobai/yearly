@@ -31,3 +31,4 @@ logs/
 
 # Vendored agent skills
 .claude/skills/
+drizzle/meta

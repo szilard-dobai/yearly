@@ -12,10 +12,15 @@ import { useState } from 'react'
 
 interface AccountDetailsProps {
   userId: string
+  name?: string
   email: string
 }
 
-export default function AccountDetails({ userId, email }: AccountDetailsProps) {
+export default function AccountDetails({
+  userId,
+  name,
+  email,
+}: AccountDetailsProps) {
   const router = useRouter()
   const [state, setState] = useState<'idle' | 'signing-out' | 'unsaved'>('idle')
 
@@ -44,9 +49,20 @@ export default function AccountDetails({ userId, email }: AccountDetailsProps) {
 
   return (
     <div className="space-y-4">
-      <p className="font-medium break-all text-gray-900 dark:text-zinc-100">
-        {email}
-      </p>
+      <div>
+        {name && (
+          <p className="font-medium text-gray-900 dark:text-zinc-100">{name}</p>
+        )}
+        <p
+          className={
+            name
+              ? 'text-sm break-all text-gray-600 dark:text-zinc-400'
+              : 'font-medium break-all text-gray-900 dark:text-zinc-100'
+          }
+        >
+          {email}
+        </p>
+      </div>
 
       {state === 'unsaved' ? (
         <div className="space-y-3" role="alert">

@@ -49,6 +49,7 @@ export default async function AccountPage() {
             <CardContent>
               <AccountDetails
                 userId={session.user.id}
+                name={session.user.name}
                 email={session.user.email}
               />
             </CardContent>

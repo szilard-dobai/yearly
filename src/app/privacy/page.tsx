@@ -98,9 +98,11 @@ export default function PrivacyPage() {
                   don&apos;t store your IP address.
                 </li>
                 <li>
-                  if you sign in with Google, a link between your Yearly account
-                  and your Google account. We don&apos;t keep your Google name
-                  or profile photo, or any access to your Google account.
+                  if you sign in with Google, the name on your Google account,
+                  which we use only for the initials on your account icon, and a
+                  link between your Yearly account and your Google account. We
+                  don&apos;t keep your Google profile photo or any access to
+                  your Google account.
                 </li>
               </List>
               <p>

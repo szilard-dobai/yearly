@@ -51,6 +51,9 @@ describe('privacy, terms and footer', () => {
       ).toBeInTheDocument()
       expect(screen.getByText(/Resend sends sign-in codes/)).toBeInTheDocument()
       expect(
+        screen.getByText(/the name on your Google account/)
+      ).toBeInTheDocument()
+      expect(
         screen.getByRole('link', { name: 'hello@yearly.world' })
       ).toBeInTheDocument()
     })

@@ -58,7 +58,7 @@ export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
           google: {
             ...google,
             prompt: 'select_account',
-            mapProfileToUser: () => ({ name: '', image: undefined }),
+            mapProfileToUser: () => ({ image: undefined }),
           },
         }
       : undefined,

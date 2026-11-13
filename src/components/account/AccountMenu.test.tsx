@@ -44,7 +44,7 @@ describe('AccountMenu', () => {
 
   it('shows the first letter of the email, linking to the account page', () => {
     useSession.mockReturnValue({
-      data: { user: { email: 'ana@example.com' } },
+      data: { user: { name: '', email: 'ana@example.com' } },
       isPending: false,
     })
     renderMenu()
@@ -52,6 +52,18 @@ describe('AccountMenu', () => {
     const link = screen.getByRole('link', { name: 'Your account' })
     expect(link).toHaveAttribute('href', '/account')
     expect(link).toHaveTextContent('A')
+  })
+
+  it('shows initials from the name when there is one', () => {
+    useSession.mockReturnValue({
+      data: { user: { name: 'Szilard Dobai', email: 'sd@example.com' } },
+      isPending: false,
+    })
+    renderMenu()
+
+    const link = screen.getByRole('link', { name: 'Your account' })
+    expect(link).toHaveTextContent('SD')
+    expect(link).toHaveAttribute('title', 'Szilard Dobai (sd@example.com)')
   })
 
   it('holds the space while the session loads', () => {

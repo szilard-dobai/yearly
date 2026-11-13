@@ -137,6 +137,7 @@ describe('createAuth', () => {
 
 describe('getAllowedHosts', () => {
   it('adds the Vercel deployment and branch hosts when they are set', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
     vi.stubEnv('VERCEL_URL', 'yearly-abc123-team.vercel.app')
     vi.stubEnv('VERCEL_BRANCH_URL', 'yearly-git-accounts-team.vercel.app')
 
@@ -146,6 +147,40 @@ describe('getAllowedHosts', () => {
       'localhost:3000',
       'yearly-abc123-team.vercel.app',
       'yearly-git-accounts-team.vercel.app',
+    ])
+    vi.unstubAllEnvs()
+  })
+
+  it('adds the host of the site URL, such as a local port', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'http://localhost:3030')
+    vi.stubEnv('VERCEL_URL', '')
+    vi.stubEnv('VERCEL_BRANCH_URL', '')
+
+    expect(getAllowedHosts()).toEqual([
+      'yearly.world',
+      'www.yearly.world',
+      'localhost:3000',
+      'localhost:3030',
+    ])
+    vi.unstubAllEnvs()
+  })
+
+  it('lists each host once and ignores a missing site URL', () => {
+    vi.stubEnv('VERCEL_URL', '')
+    vi.stubEnv('VERCEL_BRANCH_URL', '')
+
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.yearly.world')
+    expect(getAllowedHosts()).toEqual([
+      'yearly.world',
+      'www.yearly.world',
+      'localhost:3000',
+    ])
+
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
+    expect(getAllowedHosts()).toEqual([
+      'yearly.world',
+      'www.yearly.world',
+      'localhost:3000',
     ])
     vi.unstubAllEnvs()
   })

@@ -9,14 +9,24 @@ import { createRateLimitStorage } from './rate-limit'
 
 export const SIGN_IN_LINK_RATE_LIMIT = { window: 10 * 60, max: 5 }
 
+function getSiteHost() {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? '').host
+  } catch {
+    return undefined
+  }
+}
+
 export function getAllowedHosts() {
-  return [
+  const hosts = [
     'yearly.world',
     'www.yearly.world',
     'localhost:3000',
+    getSiteHost(),
     process.env.VERCEL_URL,
     process.env.VERCEL_BRANCH_URL,
   ].filter((host): host is string => Boolean(host))
+  return [...new Set(hosts)]
 }
 
 export function getGoogleCredentials() {

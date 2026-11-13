@@ -1,12 +1,12 @@
 import { db } from '@/lib/db'
 import { sendEmail } from '@/lib/email/send'
-import { signInLinkEmail } from '@/lib/email/sign-in-link'
+import { signInCodeEmail } from '@/lib/email/sign-in-code'
 import { headers } from 'next/headers'
 import { createAuth } from './config'
 
 export const auth = createAuth({
   db,
-  sendSignInLink: (email, url) => sendEmail(signInLinkEmail(email, url)),
+  sendSignInCode: (email, code) => sendEmail(signInCodeEmail(email, code)),
 })
 
 export type Session = typeof auth.$Infer.Session

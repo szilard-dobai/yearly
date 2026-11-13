@@ -1,13 +1,18 @@
 import type { Database } from '@/lib/db'
 import * as schema from '@/lib/db/schema'
-import { SIGN_IN_LINK_MINUTES } from '@/lib/email/sign-in-link'
+import { SIGN_IN_CODE_MINUTES } from '@/lib/email/sign-in-code'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
-import { magicLink } from 'better-auth/plugins/magic-link'
+import { emailOTP } from 'better-auth/plugins/email-otp'
 import { createRateLimitStorage } from './rate-limit'
 
-export const SIGN_IN_LINK_RATE_LIMIT = { window: 10 * 60, max: 5 }
+export const SIGN_IN_CODE_RATE_LIMIT = { window: 10 * 60, max: 5 }
+export const SIGN_IN_CODE_ATTEMPTS = 3
+
+export function isAccountsEnabled() {
+  return process.env.ACCOUNTS_ENABLED === 'true'
+}
 
 function getSiteHost() {
   try {
@@ -37,11 +42,11 @@ export function getGoogleCredentials() {
 
 interface CreateAuthOptions {
   db: Database
-  sendSignInLink: (email: string, url: string) => Promise<void>
+  sendSignInCode: (email: string, code: string) => Promise<void>
   secret?: string
 }
 
-export function createAuth({ db, sendSignInLink, secret }: CreateAuthOptions) {
+export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
   const google = getGoogleCredentials()
 
   return betterAuth({
@@ -63,11 +68,13 @@ export function createAuth({ db, sendSignInLink, secret }: CreateAuthOptions) {
       },
     },
     plugins: [
-      magicLink({
-        expiresIn: SIGN_IN_LINK_MINUTES * 60,
-        storeToken: 'hashed',
-        rateLimit: SIGN_IN_LINK_RATE_LIMIT,
-        sendMagicLink: ({ email, url }) => sendSignInLink(email, url),
+      emailOTP({
+        otpLength: 6,
+        expiresIn: SIGN_IN_CODE_MINUTES * 60,
+        allowedAttempts: SIGN_IN_CODE_ATTEMPTS,
+        storeOTP: 'hashed',
+        rateLimit: SIGN_IN_CODE_RATE_LIMIT,
+        sendVerificationOTP: ({ email, otp }) => sendSignInCode(email, otp),
       }),
       nextCookies(),
     ],

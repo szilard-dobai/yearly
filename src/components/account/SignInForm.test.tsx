@@ -3,47 +3,122 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import SignInForm from './SignInForm'
 
-const { magicLink, social } = vi.hoisted(() => ({
-  magicLink: vi.fn(),
-  social: vi.fn(),
-}))
+const { sendVerificationOtp, emailOtp, social, replace, refresh } = vi.hoisted(
+  () => ({
+    sendVerificationOtp: vi.fn(),
+    emailOtp: vi.fn(),
+    social: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  })
+)
 
 vi.mock('@/lib/auth/client', () => ({
-  authClient: { signIn: { magicLink, social } },
+  authClient: {
+    emailOtp: { sendVerificationOtp },
+    signIn: { emailOtp, social },
+  },
 }))
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace, refresh }),
+}))
+
+const OK = { data: { success: true }, error: null }
+
+async function requestCode(email = 'ana@example.com') {
+  await userEvent.type(screen.getByLabelText('Email'), ` ${email} `)
+  await userEvent.click(screen.getByRole('button', { name: 'Email me a code' }))
+}
 
 describe('SignInForm', () => {
   beforeEach(() => {
-    magicLink.mockReset()
-    social.mockReset()
+    vi.clearAllMocks()
   })
 
-  it('emails a sign-in link and says where it went', async () => {
-    magicLink.mockResolvedValue({ data: { status: true }, error: null })
-    render(<SignInForm googleEnabled={false} />)
+  it('emails a code and then asks for it', async () => {
+    sendVerificationOtp.mockResolvedValue(OK)
+    render(<SignInForm googleEnabled={false} next="/account" />)
 
-    await userEvent.type(screen.getByLabelText('Email'), ' ana@example.com ')
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Email me a link' })
-    )
+    await requestCode()
 
-    expect(magicLink).toHaveBeenCalledWith({
+    expect(sendVerificationOtp).toHaveBeenCalledWith({
       email: 'ana@example.com',
-      callbackURL: '/account',
-      errorCallbackURL: '/account',
+      type: 'sign-in',
     })
-    expect(screen.getByText('Check your inbox')).toBeInTheDocument()
     expect(screen.getByText('ana@example.com')).toBeInTheDocument()
+    expect(screen.getByLabelText('Code')).toHaveAttribute(
+      'autocomplete',
+      'one-time-code'
+    )
   })
 
-  it('goes back to the form to use a different email', async () => {
-    magicLink.mockResolvedValue({ data: { status: true }, error: null })
-    render(<SignInForm googleEnabled={false} />)
+  it('signs in with the code and goes to the next page', async () => {
+    sendVerificationOtp.mockResolvedValue(OK)
+    emailOtp.mockResolvedValue(OK)
+    render(<SignInForm googleEnabled={false} next="/create" />)
 
-    await userEvent.type(screen.getByLabelText('Email'), 'ana@example.com')
+    await requestCode()
+    await userEvent.type(screen.getByLabelText('Code'), '48 29-13')
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    expect(emailOtp).toHaveBeenCalledWith({
+      email: 'ana@example.com',
+      otp: '482913',
+    })
+    expect(replace).toHaveBeenCalledWith('/create')
+    expect(refresh).toHaveBeenCalled()
+  })
+
+  it('keeps the sign-in button off until the code has 6 digits', async () => {
+    sendVerificationOtp.mockResolvedValue(OK)
+    render(<SignInForm googleEnabled={false} next="/account" />)
+
+    await requestCode()
+    await userEvent.type(screen.getByLabelText('Code'), '4829')
+
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeDisabled()
+  })
+
+  it.each([
+    [{ status: 400, code: 'INVALID_OTP' }, "That code isn't right"],
+    [{ status: 400, code: 'OTP_EXPIRED' }, 'That code has expired'],
+    [{ status: 403, code: 'TOO_MANY_ATTEMPTS' }, 'Too many wrong tries'],
+    [{ status: 429 }, 'Too many tries'],
+  ])('explains a rejected code (%j)', async (error, message) => {
+    sendVerificationOtp.mockResolvedValue(OK)
+    emailOtp.mockResolvedValue({ data: null, error })
+    render(<SignInForm googleEnabled={false} next="/account" />)
+
+    await requestCode()
+    await userEvent.type(screen.getByLabelText('Code'), '482913')
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent(message)
+    expect(replace).not.toHaveBeenCalled()
+  })
+
+  it('sends a new code to the same address', async () => {
+    sendVerificationOtp.mockResolvedValue(OK)
+    render(<SignInForm googleEnabled={false} next="/account" />)
+
+    await requestCode()
     await userEvent.click(
-      screen.getByRole('button', { name: 'Email me a link' })
+      screen.getByRole('button', { name: 'Send a new code' })
     )
+
+    expect(sendVerificationOtp).toHaveBeenCalledTimes(2)
+    expect(sendVerificationOtp).toHaveBeenLastCalledWith({
+      email: 'ana@example.com',
+      type: 'sign-in',
+    })
+  })
+
+  it('goes back to the email step to use a different address', async () => {
+    sendVerificationOtp.mockResolvedValue(OK)
+    render(<SignInForm googleEnabled={false} next="/account" />)
+
+    await requestCode()
     await userEvent.click(
       screen.getByRole('button', { name: 'Use a different email' })
     )
@@ -51,45 +126,44 @@ describe('SignInForm', () => {
     expect(screen.getByLabelText('Email')).toBeInTheDocument()
   })
 
-  it('explains when too many links were requested', async () => {
-    magicLink.mockResolvedValue({ data: null, error: { status: 429 } })
-    render(<SignInForm googleEnabled={false} />)
+  it('explains when too many codes were requested', async () => {
+    sendVerificationOtp.mockResolvedValue({
+      data: null,
+      error: { status: 429 },
+    })
+    render(<SignInForm googleEnabled={false} next="/account" />)
 
-    await userEvent.type(screen.getByLabelText('Email'), 'ana@example.com')
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Email me a link' })
-    )
+    await requestCode()
 
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Too many sign-in emails'
-    )
+    expect(screen.getByRole('alert')).toHaveTextContent('Too many codes')
+    expect(screen.queryByLabelText('Code')).not.toBeInTheDocument()
   })
 
   it('shows a general error when the email cannot be sent', async () => {
-    magicLink.mockResolvedValue({ data: null, error: { status: 500 } })
-    render(<SignInForm googleEnabled={false} />)
+    sendVerificationOtp.mockResolvedValue({
+      data: null,
+      error: { status: 500 },
+    })
+    render(<SignInForm googleEnabled={false} next="/account" />)
 
-    await userEvent.type(screen.getByLabelText('Email'), 'ana@example.com')
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Email me a link' })
-    )
+    await requestCode()
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       "We couldn't send the email"
     )
   })
 
-  it('hides Google sign-in when it is not set up', () => {
-    render(<SignInForm googleEnabled={false} />)
+  it('hides Google sign-in when it is turned off', () => {
+    render(<SignInForm googleEnabled={false} next="/account" />)
 
     expect(
       screen.queryByRole('button', { name: 'Continue with Google' })
     ).not.toBeInTheDocument()
   })
 
-  it('starts Google sign-in when it is set up', async () => {
+  it('starts Google sign-in and returns to the next page', async () => {
     social.mockResolvedValue({ data: {}, error: null })
-    render(<SignInForm googleEnabled callbackURL="/create" />)
+    render(<SignInForm googleEnabled next="/create" />)
 
     await userEvent.click(
       screen.getByRole('button', { name: 'Continue with Google' })
@@ -98,7 +172,7 @@ describe('SignInForm', () => {
     expect(social).toHaveBeenCalledWith({
       provider: 'google',
       callbackURL: '/create',
-      errorCallbackURL: '/account',
+      errorCallbackURL: '/sign-in',
     })
   })
 })

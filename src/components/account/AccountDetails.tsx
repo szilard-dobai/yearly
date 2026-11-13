@@ -17,6 +17,7 @@ export default function AccountDetails({ email }: AccountDetailsProps) {
   const handleSignOut = async () => {
     setIsSigningOut(true)
     await authClient.signOut()
+    router.replace('/')
     router.refresh()
   }
 

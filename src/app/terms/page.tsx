@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 const LAST_UPDATED = '14 November 2026'
-const GOVERNING_LAW: string | null = null
+const GOVERNING_LAW = 'Romania'
 const CONTACT_EMAIL = 'hello@yearly.world'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -126,11 +126,13 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          {GOVERNING_LAW && (
-            <Section title="Law">
-              <p>These terms are governed by the law of {GOVERNING_LAW}.</p>
-            </Section>
-          )}
+          <Section title="Law">
+            <p>
+              These terms are governed by the law of {GOVERNING_LAW}. If you
+              live in another country, you also keep the consumer protections
+              its law gives you.
+            </p>
+          </Section>
 
           <Section title="Contact">
             <p>Questions about these terms: {email}.</p>

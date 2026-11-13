@@ -72,11 +72,11 @@ Rules:
 
 Before setting `ACCOUNTS_ENABLED=true` in Production:
 
-1. Add the governing-law country to `/terms` (`GOVERNING_LAW` in `src/app/terms/page.tsx`).
-2. Set up mail forwarding for `hello@yearly.world`; the Terms, the Privacy page and the delete-account error all point there.
-3. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production.
-4. Change the "Last updated" dates on `/privacy` (`ACCOUNTS_LAST_UPDATED`) and `/terms` to the launch date.
-5. Redeploy, then check sign-in by code and Google on yearly.world.
+1. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production.
+2. Change the "Last updated" dates on `/privacy` (`ACCOUNTS_LAST_UPDATED`) and `/terms` to the launch date.
+3. Redeploy, then check sign-in by code and Google on yearly.world.
+
+Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to the owner, and the owner confirmed the 30-day notice promise in the Terms.
 
 6. **Make a calendar:** unchanged. Most people never see sign-in.
 7. **Create an account:** from the header's "Sign in" link (after launch) or `/sign-in`, by email code or Google. Later, this saves the calendars to the account.

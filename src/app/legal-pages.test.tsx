@@ -61,6 +61,9 @@ describe('privacy, terms and footer', () => {
 
       expect(screen.getByRole('heading', { name: 'Terms' })).toBeInTheDocument()
       expect(screen.getByText(/run by Szilard Dobai/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/governed by the law of Romania/)
+      ).toBeInTheDocument()
 
       render(<Footer />)
       expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute(

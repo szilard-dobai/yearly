@@ -8,6 +8,13 @@
       "when": 1794604110300,
       "tag": "0000_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794609883252,
+      "tag": "0001_calendars",
+      "breakpoints": true
     }
   ]
 }

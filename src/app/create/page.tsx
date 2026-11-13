@@ -1,5 +1,8 @@
 'use client'
 
+import AccountSyncStatus from '@/components/account/AccountSyncStatus'
+import FirstSyncDialog from '@/components/account/FirstSyncDialog'
+import { useAccountsEnabled } from '@/components/account/AccountsEnabledProvider'
 import CalendarGrid from '@/components/CalendarGrid'
 import CalendarHint from '@/components/CalendarHint'
 import CountryInput from '@/components/CountryInput'
@@ -36,6 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { getTrafficSource } from '@/lib/attribution/traffic-source'
+import { useCalendarSync } from '@/lib/calendar-sync/useCalendarSync'
 import { getCountryByCode } from '@/lib/countries'
 import type { FeedbackSource } from '@/lib/feedback/types'
 import { MONTH_NAMES, MONTH_NAMES_SHORT } from '@/lib/constants'
@@ -150,6 +154,19 @@ function Create() {
     },
     [calendarData]
   )
+
+  const handleRemoteChange = useCallback((newData: CalendarData) => {
+    setUndoStack([])
+    setCalendarData(newData)
+    saveCalendarData(newData)
+  }, [])
+
+  const accountsEnabled = useAccountsEnabled()
+  const calendarSync = useCalendarSync({
+    enabled: accountsEnabled,
+    calendarData,
+    onRemoteChange: handleRemoteChange,
+  })
 
   const handleUndo = useCallback(() => {
     if (undoStack.length === 0) return
@@ -329,6 +346,8 @@ function Create() {
         </Select>
       </Header>
 
+      <FirstSyncDialog request={calendarSync.firstSyncRequest} />
+
       <div>
         <main className="container mx-auto px-3 py-6">
           <h1 className="sr-only">Make your travel calendar</h1>
@@ -470,6 +489,14 @@ function Create() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {calendarSync.account && (
+                    <div className="mb-4 border-b border-gray-200 pb-4 dark:border-white/8">
+                      <AccountSyncStatus
+                        status={calendarSync.status}
+                        email={calendarSync.account.email}
+                      />
+                    </div>
+                  )}
                   <Settings
                     year={selectedYear}
                     visitCount={visitsForSelectedYear}

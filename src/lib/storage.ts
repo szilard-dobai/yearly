@@ -3,7 +3,7 @@ import { z } from 'zod'
 import type { CalendarData } from './types'
 
 const STORAGE_KEY = 'countries-in-year'
-const MAX_VISITS = 365 * 2
+const MAX_VISITS = 366 * 2 * 10
 
 /**
  * Zod schema for validating serialized calendar data

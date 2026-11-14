@@ -18,7 +18,8 @@
     "format": "prettier --write .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/db-migrate.mts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "emoji:build": "node scripts/build-emoji-images.mts && prettier --write src/lib/emoji-images.ts public/emoji/README.md"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -51,6 +52,7 @@
     "react-dom": "^19.2.3",
     "remotion": "4.0.541",
     "resend": "^6.38.1",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.6.7"
   },

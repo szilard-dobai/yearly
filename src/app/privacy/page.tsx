@@ -206,6 +206,27 @@ export default function PrivacyPage() {
             )}
           </Section>
 
+          <Section title="Error reports">
+            <p>
+              When something breaks, Yearly sends an error report to Sentry so
+              we can fix it. A report says what went wrong and where in our
+              code, with your browser, operating system and device type. For
+              about 1 in 10 visits, Yearly also sends page timings, which show
+              how long pages and requests took.
+            </p>
+            <p>
+              Reports and timings don&apos;t include your IP address, your email
+              address, cookies or the contents of requests, such as your trips.
+              Sentry works out an approximate location, such as the city, from
+              the connection a report came from, and keeps that instead of the
+              IP address.
+            </p>
+            <p>
+              Turning off <span className="font-medium">Share usage stats</span>{' '}
+              stops page timings from this browser, but not error reports.
+            </p>
+          </Section>
+
           <Section title="Feedback">
             <p>
               If you send feedback, we store your rating and message with the
@@ -310,6 +331,10 @@ export default function PrivacyPage() {
                 </>
               )}
               <li>
+                Error reports and page timings: our legitimate interest in
+                keeping Yearly working.
+              </li>
+              <li>
                 Slack notifications: our legitimate interest in reading feedback
                 and keeping track of sign-ups.
               </li>
@@ -341,6 +366,7 @@ export default function PrivacyPage() {
                 Video waitlist emails: until 12 months after animated videos
                 launch.
               </li>
+              <li>Error reports and page timings in Sentry: up to 90 days.</li>
               {accounts && (
                 <>
                   <li>
@@ -376,6 +402,10 @@ export default function PrivacyPage() {
                 </>
               )}
               <li>
+                Sentry receives error reports and page timings, and stores them
+                in Germany.
+              </li>
+              <li>
                 Slack receives our notifications about feedback, waitlist
                 sign-ups and year-end reminders.
               </li>
@@ -386,7 +416,8 @@ export default function PrivacyPage() {
           <Section title="Where your data is stored">
             <p>
               Our servers and databases are in Frankfurt, Germany. Some of the
-              companies we use are based in the US: Vercel, MongoDB and Slack
+              companies we use are based in the US: Vercel, MongoDB, Sentry and
+              Slack
               {accounts ? ', and for accounts, Neon, Resend and Google' : ''}.
               Slack keeps our notifications in the US, and the others may access
               your data from outside the European Economic Area. Their data

@@ -1,8 +1,8 @@
 import type * as Sentry from '@sentry/nextjs'
 
-type DataCollection = NonNullable<
-  NonNullable<Parameters<typeof Sentry.init>[0]>['dataCollection']
->
+type InitOptions = NonNullable<Parameters<typeof Sentry.init>[0]>
+type DataCollection = NonNullable<InitOptions['dataCollection']>
+type SamplingContext = Parameters<NonNullable<InitOptions['tracesSampler']>>[0]
 
 export const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 
@@ -10,6 +10,33 @@ export const PRODUCTION_TRACES_SAMPLE_RATE = 0.1
 
 export function tracesSampleRate(nodeEnv = process.env.NODE_ENV) {
   return nodeEnv === 'development' ? 1 : PRODUCTION_TRACES_SAMPLE_RATE
+}
+
+export const HEALTH_CHECK_PATH = '/api/health'
+
+const HEALTH_CHECK_PATTERN = /\/api\/health(?:[/?#\s]|$)/
+
+export function isHealthCheck({
+  name,
+  normalizedRequest,
+  attributes,
+}: Pick<SamplingContext, 'name' | 'normalizedRequest' | 'attributes'>) {
+  return [
+    name,
+    normalizedRequest?.url,
+    attributes?.['url.path'],
+    attributes?.['http.target'],
+    attributes?.['http.route'],
+    attributes?.['next.route'],
+  ].some(
+    (value) => typeof value === 'string' && HEALTH_CHECK_PATTERN.test(value)
+  )
+}
+
+export function serverTracesSampler(context: SamplingContext) {
+  return isHealthCheck(context)
+    ? 0
+    : context.inheritOrSampleWith(tracesSampleRate())
 }
 
 export function sentryEnvironment(

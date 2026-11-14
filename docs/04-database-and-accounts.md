@@ -19,13 +19,13 @@ Constraints: free to run until there is revenue, cheap paid plans once there is,
 
 ## Decision
 
-| Layer    | Choice                                                      | Why                                                                                                                                                                                           |
-| -------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Database | **Neon Postgres**, connected through the Vercel Marketplace | Plain Postgres, which was the engine behind Vercel Postgres. A database branch for each preview deployment. Scales to zero. Paid plan has no monthly minimum.                                 |
-| ORM      | **Drizzle**                                                 | Thin, close to SQL, typed schema in TypeScript, plain SQL migration files. Better Auth has a Drizzle adapter.                                                                                 |
-| Auth     | **Better Auth**, running inside the app                     | MIT licence, no per-user cost. Users live in our own database, so purchases point at a user with a normal foreign key. Owned by Vercel since July 2026. Auth.js is in security-fix-only mode. |
-| Email    | **Resend**                                                  | Sign-in codes, the 1 December reminder, purchase receipts.                                                                                                                                    |
-| Payments | A merchant of record (Polar or Paddle), decided in phase 2  | Handles UK, EU and US sales tax for us. Both charge 5% + 50¢ on their starter plans.                                                                                                          |
+| Layer    | Choice                                                          | Why                                                                                                                                                                                           |
+| -------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Database | **Neon Postgres**, connected through the Vercel Marketplace     | Plain Postgres, which was the engine behind Vercel Postgres. A database branch for each preview deployment. Scales to zero. Paid plan has no monthly minimum.                                 |
+| ORM      | **Drizzle**                                                     | Thin, close to SQL, typed schema in TypeScript, plain SQL migration files. Better Auth has a Drizzle adapter.                                                                                 |
+| Auth     | **Better Auth**, running inside the app                         | MIT licence, no per-user cost. Users live in our own database, so purchases point at a user with a normal foreign key. Owned by Vercel since July 2026. Auth.js is in security-fix-only mode. |
+| Email    | **Resend**                                                      | Sign-in codes, the 1 December reminder, purchase receipts.                                                                                                                                    |
+| Payments | **Polar**, as merchant of record (see `docs/06-paid-videos.md`) | Handles UK, EU and US sales tax for us. About 5% + 50¢ a sale on its starter plan.                                                                                                            |
 
 Sign-in methods: a 6-digit code sent by email, and Google. No passwords.
 

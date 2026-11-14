@@ -36,7 +36,7 @@ We chose codes over emailed links. Trips live only in the browser that made them
 1. **Making and exporting never needs an account**, so "free, no sign-up" stays true. Anyone can create an account, not only buyers.
 2. **Signing in saves your calendars to your account** and keeps every signed-in device in sync (see Calendar sync). The privacy page must describe this before accounts go live.
 3. **Sign in before paying.** Claiming the waitlist's free first video needs a checked email, and downloading again needs an account.
-4. **No IP addresses at rest.** Better Auth's session IP is dropped before saving, and rate-limit keys are hashed. This keeps the privacy page's promise.
+4. **No IP addresses at rest.** Better Auth's session IP is dropped before saving, and rate-limit keys are hashed. The signed-in check (`/get-session`) isn't rate limited, so visitors who never sign in leave nothing in Postgres and page views don't wake Neon. The privacy page discloses the hashed rate-limit keys and their 2-day lifetime.
 5. **Accounts stay switched off in production until launch.** `ACCOUNTS_ENABLED=true` turns on `/sign-in`, `/account` and `/api/auth`; otherwise all three return 404. It is on for Preview and local development. The privacy page changes in the PR that turns it on in production.
 
 ## Pages and access

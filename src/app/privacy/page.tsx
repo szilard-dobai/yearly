@@ -109,7 +109,7 @@ export default function PrivacyPage() {
                 <li>
                   for each device you&apos;re signed in on, when you signed in,
                   when that session ends and your browser&apos;s user agent. We
-                  don&apos;t store your IP address.
+                  don&apos;t store your IP address with your sessions.
                 </li>
                 <li>
                   if you sign in with Google, the name on your Google account,
@@ -124,13 +124,20 @@ export default function PrivacyPage() {
                 only a scrambled copy of it, and it expires after 10 minutes.
               </p>
               <p>
+                When you sign in, sign out or delete your account, we count
+                these requests from your IP address so we can block repeated
+                sign-in attempts. We store only a scrambled copy of the address,
+                and delete it within 2 days.
+              </p>
+              <p>
                 We use your email address to sign you in and to reply if you
                 write to us. We don&apos;t send newsletters or marketing to it.
               </p>
               <p>
-                You stay signed in on a device for up to 60 days, or until you
-                sign out. Signing out removes your trips from that device. They
-                stay saved in your account.
+                You stay signed in on a device until you sign out, or until you
+                haven&apos;t opened Yearly there for 60 days. Signing out
+                removes your trips from that device. They stay saved in your
+                account.
               </p>
             </Section>
           )}
@@ -163,6 +170,8 @@ export default function PrivacyPage() {
               logged that year, how many days you logged in each and how many
               separate trips that makes, so we can see which countries are most
               popular and how long people travel for. It never includes dates.
+              We may publish totals across all Yearly users, such as the most
+              visited countries. These totals never identify anyone.
             </p>
             <p>
               When you open a page, the event also records how you found Yearly:
@@ -229,10 +238,16 @@ export default function PrivacyPage() {
 
           <Section title="Feedback">
             <p>
-              If you send feedback, we store your rating and message with the
-              random ID, your browser&apos;s user agent, your device type and
-              approximate location. We get a Slack notification with your
-              rating, message and approximate location.
+              If you send feedback, we store your rating, your message and any
+              topics you picked, with the random ID, your browser&apos;s user
+              agent, your device type and approximate location. We get a Slack
+              notification with your rating, message, topics, device type and
+              approximate location.
+            </p>
+            <p>
+              We may show star ratings and short quotes from feedback on
+              yearly.world and our social media. We quote your words as you
+              wrote them, and leave out anything that could identify you.
             </p>
           </Section>
 
@@ -287,10 +302,10 @@ export default function PrivacyPage() {
               location. We never see anything in your calendar.
             </p>
             <p>
-              We use your email to send you one reminder, on 1 December of that
-              year. Nothing else: no newsletters or marketing. To send it,
-              we&apos;ll pass your address to an email delivery service for that
-              one message. Ask us and we&apos;ll delete your email at any time.
+              We use your email only to send you one reminder, on 1 December of
+              that year, and never for newsletters or marketing. Our email
+              service, Resend, sends it for us. Ask us and we&apos;ll delete
+              your email at any time.
             </p>
             <p>
               Each new reminder, by email or calendar, is posted to a private
@@ -308,8 +323,9 @@ export default function PrivacyPage() {
             </p>
             <List>
               <li>
-                Usage events, feedback and how you heard about Yearly: our
-                legitimate interest in understanding how Yearly is used and
+                Usage events, Vercel Web Analytics and Speed Insights, reminders
+                added to a calendar, feedback and how you heard about Yearly:
+                our legitimate interest in understanding how Yearly is used and
                 improving it. You can object at any time, for example by turning
                 off Share usage stats.
               </li>
@@ -364,18 +380,27 @@ export default function PrivacyPage() {
               </li>
               <li>
                 Video waitlist emails: until 12 months after animated videos
-                launch.
+                launch. If we decide not to make them, we&apos;ll delete the
+                list.
               </li>
               <li>Error reports and page timings in Sentry: up to 90 days.</li>
               {accounts && (
                 <>
                   <li>
                     Your account and saved trips: until you delete your account.
-                    If you don&apos;t sign in for 5 years, we&apos;ll email you,
-                    then delete the account 30 days later.
+                    If you don&apos;t use your account for 5 years, we&apos;ll
+                    email you, then delete the account 30 days later.
                   </li>
                   <li>
-                    Sign-in sessions: up to 60 days. Sign-in codes: 10 minutes.
+                    Sign-in sessions: until you sign out, or 60 days after you
+                    last opened Yearly on that device.
+                  </li>
+                  <li>
+                    Sign-in codes: deleted once used, or within a day if not.
+                  </li>
+                  <li>
+                    Scrambled IP addresses used to limit sign-in attempts: up to
+                    2 days.
                   </li>
                 </>
               )}
@@ -390,16 +415,22 @@ export default function PrivacyPage() {
                 reminders.
               </li>
               {accounts && (
-                <>
-                  <li>
-                    Neon stores accounts and saved trips, on servers in
-                    Frankfurt, Germany.
-                  </li>
-                  <li>Resend sends sign-in codes, from servers in Ireland.</li>
-                  <li>
-                    Google handles sign-in if you choose Continue with Google.
-                  </li>
-                </>
+                <li>
+                  Neon stores accounts and saved trips, on servers in Frankfurt,
+                  Germany.
+                </li>
+              )}
+              <li>
+                Resend sends{' '}
+                {accounts
+                  ? 'sign-in codes and the year-end reminder email'
+                  : 'the year-end reminder email'}
+                , from servers in Ireland.
+              </li>
+              {accounts && (
+                <li>
+                  Google handles sign-in if you choose Continue with Google.
+                </li>
               )}
               <li>
                 Sentry receives error reports and page timings, and stores them
@@ -410,17 +441,20 @@ export default function PrivacyPage() {
                 sign-ups and year-end reminders.
               </li>
             </List>
-            <p>We don&apos;t share your data with anyone else.</p>
+            <p>
+              We don&apos;t share your data with anyone else unless the law
+              requires us to.
+            </p>
           </Section>
 
           <Section title="Where your data is stored">
             <p>
               Our servers and databases are in Frankfurt, Germany. Some of the
-              companies we use are based in the US: Vercel, MongoDB, Sentry and
-              Slack
-              {accounts ? ', and for accounts, Neon, Resend and Google' : ''}.
-              Slack keeps our notifications in the US, and the others may access
-              your data from outside the European Economic Area. Their data
+              companies we use are based in the US: Vercel, MongoDB, Resend,
+              Sentry and Slack
+              {accounts ? ', and for accounts, Neon and Google' : ''}. Slack
+              keeps our notifications in the US, and the others may access your
+              data from outside the European Economic Area. Their data
               processing terms cover these transfers through the EU–US Data
               Privacy Framework or the European Commission&apos;s standard
               contractual clauses.

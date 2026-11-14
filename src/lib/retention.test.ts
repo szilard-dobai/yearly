@@ -7,7 +7,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import {
   applyMongoRetention,
   applyPostgresRetention,
-  EVENT_FIELDS_REMOVED,
   retentionCutoffs,
 } from './retention'
 
@@ -19,6 +18,7 @@ function fakeMongo() {
     {
       deleteMany: ReturnType<typeof vi.fn>
       updateMany: ReturnType<typeof vi.fn>
+      countDocuments: ReturnType<typeof vi.fn>
     }
   >()
   const db = {
@@ -27,6 +27,7 @@ function fakeMongo() {
         collections.set(name, {
           deleteMany: vi.fn(async () => ({ deletedCount: 2 })),
           updateMany: vi.fn(async () => ({ modifiedCount: 3 })),
+          countDocuments: vi.fn(async () => 7),
         })
       }
       return collections.get(name)!
@@ -42,12 +43,18 @@ describe('retentionCutoffs', () => {
       deleteBefore: new Date('2021-11-14T03:00:00Z'),
     })
   })
+
+  it('refuses to run with a broken clock', () => {
+    expect(() => retentionCutoffs(new Date(Number.NaN))).toThrow(
+      'nothing was changed'
+    )
+  })
 })
 
 describe('applyMongoRetention', () => {
   const { anonymizeBefore, deleteBefore } = retentionCutoffs(NOW)
 
-  it('deletes usage events after 5 years and strips identifiers after 26 months', async () => {
+  it('deletes after 5 years, then anonymizes what is between 26 months and 5 years', async () => {
     const mongo = fakeMongo()
     await applyMongoRetention(mongo.db, NOW)
     const events = mongo.get('tracking_events')
@@ -55,59 +62,53 @@ describe('applyMongoRetention', () => {
     expect(events.deleteMany).toHaveBeenCalledWith({
       timestamp: { $lt: deleteBefore },
     })
-    const [filter, pipeline] = events.updateMany.mock.calls[0]
-    expect(filter).toEqual({
-      timestamp: { $lt: anonymizeBefore },
+    expect(events.updateMany.mock.calls[0][0]).toEqual({
+      timestamp: { $lt: anonymizeBefore, $gte: deleteBefore },
       anonymized: { $ne: true },
     })
-    expect(pipeline).toEqual([
-      {
-        $set: {
-          timestamp: { $dateTrunc: { date: '$timestamp', unit: 'day' } },
-          anonymized: true,
-        },
-      },
-      { $unset: EVENT_FIELDS_REMOVED },
-    ])
-    expect(EVENT_FIELDS_REMOVED).toEqual(
-      expect.arrayContaining([
-        'deviceId',
-        'region',
-        'metadata.userAgent',
-        'metadata.referrer',
-        'metadata.utm',
-        'metadata.inAppBrowser',
-        'metadata.otherText',
+    expect(events.deleteMany.mock.invocationCallOrder[0]).toBeLessThan(
+      events.updateMany.mock.invocationCallOrder[0]
+    )
+  })
+
+  it('only touches the four collections it should', async () => {
+    const mongo = fakeMongo()
+    const spy = vi.spyOn(mongo.db, 'collection')
+    await applyMongoRetention(mongo.db, NOW)
+
+    expect(new Set(spy.mock.calls.map(([name]) => name))).toEqual(
+      new Set([
+        'tracking_events',
+        'feedback',
+        'reminder_calendar_adds',
+        'reminders',
       ])
     )
   })
 
-  it('treats feedback and calendar reminders the same way', async () => {
-    const mongo = fakeMongo()
-    await applyMongoRetention(mongo.db, NOW)
-
-    for (const [name, fields] of [
-      ['feedback', ['deviceId', 'userAgent', 'region']],
-      ['reminder_calendar_adds', ['deviceId', 'region']],
-    ] as const) {
-      const collection = mongo.get(name)
-      expect(collection.deleteMany).toHaveBeenCalledWith({
-        createdAt: { $lt: deleteBefore },
-      })
-      expect(collection.updateMany).toHaveBeenCalledWith(
-        { createdAt: { $lt: anonymizeBefore }, anonymized: { $ne: true } },
-        [{ $set: { anonymized: true } }, { $unset: fields }]
-      )
-    }
-  })
-
-  it('deletes reminder emails once their year is over', async () => {
+  it('deletes reminder emails only for past years', async () => {
     const mongo = fakeMongo()
     await applyMongoRetention(mongo.db, NOW)
 
     expect(mongo.get('reminders').deleteMany).toHaveBeenCalledWith({
       year: { $lt: 2026 },
     })
+  })
+
+  it('changes nothing in a dry run, and counts instead', async () => {
+    const mongo = fakeMongo()
+    const result = await applyMongoRetention(mongo.db, NOW, { dryRun: true })
+
+    for (const name of [
+      'tracking_events',
+      'feedback',
+      'reminder_calendar_adds',
+      'reminders',
+    ]) {
+      expect(mongo.get(name).deleteMany).not.toHaveBeenCalled()
+      expect(mongo.get(name).updateMany).not.toHaveBeenCalled()
+    }
+    expect(Object.values(result).every((n) => n === 7)).toBe(true)
   })
 
   it('reports what it changed', async () => {
@@ -129,13 +130,6 @@ describe('applyPostgresRetention', () => {
 
   beforeAll(async () => {
     ;({ db, close } = await createTestDb())
-  })
-
-  afterAll(async () => {
-    await close()
-  })
-
-  it('deletes expired sessions, sign-in codes and old rate limits', async () => {
     const past = new Date(NOW.getTime() - 60_000)
     const future = new Date(NOW.getTime() + 60_000)
     await db.insert(user).values({
@@ -162,7 +156,22 @@ describe('applyPostgresRetention', () => {
       { key: 'old', count: 1, windowStart: new Date('2026-11-01T00:00:00Z') },
       { key: 'new', count: 1, windowStart: NOW },
     ])
+  })
 
+  afterAll(async () => {
+    await close()
+  })
+
+  it('counts without deleting in a dry run', async () => {
+    expect(await applyPostgresRetention(db, NOW, { dryRun: true })).toEqual({
+      expiredSessionsDeleted: 1,
+      expiredCodesDeleted: 1,
+      rateLimitsDeleted: 1,
+    })
+    expect(await db.select().from(session)).toHaveLength(2)
+  })
+
+  it('deletes expired sessions, sign-in codes and old rate limits, and nothing else', async () => {
     expect(await applyPostgresRetention(db, NOW)).toEqual({
       expiredSessionsDeleted: 1,
       expiredCodesDeleted: 1,
@@ -171,6 +180,12 @@ describe('applyPostgresRetention', () => {
     expect((await db.select().from(session)).map((row) => row.id)).toEqual([
       's2',
     ])
-    expect((await db.select().from(user)).length).toBe(1)
+    expect((await db.select().from(verification)).map((row) => row.id)).toEqual(
+      ['v2']
+    )
+    expect((await db.select().from(rateLimits)).map((row) => row.key)).toEqual([
+      'new',
+    ])
+    expect(await db.select().from(user)).toHaveLength(1)
   })
 })

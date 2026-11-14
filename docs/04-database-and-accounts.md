@@ -80,6 +80,7 @@ The privacy page carries what GDPR asks for, whether or not accounts are on: Szi
   - Expired sessions and sign-in codes, and rate-limit rows older than a day.
 - **Safety:** the job deletes first, then anonymizes only records between 26 months and 5 years old, and marks them so a second run changes nothing. It refuses to run if its cutoffs come out less than about 2 years (anonymize) or 4 years (delete) in the past, for example after a bad change or a broken clock. Records with a missing or malformed date are never touched. `?dryRun=1` reports what it would change without changing anything (it still needs the secret).
 - **Error reports:** Sentry (EU region, Germany) receives errors, logs and 10% of traces. The SDK sends no user info, cookies, request bodies, query values or server headers, and the project is set to prevent storing IP addresses. Sentry still derives an approximate location from the connection, which the privacy page says. Browser tracing stops when Share usage stats is off; error reports don't.
+- **Uptime:** `/api/health` answers 200 when the server code runs and has the settings it needs, and 503 otherwise. It never queries a database: a check every few minutes would stop Neon's free database from going to sleep and use up its free compute hours. Health checks are left out of Sentry tracing.
 - **Still to build:** delete video waitlist emails 12 months after videos launch; email and then delete accounts after 5 years without a sign-in (due by 2031); make the admin pages cope with events that no longer have a device ID (from 2028).
 
 ## Launch checklist
@@ -89,7 +90,8 @@ Before setting `ACCOUNTS_ENABLED=true` in Production:
 1. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production.
 2. Set `CRON_SECRET` in Production (any long random string) so the retention job runs. It's needed even before accounts launch.
 3. Change the "Last updated" dates on `/privacy` and `/terms` to the launch date.
-4. Redeploy, then check sign-in by code and Google on yearly.world.
+4. Redeploy, then check that `https://www.yearly.world/api/health` answers `{"status":"ok"}`. With accounts on, it answers 503 if the database URL, auth secret or Resend key is missing, and the error in Sentry and the Vercel logs names it.
+5. Check sign-in by code and Google on yearly.world.
 
 Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to the owner, and the owner confirmed the 30-day notice promise in the Terms.
 

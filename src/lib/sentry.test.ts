@@ -1,11 +1,22 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   CLIENT_DATA_COLLECTION,
   PRODUCTION_TRACES_SAMPLE_RATE,
   SERVER_DATA_COLLECTION,
+  isHealthCheck,
   sentryEnvironment,
+  serverTracesSampler,
   tracesSampleRate,
 } from './sentry'
+
+function samplingContext(path: string) {
+  return {
+    name: 'GET',
+    normalizedRequest: { url: `https://www.yearly.world${path}` },
+    attributes: { 'http.method': 'GET', 'http.target': path },
+    inheritOrSampleWith: vi.fn((rate: number) => rate),
+  }
+}
 
 describe('Sentry options', () => {
   it('samples every trace locally and 10% elsewhere', () => {
@@ -37,5 +48,26 @@ describe('Sentry options', () => {
       request: true,
       response: false,
     })
+  })
+
+  it('recognises health checks by their path, since server spans are named after the method', () => {
+    expect(isHealthCheck(samplingContext('/api/health'))).toBe(true)
+    expect(isHealthCheck(samplingContext('/api/health?probe=1'))).toBe(true)
+    expect(isHealthCheck({ name: 'GET /api/health', attributes: {} })).toBe(
+      true
+    )
+    expect(isHealthCheck(samplingContext('/api/healthy'))).toBe(false)
+    expect(isHealthCheck(samplingContext('/api/feedback'))).toBe(false)
+    expect(isHealthCheck({ name: 'GET', attributes: {} })).toBe(false)
+  })
+
+  it('never traces health checks and samples everything else as before', () => {
+    const health = samplingContext('/api/health')
+    expect(serverTracesSampler(health)).toBe(0)
+    expect(health.inheritOrSampleWith).not.toHaveBeenCalled()
+
+    const sync = samplingContext('/api/calendar')
+    expect(serverTracesSampler(sync)).toBe(tracesSampleRate())
+    expect(sync.inheritOrSampleWith).toHaveBeenCalledWith(tracesSampleRate())
   })
 })

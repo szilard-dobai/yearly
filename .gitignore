@@ -48,3 +48,4 @@ next-env.d.ts
 .claude/settings.json
 .superpowers/
 __pycache__/
+.sentry-slack-state.json

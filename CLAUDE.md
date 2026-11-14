@@ -16,6 +16,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Type check**: `npm run type-check` - Runs TypeScript type checking
 - **Test**: `npm run test` - Runs Vitest tests
 - **Full check**: `npm run check:full` - Runs lint + type-check + tests + build
+- **Emoji images**: `npm run emoji:build` downloads the Noto Emoji SVGs at the commit pinned in `scripts/build-emoji-images.mts`, adjusts their colours, crops the flags to one shared box and writes two WebP sizes to `public/emoji/` plus the manifest `src/lib/emoji-images.ts`. Commit its output; the raw SVGs stay in `node_modules/.cache`. Adding a country to `src/lib/countries.ts` needs a rebuild, or the country drops out of `COUNTRIES`
 - **Database migration**: `npm run db:generate -- --name <name>` writes a SQL migration in `drizzle/` from `src/lib/db/schema.ts`; `npm run db:migrate` applies it. Vercel runs `vercel-build`, which migrates before building, so every migration must work with the code already deployed (add first, remove later)
 - **Install**: `.npmrc` sets `legacy-peer-deps=true`, because Better Auth's optional framework peers (SvelteKit, TanStack Start) want Vite 8 and the tests use Vite 7
 
@@ -27,7 +28,8 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Styling**: Tailwind CSS v4 with PostCSS
 - **UI**: Radix UI primitives + shadcn/ui components
 - **Animations**: Motion (Framer Motion)
-- **Image export**: html-to-image (toJpeg)
+- **Image export**: html-to-image (toSvg), drawn to a canvas
+- **Emoji**: every flag and emoji is an image from Google's Noto Emoji (waved flags), never an emoji font, so they look the same on every platform. Images live in `public/emoji/` with their LICENSE (Apache 2.0) and README; their names carry a content hash, so `next.config.ts` caches them for a year. The footer carries the credit
 - **Validation**: Zod
 - **Database**: Postgres on Neon through Drizzle for accounts and new data; MongoDB for tracking events, feedback, waitlist and reminders until they move (see `docs/04-database-and-accounts.md`)
 - **Auth**: Better Auth (version pinned exactly), optional accounts with a 6-digit email code or Google (hidden in in-app browsers); no passwords. Everything is behind `ACCOUNTS_ENABLED=true`, otherwise `/sign-in`, `/account` and `/api/auth` return 404. Pages, access rules and flows are in `docs/04-database-and-accounts.md`
@@ -55,13 +57,13 @@ src/
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
-│   ├── export/               - Shared export frame (padding, title, watermark), flags, stat tiles and ranking rows
+│   ├── export/               - Shared export frame (padding, title, watermark), stat tiles and ranking rows
 │   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
 │   ├── video/                - Remotion compositions for the animated video preview (year, month, stats)
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
 │   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads
-│   ├── Flag.tsx              - Country flag component (emoji/icon modes)
+│   ├── Emoji.tsx             - The one image component for flags (`Flag`, `DayFlags` for one or two countries) and named emoji (`Emoji`); `size` works like a font size, or leave it out to follow the text; `resolution="large"` in exports and video, Remotion's `Img` via `as` in compositions
 │   ├── CountryInput.tsx      - Country and date picker
 │   ├── Statistics.tsx        - Travel statistics display
 │   ├── MobileFab.tsx         - Mobile floating action button
@@ -77,6 +79,8 @@ src/
 │   ├── calendar.ts           - Calendar grid calculations
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
+│   ├── emoji.ts              - Flag and emoji image paths, sizes and medal names
+│   ├── emoji-images.ts       - Generated manifest of the images in `public/emoji/` (don't edit; run `npm run emoji:build`)
 │   ├── statistics.ts         - 30+ statistics calculation functions
 │   ├── countries.ts          - Country data and lookup
 │   ├── storage.ts            - LocalStorage persistence with Zod validation
@@ -89,7 +93,7 @@ src/
 │   │   └── useStatusFeedback.ts    - Loading/error state management
 │   ├── retention.ts          - Retention rules (26 months in full, then identifiers removed; 5 years max), run daily by `api/cron/retention` (`vercel.json`, `CRON_SECRET`)
 │   ├── contexts/
-│   │   └── SettingsContext.tsx      - User preferences (theme, flags, week start, export format)
+│   │   └── SettingsContext.tsx      - User preferences (theme, week start, export format)
 │   ├── db/                   - Drizzle client (`DATABASE_URL`) and schema; `auth-schema.ts` is generated by `npx auth@<better-auth version> generate`
 │   ├── calendar-sync/        - Syncs the local calendar with the signed-in account: day-map format, three-way merge, versioned saves to `/api/calendar`, `useCalendarSync` for /create
 │   ├── auth/                 - Better Auth config (`BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`), `enabled.ts` (`ACCOUNTS_ENABLED`, safe to import anywhere), client, `safeNextPath`, hashed-key rate limiter; sessions never store IP addresses, and Google's photo and tokens aren't kept (the name is, for avatar initials)
@@ -112,7 +116,7 @@ All three exports (calendar, monthly, statistics) come in two fixed canvas sizes
 
 1. The hook builds the export's layout component for the chosen format (`settings.exportFormat`)
 2. `renderExportImage` mounts it off-screen in its own React root at the exact canvas size
-3. Render to JPEG via `html-to-image` with `skipFonts: true` (avoids CORS errors with Google Fonts)
+3. Turn it into an SVG with `html-to-image` (`toSvg`, `skipFonts: true` avoids CORS errors with Google Fonts), draw that to a canvas, then draw the flag and emoji images on top at their measured positions and clip paths, and save as JPEG. WebKit leaves images inside such an SVG blank on the first draw, so the images are hidden in the SVG and drawn separately
 4. Present in ImagePreviewModal, where the Story/Feed picker re-renders the image in the other format
 
 Every layout sits in `ExportFrame`, which owns the outer padding, the title and divider, and the watermark at a fixed canvas pixel size. All sizes and the fill-the-canvas maths live in `lib/export-canvas.ts`; layouts take explicit pixel sizes from there, never responsive Tailwind sizes, so exports look the same from any screen width.
@@ -161,3 +165,4 @@ Uses Material Design elevation hierarchy:
 - **Metadata**: Export `metadata` object from layout.tsx for SEO
 - **Fonts**: Loaded and configured in root layout as CSS variables
 - **Card variants**: Use StandardCard, DarkCard, GradientCard from `ui/card-variants.tsx`
+- **Emoji**: never type emoji characters into the interface, exports or video. Add the emoji to `EMOJI` in `scripts/build-emoji-images.mts`, run `npm run emoji:build` and use `<Emoji name="…" />`. Slack messages keep plain-text emoji

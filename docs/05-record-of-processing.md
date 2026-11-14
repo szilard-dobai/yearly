@@ -42,7 +42,7 @@ Published totals (for example the most visited countries) come from usage events
 | ImprovMX (US) | Forwards hello@yearly.world                                              | US                                                      | None found: no DPF listing found, and its DPA is for paid plans only | **Gap:** free plan, no processor terms              |
 | Yahoo (US)    | Holds the inbox that hello@yearly.world forwards to (a personal account) | Yahoo's                                                 | DPF (Yahoo Inc. is certified)                                        | **Gap:** consumer account, no processor terms       |
 
-Fix for both gaps: move hello@yearly.world to one mailbox provider that offers processor terms and EU hosting. That replaces both ImprovMX and the Yahoo inbox.
+Both inbox gaps are accepted for now (owner, 14 November 2026): few emails, all started by the sender, and the privacy page discloses both. To close them later, move hello@yearly.world to one mailbox provider that offers processor terms and EU hosting.
 
 ## Security measures
 

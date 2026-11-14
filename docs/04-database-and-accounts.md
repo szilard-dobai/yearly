@@ -68,13 +68,26 @@ Rules:
 - **Copy:** written with the `copywriting` and `cro` skills against `.agents/product-marketing.md` (v2). Every account prompt says Yearly works without an account.
 - **Sessions** last 60 days, refreshed daily while in use. Deleting an account needs a session under a day old; otherwise people are asked to sign in again.
 
+## Privacy and retention
+
+The privacy page carries what GDPR asks for, whether or not accounts are on: Szilard Dobai in Romania as the controller, `hello@yearly.world`, a legal basis for each use, retention, transfers to US companies, the full list of rights, and the right to complain to ANSPDCP or the ICO.
+
+- **Analytics consent:** we follow the UK model (in force since 5 February 2026) rather than a consent banner. Usage stats are explained on the privacy page as a legitimate interest, and **Share usage stats** in Settings turns them off for that browser, including Vercel Web Analytics and Speed Insights. Under EU rules a stored analytics ID strictly needs consent; we accepted that gap knowingly. If it becomes a problem, switch to a daily, unstored ID made on the server.
+- **Retention**, applied every day at 03:00 UTC by `/api/cron/retention` (`vercel.json`, protected by `CRON_SECRET`):
+  - Usage events and calendar-reminder events: kept in full for 26 months, then the device ID, region, user agent, in-app browser, referrer, campaign tags and survey notes are removed and the time is cut to the day. Deleted after 5 years.
+  - Feedback: kept in full for 26 months, then without the device ID, user agent and region. Deleted after 5 years.
+  - Year-end reminder emails: deleted once their year is over.
+  - Expired sessions and sign-in codes, and rate-limit rows older than a day.
+- **Still to build:** delete video waitlist emails 12 months after videos launch; email and then delete accounts after 5 years without a sign-in (due by 2031); make the admin pages cope with events that no longer have a device ID (from 2028).
+
 ## Launch checklist
 
 Before setting `ACCOUNTS_ENABLED=true` in Production:
 
 1. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production.
-2. Change the "Last updated" dates on `/privacy` (`ACCOUNTS_LAST_UPDATED`) and `/terms` to the launch date.
-3. Redeploy, then check sign-in by code and Google on yearly.world.
+2. Set `CRON_SECRET` in Production (any long random string) so the retention job runs. It's needed even before accounts launch.
+3. Change the "Last updated" dates on `/privacy` and `/terms` to the launch date.
+4. Redeploy, then check sign-in by code and Google on yearly.world.
 
 Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to the owner, and the owner confirmed the 30-day notice promise in the Terms.
 

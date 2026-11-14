@@ -28,6 +28,27 @@ describe('privacy, terms and footer', () => {
       expect(screen.queryByText(/Neon stores/)).not.toBeInTheDocument()
     })
 
+    it('covers the GDPR basics, which apply with or without accounts', () => {
+      render(<PrivacyPage />)
+
+      expect(
+        screen.getByText(/run by Szilard Dobai, in Romania/)
+      ).toBeInTheDocument()
+      expect(screen.getByText('Why we use your data')).toBeInTheDocument()
+      expect(screen.getAllByText(/in full for 26 months/)).toHaveLength(3)
+      expect(screen.getByText(/Frankfurt, Germany/)).toBeInTheDocument()
+      expect(screen.getByText(/ANSPDCP/)).toBeInTheDocument()
+      expect(
+        screen.getAllByRole('link', { name: 'hello@yearly.world' }).length
+      ).toBeGreaterThan(0)
+      expect(
+        screen.getByText(/Share usage stats/, { selector: 'span' })
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByText(/providing the account you asked for/)
+      ).toBeNull()
+    })
+
     it('hides the terms page and its footer link', () => {
       expect(() => TermsPage()).toThrow('NOT_FOUND')
 
@@ -54,7 +75,13 @@ describe('privacy, terms and footer', () => {
         screen.getByText(/the name on your Google account/)
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('link', { name: 'hello@yearly.world' })
+        screen.getAllByRole('link', { name: 'hello@yearly.world' }).length
+      ).toBeGreaterThan(0)
+      expect(
+        screen.getByText(/providing the account you asked for/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/If you don't sign in for 5 years/)
       ).toBeInTheDocument()
     })
 

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 }
 
-const LAST_UPDATED = '14 November 2026'
+const LAST_UPDATED = '23 November 2026'
 const CONTACT_EMAIL = 'hello@yearly.world'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -491,7 +491,7 @@ export default function PrivacyPage() {
               whether you&apos;ve seen a tip, answered a question, set a
               year-end reminder or turned off usage stats.{' '}
               {accounts
-                ? "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets a cookie only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
+                ? "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets cookies only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
                 : "It doesn't set cookies for visitors. The only cookie is the sign-in cookie for Yearly's admin pages."}
             </p>
           </Section>

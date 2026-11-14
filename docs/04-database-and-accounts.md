@@ -36,7 +36,7 @@ We chose codes over emailed links. Trips live only in the browser that made them
 1. **Making and exporting never needs an account**, so "free, no sign-up" stays true. Anyone can create an account, not only buyers.
 2. **Signing in saves your calendars to your account** and keeps every signed-in device in sync (see Calendar sync). The privacy page must describe this before accounts go live.
 3. **Sign in before paying.** Claiming the waitlist's free first video needs a checked email, and downloading again needs an account.
-4. **No IP addresses at rest.** Better Auth's session IP is dropped before saving, and rate-limit keys are hashed. The signed-in check (`/get-session`) isn't rate limited, so visitors who never sign in leave nothing in Postgres and page views don't wake Neon. The privacy page discloses the hashed rate-limit keys and their 2-day lifetime.
+4. **No IP addresses at rest.** Better Auth's session IP is dropped before saving, and rate-limit keys are hashed. The signed-in check (`/get-session`) isn't rate limited, so visitors who never sign in leave nothing in Postgres and page views don't wake Neon. For signed-in people, the check is answered from a signed cookie for 5 minutes at a time, so browsing and switching tabs don't wake it either. The privacy page discloses the hashed rate-limit keys and their 2-day lifetime.
 5. **Accounts stay switched off in production until launch.** `ACCOUNTS_ENABLED=true` turns on `/sign-in`, `/account` and `/api/auth`; otherwise all three return 404. It is on for Preview and local development. The privacy page changes in the PR that turns it on in production.
 
 ## Pages and access
@@ -85,22 +85,31 @@ The privacy page carries what GDPR asks for, whether or not accounts are on: Szi
 
 ## Launch checklist
 
-Before setting `ACCOUNTS_ENABLED=true` in Production:
+Launch is planned for **23 November 2026**, the day after the Instagram and Threads launch week. That week's traffic mostly arrives in in-app browsers, where only the email code works, and Resend's free plan stops at 100 emails a day.
 
-1. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production.
+Before launch day:
+
+1. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production, with yearly.world verified in Resend.
 2. Set `CRON_SECRET` in Production (any long random string) so the retention job runs. It's needed even before accounts launch.
-3. Change the "Last updated" dates on `/privacy` and `/terms` to the launch date.
-4. Redeploy, then check that `https://www.yearly.world/api/health` answers `{"status":"ok"}`. With accounts on, it answers 503 if the database URL, auth secret or Resend key is missing, and the error in Sentry and the Vercel logs names it.
-5. Check sign-in by code and Google on yearly.world.
+3. Run through every account flow on a preview deployment with two devices: sign in by code and with Google, add trips on both, answer the first sign-in question, sign out and delete the account.
+
+On launch day:
+
+4. Set `ACCOUNTS_ENABLED=true` in Production.
+5. Merge the launch PR. It dates `/privacy` and `/terms` 23 November 2026 and turns on the session cookie cache, and the production deploy it starts picks up the new settings.
+6. Check that `https://www.yearly.world/api/health` answers `{"status":"ok"}`. With accounts on, it answers 503 if the database URL, auth secret or Resend key is missing, and the error in Sentry and the Vercel logs names it.
+7. Check sign-in by code and Google on yearly.world.
 
 Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to the owner, and the owner confirmed the 30-day notice promise in the Terms.
 
-6. **Make a calendar:** unchanged. Most people never see sign-in.
-7. **Create an account:** from the header's "Sign in" link (after launch) or `/sign-in`, by email code or Google. Later, this saves the calendars to the account.
-8. **Buy a video:** in the export dialog, "Get the video", then sign in inside the dialog, then pay in the provider's overlay without leaving the page, then the video renders and downloads. The receipt email links to `/account`.
-9. **Claim the free first video:** the launch email links to `/create`. In the same dialog, people sign in with the waitlist email, and the payment step is skipped.
-10. **Download again:** from the receipt email or the header's "Your videos" link, to `/account`.
-11. **Delete account:** from `/account`. Required by UK GDPR from the day accounts are visible.
+## Flows
+
+1. **Make a calendar:** unchanged. Most people never see sign-in.
+2. **Create an account:** from the header's "Sign in" link (after launch) or `/sign-in`, by email code or Google. Later, this saves the calendars to the account.
+3. **Buy a video:** in the export dialog, "Get the video", then sign in inside the dialog, then pay in the provider's overlay without leaving the page, then the video renders and downloads. The receipt email links to `/account`.
+4. **Claim the free first video:** the launch email links to `/create`. In the same dialog, people sign in with the waitlist email, and the payment step is skipped.
+5. **Download again:** from the receipt email or the header's "Your videos" link, to `/account`.
+6. **Delete account:** from `/account`. Required by UK GDPR from the day accounts are visible.
 
 ## Calendar sync
 
@@ -120,7 +129,9 @@ Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to t
   - **Add them to my account** combines both, keeping this device's countries on crowded days. **Use my account only** replaces this device's trips with the account's.
   - The dialog can't be dismissed without choosing, so a borrowed device's trips never end up in someone's account by accident.
 - **Signing out:** removes the trips from the device if they're saved in the account. Changes that never reached the account stay on the device.
-- **Database load:** only signed-in people call `/api/calendar`, so anonymous visitors never wake the database.
+- **Database load:** only signed-in people call `/api/calendar`, so anonymous visitors never wake the database. It checks the session in the database rather than the 5-minute cookie, so a deleted account or a signed-out session can't keep saving.
+
+## Alternatives considered
 
 - **Supabase** (Postgres + auth + storage). Well regarded and its free database doesn't count compute hours. Not chosen because it's a whole platform we would mostly not use, the free database is 500 MB, free projects pause after a week without activity, preview branches are a paid feature and the paid plan is a flat $25/month.
 - **Clerk.** The best ready-made sign-in screens. Not chosen because users would live in Clerk and need syncing to our database through webhooks, passkeys and removing the Clerk branding need the $25/month plan, and Clerk Billing isn't a merchant of record.

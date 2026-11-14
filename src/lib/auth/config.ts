@@ -10,6 +10,7 @@ import { createRateLimitStorage } from './rate-limit'
 export const SIGN_IN_CODE_RATE_LIMIT = { window: 10 * 60, max: 5 }
 export const SIGN_IN_CODE_ATTEMPTS = 3
 export const SESSION_DAYS = 60
+export const SESSION_CACHE_MINUTES = 5
 
 export { isAccountsEnabled } from './enabled'
 
@@ -65,6 +66,7 @@ export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
     session: {
       expiresIn: SESSION_DAYS * 24 * 60 * 60,
       updateAge: 24 * 60 * 60,
+      cookieCache: { enabled: true, maxAge: SESSION_CACHE_MINUTES * 60 },
     },
     user: { deleteUser: { enabled: true } },
     rateLimit: {

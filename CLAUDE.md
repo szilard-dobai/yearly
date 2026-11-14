@@ -32,6 +32,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Database**: Postgres on Neon through Drizzle for accounts and new data; MongoDB for tracking events, feedback, waitlist and reminders until they move (see `docs/04-database-and-accounts.md`)
 - **Auth**: Better Auth (version pinned exactly), optional accounts with a 6-digit email code or Google (hidden in in-app browsers); no passwords. Everything is behind `ACCOUNTS_ENABLED=true`, otherwise `/sign-in`, `/account` and `/api/auth` return 404. Pages, access rules and flows are in `docs/04-database-and-accounts.md`
 - **Email**: Resend (`RESEND_API_KEY`, `EMAIL_FROM`); without a key in development, emails are logged to the console
+- **Observability**: Sentry (`@sentry/nextjs`, project `szilard-dobai/yearly`, EU region). Init in `src/instrumentation-client.ts`, `src/sentry.server.config.ts`, `src/sentry.edge.config.ts` and `src/instrumentation.ts`; shared options in `src/lib/sentry.ts`. `NEXT_PUBLIC_SENTRY_DSN` turns it on, `SENTRY_AUTH_TOKEN` uploads source maps at build. Errors, tracing (every trace in development, 10% elsewhere; off in the browser when Share usage stats is off), logs, and automatic check-ins for Vercel crons. No user info, cookies, request bodies, query values or server headers are sent, and the project drops IP addresses. Server `console.error` calls become Sentry errors
 - **Testing**: Vitest + Testing Library; database tests use PGlite with the real migrations (`src/test/db.ts`) and need `// @vitest-environment node`
 
 ## Project Structure

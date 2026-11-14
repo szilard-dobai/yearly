@@ -38,12 +38,19 @@ describe('privacy, terms and footer', () => {
       expect(screen.getAllByText(/in full for 26 months/)).toHaveLength(3)
       expect(screen.getByText(/Frankfurt, Germany/)).toBeInTheDocument()
       expect(screen.getByText(/ANSPDCP/)).toBeInTheDocument()
+      expect(screen.getByText('Error reports')).toBeInTheDocument()
+      expect(
+        screen.getByText(/Sentry receives error reports and page timings/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/don't include your IP address, your email/)
+      ).toBeInTheDocument()
       expect(
         screen.getAllByRole('link', { name: 'hello@yearly.world' }).length
       ).toBeGreaterThan(0)
       expect(
-        screen.getByText(/Share usage stats/, { selector: 'span' })
-      ).toBeInTheDocument()
+        screen.getAllByText(/Share usage stats/, { selector: 'span' })
+      ).toHaveLength(2)
       expect(
         screen.queryByText(/providing the account you asked for/)
       ).toBeNull()

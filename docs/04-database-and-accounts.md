@@ -78,6 +78,7 @@ The privacy page carries what GDPR asks for, whether or not accounts are on: Szi
   - Feedback: kept in full for 26 months, then without the device ID, user agent and region. Deleted after 5 years.
   - Year-end reminder emails: deleted once their year is over.
   - Expired sessions and sign-in codes, and rate-limit rows older than a day.
+- **Error reports:** Sentry (EU region, Germany) receives errors, logs and 10% of traces. The SDK sends no user info, cookies, request bodies, query values or server headers, and the project is set to prevent storing IP addresses. Sentry still derives an approximate location from the connection, which the privacy page says. Browser tracing stops when Share usage stats is off; error reports don't.
 - **Still to build:** delete video waitlist emails 12 months after videos launch; email and then delete accounts after 5 years without a sign-in (due by 2031); make the admin pages cope with events that no longer have a device ID (from 2028).
 
 ## Launch checklist

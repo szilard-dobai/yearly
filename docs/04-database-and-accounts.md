@@ -62,7 +62,7 @@ Rules:
 ## Entry points and copy
 
 - **Header:** "Sign in" for signed-out visitors (returns them to the page they were on), and a round avatar with initials once signed in, linking to `/account`. Initials come from the name, which Google provides and email sign-ups don't have, falling back to the first letter of the email. We don't use the Google profile photo: email users would have none, it would load from Google on every page, and people would then want to upload their own. Google's photo and access tokens aren't stored.
-- **Prompt on `/create`:** once a calendar has trips on 3 days, a signed-out visitor sees "Your trips are only in this browser" with **Save my calendar** and **Not now**. It replaces the feedback card while showing, so the sidebar never shows two prompts. "Not now" hides it for 30 days.
+- **Prompt on `/create`:** once a calendar has trips on 3 days, a signed-out visitor gets a toast at the bottom of the screen: "Your trips are only in this browser" with **Save my calendar** and **Not now**. It waits until the undo toast and the day-selection panel are gone, shows once per visit, and goes away for that visit once the person starts selecting days again. "Not now" or × hides it for 30 days. (It was first a sidebar card, about 6 screens down on a phone, so nobody saw it.)
 - **Sign-in page:** says what an account is for, that signing in creates one, and links **Continue without an account**.
 - **FAQ, `llms.txt` and the privacy page** switch to account-aware answers when `ACCOUNTS_ENABLED` is on, and stay as they are when it's off.
 - **Copy:** written with the `copywriting` and `cro` skills against `.agents/product-marketing.md` (v2). Every account prompt says Yearly works without an account.

@@ -1,6 +1,6 @@
 'use client'
 
-import AccountPromptCard from '@/components/account/AccountPromptCard'
+import AccountPrompt from '@/components/account/AccountPrompt'
 import AccountSyncStatus from '@/components/account/AccountSyncStatus'
 import FirstSyncDialog from '@/components/account/FirstSyncDialog'
 import { useAccountsEnabled } from '@/components/account/AccountsEnabledProvider'
@@ -169,6 +169,8 @@ function Create() {
   const accountsEnabled = useAccountsEnabled()
 
   const accountPromptDismissed = useAccountPromptDismissed()
+  const [accountPromptDone, setAccountPromptDone] = useState(false)
+  const accountPromptSeenRef = useRef(false)
   const calendarSync = useCalendarSync({
     enabled: accountsEnabled,
     calendarData,
@@ -338,6 +340,13 @@ function Create() {
     !calendarSync.account &&
     !accountPromptDismissed &&
     daysWithTrips >= ACCOUNT_PROMPT_MIN_DAYS
+  const showAccountToast =
+    showAccountPrompt && !accountPromptDone && !toast && !selection
+
+  const handleSelectionChange = (next: DaySelection | null) => {
+    if (next && accountPromptSeenRef.current) setAccountPromptDone(true)
+    setSelection(next)
+  }
 
   return (
     <>
@@ -379,7 +388,7 @@ function Create() {
                     year={selectedYear}
                     calendarData={calendarData}
                     selection={selection}
-                    onSelectionChange={setSelection}
+                    onSelectionChange={handleSelectionChange}
                     onMonthExport={handleMonthExport}
                   />
                 </CardContent>
@@ -494,12 +503,8 @@ function Create() {
                 </CardContent>
               </StandardCard>
 
-              {showAccountPrompt ? (
-                <AccountPromptCard days={daysWithTrips} />
-              ) : (
-                calendarData.visits.length > 0 && (
-                  <FeedbackCard year={selectedYear} />
-                )
+              {calendarData.visits.length > 0 && (
+                <FeedbackCard year={selectedYear} />
               )}
 
               <StandardCard>
@@ -570,6 +575,25 @@ function Create() {
       </div>
 
       <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 sm:bottom-4 sm:px-4">
+        <AnimatePresence>
+          {showAccountToast && (
+            <motion.div
+              key="account-prompt"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 12 }}
+              transition={{ duration: 0.18 }}
+              className="flex w-full justify-center px-3 pb-24 sm:px-0 lg:pb-0"
+            >
+              <AccountPrompt
+                days={daysWithTrips}
+                onSeen={() => {
+                  accountPromptSeenRef.current = true
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <AnimatePresence>
           {toast && (
             <motion.div

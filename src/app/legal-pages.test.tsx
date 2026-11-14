@@ -54,6 +54,23 @@ describe('privacy, terms and footer', () => {
       expect(
         screen.queryByText(/providing the account you asked for/)
       ).toBeNull()
+      expect(
+        screen.getByText(/Resend sends the year-end reminder email/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/unless the law requires us to/)
+      ).toBeInTheDocument()
+      expect(screen.getByText('If you write to us')).toBeInTheDocument()
+      expect(
+        screen.getByText(/forwards emails sent to .* to our Yahoo Mail inbox/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/2 years after the last message/)
+      ).toBeInTheDocument()
+      expect(screen.queryByText(/scrambled copy of the address/)).toBeNull()
+      expect(
+        screen.getByText(/leave out anything that could identify you/)
+      ).toBeInTheDocument()
     })
 
     it('hides the terms page and its footer link', () => {
@@ -72,12 +89,19 @@ describe('privacy, terms and footer', () => {
       expect(screen.getByText(/Accounts are optional/)).toBeInTheDocument()
       expect(screen.getByText('Your account')).toBeInTheDocument()
       expect(
-        screen.getByText(/We don't store your IP address/)
+        screen.getByText(/We don't store your IP address with your sessions/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/scrambled copy of the address/)
       ).toBeInTheDocument()
       expect(
         screen.getByText(/Neon stores accounts and saved trips/)
       ).toBeInTheDocument()
-      expect(screen.getByText(/Resend sends sign-in codes/)).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          /Resend sends sign-in codes and the year-end reminder email/
+        )
+      ).toBeInTheDocument()
       expect(
         screen.getByText(/the name on your Google account/)
       ).toBeInTheDocument()
@@ -88,7 +112,7 @@ describe('privacy, terms and footer', () => {
         screen.getByText(/providing the account you asked for/)
       ).toBeInTheDocument()
       expect(
-        screen.getByText(/If you don't sign in for 5 years/)
+        screen.getByText(/If you don't use your account for 5 years/)
       ).toBeInTheDocument()
     })
 
@@ -101,6 +125,7 @@ describe('privacy, terms and footer', () => {
       expect(
         screen.getByText(/governed by the law of Romania/)
       ).toBeInTheDocument()
+      expect(screen.getByText(/through gross negligence/)).toBeInTheDocument()
 
       render(<Footer />)
       expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute(

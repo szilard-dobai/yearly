@@ -1,6 +1,6 @@
 // @vitest-environment node
 import type { Database } from '@/lib/db'
-import { session, user, verification } from '@/lib/db/schema'
+import { rateLimits, session, user, verification } from '@/lib/db/schema'
 import { createTestDb } from '@/test/db'
 import {
   afterAll,
@@ -163,6 +163,25 @@ describe('createAuth', () => {
     const [row] = await db.select().from(session)
     expect(row.ipAddress).toBeNull()
     expect(row.userAgent).toBe('Vitest')
+  })
+
+  it('counts sign-in attempts but not the signed-in check every page makes', async () => {
+    await db.delete(rateLimits)
+    const context = await auth.$context
+    context.rateLimit.enabled = true
+
+    const check = await auth.handler(
+      new Request('http://localhost:3000/api/auth/get-session', {
+        headers: HEADERS,
+      })
+    )
+    expect(check.status).toBe(200)
+    expect(await db.select().from(rateLimits)).toHaveLength(0)
+
+    await requestCode('ana@example.com')
+    const rows = await db.select().from(rateLimits)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].key).not.toContain('203.0.113.7')
   })
 
   it('signs a returning person into the same account', async () => {

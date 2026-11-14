@@ -1,6 +1,8 @@
 import {
   CLIENT_DATA_COLLECTION,
   SENTRY_DSN,
+  scrubBreadcrumb,
+  scrubSpan,
   sentryEnvironment,
   tracesSampleRate,
 } from '@/lib/sentry'
@@ -12,6 +14,8 @@ Sentry.init({
   environment: sentryEnvironment(),
   tracesSampler: () => (isTrackingOptedOut() ? 0 : tracesSampleRate()),
   dataCollection: CLIENT_DATA_COLLECTION,
+  beforeBreadcrumb: scrubBreadcrumb,
+  beforeSendSpan: scrubSpan,
 })
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart

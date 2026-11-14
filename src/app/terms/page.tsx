@@ -62,8 +62,9 @@ export default function TermsPage() {
             <p>
               Making and downloading your calendar and stats images is free.
               Yearly is for your own travel, so please don&apos;t use it to
-              break the law, sign up with automated tools or in bulk, or get
-              into other people&apos;s accounts.
+              break the law, sign up with automated tools or in bulk, get into
+              other people&apos;s accounts, or try to overload or break the
+              site.
             </p>
           </Section>
 
@@ -105,8 +106,10 @@ export default function TermsPage() {
               provided as is, without a promise that it will always be available
               or free of errors. Keep a backup of anything you can&apos;t afford
               to lose. As far as the law allows, we aren&apos;t responsible for
-              indirect losses or lost data. Nothing in these terms limits rights
-              you have under consumer law that can&apos;t be limited.
+              indirect losses or lost data. This doesn&apos;t apply to injury or
+              to harm we cause on purpose or through gross negligence, which the
+              law doesn&apos;t let us limit. Nothing in these terms limits
+              rights you have under consumer law that can&apos;t be limited.
             </p>
           </Section>
 

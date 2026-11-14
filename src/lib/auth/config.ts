@@ -67,7 +67,10 @@ export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
       updateAge: 24 * 60 * 60,
     },
     user: { deleteUser: { enabled: true } },
-    rateLimit: { customStorage: createRateLimitStorage(db) },
+    rateLimit: {
+      customStorage: createRateLimitStorage(db),
+      customRules: { '/get-session': false },
+    },
     databaseHooks: {
       account: {
         create: {

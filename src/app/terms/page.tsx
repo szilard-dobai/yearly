@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/terms' },
 }
 
-const LAST_UPDATED = '14 November 2026'
+const LAST_UPDATED = '23 November 2026'
 const GOVERNING_LAW = 'Romania'
 const CONTACT_EMAIL = 'hello@yearly.world'
 

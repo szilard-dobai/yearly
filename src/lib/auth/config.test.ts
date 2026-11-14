@@ -12,6 +12,7 @@ import {
   vi,
 } from 'vitest'
 import {
+  SESSION_CACHE_MINUTES,
   SESSION_DAYS,
   SIGN_IN_CODE_ATTEMPTS,
   createAuth,
@@ -106,6 +107,28 @@ describe('createAuth', () => {
       (new Date(signedIn!.session.expiresAt).getTime() - Date.now()) /
       (24 * 60 * 60 * 1000)
     expect(daysLeft).toBeGreaterThan(SESSION_DAYS - 1)
+  })
+
+  it('answers the signed-in check from a cookie for 5 minutes, without the database', async () => {
+    const response = await signIn(
+      'ana@example.com',
+      await requestCode('ana@example.com')
+    )
+    const cache = response.headers
+      .getSetCookie()
+      .find((cookie) => cookie.includes('session_data='))
+    expect(cache).toContain(`Max-Age=${SESSION_CACHE_MINUTES * 60}`)
+    const headers = new Headers({ ...HEADERS, cookie: sessionCookie(response) })
+
+    await db.delete(session)
+
+    const cached = await auth.api.getSession({ headers })
+    expect(cached?.user.email).toBe('ana@example.com')
+    const checked = await auth.api.getSession({
+      headers,
+      query: { disableCookieCache: true },
+    })
+    expect(checked).toBeNull()
   })
 
   it('refuses a wrong code', async () => {

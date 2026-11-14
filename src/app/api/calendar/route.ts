@@ -22,7 +22,10 @@ function json(body: unknown, status = 200) {
 }
 
 async function getUserId(request: Request) {
-  const session = await auth.api.getSession({ headers: request.headers })
+  const session = await auth.api.getSession({
+    headers: request.headers,
+    query: { disableCookieCache: true },
+  })
   return session?.user.id ?? null
 }
 

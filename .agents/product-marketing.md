@@ -1,6 +1,6 @@
 # Product Marketing Context
 
-**Document version:** v2
+**Document version:** v3
 **Last updated:** 2026-11-14
 
 ## Product Overview
@@ -90,6 +90,7 @@ Checked against US search results on 2026-11-07.
 | "What happens to my travel data?" | Without an account, your trips stay in your browser and we never receive the dates. If you sign in, we save them to your account so you can open them anywhere. |
 | "Is it really free?"              | Yes. Making and downloading the images is free. We're testing an optional paid animated version.                                                                |
 | "Will I lose my calendar?"        | Not if you sign in: a free account keeps it. Without one, it's saved in this browser, and clearing browser data deletes it.                                     |
+| "Do you track me?"                | We count which features people use, with a random ID and never your trip dates. Turn off Share usage stats in Settings to stop it.                              |
 
 **Anti-persona:** People planning a future trip (itinerary, bookings, holiday calendars). Yearly is for showing travel that already happened.
 
@@ -183,5 +184,6 @@ _Decisions and tested lessons. Newest first. Keep it to about 20 active entries.
 
 _Newest first. One line per revision: what changed and why._
 
+- v3 (2026-11-14) — Added the "Do you track me?" objection after adding the Share usage stats opt-out and GDPR details to the privacy page.
 - v2 (2026-11-14) — Added optional free accounts (emailed code or Google) to Product, Differentiation, Objections, Customer Language and Glossary; new Learning that account copy always says Yearly works without one.
 - v1 (2026-11-07) — Initial context, drafted from the homepage SEO brief and the codebase.

@@ -24,6 +24,10 @@ import { Switch } from '@/components/ui/switch'
 import { DAYS_OF_WEEK } from '@/lib/constants'
 import { useSettings, type WeekStartsOn } from '@/lib/contexts/SettingsContext'
 import { trackEvent } from '@/lib/tracking'
+import {
+  setTrackingOptedOut,
+  useTrackingOptedOut,
+} from '@/lib/tracking/opt-out'
 import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -35,6 +39,7 @@ interface SettingsProps {
 
 export default function Settings({ year, visitCount, onReset }: SettingsProps) {
   const { settings, actions } = useSettings()
+  const usageStatsOff = useTrackingOptedOut()
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false)
 
   const handleReset = () => {
@@ -93,6 +98,21 @@ export default function Settings({ year, visitCount, onReset }: SettingsProps) {
           id="highlight-today"
           checked={settings.highlightToday}
           onCheckedChange={actions.setHighlightToday}
+        />
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <Label htmlFor="usage-stats">Share usage stats</Label>
+          <p className="text-sm text-muted-foreground">
+            Helps us see which features people use. Stats use a random ID and
+            never include your trip dates.
+          </p>
+        </div>
+        <Switch
+          id="usage-stats"
+          checked={!usageStatsOff}
+          onCheckedChange={(checked) => setTrackingOptedOut(!checked)}
         />
       </div>
 

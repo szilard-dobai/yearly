@@ -5,34 +5,43 @@ import {
   ACCOUNT_PROMPT_SNOOZE_DAYS,
   useAccountPromptDismissed,
 } from '@/lib/hooks/useAccountPrompt'
-import AccountPromptCard from './AccountPromptCard'
+import AccountPrompt from './AccountPrompt'
 
 const { trackEvent } = vi.hoisted(() => ({ trackEvent: vi.fn() }))
 
 vi.mock('@/lib/tracking', () => ({ trackEvent }))
 
-describe('AccountPromptCard', () => {
+describe('AccountPrompt', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.clearAllMocks()
   })
 
   it('explains the risk, the offer and that an account is optional', () => {
-    render(<AccountPromptCard days={4} />)
+    render(<AccountPrompt days={4} />)
 
     expect(
       screen.getByText('Your trips are only in this browser')
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/If you clear your browser data, they're gone/)
+      screen.getByText(/Clearing your browser data deletes them/)
     ).toBeInTheDocument()
     expect(
-      screen.getByText('You can keep using Yearly without one.')
+      screen.getByText(/You can keep using Yearly without one\./)
     ).toBeInTheDocument()
   })
 
+  it('closes with the × button too', async () => {
+    const { result } = renderHook(() => useAccountPromptDismissed())
+    render(<AccountPrompt days={4} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    expect(result.current).toBe(true)
+  })
+
   it('sends people to sign in and back to their calendar', async () => {
-    render(<AccountPromptCard days={4} />)
+    render(<AccountPrompt days={4} />)
 
     const link = screen.getByRole('link', { name: 'Save my calendar' })
     expect(link).toHaveAttribute('href', '/sign-in?next=/create')
@@ -41,19 +50,21 @@ describe('AccountPromptCard', () => {
     expect(trackEvent).toHaveBeenCalledWith('account_prompt_click', { days: 4 })
   })
 
-  it('records when it has been seen', () => {
-    render(<AccountPromptCard days={4} />)
+  it('records when it has been seen and tells the page', () => {
+    const onSeen = vi.fn()
+    render(<AccountPrompt days={4} onSeen={onSeen} />)
 
     expect(trackEvent).toHaveBeenCalledWith('account_prompt_shown', {
       days: 4,
     })
+    expect(onSeen).toHaveBeenCalledTimes(1)
   })
 
   it('snoozes when dismissed', async () => {
     const { result } = renderHook(() => useAccountPromptDismissed())
     expect(result.current).toBe(false)
 
-    render(<AccountPromptCard days={4} />)
+    render(<AccountPrompt days={4} />)
     await userEvent.click(screen.getByRole('button', { name: 'Not now' }))
 
     expect(trackEvent).toHaveBeenCalledWith('account_prompt_dismissed', {

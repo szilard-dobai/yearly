@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 }
 
-const LAST_UPDATED = '7 November 2026'
-const ACCOUNTS_LAST_UPDATED = '14 November 2026'
+const LAST_UPDATED = '14 November 2026'
+const CONTACT_EMAIL = 'hello@yearly.world'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -32,6 +32,12 @@ function List({ children }: { children: ReactNode }) {
 const linkClassName =
   'underline underline-offset-2 hover:text-gray-900 dark:hover:text-zinc-100'
 
+const email = (
+  <a href={`mailto:${CONTACT_EMAIL}`} className={linkClassName}>
+    {CONTACT_EMAIL}
+  </a>
+)
+
 export default function PrivacyPage() {
   const accounts = isAccountsEnabled()
 
@@ -45,7 +51,7 @@ export default function PrivacyPage() {
               Privacy
             </h1>
             <p className="text-sm text-gray-500 dark:text-zinc-500">
-              Last updated {accounts ? ACCOUNTS_LAST_UPDATED : LAST_UPDATED}
+              Last updated {LAST_UPDATED}
             </p>
             <p>
               Yearly is a small, independent project. This page explains what
@@ -56,6 +62,14 @@ export default function PrivacyPage() {
                 : "There are no accounts and no ads, and we don't sell your data."}
             </p>
           </header>
+
+          <Section title="Who we are">
+            <p>
+              Yearly is run by Szilard Dobai, in Romania, who is responsible for
+              your data (the controller, in data protection terms). For anything
+              on this page, email {email}.
+            </p>
+          </Section>
 
           <Section title="Your trips">
             {accounts ? (
@@ -175,6 +189,12 @@ export default function PrivacyPage() {
               We also use Vercel Web Analytics and Speed Insights to count page
               views and measure loading speed. They don&apos;t use cookies.
             </p>
+            <p>
+              To stop recording your visits in this browser, turn off{' '}
+              <span className="font-medium">Share usage stats</span> in the
+              app&apos;s settings. That also stops Vercel Web Analytics and
+              Speed Insights.
+            </p>
             {accounts && (
               <p>
                 When you sign in, sign out or delete your account, the event
@@ -260,6 +280,82 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
+          <Section title="Why we use your data">
+            <p>
+              Data protection law asks for a legal basis for each use of your
+              data. These are ours:
+            </p>
+            <List>
+              <li>
+                Usage events, feedback and how you heard about Yearly: our
+                legitimate interest in understanding how Yearly is used and
+                improving it. You can object at any time, for example by turning
+                off Share usage stats.
+              </li>
+              <li>
+                The video waitlist and the year-end reminder email: your
+                consent. You can withdraw it at any time.
+              </li>
+              {accounts && (
+                <>
+                  <li>
+                    Your account and saved trips: providing the account you
+                    asked for.
+                  </li>
+                  <li>
+                    Sign-in sessions, sign-in codes and limits on sign-in
+                    attempts: our legitimate interest in keeping accounts
+                    secure.
+                  </li>
+                </>
+              )}
+              <li>
+                Slack notifications: our legitimate interest in reading feedback
+                and keeping track of sign-ups.
+              </li>
+            </List>
+          </Section>
+
+          <Section title="How long we keep it">
+            <List>
+              <li>
+                Usage events: in full for 26 months. After that we remove the
+                random ID, your region, the user agent, the app you opened
+                Yearly in, the site that sent you, campaign tags and any note
+                you typed, and keep only the day each event happened. We delete
+                what&apos;s left after 5 years.
+              </li>
+              <li>
+                Reminders added to a calendar: in full for 26 months, then
+                without the random ID and region. We delete them after 5 years.
+              </li>
+              <li>
+                Feedback: in full for 26 months, then without the random ID,
+                user agent and region. We delete it after 5 years.
+              </li>
+              <li>
+                Year-end reminder emails: until the end of the year the reminder
+                is for.
+              </li>
+              <li>
+                Video waitlist emails: until 12 months after animated videos
+                launch.
+              </li>
+              {accounts && (
+                <>
+                  <li>
+                    Your account and saved trips: until you delete your account.
+                    If you don&apos;t sign in for 5 years, we&apos;ll email you,
+                    then delete the account 30 days later.
+                  </li>
+                  <li>
+                    Sign-in sessions: up to 60 days. Sign-in codes: 10 minutes.
+                  </li>
+                </>
+              )}
+            </List>
+          </Section>
+
           <Section title="Who handles the data">
             <List>
               <li>Vercel hosts Yearly and provides the analytics.</li>
@@ -287,15 +383,58 @@ export default function PrivacyPage() {
             <p>We don&apos;t share your data with anyone else.</p>
           </Section>
 
+          <Section title="Where your data is stored">
+            <p>
+              Our servers and databases are in Frankfurt, Germany. Some of the
+              companies we use are based in the US: Vercel, MongoDB and Slack
+              {accounts ? ', and for accounts, Neon, Resend and Google' : ''}.
+              Slack keeps our notifications in the US, and the others may access
+              your data from outside the European Economic Area. Their data
+              processing terms cover these transfers through the EU–US Data
+              Privacy Framework or the European Commission&apos;s standard
+              contractual clauses.
+            </p>
+          </Section>
+
           <Section title="Storage on your device">
             <p>
               Yearly uses your browser&apos;s local storage for your trips,
               settings and the random ID, and to remember small things such as
-              whether you&apos;ve seen a tip, answered a question or set a
-              year-end reminder.{' '}
+              whether you&apos;ve seen a tip, answered a question, set a
+              year-end reminder or turned off usage stats.{' '}
               {accounts
                 ? "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets a cookie only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
                 : "It doesn't set cookies for visitors. The only cookie is the sign-in cookie for Yearly's admin pages."}
+            </p>
+          </Section>
+
+          <Section title="Your rights">
+            <p>You can ask us to:</p>
+            <List>
+              <li>tell you what data we hold about you and send you a copy</li>
+              <li>correct it</li>
+              <li>delete it</li>
+              <li>stop or limit using it, including for usage stats</li>
+              <li>send it to you in a format you can reuse elsewhere</li>
+            </List>
+            <p>
+              You can also withdraw any consent you gave us, such as for the
+              waitlist or the reminder email. Email {email} and we&apos;ll reply
+              within one month. We don&apos;t make automated decisions about
+              you.
+            </p>
+            <p>
+              If you&apos;re unhappy with how we handle your data, you can
+              complain to Romania&apos;s data protection authority, ANSPDCP (
+              <a
+                href="https://www.dataprotection.ro"
+                target="_blank"
+                rel="noreferrer"
+                className={linkClassName}
+              >
+                dataprotection.ro
+              </a>
+              ), or to the authority where you live, such as the ICO in the UK.
             </p>
           </Section>
 
@@ -323,19 +462,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 To remove your email from the waitlist or the year-end reminder,
-                or to ask about or delete anything else we hold,{' '}
-                {accounts && (
-                  <>
-                    email{' '}
-                    <a
-                      href="mailto:hello@yearly.world"
-                      className={linkClassName}
-                    >
-                      hello@yearly.world
-                    </a>
-                    ,{' '}
-                  </>
-                )}
+                or to ask about or delete anything else we hold, email {email},
                 message{' '}
                 <a
                   href="https://www.instagram.com/yearly.world"
@@ -353,6 +480,14 @@ export default function PrivacyPage() {
                 the events linked to your browser.
               </li>
             </List>
+          </Section>
+
+          <Section title="Children">
+            <p>
+              If you&apos;re under 16, ask a parent or guardian before you give
+              us your email address for the waitlist, a reminder
+              {accounts ? ' or an account' : ''}.
+            </p>
           </Section>
 
           <Section title="Changes">

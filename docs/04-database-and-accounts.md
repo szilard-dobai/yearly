@@ -62,19 +62,32 @@ Rules:
 ## Entry points and copy
 
 - **Header:** "Sign in" for signed-out visitors (returns them to the page they were on), and a round avatar with initials once signed in, linking to `/account`. Initials come from the name, which Google provides and email sign-ups don't have, falling back to the first letter of the email. We don't use the Google profile photo: email users would have none, it would load from Google on every page, and people would then want to upload their own. Google's photo and access tokens aren't stored.
-- **Prompt on `/create`:** once a calendar has trips on 3 days, a signed-out visitor sees "Your trips are only in this browser" with **Save my calendar** and **Not now**. It replaces the feedback card while showing, so the sidebar never shows two prompts. "Not now" hides it for 30 days.
+- **Prompt on `/create`:** once a calendar has trips on 3 days, a signed-out visitor gets a toast at the bottom of the screen: "Your trips are only in this browser" with **Save my calendar** and **Not now**. It waits until the undo toast and the day-selection panel are gone, shows once per visit, and goes away for that visit once the person starts selecting days again. "Not now" or × hides it for 30 days. (It was first a sidebar card, about 6 screens down on a phone, so nobody saw it.)
 - **Sign-in page:** says what an account is for, that signing in creates one, and links **Continue without an account**.
 - **FAQ, `llms.txt` and the privacy page** switch to account-aware answers when `ACCOUNTS_ENABLED` is on, and stay as they are when it's off.
 - **Copy:** written with the `copywriting` and `cro` skills against `.agents/product-marketing.md` (v2). Every account prompt says Yearly works without an account.
 - **Sessions** last 60 days, refreshed daily while in use. Deleting an account needs a session under a day old; otherwise people are asked to sign in again.
+
+## Privacy and retention
+
+The privacy page carries what GDPR asks for, whether or not accounts are on: Szilard Dobai in Romania as the controller, `hello@yearly.world`, a legal basis for each use, retention, transfers to US companies, the full list of rights, and the right to complain to ANSPDCP or the ICO.
+
+- **Analytics consent:** we follow the UK model (in force since 5 February 2026) rather than a consent banner. Usage stats are explained on the privacy page as a legitimate interest, and **Share usage stats** in Settings turns them off for that browser, including Vercel Web Analytics and Speed Insights. Under EU rules a stored analytics ID strictly needs consent; we accepted that gap knowingly. If it becomes a problem, switch to a daily, unstored ID made on the server.
+- **Retention**, applied every day at 03:00 UTC by `/api/cron/retention` (`vercel.json`, protected by `CRON_SECRET`):
+  - Usage events and calendar-reminder events: kept in full for 26 months, then the device ID, region, user agent, in-app browser, referrer, campaign tags and survey notes are removed and the time is cut to the day. Deleted after 5 years.
+  - Feedback: kept in full for 26 months, then without the device ID, user agent and region. Deleted after 5 years.
+  - Year-end reminder emails: deleted once their year is over.
+  - Expired sessions and sign-in codes, and rate-limit rows older than a day.
+- **Still to build:** delete video waitlist emails 12 months after videos launch; email and then delete accounts after 5 years without a sign-in (due by 2031); make the admin pages cope with events that no longer have a device ID (from 2028).
 
 ## Launch checklist
 
 Before setting `ACCOUNTS_ENABLED=true` in Production:
 
 1. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production.
-2. Change the "Last updated" dates on `/privacy` (`ACCOUNTS_LAST_UPDATED`) and `/terms` to the launch date.
-3. Redeploy, then check sign-in by code and Google on yearly.world.
+2. Set `CRON_SECRET` in Production (any long random string) so the retention job runs. It's needed even before accounts launch.
+3. Change the "Last updated" dates on `/privacy` and `/terms` to the launch date.
+4. Redeploy, then check sign-in by code and Google on yearly.world.
 
 Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to the owner, and the owner confirmed the 30-day notice promise in the Terms.
 

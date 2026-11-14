@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithSettings } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
+import { isTrackingOptedOut } from '@/lib/tracking/opt-out'
 import Settings from './Settings'
 
 const defaultProps = {
@@ -47,6 +48,35 @@ describe('Settings', () => {
 
       await user.click(switchElement)
       expect(switchElement).not.toBeChecked()
+    })
+  })
+
+  describe('Share usage stats', () => {
+    it('is on by default', () => {
+      localStorage.clear()
+      renderWithSettings(<Settings {...defaultProps} />)
+
+      expect(
+        screen.getByRole('switch', { name: /share usage stats/i })
+      ).toBeChecked()
+      expect(
+        screen.getByText(/never include your trip dates/i)
+      ).toBeInTheDocument()
+    })
+
+    it('turns usage stats off and on for this browser', async () => {
+      localStorage.clear()
+      const user = userEvent.setup()
+      renderWithSettings(<Settings {...defaultProps} />)
+      const toggle = screen.getByRole('switch', { name: /share usage stats/i })
+
+      await user.click(toggle)
+      expect(toggle).not.toBeChecked()
+      expect(isTrackingOptedOut()).toBe(true)
+
+      await user.click(toggle)
+      expect(toggle).toBeChecked()
+      expect(isTrackingOptedOut()).toBe(false)
     })
   })
 

@@ -54,6 +54,15 @@ describe('/api/calendar', () => {
     expect(saveCalendar).not.toHaveBeenCalled()
   })
 
+  it('checks the session in the database, so a deleted account can’t keep saving', async () => {
+    saveCalendar.mockResolvedValue({ ok: true, version: 1 })
+    await put({ days: DAYS, baseVersion: 0 })
+
+    expect(getSession).toHaveBeenCalledWith(
+      expect.objectContaining({ query: { disableCookieCache: true } })
+    )
+  })
+
   it('returns the signed-in person’s calendar without caching', async () => {
     getCalendar.mockResolvedValue({ days: DAYS, version: 3 })
 

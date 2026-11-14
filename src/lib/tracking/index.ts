@@ -3,6 +3,7 @@
  */
 
 import { getDeviceId } from './device-id'
+import { isTrackingOptedOut } from './opt-out'
 import type { DeviceType, TrackingEvent, TrackingEventType } from './types'
 
 export * from './types'
@@ -41,6 +42,7 @@ export async function trackEvent(
   type: TrackingEventType,
   metadata?: Record<string, unknown>
 ): Promise<void> {
+  if (isTrackingOptedOut()) return
   try {
     const event: TrackingEvent = {
       type,

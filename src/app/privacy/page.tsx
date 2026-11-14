@@ -316,6 +316,17 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
+          <Section title="If you write to us">
+            <p>
+              If you email {CONTACT_EMAIL} or message @yearly.world on
+              Instagram, we get your email address or Instagram name and what
+              you wrote. We use them to reply and to help with what you asked.
+              Emails pass through ImprovMX, which forwards them to our inbox.
+              Instagram messages are also covered by Instagram&apos;s own
+              privacy policy.
+            </p>
+          </Section>
+
           <Section title="Why we use your data">
             <p>
               Data protection law asks for a legal basis for each use of your
@@ -354,6 +365,10 @@ export default function PrivacyPage() {
                 Slack notifications: our legitimate interest in reading feedback
                 and keeping track of sign-ups.
               </li>
+              <li>
+                Emails and messages you send us: our legitimate interest in
+                answering you.
+              </li>
             </List>
           </Section>
 
@@ -384,6 +399,9 @@ export default function PrivacyPage() {
                 list.
               </li>
               <li>Error reports and page timings in Sentry: up to 90 days.</li>
+              <li>
+                Emails and messages you send us: 2 years after the last message.
+              </li>
               {accounts && (
                 <>
                   <li>
@@ -440,6 +458,7 @@ export default function PrivacyPage() {
                 Slack receives our notifications about feedback, waitlist
                 sign-ups and year-end reminders.
               </li>
+              <li>ImprovMX forwards emails sent to {CONTACT_EMAIL}.</li>
             </List>
             <p>
               We don&apos;t share your data with anyone else unless the law
@@ -451,7 +470,7 @@ export default function PrivacyPage() {
             <p>
               Our servers and databases are in Frankfurt, Germany. Some of the
               companies we use are based in the US: Vercel, MongoDB, Resend,
-              Sentry and Slack
+              Sentry, Slack and ImprovMX
               {accounts ? ', and for accounts, Neon and Google' : ''}. Slack
               keeps our notifications in the US, and the others may access your
               data from outside the European Economic Area. Their data

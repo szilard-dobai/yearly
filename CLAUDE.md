@@ -137,6 +137,12 @@ Uses Material Design elevation hierarchy:
 - Import/export as JSON
 - Signed-in people also get their calendar saved to their account and synced across devices; see Calendar sync in `docs/04-database-and-accounts.md`
 
+### Privacy
+
+- Collecting something new, adding a vendor or changing retention means updating `src/app/privacy/page.tsx` and `docs/05-record-of-processing.md` in the same PR
+- Never put personal data (trip dates, countries, emails) in `aria-label`, `title` or `alt` without checking `scrubBreadcrumb` / `scrubSpan` in `lib/sentry.ts`, which strip those attributes before Sentry sends anything
+- If personal data leaks, follow `docs/06-data-breach-runbook.md`; ANSPDCP must hear within 72 hours
+
 ## Styling Approach
 
 - Uses Tailwind CSS v4 with the new `@import "tailwindcss"` syntax

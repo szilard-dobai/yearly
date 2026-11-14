@@ -60,6 +60,13 @@ describe('privacy, terms and footer', () => {
       expect(
         screen.getByText(/unless the law requires us to/)
       ).toBeInTheDocument()
+      expect(screen.getByText('If you write to us')).toBeInTheDocument()
+      expect(
+        screen.getByText(/ImprovMX forwards emails sent to/)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/2 years after the last message/)
+      ).toBeInTheDocument()
       expect(screen.queryByText(/scrambled copy of the address/)).toBeNull()
       expect(
         screen.getByText(/leave out anything that could identify you/)

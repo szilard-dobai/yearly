@@ -321,9 +321,8 @@ export default function PrivacyPage() {
               If you email {CONTACT_EMAIL} or message @yearly.world on
               Instagram, we get your email address or Instagram name and what
               you wrote. We use them to reply and to help with what you asked.
-              Emails pass through ImprovMX, which forwards them to our Yahoo
-              Mail inbox. Instagram messages are also covered by
-              Instagram&apos;s own privacy policy.
+              Instagram messages are also covered by Instagram&apos;s own
+              privacy policy.
             </p>
           </Section>
 

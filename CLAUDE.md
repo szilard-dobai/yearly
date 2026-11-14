@@ -32,7 +32,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Database**: Postgres on Neon through Drizzle for accounts and new data; MongoDB for tracking events, feedback, waitlist and reminders until they move (see `docs/04-database-and-accounts.md`)
 - **Auth**: Better Auth (version pinned exactly), optional accounts with a 6-digit email code or Google (hidden in in-app browsers); no passwords. Everything is behind `ACCOUNTS_ENABLED=true`, otherwise `/sign-in`, `/account` and `/api/auth` return 404. Pages, access rules and flows are in `docs/04-database-and-accounts.md`
 - **Email**: Resend (`RESEND_API_KEY`, `EMAIL_FROM`); without a key in development, emails are logged to the console
-- **Testing**: Vitest + Testing Library; database tests use PGlite with the real migrations (`src/test/db.ts`) and need `// @vitest-environment node`
+- **Testing**: Vitest + Testing Library; database tests use PGlite with the real migrations (`src/test/db.ts`) and need `// @vitest-environment node`. `retention.mongodb.test.ts` runs against a real MongoDB only when `MONGO_TEST_URL` is set (e.g. `docker run -d --rm -p 27099:27017 mongo:8`, then `MONGO_TEST_URL=mongodb://localhost:27099 npx vitest run src/lib/retention.mongodb.test.ts`); it uses its own throwaway database
 
 ## Project Structure
 

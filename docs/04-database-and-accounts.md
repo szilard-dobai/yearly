@@ -78,6 +78,7 @@ The privacy page carries what GDPR asks for, whether or not accounts are on: Szi
   - Feedback: kept in full for 26 months, then without the device ID, user agent and region. Deleted after 5 years.
   - Year-end reminder emails: deleted once their year is over.
   - Expired sessions and sign-in codes, and rate-limit rows older than a day.
+- **Safety:** the job deletes first, then anonymizes only records between 26 months and 5 years old, and marks them so a second run changes nothing. It refuses to run if its cutoffs come out less than about 2 years (anonymize) or 4 years (delete) in the past, for example after a bad change or a broken clock. Records with a missing or malformed date are never touched. `?dryRun=1` reports what it would change without changing anything (it still needs the secret).
 - **Still to build:** delete video waitlist emails 12 months after videos launch; email and then delete accounts after 5 years without a sign-in (due by 2031); make the admin pages cope with events that no longer have a device ID (from 2028).
 
 ## Launch checklist

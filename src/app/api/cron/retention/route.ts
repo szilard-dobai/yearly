@@ -22,11 +22,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const results: Record<string, unknown> = {}
+  const dryRun = new URL(request.url).searchParams.get('dryRun') === '1'
+  const results: Record<string, unknown> = { dryRun }
   let failed = false
 
   try {
-    results.mongo = await applyMongoRetention(await getMongoDb())
+    results.mongo = await applyMongoRetention(await getMongoDb(), new Date(), {
+      dryRun,
+    })
   } catch (error) {
     console.error('Retention failed for MongoDB:', error)
     results.mongo = 'failed'
@@ -35,7 +38,9 @@ export async function GET(request: Request) {
 
   if (process.env.DATABASE_URL) {
     try {
-      results.postgres = await applyPostgresRetention(db)
+      results.postgres = await applyPostgresRetention(db, new Date(), {
+        dryRun,
+      })
     } catch (error) {
       console.error('Retention failed for Postgres:', error)
       results.postgres = 'failed'

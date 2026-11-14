@@ -49,7 +49,7 @@ type Step = 'offer' | 'waitlist' | 'joined'
 
 const FORMAT_AND_PAYMENT = [
   'Full HD 1080×1920 MP4, no watermark',
-  'One-time payment, no account needed',
+  'One-time payment, saved to your free account',
 ]
 
 function Segmented<T extends string>({

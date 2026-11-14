@@ -2,7 +2,7 @@ import type { ExportFormat } from '@/lib/export-canvas'
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
-import { getAnimatedVideoPrice } from '@/lib/video-offer'
+import { VIDEO_PACK_PRICE } from '@/lib/video-offer'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -77,7 +77,7 @@ describe('ImagePreviewModal video offer', () => {
       exportType: 'monthly',
       year: 2026,
       month: 2,
-      price: getAnimatedVideoPrice('device-123'),
+      price: VIDEO_PACK_PRICE,
       entry: 'card',
     })
   })
@@ -148,13 +148,13 @@ describe('ImagePreviewModal video offer', () => {
     }
   })
 
-  it('opens the preview with the device price and records it', async () => {
+  it('opens the preview with the pack price and records it', async () => {
     const user = userEvent.setup()
     renderModal('calendar')
 
     await user.click(screen.getByRole('button', { name: /Make it a video/ }))
 
-    const price = getAnimatedVideoPrice('device-123')
+    const price = VIDEO_PACK_PRICE
     expect(await screen.findByTestId('video-dialog')).toHaveAttribute(
       'data-price',
       String(price)
@@ -177,7 +177,7 @@ describe('ImagePreviewModal video offer', () => {
     expect(trackEvent).toHaveBeenCalledWith('animated_video_preview_open', {
       exportType: 'statistics',
       year: 2026,
-      price: getAnimatedVideoPrice('device-123'),
+      price: VIDEO_PACK_PRICE,
       entry: 'preview_image',
     })
   })

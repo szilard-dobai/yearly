@@ -25,10 +25,9 @@ import {
 import type { ExportType } from '@/lib/feedback/types'
 import { buildShareText } from '@/lib/share'
 import { trackEvent } from '@/lib/tracking'
-import { getDeviceId } from '@/lib/tracking/device-id'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
-import { getAnimatedVideoPrice } from '@/lib/video-offer'
+import { VIDEO_PACK_PRICE } from '@/lib/video-offer'
 import { ChevronRight, Download, Loader2, Play, Sparkles } from 'lucide-react'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
@@ -158,7 +157,7 @@ function ImagePreviewContent({
 }: ImagePreviewContentProps) {
   const [prompt, setPrompt] = useState<PostDownloadPrompt | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
-  const [videoPrice, setVideoPrice] = useState<number | null>(null)
+  const [videoMounted, setVideoMounted] = useState(false)
 
   const isMonthly = exportType === 'monthly'
   const showVideoOffer = calendarData.visits.some(
@@ -168,15 +167,14 @@ function ImagePreviewContent({
   )
 
   const openVideoPreview = (entry: VideoOfferEntry) => {
-    const price = getAnimatedVideoPrice(getDeviceId())
     trackEvent('animated_video_preview_open', {
       exportType,
       year,
       ...(isMonthly && { month }),
-      price,
+      price: VIDEO_PACK_PRICE,
       entry,
     })
-    setVideoPrice(price)
+    setVideoMounted(true)
     setVideoOpen(true)
   }
 
@@ -374,7 +372,7 @@ function ImagePreviewContent({
             </button>
           )}
 
-          {videoPrice !== null && (
+          {videoMounted && (
             <AnimatedVideoDialog
               open={videoOpen}
               onOpenChange={setVideoOpen}
@@ -382,7 +380,7 @@ function ImagePreviewContent({
               year={year}
               month={month}
               exportType={exportType}
-              price={videoPrice}
+              price={VIDEO_PACK_PRICE}
             />
           )}
 

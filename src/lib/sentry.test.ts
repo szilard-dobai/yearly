@@ -4,6 +4,8 @@ import {
   PRODUCTION_TRACES_SAMPLE_RATE,
   SERVER_DATA_COLLECTION,
   isHealthCheck,
+  scrubBreadcrumb,
+  scrubSpan,
   sentryEnvironment,
   serverTracesSampler,
   tracesSampleRate,
@@ -69,5 +71,38 @@ describe('Sentry options', () => {
     const sync = samplingContext('/api/calendar')
     expect(serverTracesSampler(sync)).toBe(tracesSampleRate())
     expect(sync.inheritOrSampleWith).toHaveBeenCalledWith(tracesSampleRate())
+  })
+
+  it('drops element labels from click breadcrumbs, which can name trip dates', () => {
+    const click = scrubBreadcrumb({
+      category: 'ui.click',
+      message:
+        'div.grid > button[type="button"][aria-label="March 14, visited Japan"]',
+    })
+    expect(click.message).toBe('div.grid > button[type="button"]')
+
+    const fetch = { category: 'fetch', message: 'GET /api/calendar' }
+    expect(scrubBreadcrumb(fetch)).toBe(fetch)
+  })
+
+  it('drops element labels from page timings, such as the tapped day', () => {
+    const span = scrubSpan({
+      name: 'button[aria-label="March 14, visited Japan"]',
+      attributes: {
+        'browser.web_vital.inp.target':
+          'div > button[type="button"][aria-label="March 14, visited Japan"]',
+        'browser.web_vital.cls.source.1': {
+          value: 'img[alt="Japan"]',
+          type: 'string',
+        },
+        'browser.web_vital.inp.value': 120,
+      },
+    })
+
+    expect(JSON.stringify(span)).not.toMatch(/Japan|March 14/)
+    expect(span.attributes['browser.web_vital.inp.target']).toBe(
+      'div > button[type="button"]'
+    )
+    expect(span.attributes['browser.web_vital.inp.value']).toBe(120)
   })
 })

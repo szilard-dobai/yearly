@@ -457,7 +457,8 @@ export default function PrivacyPage() {
               data from outside the European Economic Area. Their data
               processing terms cover these transfers through the EU–US Data
               Privacy Framework or the European Commission&apos;s standard
-              contractual clauses.
+              contractual clauses. Email us and we&apos;ll tell you which one
+              covers each company and send you a copy.
             </p>
           </Section>
 
@@ -479,7 +480,10 @@ export default function PrivacyPage() {
               <li>tell you what data we hold about you and send you a copy</li>
               <li>correct it</li>
               <li>delete it</li>
-              <li>stop or limit using it, including for usage stats</li>
+              <li>
+                stop using it, which is your right to object, or limit how we
+                use it, including for usage stats
+              </li>
               <li>send it to you in a format you can reuse elsewhere</li>
             </List>
             <p>

@@ -3,6 +3,7 @@ import type * as Sentry from '@sentry/nextjs'
 type InitOptions = NonNullable<Parameters<typeof Sentry.init>[0]>
 type DataCollection = NonNullable<InitOptions['dataCollection']>
 type SamplingContext = Parameters<NonNullable<InitOptions['tracesSampler']>>[0]
+type Breadcrumb = Parameters<NonNullable<InitOptions['beforeBreadcrumb']>>[0]
 
 export const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 
@@ -57,4 +58,45 @@ export const SERVER_DATA_COLLECTION: DataCollection = {
 export const CLIENT_DATA_COLLECTION: DataCollection = {
   ...SERVER_DATA_COLLECTION,
   httpHeaders: { request: true, response: false },
+}
+
+const LABEL_ATTRIBUTES = /\[(?:aria-label|title|alt)="[^"]*"\]/g
+
+function scrubLabels(text: string) {
+  return text.replace(LABEL_ATTRIBUTES, '')
+}
+
+function scrubAttribute(value: unknown): unknown {
+  if (typeof value === 'string') return scrubLabels(value)
+  if (
+    value &&
+    typeof value === 'object' &&
+    'value' in value &&
+    typeof value.value === 'string'
+  ) {
+    return { ...value, value: scrubLabels(value.value) }
+  }
+  return value
+}
+
+export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
+  if (!breadcrumb.category?.startsWith('ui.') || !breadcrumb.message) {
+    return breadcrumb
+  }
+  return { ...breadcrumb, message: scrubLabels(breadcrumb.message) }
+}
+
+export function scrubSpan<
+  T extends { name: string; attributes: Record<string, unknown> },
+>(span: T): T {
+  return {
+    ...span,
+    name: scrubLabels(span.name),
+    attributes: Object.fromEntries(
+      Object.entries(span.attributes).map(([key, value]) => [
+        key,
+        scrubAttribute(value),
+      ])
+    ),
+  }
 }

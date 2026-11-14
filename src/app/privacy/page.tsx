@@ -321,9 +321,9 @@ export default function PrivacyPage() {
               If you email {CONTACT_EMAIL} or message @yearly.world on
               Instagram, we get your email address or Instagram name and what
               you wrote. We use them to reply and to help with what you asked.
-              Emails pass through ImprovMX, which forwards them to our inbox.
-              Instagram messages are also covered by Instagram&apos;s own
-              privacy policy.
+              Emails pass through ImprovMX, which forwards them to our Yahoo
+              Mail inbox. Instagram messages are also covered by
+              Instagram&apos;s own privacy policy.
             </p>
           </Section>
 
@@ -458,7 +458,10 @@ export default function PrivacyPage() {
                 Slack receives our notifications about feedback, waitlist
                 sign-ups and year-end reminders.
               </li>
-              <li>ImprovMX forwards emails sent to {CONTACT_EMAIL}.</li>
+              <li>
+                ImprovMX forwards emails sent to {CONTACT_EMAIL} to our Yahoo
+                Mail inbox.
+              </li>
             </List>
             <p>
               We don&apos;t share your data with anyone else unless the law
@@ -470,14 +473,15 @@ export default function PrivacyPage() {
             <p>
               Our servers and databases are in Frankfurt, Germany. Some of the
               companies we use are based in the US: Vercel, MongoDB, Resend,
-              Sentry, Slack and ImprovMX
+              Sentry, Slack, ImprovMX and Yahoo
               {accounts ? ', and for accounts, Neon and Google' : ''}. Slack
               keeps our notifications in the US, and the others may access your
-              data from outside the European Economic Area. Their data
-              processing terms cover these transfers through the EU–US Data
-              Privacy Framework or the European Commission&apos;s standard
-              contractual clauses. Email us and we&apos;ll tell you which one
-              covers each company and send you a copy.
+              data from outside the European Economic Area. These transfers are
+              covered by the EU–US Data Privacy Framework or the European
+              Commission&apos;s standard contractual clauses, except for
+              ImprovMX, which we use on its free plan without such terms. Email
+              us and we&apos;ll tell you which one covers each company and send
+              you a copy.
             </p>
           </Section>
 

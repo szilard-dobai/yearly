@@ -62,7 +62,7 @@ describe('privacy, terms and footer', () => {
       ).toBeInTheDocument()
       expect(screen.getByText('If you write to us')).toBeInTheDocument()
       expect(
-        screen.getByText(/ImprovMX forwards emails sent to/)
+        screen.getByText(/forwards emails sent to .* to our Yahoo Mail inbox/)
       ).toBeInTheDocument()
       expect(
         screen.getByText(/2 years after the last message/)

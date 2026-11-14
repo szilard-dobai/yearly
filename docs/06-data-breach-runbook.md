@@ -6,7 +6,7 @@ What to do if personal data is leaked, lost, changed or locked away, whether by 
 
 ## How you might find out
 
-- A security email from Vercel, MongoDB, Neon, Resend, Sentry, Slack, ImprovMX, Google or GitHub
+- A security email from Vercel, MongoDB, Neon, Resend, Sentry, Slack, ImprovMX, Yahoo, Google or GitHub
 - A secret committed to the repo or pasted somewhere public
 - Odd admin activity, unexpected data in Slack, or a spike of Sentry errors
 - Someone writes to hello@yearly.world
@@ -28,8 +28,9 @@ What to do if personal data is leaked, lost, changed or locked away, whether by 
 | `SLACK_FEEDBACK_WEBHOOK_URL`, `SLACK_ALERTS_WEBHOOK_URL` | Slack app settings                | Recreate the webhooks                  |
 | `SENTRY_AUTH_TOKEN`, `SENTRY_READ_TOKEN`                 | Sentry and GitHub secrets         | None                                   |
 
-3. **If accounts may be taken over:** delete every row in the Neon `session` table to sign everyone out.
-4. **Stop the leak** at its source: revert the deploy, close the endpoint or remove the public file.
+3. **If the inbox may be exposed:** change the Yahoo and ImprovMX passwords and check that the forwarding rules still point only to your inbox. Emails people sent are then part of the breach.
+4. **If accounts may be taken over:** delete every row in the Neon `session` table to sign everyone out.
+5. **Stop the leak** at its source: revert the deploy, close the endpoint or remove the public file.
 
 ## 2. Assess (same day)
 
@@ -48,7 +49,7 @@ The test is risk to people's rights and freedoms (notify ANSPDCP) and high risk 
 
 ## 3. Notify (within 72 hours)
 
-**ANSPDCP (Romania, lead authority).** Use the breach notification form on [dataprotection.ro](https://www.dataprotection.ro) and follow the submission instructions there. Older guidance says to send it electronically signed by email, so check the current address before sending. Include:
+**ANSPDCP (Romania, lead authority).** Submit online: open the [GDPR breach notification page](https://www.dataprotection.ro/?page=pagina_formular_679) and choose "Depunere notificare online". The form follows ANSPDCP Decision 128/2018. Save the confirmation and a copy of what you sent. Include:
 
 - what happened and when you found out
 - categories and rough numbers of people and records

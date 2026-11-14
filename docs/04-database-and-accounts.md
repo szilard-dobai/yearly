@@ -153,6 +153,7 @@ Expected cost once selling: about $20–60 a month, covered by roughly 10–25 v
 - Two databases run side by side until phase 3.
 - Migrations run before the new deployment goes live, so each schema change must work with the code already running. Add columns and tables first, remove old ones in a later deploy.
 - Every Vercel build runs migrations, so the Neon integration must create a database branch for each preview deployment. Without that, a preview build would migrate the production database.
+- Neon's free plan allows 10 branches, including `main`, and the integration names each one `preview/<git branch>`. It only deletes a branch once every Vercel deployment of that git branch is gone, which Vercel's retention rarely does on a small project. When the 10 fill up, preview builds fail with "Branch limit reached". `.github/workflows/preview-cleanup.yml` deletes a branch's preview deployments and database branch when its pull request closes or the branch is deleted, and checks for leftovers every day. It needs the `VERCEL_TOKEN` and `NEON_API_KEY` secrets and the `NEON_PROJECT_ID` variable in GitHub. About 9 pull requests can have working previews at once.
 - Better Auth has shipped breaking changes in patch releases, so its version is pinned exactly and upgraded on purpose.
 - Google sign-in doesn't work on preview URLs, because Google doesn't allow wildcard redirect addresses. Email codes work everywhere.
 

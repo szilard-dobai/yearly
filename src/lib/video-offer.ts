@@ -13,3 +13,5 @@ export function formatPrice(price: number): string {
 }
 
 export const VIDEO_LAUNCH_LABEL = 'early December'
+
+export const VIDEO_PACK_PRICE = 2.99

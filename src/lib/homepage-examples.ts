@@ -68,6 +68,7 @@ export const HOMEPAGE_EXAMPLES: HomepageExample[] = [
 ]
 
 export const EXAMPLE_YEAR = 2026
+export const EXAMPLE_MONTH = 5
 
 const EXAMPLE_TRIPS: { countryCode: string; from: string; to: string }[] = [
   { countryCode: 'MY', from: '01-09', to: '01-11' },

@@ -33,6 +33,7 @@ describe('GET /llms.txt', () => {
   it('links the public pages with absolute URLs', () => {
     expect(text).toContain('(https://www.yearly.world/)')
     expect(text).toContain('(https://www.yearly.world/create)')
+    expect(text).toContain('(https://www.yearly.world/videos)')
     expect(text).toContain('(https://www.yearly.world/privacy)')
   })
 })

@@ -68,7 +68,12 @@ export interface TrackingEvent {
 }
 
 export interface HomepageCtaClickMetadata {
-  linkType: 'header' | 'hero' | 'cta_section' | 'video_teaser'
+  linkType:
+    | 'header'
+    | 'hero'
+    | 'cta_section'
+    | 'video_teaser'
+    | 'video_teaser_details'
 }
 
 export interface YearChangedMetadata {

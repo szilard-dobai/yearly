@@ -1,5 +1,9 @@
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 import { ImageResponse } from 'next/og'
+import sharp from 'sharp'
 import LogoSvg from '@/assets/logo.svg'
+import { FLAG_HEIGHT_EM, FLAG_WIDTH_EM, getFlagImageSrc } from '@/lib/emoji'
 
 export const alt =
   'Yearly logo, the line "Your year, at a glance." and a row of country flags'
@@ -8,6 +12,17 @@ export const size = {
   height: 630,
 }
 export const contentType = 'image/png'
+
+const FLAGS = ['RO', 'GB', 'FR', 'IT', 'JP', 'AU']
+const FLAG_SIZE = 44
+
+async function loadFlag(code: string) {
+  const src = getFlagImageSrc(code, 'large')
+  if (!src) throw new Error(`No flag image for ${code}`)
+  const webp = await readFile(path.join(process.cwd(), 'public', src))
+  const png = await sharp(webp).png().toBuffer()
+  return `data:image/png;base64,${png.toString('base64')}`
+}
 
 async function loadGoogleFont(font: string) {
   const url = new URL('https://fonts.googleapis.com/css2')
@@ -32,7 +47,10 @@ async function loadGoogleFont(font: string) {
 }
 
 export default async function Image() {
-  const newsreaderFont = await loadGoogleFont('Newsreader:wght@400')
+  const [newsreaderFont, flags] = await Promise.all([
+    loadGoogleFont('Newsreader:wght@400'),
+    Promise.all(FLAGS.map(loadFlag)),
+  ])
 
   return new ImageResponse(
     <div
@@ -108,17 +126,21 @@ export default async function Image() {
         <div
           style={{
             display: 'flex',
-            gap: 20,
+            alignItems: 'center',
+            gap: 20 + FLAG_SIZE * (1 - FLAG_WIDTH_EM),
             marginTop: 48,
-            fontSize: 44,
+            height: FLAG_SIZE,
           }}
         >
-          <span>🇷🇴</span>
-          <span>🇬🇧</span>
-          <span>🇫🇷</span>
-          <span>🇮🇹</span>
-          <span>🇯🇵</span>
-          <span>🇦🇺</span>
+          {flags.map((src, index) => (
+            <img
+              key={FLAGS[index]}
+              src={src}
+              alt=""
+              width={Math.round(FLAG_SIZE * FLAG_WIDTH_EM)}
+              height={Math.round(FLAG_SIZE * FLAG_HEIGHT_EM)}
+            />
+          ))}
         </div>
 
         <div

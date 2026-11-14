@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { getCountryName, getEventLabel } from '@/lib/admin/format'
-import { getFlagEmoji } from '@/lib/countries'
+import { Flag } from '@/components/Emoji'
 import type { DeviceType } from '@/lib/tracking/types'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
@@ -133,7 +133,7 @@ function CountryList({
             <span className="w-4 text-right text-gray-400 dark:text-zinc-500 tabular-nums">
               {index + 1}
             </span>
-            <span>{getFlagEmoji(country)}</span>
+            <Flag code={country} />
             <span className="truncate">{getCountryName(country)}</span>
           </span>
           <span className="shrink-0 font-medium tabular-nums text-gray-900 dark:text-zinc-100">

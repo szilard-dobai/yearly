@@ -14,12 +14,10 @@ import {
   type ExportFormat,
 } from '@/lib/export-canvas'
 
-export type FlagDisplayMode = 'emoji' | 'icon'
 export type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6
 export type ColorScheme = 'light' | 'dark' | 'system'
 
 export interface Settings {
-  flagDisplayMode: FlagDisplayMode
   weekStartsOn: WeekStartsOn
   colorScheme: ColorScheme
   highlightToday: boolean
@@ -29,7 +27,6 @@ export interface Settings {
 const SETTINGS_STORAGE_KEY = 'countries-in-year-settings'
 
 const DEFAULT_SETTINGS: Settings = {
-  flagDisplayMode: 'emoji',
   weekStartsOn: 1,
   colorScheme: 'system',
   highlightToday: true,
@@ -53,8 +50,6 @@ function loadSettingsFromStorage(): Settings {
     const parsed = JSON.parse(json)
 
     return {
-      flagDisplayMode:
-        parsed.flagDisplayMode || DEFAULT_SETTINGS.flagDisplayMode,
       weekStartsOn:
         typeof parsed.weekStartsOn === 'number'
           ? parsed.weekStartsOn
@@ -90,7 +85,6 @@ const DEFAULT_STATE: SettingsState = {
 }
 
 type SettingsAction =
-  | { type: 'SET_FLAG_DISPLAY_MODE'; payload: FlagDisplayMode }
   | { type: 'SET_WEEK_STARTS_ON'; payload: WeekStartsOn }
   | { type: 'SET_COLOR_SCHEME'; payload: ColorScheme }
   | { type: 'SET_HIGHLIGHT_TODAY'; payload: boolean }
@@ -103,11 +97,6 @@ function settingsReducer(
   action: SettingsAction
 ): SettingsState {
   switch (action.type) {
-    case 'SET_FLAG_DISPLAY_MODE':
-      return {
-        ...state,
-        settings: { ...state.settings, flagDisplayMode: action.payload },
-      }
     case 'SET_WEEK_STARTS_ON':
       return {
         ...state,
@@ -138,7 +127,6 @@ function settingsReducer(
 }
 
 interface SettingsActions {
-  setFlagDisplayMode: (mode: FlagDisplayMode) => void
   setWeekStartsOn: (day: WeekStartsOn) => void
   setColorScheme: (scheme: ColorScheme) => void
   setHighlightToday: (highlight: boolean) => void
@@ -202,8 +190,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
 
   const actions = useMemo<SettingsActions>(
     () => ({
-      setFlagDisplayMode: (mode) =>
-        dispatch({ type: 'SET_FLAG_DISPLAY_MODE', payload: mode }),
       setWeekStartsOn: (day) =>
         dispatch({ type: 'SET_WEEK_STARTS_ON', payload: day }),
       setColorScheme: (scheme) =>

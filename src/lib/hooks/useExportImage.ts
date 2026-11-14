@@ -6,7 +6,6 @@ import { useStatusFeedback, type StatusState } from './useStatusFeedback'
 
 export interface ExportLayoutOptions {
   format: ExportFormat
-  flagDisplayMode: Settings['flagDisplayMode']
   weekStartsOn: Settings['weekStartsOn']
 }
 
@@ -52,7 +51,6 @@ export function useExportImage({
         const dataUrl = await renderExportImage(
           layout({
             format,
-            flagDisplayMode: settings.flagDisplayMode,
             weekStartsOn: settings.weekStartsOn,
           }),
           format,
@@ -70,7 +68,6 @@ export function useExportImage({
     [
       layout,
       label,
-      settings.flagDisplayMode,
       settings.weekStartsOn,
       settings.colorScheme,
       setLoading,

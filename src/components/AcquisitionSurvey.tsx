@@ -1,5 +1,6 @@
 'use client'
 
+import { Emoji } from '@/components/Emoji'
 import ChoiceChip from '@/components/ChoiceChip'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -78,7 +79,7 @@ export default function AcquisitionSurvey({
               className="text-sm text-gray-700 dark:text-zinc-300"
             >
               <span className="font-medium text-gray-900 dark:text-zinc-100">
-                Thanks! 🙌
+                Thanks! <Emoji name="raisingHands" />
               </span>{' '}
               That really helps.
             </motion.p>

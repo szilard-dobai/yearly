@@ -6,7 +6,7 @@ import { getCountryByCode } from '../lib/countries'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { toDayKey } from '@/lib/selection'
 import type { CountryVisit } from '../lib/types'
-import Flag from './Flag'
+import { DayFlags } from './Emoji'
 
 interface DateCellProps {
   date: Date | null
@@ -45,7 +45,6 @@ function DateCell({
 
   const showTodayHighlight = settings.highlightToday && isToday(date)
 
-  const hasTwoCountries = cellVisits.length === 2
   const allCountries = cellVisits
     .map((v) => getCountryByCode(v.countryCode)?.name || v.countryCode)
     .join(', ')
@@ -72,33 +71,10 @@ function DateCell({
         className="relative flex flex-col items-center justify-center w-full h-full rounded-md cursor-pointer outline-none transition-colors hover:bg-black/5 dark:hover:bg-white/8 focus-visible:ring-2 focus-visible:ring-red-500/60 data-edge:ring-2 data-edge:ring-red-500 data-edge:bg-white dark:data-edge:bg-black"
       >
         {hasVisits ? (
-          hasTwoCountries ? (
-            <div className="relative w-6 h-4 sm:w-8 sm:h-6">
-              <div
-                className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
-              >
-                <Flag
-                  countryCode={cellVisits[0].countryCode}
-                  displayMode={settings.flagDisplayMode}
-                />
-              </div>
-              <div
-                className="absolute inset-0 flex items-center justify-center overflow-hidden"
-                style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
-              >
-                <Flag
-                  countryCode={cellVisits[1].countryCode}
-                  displayMode={settings.flagDisplayMode}
-                />
-              </div>
-            </div>
-          ) : (
-            <Flag
-              displayMode={settings.flagDisplayMode}
-              countryCode={cellVisits[0].countryCode}
-            />
-          )
+          <DayFlags
+            codes={cellVisits.map((visit) => visit.countryCode)}
+            className="text-lg sm:text-2xl"
+          />
         ) : (
           <span
             className={`text-[10px] sm:text-sm font-medium ${showTodayHighlight ? 'text-red-500 font-bold' : 'text-gray-900 dark:text-white'}`}

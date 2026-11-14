@@ -1,14 +1,14 @@
 import type { VideoTheme } from '@/lib/video'
-import { Easing, interpolate, spring } from 'remotion'
+import { Easing, Img, interpolate, spring } from 'remotion'
 
 export const FPS = 30
 export const VIDEO_WIDTH = 1080
 export const VIDEO_HEIGHT = 1920
 
-export const EMOJI_FONT =
-  '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
-export const SANS = `var(--font-geist-sans), ui-sans-serif, system-ui, ${EMOJI_FONT}`
+export const SANS = 'var(--font-geist-sans), ui-sans-serif, system-ui'
 export const SERIF = 'var(--font-newsreader), Georgia, serif'
+
+export const VIDEO_IMAGE = { resolution: 'large', as: Img } as const
 
 export type Palette = {
   name: VideoTheme

@@ -1,6 +1,6 @@
 'use client'
 
-import Flag from '@/components/Flag'
+import { Flag } from '@/components/Emoji'
 import {
   Command,
   CommandEmpty,
@@ -106,7 +106,10 @@ export default function CountryPickerDialog({
                     onSelect={() => handleSelect(country.code)}
                     className="py-2.5"
                   >
-                    <Flag countryCode={country.code} size="sm" />
+                    <Flag
+                      code={country.code}
+                      className="text-base sm:text-lg"
+                    />
                     {country.name}
                   </CommandItem>
                 ))}
@@ -120,7 +123,11 @@ export default function CountryPickerDialog({
                   onSelect={() => handleSelect(country.code)}
                   className="py-2.5"
                 >
-                  <Flag countryCode={country.code} size="sm" />
+                  <Flag
+                    code={country.code}
+                    className="text-base sm:text-lg"
+                    lazy
+                  />
                   {country.name}
                 </CommandItem>
               ))}

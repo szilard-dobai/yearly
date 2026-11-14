@@ -1,12 +1,11 @@
-import { countries as flagCountries } from 'country-flag-icons'
+import { hasFlagImage } from './emoji'
 import type { Country } from './types'
 
 /**
  * Complete list of countries with ISO codes
  * Sorted alphabetically by name
- * Only includes countries with available flag icons
  */
-export const COUNTRIES: Country[] = [
+export const COUNTRY_LIST: Country[] = [
   { code: 'AF', name: 'Afghanistan' },
   { code: 'AL', name: 'Albania' },
   { code: 'DZ', name: 'Algeria' },
@@ -207,7 +206,14 @@ export const COUNTRIES: Country[] = [
   { code: 'YE', name: 'Yemen' },
   { code: 'ZM', name: 'Zambia' },
   { code: 'ZW', name: 'Zimbabwe' },
-].filter((country) => flagCountries.includes(country.code))
+]
+
+/**
+ * The countries people can pick: every country that has a flag image
+ */
+export const COUNTRIES: Country[] = COUNTRY_LIST.filter((country) =>
+  hasFlagImage(country.code)
+)
 
 /**
  * Get all countries
@@ -241,7 +247,7 @@ export function searchCountries(query: string): Country[] {
 }
 
 /**
- * Convert country code to flag emoji
+ * Convert country code to flag emoji, for plain-text places like Slack
  * @param countryCode - ISO 3166-1 alpha-2 country code
  * @returns Emoji
  */

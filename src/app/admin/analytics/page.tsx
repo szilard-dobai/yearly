@@ -3,6 +3,7 @@
 import AdminLoginForm from '@/components/admin/AdminLoginForm'
 import AdminNav from '@/components/admin/AdminNav'
 import CountryFlag from '@/components/admin/CountryFlag'
+import { Flag } from '@/components/Emoji'
 import AnalyticsOverviewDialog, {
   type HighLevelStats,
 } from '@/components/admin/AnalyticsOverviewDialog'
@@ -33,7 +34,6 @@ import {
   shortDeviceId,
   summarizeMetadata,
 } from '@/lib/admin/format'
-import { getFlagEmoji } from '@/lib/countries'
 import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
 import {
   TRACKING_EVENT_TYPES,
@@ -441,7 +441,8 @@ export default function AnalyticsPage() {
                 <SelectItem value="all">All countries</SelectItem>
                 {sortedCountries.map((country) => (
                   <SelectItem key={country} value={country}>
-                    {`${getFlagEmoji(country)} ${getCountryName(country)}`}
+                    <Flag code={country} />
+                    {getCountryName(country)}
                   </SelectItem>
                 ))}
               </SelectContent>

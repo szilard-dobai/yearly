@@ -16,9 +16,10 @@ import {
   SANS,
   SERIF,
   smooth,
+  VIDEO_IMAGE,
   VIDEO_WIDTH,
 } from './tokens'
-import { VideoFlag } from './VideoFlag'
+import { Flag } from '../Emoji'
 import type { VideoProps } from './YearFillVideo'
 
 const BEATS = [56, 104, 152, 200] as const
@@ -118,7 +119,7 @@ function Beat({
   )
 }
 
-export function StatsVideo({ data, theme, flagMode }: VideoProps) {
+export function StatsVideo({ data, theme }: VideoProps) {
   const palette = PALETTES[theme]
   const frame = useCurrentFrame()
   const s = data.stats
@@ -171,10 +172,15 @@ export function StatsVideo({ data, theme, flagMode }: VideoProps) {
             <div
               key={code}
               style={{
+                width: grid.size,
+                height: grid.size,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transform: `scale(${popAt(frame - (BEATS[0] + 4 + i * grid.stagger))})`,
               }}
             >
-              <VideoFlag code={code} size={grid.size} mode={flagMode} />
+              <Flag code={code} size={grid.size} {...VIDEO_IMAGE} />
             </div>
           ))}
         </div>
@@ -240,7 +246,6 @@ export function StatsVideo({ data, theme, flagMode }: VideoProps) {
             <StatsCard
               data={data}
               palette={palette}
-              flagMode={flagMode}
               statsStart={CARD + 6}
               listStart={CARD + 26}
             />

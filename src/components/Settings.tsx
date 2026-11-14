@@ -73,22 +73,6 @@ export default function Settings({ year, visitCount, onReset }: SettingsProps) {
 
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-0.5">
-          <Label htmlFor="flag-display-mode">Use flag icons</Label>
-          <p className="text-sm text-muted-foreground">
-            Display country flags as icons instead of emoji
-          </p>
-        </div>
-        <Switch
-          id="flag-display-mode"
-          checked={settings.flagDisplayMode === 'icon'}
-          onCheckedChange={(checked) =>
-            actions.setFlagDisplayMode(checked ? 'icon' : 'emoji')
-          }
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <div className="space-y-0.5">
           <Label htmlFor="highlight-today">Highlight today</Label>
           <p className="text-sm text-muted-foreground">
             Show today&apos;s date in red on the calendar

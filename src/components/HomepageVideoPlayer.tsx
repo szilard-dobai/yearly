@@ -1,6 +1,7 @@
 'use client'
 
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
+import { usePrefetchVideoImages } from '@/components/video/usePrefetchVideoImages'
 import {
   YearFillVideo,
   yearFillTimeline,
@@ -19,9 +20,10 @@ export default function HomepageVideoPlayer({ theme }: { theme: VideoTheme }) {
   const playerRef = useRef<PlayerRef>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion() ?? false
+  usePrefetchVideoImages(data.countries)
 
   const inputProps = useMemo<VideoProps>(
-    () => ({ data, theme, flagMode: 'icon', weekStartsOn: 1 }),
+    () => ({ data, theme, weekStartsOn: 1 }),
     [theme]
   )
 

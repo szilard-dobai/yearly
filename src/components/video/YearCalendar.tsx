@@ -1,13 +1,12 @@
 import { getMonthData } from '@/lib/calendar'
 import { MONTH_NAMES_SHORT } from '@/lib/constants'
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import { EXPORT_FRAME, getExportContentBox } from '@/lib/export-canvas'
 import { toDayKey } from '@/lib/selection'
 import { memo, useMemo } from 'react'
 import { interpolate } from 'remotion'
+import { DayFlags } from '../Emoji'
 import { VideoWatermark } from './Brand'
-import { type Palette, clamp, popAt, SANS } from './tokens'
-import { DayFlags } from './VideoFlag'
+import { type Palette, clamp, popAt, SANS, VIDEO_IMAGE } from './tokens'
 
 export const SETTLED = 40
 
@@ -17,7 +16,6 @@ type DayCellProps = {
   since: number
   size: number
   color: string
-  flagMode: FlagDisplayMode
 }
 
 export const DayCell = memo(function DayCell({
@@ -26,7 +24,6 @@ export const DayCell = memo(function DayCell({
   since,
   size,
   color,
-  flagMode,
 }: DayCellProps) {
   const shown = !!codes?.length && since >= 0
   const settled = since >= SETTLED
@@ -69,7 +66,7 @@ export const DayCell = memo(function DayCell({
               : `drop-shadow(0 ${flagSize * 0.1}px ${flagSize * 0.2}px rgba(0,0,0,0.35))`,
           }}
         >
-          <DayFlags codes={codes} size={flagSize} mode={flagMode} />
+          <DayFlags codes={codes} size={flagSize} {...VIDEO_IMAGE} />
         </div>
       )}
     </div>
@@ -85,7 +82,6 @@ type YearCalendarProps = {
   revealAt: (dayKey: string) => number | undefined
   monthOpacity: (month: number) => number
   weekStartsOn: number
-  flagMode: FlagDisplayMode
 }
 
 export function YearCalendar({
@@ -97,7 +93,6 @@ export function YearCalendar({
   revealAt,
   monthOpacity,
   weekStartsOn,
-  flagMode,
 }: YearCalendarProps) {
   const months = useMemo(
     () =>
@@ -167,7 +162,6 @@ export function YearCalendar({
                       since={sinceFor(key)}
                       size={cell}
                       color={palette.text}
-                      flagMode={flagMode}
                     />
                   ) : (
                     <div key={d} style={{ width: cell, height: cell }} />

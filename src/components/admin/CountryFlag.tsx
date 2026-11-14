@@ -1,5 +1,5 @@
+import { Flag } from '@/components/Emoji'
 import { getCountryName } from '@/lib/admin/format'
-import { getFlagEmoji } from '@/lib/countries'
 import { cn } from '@/lib/utils'
 
 export default function CountryFlag({
@@ -11,13 +11,11 @@ export default function CountryFlag({
 }) {
   const name = getCountryName(code)
   return (
-    <span
-      role="img"
-      aria-label={name}
+    <Flag
+      code={code}
+      alt={name}
       title={name}
-      className={cn('shrink-0 cursor-default', className)}
-    >
-      {getFlagEmoji(code)}
-    </span>
+      className={cn('cursor-default', className)}
+    />
   )
 }

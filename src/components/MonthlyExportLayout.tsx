@@ -1,6 +1,5 @@
 import { getCountryCodesByDay, getMonthData } from '@/lib/calendar'
 import { MONTH_NAMES } from '@/lib/constants'
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import {
   fitRankNameSize,
   fitStatValueSize,
@@ -21,7 +20,7 @@ import {
   ExportStatTile,
   getCountryName,
 } from './export/ExportBlocks'
-import { ExportDayFlags } from './export/ExportFlag'
+import { DayFlags } from './Emoji'
 import ExportFrame from './export/ExportFrame'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -31,7 +30,6 @@ interface MonthlyExportLayoutProps {
   year: number
   month: number
   format: ExportFormat
-  flagDisplayMode: FlagDisplayMode
   weekStartsOn: number
 }
 
@@ -40,7 +38,6 @@ export default function MonthlyExportLayout({
   year,
   month,
   format,
-  flagDisplayMode,
   weekStartsOn,
 }: MonthlyExportLayoutProps) {
   const visits = calendarData.visits.filter(
@@ -120,10 +117,10 @@ export default function MonthlyExportLayout({
               >
                 {date &&
                   (codes ? (
-                    <ExportDayFlags
+                    <DayFlags
                       codes={codes}
                       size={layout.flagSize}
-                      mode={flagDisplayMode}
+                      resolution="large"
                     />
                   ) : (
                     <span
@@ -180,7 +177,6 @@ export default function MonthlyExportLayout({
                 days={item.days}
                 sizes={layout.rank}
                 nameSize={nameSize}
-                flagMode={flagDisplayMode}
               />
             ))}
           </div>

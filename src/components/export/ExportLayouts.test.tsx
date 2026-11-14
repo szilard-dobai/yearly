@@ -1,4 +1,3 @@
-import { getFlagEmoji } from '@/lib/countries'
 import {
   EXPORT_CANVAS,
   EXPORT_FORMATS,
@@ -32,7 +31,13 @@ const calendarData: CalendarData = {
   ],
 }
 
-const settings = { flagDisplayMode: 'emoji', weekStartsOn: 1 } as const
+const settings = { weekStartsOn: 1 } as const
+
+function flagImages(container: HTMLElement, code: string) {
+  return container.querySelectorAll<HTMLImageElement>(
+    `img[src^="/emoji/flags/large/${code.toLowerCase()}."]`
+  )
+}
 
 function layouts(format: ExportFormat): [string, ReactElement][] {
   return [
@@ -64,7 +69,6 @@ function layouts(format: ExportFormat): [string, ReactElement][] {
         calendarData={calendarData}
         year={2026}
         format={format}
-        flagDisplayMode="emoji"
       />,
     ],
   ]
@@ -93,7 +97,7 @@ describe.each(EXPORT_FORMATS)('%s exports', (format) => {
 
 describe('YearExportLayout', () => {
   it('shows every month and both flags on a two-country day', () => {
-    render(
+    const { container } = render(
       <YearExportLayout
         calendarData={calendarData}
         year={2026}
@@ -104,8 +108,8 @@ describe('YearExportLayout', () => {
 
     expect(screen.getByRole('heading', { name: '2026' })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(12)
-    expect(screen.getAllByText(getFlagEmoji('FR'))).toHaveLength(7)
-    expect(screen.getAllByText(getFlagEmoji('IT'))).toHaveLength(7)
+    expect(flagImages(container, 'FR')).toHaveLength(7)
+    expect(flagImages(container, 'IT')).toHaveLength(7)
   })
 })
 
@@ -157,7 +161,6 @@ describe('StatisticsExportLayout', () => {
         calendarData={calendarData}
         year={2026}
         format="feed"
-        flagDisplayMode="emoji"
       />
     )
 
@@ -166,5 +169,22 @@ describe('StatisticsExportLayout', () => {
     expect(screen.getByText('Australia')).toBeInTheDocument()
     expect(screen.getByText('5.')).toBeInTheDocument()
     expect(screen.queryByText('6.')).not.toBeInTheDocument()
+  })
+
+  it('draws the medals and flags from the large images', () => {
+    const { container } = render(
+      <StatisticsExportLayout
+        calendarData={calendarData}
+        year={2026}
+        format="story"
+      />
+    )
+
+    const medals = [
+      ...container.querySelectorAll<HTMLImageElement>('img[src*="-medal."]'),
+    ].map((image) => image.getAttribute('src')?.split('/')[2])
+    expect(medals).toEqual(['large', 'large', 'large'])
+    expect(flagImages(container, 'AU')).toHaveLength(1)
+    expect(screen.queryByText('🥇')).not.toBeInTheDocument()
   })
 })

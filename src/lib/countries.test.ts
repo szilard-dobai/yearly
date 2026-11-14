@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { getAllCountries, getCountryByCode, searchCountries } from './countries'
+import {
+  COUNTRY_LIST,
+  getAllCountries,
+  getCountryByCode,
+  searchCountries,
+} from './countries'
+import { getFlagImageSrc } from './emoji'
 
 describe('countries utilities', () => {
   describe('getAllCountries', () => {
@@ -98,6 +104,17 @@ describe('countries utilities', () => {
       const results = searchCountries('land')
       expect(results.length).toBeGreaterThan(0)
       expect(results.some((c) => c.name.includes('land'))).toBe(true)
+    })
+  })
+
+  describe('flag images', () => {
+    it('has a flag image for every country, so none are left out', () => {
+      const missing = COUNTRY_LIST.filter(
+        (country) => getFlagImageSrc(country.code) === null
+      )
+
+      expect(missing).toEqual([])
+      expect(getAllCountries()).toHaveLength(COUNTRY_LIST.length)
     })
   })
 })

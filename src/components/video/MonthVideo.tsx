@@ -1,6 +1,5 @@
 import { getMonthData } from '@/lib/calendar'
 import { MONTH_NAMES } from '@/lib/constants'
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import { toDayKey } from '@/lib/selection'
 import type { MonthVideoData, VideoTheme } from '@/lib/video'
 import { type ReactNode, useMemo } from 'react'
@@ -28,7 +27,6 @@ import { DayCell, SETTLED } from './YearCalendar'
 export type MonthVideoProps = {
   data: MonthVideoData
   theme: VideoTheme
-  flagMode: FlagDisplayMode
   weekStartsOn: number
 }
 
@@ -63,12 +61,7 @@ function fitSize(line: string, max: number, budget: number) {
   return Math.min(max, Math.floor(budget / line.length))
 }
 
-export function MonthVideo({
-  data,
-  theme,
-  flagMode,
-  weekStartsOn,
-}: MonthVideoProps) {
+export function MonthVideo({ data, theme, weekStartsOn }: MonthVideoProps) {
   const palette = PALETTES[theme]
   const frame = useCurrentFrame()
   const monthName = MONTH_NAMES[data.month]
@@ -244,7 +237,6 @@ export function MonthVideo({
                         since={sinceFor(key)}
                         size={CELL}
                         color={palette.text}
-                        flagMode={flagMode}
                       />
                     )}
                   </div>
@@ -325,7 +317,6 @@ export function MonthVideo({
               code={country.countryCode}
               days={country.days}
               palette={palette}
-              flagMode={flagMode}
               style={fadeUp(frame, list + i * 5, 18, 36)}
             />
           ))}

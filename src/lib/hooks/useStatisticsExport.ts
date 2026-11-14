@@ -26,12 +26,11 @@ export function useStatisticsExport({
   year,
 }: UseStatisticsExportOptions): UseStatisticsExportReturn {
   const layout = useCallback(
-    ({ format, flagDisplayMode }: ExportLayoutOptions) =>
+    ({ format }: ExportLayoutOptions) =>
       createElement(StatisticsExportLayout, {
         calendarData,
         year,
         format,
-        flagDisplayMode,
       }),
     [calendarData, year]
   )

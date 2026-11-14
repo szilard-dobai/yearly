@@ -1,6 +1,7 @@
 import { AnimatedSection } from '@/components/AnimatedSection'
 import { JsonLd } from '@/components/JsonLd'
-import { faqs } from '@/lib/faq'
+import { isAccountsEnabled } from '@/lib/auth/enabled'
+import { getFaqs } from '@/lib/faq'
 
 export function Faq() {
   return (
@@ -20,7 +21,7 @@ export function Faq() {
           animation="fadeInUpOnView"
           className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-gray-200 dark:border-white/8 divide-y divide-gray-200 dark:divide-white/8"
         >
-          {faqs.map((faq) => (
+          {getFaqs(isAccountsEnabled()).map((faq) => (
             <div key={faq.question} className="p-6 sm:p-8">
               <h3 className="mb-2 text-gray-900 dark:text-zinc-100 text-lg font-medium">
                 {faq.question}

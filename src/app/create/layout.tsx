@@ -1,5 +1,3 @@
-import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
-import { isAccountsEnabled } from '@/lib/auth/config'
 import type { Metadata, ResolvingMetadata } from 'next'
 
 export async function generateMetadata(
@@ -42,9 +40,5 @@ export default function CreateLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <AccountsEnabledProvider enabled={isAccountsEnabled()}>
-      {children}
-    </AccountsEnabledProvider>
-  )
+  return children
 }

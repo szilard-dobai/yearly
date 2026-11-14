@@ -1,5 +1,6 @@
 'use client'
 
+import AccountPromptCard from '@/components/account/AccountPromptCard'
 import AccountSyncStatus from '@/components/account/AccountSyncStatus'
 import FirstSyncDialog from '@/components/account/FirstSyncDialog'
 import { useAccountsEnabled } from '@/components/account/AccountsEnabledProvider'
@@ -40,6 +41,10 @@ import {
 } from '@/components/ui/select'
 import { getTrafficSource } from '@/lib/attribution/traffic-source'
 import { useCalendarSync } from '@/lib/calendar-sync/useCalendarSync'
+import {
+  ACCOUNT_PROMPT_MIN_DAYS,
+  useAccountPromptDismissed,
+} from '@/lib/hooks/useAccountPrompt'
 import { getCountryByCode } from '@/lib/countries'
 import type { FeedbackSource } from '@/lib/feedback/types'
 import { MONTH_NAMES, MONTH_NAMES_SHORT } from '@/lib/constants'
@@ -50,7 +55,7 @@ import {
 import { useImageExport } from '@/lib/hooks/useImageExport'
 import { useMonthlyExport } from '@/lib/hooks/useMonthlyExport'
 import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
-import type { DaySelection } from '@/lib/selection'
+import { type DaySelection, toDayKey } from '@/lib/selection'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
@@ -162,6 +167,8 @@ function Create() {
   }, [])
 
   const accountsEnabled = useAccountsEnabled()
+
+  const accountPromptDismissed = useAccountPromptDismissed()
   const calendarSync = useCalendarSync({
     enabled: accountsEnabled,
     calendarData,
@@ -322,6 +329,16 @@ function Create() {
     return visitYear === selectedYear
   }).length
 
+  const daysWithTrips = new Set(
+    calendarData.visits.map((visit) => toDayKey(visit.date))
+  ).size
+  const showAccountPrompt =
+    accountsEnabled &&
+    calendarSync.sessionChecked &&
+    !calendarSync.account &&
+    !accountPromptDismissed &&
+    daysWithTrips >= ACCOUNT_PROMPT_MIN_DAYS
+
   return (
     <>
       <Header>
@@ -477,8 +494,12 @@ function Create() {
                 </CardContent>
               </StandardCard>
 
-              {calendarData.visits.length > 0 && (
-                <FeedbackCard year={selectedYear} />
+              {showAccountPrompt ? (
+                <AccountPromptCard days={daysWithTrips} />
+              ) : (
+                calendarData.visits.length > 0 && (
+                  <FeedbackCard year={selectedYear} />
+                )
               )}
 
               <StandardCard>

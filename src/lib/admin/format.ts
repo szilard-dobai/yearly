@@ -133,6 +133,15 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   year_end_reminder_shown: 'Year-end reminder shown',
   year_end_reminder_calendar_add: 'Year-end reminder added to calendar',
   year_end_reminder_email_submit: 'Year-end reminder email added',
+  account_prompt_shown: 'Account prompt shown',
+  account_prompt_click: 'Account prompt clicked',
+  account_prompt_dismissed: 'Account prompt dismissed',
+  sign_in_code_sent: 'Sign-in code sent',
+  sign_in_google_click: 'Google sign-in started',
+  sign_in_completed: 'Signed in with a code',
+  account_calendar_linked: 'Device linked to an account',
+  sign_out: 'Signed out',
+  account_deleted: 'Account deleted',
 }
 
 export function getEventLabel(type: string): string {

@@ -1,15 +1,23 @@
-import { faqs } from '@/lib/faq'
+import { isAccountsEnabled } from '@/lib/auth/enabled'
+import { getFaqs } from '@/lib/faq'
 
 export const dynamic = 'force-static'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
 
+const NO_ACCOUNT_STORAGE =
+  "Yearly runs in the browser on phones and computers, with no account and nothing to install. Trips are saved in the browser's local storage on the user's device. Yearly never receives travel dates, and images are created in the browser. Usage analytics record which countries are added and how many days, without dates."
+
+const OPTIONAL_ACCOUNT_STORAGE =
+  "Yearly runs in the browser on phones and computers, with nothing to install. An account is optional. Without one, trips are saved in the browser's local storage on the user's device and Yearly never receives travel dates. With a free account, signed in by email code or Google, the calendar is also saved to the account and shows up on every device where the user signs in. Images are always created in the browser. Usage analytics record which countries are added and how many days, without dates."
+
 export function GET() {
+  const accountsEnabled = isAccountsEnabled()
   const body = `# Yearly
 
 > Yearly (yearly.world) is a free web app that turns the countries you visited into a travel calendar. You add each country and the dates you were there, flags fill those days on a 12-month calendar, and you download your travel year in review as an image to share.
 
-Yearly runs in the browser on phones and computers, with no account and nothing to install. Trips are saved in the browser's local storage on the user's device. Yearly never receives travel dates, and images are created in the browser. Usage analytics record which countries are added and how many days, without dates.
+${accountsEnabled ? OPTIONAL_ACCOUNT_STORAGE : NO_ACCOUNT_STORAGE}
 
 ## What you can make
 
@@ -25,7 +33,9 @@ Yearly runs in the browser on phones and computers, with no account and nothing 
 
 ## FAQ
 
-${faqs.map(({ question, answer }) => `### ${question}\n\n${answer}`).join('\n\n')}
+${getFaqs(accountsEnabled)
+  .map(({ question, answer }) => `### ${question}\n\n${answer}`)
+  .join('\n\n')}
 
 ## Pages
 

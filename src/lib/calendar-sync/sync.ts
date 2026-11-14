@@ -29,6 +29,11 @@ export class UnauthorizedError extends Error {}
 
 export type FirstSyncChoice = 'merge' | 'account'
 
+export interface SyncResult {
+  pending: boolean
+  firstSync: FirstSyncChoice | 'auto' | null
+}
+
 export interface FirstSyncRequest {
   summary: FirstSyncSummary
   resolve: (choice: FirstSyncChoice) => void
@@ -116,15 +121,16 @@ export async function runCalendarSync({
   writeLocal,
   chooseFirstSync,
   api = calendarApi,
-}: SyncOptions): Promise<{ pending: boolean }> {
+}: SyncOptions): Promise<SyncResult> {
   const state = loadSyncState()
   const mine = state?.userId === userId ? state : null
   const base = mine?.base ?? {}
   const local = readLocal()
+  let firstSync: SyncResult['firstSync'] = mine ? null : 'auto'
 
   let remote: RemoteCalendar
   if (mine && !refresh) {
-    if (sameCalendarDays(local, base)) return { pending: false }
+    if (sameCalendarDays(local, base)) return { pending: false, firstSync }
     const pushed = await api.push(local, mine.version)
     if (pushed.ok) {
       return finish(local, pushed.version)
@@ -135,8 +141,10 @@ export async function runCalendarSync({
     if (!mine && chooseFirstSync) {
       const summary = summarizeFirstSync(local, remote.days)
       if (summary.newDays > 0 && summary.accountDays > 0) {
-        const choice = await chooseFirstSync(summary)
-        if (choice === 'account') return finish(remote.days, remote.version)
+        firstSync = await chooseFirstSync(summary)
+        if (firstSync === 'account') {
+          return finish(remote.days, remote.version)
+        }
       }
     }
   }
@@ -161,6 +169,6 @@ export async function runCalendarSync({
       : mergeCalendarDays(local, current, saved)
     if (!sameCalendarDays(next, current)) writeLocal(next)
     saveSyncState({ userId, version, base: saved })
-    return { pending: !sameCalendarDays(next, saved) }
+    return { pending: !sameCalendarDays(next, saved), firstSync }
   }
 }

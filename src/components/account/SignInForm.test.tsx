@@ -20,6 +20,8 @@ vi.mock('@/lib/auth/client', () => ({
   },
 }))
 
+vi.mock('@/lib/tracking', () => ({ trackEvent: vi.fn() }))
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace, refresh }),
 }))

@@ -1,4 +1,5 @@
 import Header from '@/components/Header'
+import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 }
 
 const LAST_UPDATED = '7 November 2026'
+const ACCOUNTS_LAST_UPDATED = '14 November 2026'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -31,6 +33,8 @@ const linkClassName =
   'underline underline-offset-2 hover:text-gray-900 dark:hover:text-zinc-100'
 
 export default function PrivacyPage() {
+  const accounts = isAccountsEnabled()
+
   return (
     <>
       <Header />
@@ -41,24 +45,81 @@ export default function PrivacyPage() {
               Privacy
             </h1>
             <p className="text-sm text-gray-500 dark:text-zinc-500">
-              Last updated {LAST_UPDATED}
+              Last updated {accounts ? ACCOUNTS_LAST_UPDATED : LAST_UPDATED}
             </p>
             <p>
               Yearly is a small, independent project. This page explains what
               Yearly stores, what it sends to our servers, and how to get your
-              data deleted. There are no accounts and no ads, and we don&apos;t
-              sell your data.
+              data deleted.{' '}
+              {accounts
+                ? "Accounts are optional, there are no ads, and we don't sell your data."
+                : "There are no accounts and no ads, and we don't sell your data."}
             </p>
           </header>
 
           <Section title="Your trips">
-            <p>
-              The trips and settings you add are saved in your browser&apos;s
-              local storage, on your device. We never receive the dates of your
-              trips, and images you export are created in your browser rather
-              than uploaded to us.
-            </p>
+            {accounts ? (
+              <>
+                <p>
+                  If you don&apos;t sign in, the trips and settings you add are
+                  saved only in your browser&apos;s local storage, on your
+                  device. We never receive the dates of your trips.
+                </p>
+                <p>
+                  If you sign in, we also save your trips to your account: the
+                  countries and the days you were in each. That&apos;s how your
+                  calendar shows up on your other devices. Your settings stay on
+                  each device.
+                </p>
+                <p>
+                  Images you export are always created in your browser rather
+                  than uploaded to us.
+                </p>
+              </>
+            ) : (
+              <p>
+                The trips and settings you add are saved in your browser&apos;s
+                local storage, on your device. We never receive the dates of
+                your trips, and images you export are created in your browser
+                rather than uploaded to us.
+              </p>
+            )}
           </Section>
+
+          {accounts && (
+            <Section title="Your account">
+              <p>An account is optional. If you create one, we store:</p>
+              <List>
+                <li>your email address, which you sign in with</li>
+                <li>your saved trips, as described above</li>
+                <li>
+                  for each device you&apos;re signed in on, when you signed in,
+                  when that session ends and your browser&apos;s user agent. We
+                  don&apos;t store your IP address.
+                </li>
+                <li>
+                  if you sign in with Google, the name on your Google account,
+                  which we use only for the initials on your account icon, and a
+                  link between your Yearly account and your Google account. We
+                  don&apos;t keep your Google profile photo or any access to
+                  your Google account.
+                </li>
+              </List>
+              <p>
+                When you sign in by email, we send you a 6-digit code. We store
+                only a scrambled copy of it, and it expires after 10 minutes.
+              </p>
+              <p>
+                We use your email address to sign you in and to reply if you
+                write to us. We don&apos;t send newsletters or marketing to it.
+              </p>
+              <p>
+                You stay signed in on a device for up to 60 days, or until you
+                sign out. Signing out removes your trips from that device. They
+                stay saved in your account.
+              </p>
+            </Section>
+          )}
 
           <Section title="Usage events">
             <p>
@@ -114,6 +175,15 @@ export default function PrivacyPage() {
               We also use Vercel Web Analytics and Speed Insights to count page
               views and measure loading speed. They don&apos;t use cookies.
             </p>
+            {accounts && (
+              <p>
+                When you sign in, sign out or delete your account, the event
+                records that it happened and how, such as by email code or
+                Google. The first time a device syncs with your account, it
+                records whether you added that device&apos;s trips to your
+                account. These events never include your email address.
+              </p>
+            )}
           </Section>
 
           <Section title="Feedback">
@@ -197,6 +267,18 @@ export default function PrivacyPage() {
                 MongoDB stores usage events, feedback, the waitlist and year-end
                 reminders.
               </li>
+              {accounts && (
+                <>
+                  <li>
+                    Neon stores accounts and saved trips, on servers in
+                    Frankfurt, Germany.
+                  </li>
+                  <li>Resend sends sign-in codes, from servers in Ireland.</li>
+                  <li>
+                    Google handles sign-in if you choose Continue with Google.
+                  </li>
+                </>
+              )}
               <li>
                 Slack receives our notifications about feedback, waitlist
                 sign-ups and year-end reminders.
@@ -210,13 +292,29 @@ export default function PrivacyPage() {
               Yearly uses your browser&apos;s local storage for your trips,
               settings and the random ID, and to remember small things such as
               whether you&apos;ve seen a tip, answered a question or set a
-              year-end reminder. It doesn&apos;t set cookies for visitors. The
-              only cookie is the sign-in cookie for Yearly&apos;s admin pages.
+              year-end reminder.{' '}
+              {accounts
+                ? "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets a cookie only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
+                : "It doesn't set cookies for visitors. The only cookie is the sign-in cookie for Yearly's admin pages."}
             </p>
           </Section>
 
           <Section title="Deleting your data">
             <List>
+              {accounts && (
+                <li>
+                  To delete your account and the trips saved to it, use{' '}
+                  <span className="font-medium">Delete account</span> on your{' '}
+                  <Link href="/account" className={linkClassName}>
+                    account page
+                  </Link>
+                  . It takes effect right away, and copies in our database
+                  provider&apos;s backups are gone within 7 days. Trips on your
+                  device stay there until you clear them. Deleting your account
+                  doesn&apos;t remove your email from the video waitlist or the
+                  year-end reminder, so ask us if you&apos;d like that too.
+                </li>
+              )}
               <li>
                 To delete your trips and settings, clear your browser&apos;s
                 data for this site. You can also clear one year at a time with{' '}
@@ -225,7 +323,20 @@ export default function PrivacyPage() {
               </li>
               <li>
                 To remove your email from the waitlist or the year-end reminder,
-                or to ask about or delete anything else we hold, message{' '}
+                or to ask about or delete anything else we hold,{' '}
+                {accounts && (
+                  <>
+                    email{' '}
+                    <a
+                      href="mailto:hello@yearly.world"
+                      className={linkClassName}
+                    >
+                      hello@yearly.world
+                    </a>
+                    ,{' '}
+                  </>
+                )}
+                message{' '}
                 <a
                   href="https://www.instagram.com/yearly.world"
                   target="_blank"

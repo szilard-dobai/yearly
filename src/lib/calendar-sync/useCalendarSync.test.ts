@@ -9,6 +9,9 @@ const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }))
 
 vi.mock('@/lib/auth/client', () => ({ authClient: { getSession } }))
 
+const { trackEvent } = vi.hoisted(() => ({ trackEvent: vi.fn() }))
+vi.mock('@/lib/tracking', () => ({ trackEvent }))
+
 const D1 = '2026-03-10'
 const D2 = '2026-03-11'
 
@@ -75,7 +78,7 @@ describe('useCalendarSync', () => {
     getSession.mockResolvedValue({ data: null })
     const { result } = renderSync(calendar([D1, 'FR']))
 
-    await waitFor(() => expect(getSession).toHaveBeenCalled())
+    await waitFor(() => expect(result.current.sessionChecked).toBe(true))
     expect(fetchMock).not.toHaveBeenCalled()
     expect(result.current.account).toBeNull()
   })
@@ -89,6 +92,10 @@ describe('useCalendarSync', () => {
       email: 'ana@example.com',
     })
     expect(server).toEqual({ days: { [D1]: ['FR'] }, version: 1 })
+    expect(trackEvent).toHaveBeenCalledWith('account_calendar_linked', {
+      choice: 'auto',
+      source: 'create',
+    })
   })
 
   it('brings the account’s trips onto an empty device', async () => {

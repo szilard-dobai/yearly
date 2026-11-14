@@ -9,10 +9,9 @@ import { createRateLimitStorage } from './rate-limit'
 
 export const SIGN_IN_CODE_RATE_LIMIT = { window: 10 * 60, max: 5 }
 export const SIGN_IN_CODE_ATTEMPTS = 3
+export const SESSION_DAYS = 60
 
-export function isAccountsEnabled() {
-  return process.env.ACCOUNTS_ENABLED === 'true'
-}
+export { isAccountsEnabled } from './enabled'
 
 function getSiteHost() {
   try {
@@ -55,10 +54,43 @@ export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
     baseURL: { allowedHosts: getAllowedHosts() },
     database: drizzleAdapter(db, { provider: 'pg', schema }),
     socialProviders: google
-      ? { google: { ...google, prompt: 'select_account' } }
+      ? {
+          google: {
+            ...google,
+            prompt: 'select_account',
+            mapProfileToUser: () => ({ image: undefined }),
+          },
+        }
       : undefined,
+    session: {
+      expiresIn: SESSION_DAYS * 24 * 60 * 60,
+      updateAge: 24 * 60 * 60,
+    },
+    user: { deleteUser: { enabled: true } },
     rateLimit: { customStorage: createRateLimitStorage(db) },
     databaseHooks: {
+      account: {
+        create: {
+          before: async (account) => ({
+            data: {
+              ...account,
+              accessToken: null,
+              refreshToken: null,
+              idToken: null,
+            },
+          }),
+        },
+        update: {
+          before: async (account) => ({
+            data: {
+              ...account,
+              accessToken: null,
+              refreshToken: null,
+              idToken: null,
+            },
+          }),
+        },
+      },
       session: {
         create: {
           before: async (session) => ({

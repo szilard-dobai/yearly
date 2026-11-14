@@ -18,6 +18,12 @@ vi.mock('@/components/account/AccountCalendar', () => ({
   default: () => null,
 }))
 
+vi.mock('@/components/account/DeleteAccount', () => ({
+  default: () => null,
+}))
+
+vi.mock('@/lib/tracking', () => ({ trackEvent: vi.fn() }))
+
 vi.mock('next/headers', () => ({
   headers: async () => new Headers({ 'user-agent': userAgent.value }),
 }))
@@ -112,6 +118,18 @@ describe('account pages', () => {
       expect(
         screen.queryByRole('button', { name: 'Continue with Google' })
       ).not.toBeInTheDocument()
+    })
+
+    it('lets people carry on without an account', async () => {
+      render(await signInPage({ next: '/create' }))
+
+      expect(
+        screen.getByRole('link', { name: 'Continue without an account' })
+      ).toHaveAttribute('href', '/create')
+      expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute(
+        'href',
+        '/terms'
+      )
     })
 
     it('explains a failed Google sign-in', async () => {

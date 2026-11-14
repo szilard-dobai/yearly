@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 13 November 2026
-- **Updated:** 14 November 2026, with sign-in, pages and flows
+- **Updated:** 14 November 2026, with sign-in, pages, flows, entry points and the launch checklist
 - **Owner:** Szilard
 
 ## Context
@@ -41,15 +41,15 @@ We chose codes over emailed links. Trips live only in the browser that made them
 
 ## Pages and access
 
-| URL                        | What it is                                                    | Signed out                           | Signed in                                           | Google  |
-| -------------------------- | ------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- | ------- |
-| `/`                        | Homepage                                                      | Open                                 | Open                                                | Index   |
-| `/create`                  | The app. Never asks for an account                            | Open                                 | Open                                                | Index   |
-| `/videos` (to build)       | What the animated video is, examples and price                | Open                                 | Open                                                | Index   |
-| `/privacy`, `/terms` (new) | Policies; the terms include refunds                           | Open                                 | Open                                                | Index   |
-| `/sign-in`                 | Email code or Google. `?next=/path` returns you afterwards    | Form                                 | Redirect to `next`, or `/account`                   | Noindex |
-| `/account`                 | Your videos (download again), email, sign out, delete account | Redirect to `/sign-in?next=/account` | Open                                                | Noindex |
-| `/admin/*`                 | Analytics and feedback                                        | Password for now                     | 404 for everyone but the owner, once on Better Auth | Noindex |
+| URL                  | What it is                                                                                    | Signed out                           | Signed in                                           | Google  |
+| -------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- | ------- |
+| `/`                  | Homepage                                                                                      | Open                                 | Open                                                | Index   |
+| `/create`            | The app. Never asks for an account                                                            | Open                                 | Open                                                | Index   |
+| `/videos` (to build) | What the animated video is, examples and price                                                | Open                                 | Open                                                | Index   |
+| `/privacy`, `/terms` | Policies. `/terms` returns 404 until accounts are on; refunds are added before the first sale | Open                                 | Open                                                | Index   |
+| `/sign-in`           | Email code or Google. `?next=/path` returns you afterwards                                    | Form                                 | Redirect to `next`, or `/account`                   | Noindex |
+| `/account`           | Your videos (download again), email, sign out, delete account                                 | Redirect to `/sign-in?next=/account` | Open                                                | Noindex |
+| `/admin/*`           | Analytics and feedback                                                                        | Password for now                     | 404 for everyone but the owner, once on Better Auth | Noindex |
 
 Rules:
 
@@ -59,14 +59,31 @@ Rules:
 - **Payment providers check for public pricing, terms and a refund policy before approving us**, so `/videos` and `/terms` come before checkout.
 - **A page per video can wait.** Downloads are listed on `/account`. If one is added later, it lives at `/account/videos/[id]` and returns 404 to anyone but the owner.
 
-## Flows
+## Entry points and copy
 
-1. **Make a calendar:** unchanged. Most people never see sign-in.
-2. **Create an account:** from the header's "Sign in" link (after launch) or `/sign-in`, by email code or Google. Later, this saves the calendars to the account.
-3. **Buy a video:** in the export dialog, "Get the video", then sign in inside the dialog, then pay in the provider's overlay without leaving the page, then the video renders and downloads. The receipt email links to `/account`.
-4. **Claim the free first video:** the launch email links to `/create`. In the same dialog, people sign in with the waitlist email, and the payment step is skipped.
-5. **Download again:** from the receipt email or the header's "Your videos" link, to `/account`.
-6. **Delete account:** from `/account`. Required by UK GDPR from the day accounts are visible.
+- **Header:** "Sign in" for signed-out visitors (returns them to the page they were on), and a round avatar with initials once signed in, linking to `/account`. Initials come from the name, which Google provides and email sign-ups don't have, falling back to the first letter of the email. We don't use the Google profile photo: email users would have none, it would load from Google on every page, and people would then want to upload their own. Google's photo and access tokens aren't stored.
+- **Prompt on `/create`:** once a calendar has trips on 3 days, a signed-out visitor sees "Your trips are only in this browser" with **Save my calendar** and **Not now**. It replaces the feedback card while showing, so the sidebar never shows two prompts. "Not now" hides it for 30 days.
+- **Sign-in page:** says what an account is for, that signing in creates one, and links **Continue without an account**.
+- **FAQ, `llms.txt` and the privacy page** switch to account-aware answers when `ACCOUNTS_ENABLED` is on, and stay as they are when it's off.
+- **Copy:** written with the `copywriting` and `cro` skills against `.agents/product-marketing.md` (v2). Every account prompt says Yearly works without an account.
+- **Sessions** last 60 days, refreshed daily while in use. Deleting an account needs a session under a day old; otherwise people are asked to sign in again.
+
+## Launch checklist
+
+Before setting `ACCOUNTS_ENABLED=true` in Production:
+
+1. Set `RESEND_API_KEY` and `EMAIL_FROM` in Production.
+2. Change the "Last updated" dates on `/privacy` (`ACCOUNTS_LAST_UPDATED`) and `/terms` to the launch date.
+3. Redeploy, then check sign-in by code and Google on yearly.world.
+
+Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to the owner, and the owner confirmed the 30-day notice promise in the Terms.
+
+6. **Make a calendar:** unchanged. Most people never see sign-in.
+7. **Create an account:** from the header's "Sign in" link (after launch) or `/sign-in`, by email code or Google. Later, this saves the calendars to the account.
+8. **Buy a video:** in the export dialog, "Get the video", then sign in inside the dialog, then pay in the provider's overlay without leaving the page, then the video renders and downloads. The receipt email links to `/account`.
+9. **Claim the free first video:** the launch email links to `/create`. In the same dialog, people sign in with the waitlist email, and the payment step is skipped.
+10. **Download again:** from the receipt email or the header's "Your videos" link, to `/account`.
+11. **Delete account:** from `/account`. Required by UK GDPR from the day accounts are visible.
 
 ## Calendar sync
 

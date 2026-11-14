@@ -3,6 +3,8 @@ import { JsonLd } from '@/components/JsonLd'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
+import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { Metadata } from 'next'
 import { Geist, Newsreader, Roboto } from 'next/font/google'
 import './globals.css'
@@ -92,8 +94,10 @@ export default function RootLayout({
         >
           <Analytics />
           <SpeedInsights />
-          <div className="flex-1">{children}</div>
-          <Footer />
+          <AccountsEnabledProvider enabled={isAccountsEnabled()}>
+            <div className="flex-1">{children}</div>
+            <Footer />
+          </AccountsEnabledProvider>
         </body>
       </SettingsProvider>
     </html>

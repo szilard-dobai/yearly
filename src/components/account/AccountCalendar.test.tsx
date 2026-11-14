@@ -9,6 +9,7 @@ const { runCalendarSync, loadCalendarData } = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/calendar-sync/sync', () => ({ runCalendarSync }))
+vi.mock('@/lib/tracking', () => ({ trackEvent: vi.fn() }))
 vi.mock('@/lib/storage', () => ({
   loadCalendarData,
   saveCalendarData: vi.fn(),
@@ -21,7 +22,7 @@ describe('AccountCalendar', () => {
   })
 
   it('syncs this device with the account', async () => {
-    runCalendarSync.mockResolvedValue({ pending: false })
+    runCalendarSync.mockResolvedValue({ pending: false, firstSync: null })
     render(<AccountCalendar userId="ana" />)
 
     expect(screen.getByText('Checking your saved trips…')).toBeInTheDocument()
@@ -32,7 +33,7 @@ describe('AccountCalendar', () => {
   })
 
   it('says how many days of trips are saved', async () => {
-    runCalendarSync.mockResolvedValue({ pending: false })
+    runCalendarSync.mockResolvedValue({ pending: false, firstSync: null })
     loadCalendarData.mockReturnValue({
       visits: [
         { id: '1', countryCode: 'FR', date: new Date(2026, 2, 10) },
@@ -48,7 +49,7 @@ describe('AccountCalendar', () => {
   })
 
   it('uses the singular for one day', async () => {
-    runCalendarSync.mockResolvedValue({ pending: false })
+    runCalendarSync.mockResolvedValue({ pending: false, firstSync: null })
     loadCalendarData.mockReturnValue({
       visits: [{ id: '1', countryCode: 'FR', date: new Date(2026, 2, 10) }],
     })
@@ -66,7 +67,7 @@ describe('AccountCalendar', () => {
         accountDays: 5,
         crowdedDays: 0,
       })
-      return { pending: false, choice }
+      return { pending: false, firstSync: choice }
     })
     render(<AccountCalendar userId="ana" />)
 
@@ -77,7 +78,7 @@ describe('AccountCalendar', () => {
     await screen.findByText(/saved to your account/)
     expect(await runCalendarSync.mock.results[0].value).toEqual({
       pending: false,
-      choice: 'merge',
+      firstSync: 'merge',
     })
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })

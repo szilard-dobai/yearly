@@ -1,4 +1,5 @@
-import { faqs } from '@/lib/faq'
+import { isAccountsEnabled } from '@/lib/auth/enabled'
+import { getFaqs } from '@/lib/faq'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
 
@@ -33,19 +34,21 @@ const websiteSchema = {
   ],
 }
 
-const faqSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  '@id': `${siteUrl}/#faq`,
-  mainEntity: faqs.map(({ question, answer }) => ({
-    '@type': 'Question',
-    name: question,
-    acceptedAnswer: { '@type': 'Answer', text: answer },
-  })),
+function faqSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${siteUrl}/#faq`,
+    mainEntity: getFaqs(isAccountsEnabled()).map(({ question, answer }) => ({
+      '@type': 'Question',
+      name: question,
+      acceptedAnswer: { '@type': 'Answer', text: answer },
+    })),
+  }
 }
 
 export function JsonLd({ type }: JsonLdProps) {
-  const schema = type === 'website' ? websiteSchema : faqSchema
+  const schema = type === 'website' ? websiteSchema : faqSchema()
 
   return (
     <script

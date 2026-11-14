@@ -12,6 +12,7 @@ import {
   vi,
 } from 'vitest'
 import {
+  SESSION_DAYS,
   SIGN_IN_CODE_ATTEMPTS,
   createAuth,
   getAllowedHosts,
@@ -101,6 +102,10 @@ describe('createAuth', () => {
     })
     expect(signedIn?.user.email).toBe('ana@example.com')
     expect(signedIn?.user.emailVerified).toBe(true)
+    const daysLeft =
+      (new Date(signedIn!.session.expiresAt).getTime() - Date.now()) /
+      (24 * 60 * 60 * 1000)
+    expect(daysLeft).toBeGreaterThan(SESSION_DAYS - 1)
   })
 
   it('refuses a wrong code', async () => {

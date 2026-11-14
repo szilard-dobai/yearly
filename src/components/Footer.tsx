@@ -1,3 +1,4 @@
+import { isAccountsEnabled } from '@/lib/auth/enabled'
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
 
@@ -20,6 +21,17 @@ export default function Footer() {
           >
             Privacy
           </Link>
+          {isAccountsEnabled() && (
+            <>
+              {' · '}
+              <Link
+                href="/terms"
+                className="hover:opacity-80 transition-opacity underline"
+              >
+                Terms
+              </Link>
+            </>
+          )}
         </p>
 
         <ThemeToggle />

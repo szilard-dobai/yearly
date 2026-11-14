@@ -1,5 +1,6 @@
 import AccountCalendar from '@/components/account/AccountCalendar'
 import AccountDetails from '@/components/account/AccountDetails'
+import DeleteAccount from '@/components/account/DeleteAccount'
 import Header from '@/components/Header'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StandardCard } from '@/components/ui/card-variants'
@@ -31,7 +32,7 @@ export default async function AccountPage() {
           <StandardCard>
             <CardHeader>
               <CardTitle className="text-base font-medium">
-                Your trips
+                Your calendar
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -46,7 +47,22 @@ export default async function AccountPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <AccountDetails email={session.user.email} />
+              <AccountDetails
+                userId={session.user.id}
+                name={session.user.name}
+                email={session.user.email}
+              />
+            </CardContent>
+          </StandardCard>
+
+          <StandardCard>
+            <CardHeader>
+              <CardTitle className="text-base font-medium">
+                Delete account
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DeleteAccount />
             </CardContent>
           </StandardCard>
         </div>

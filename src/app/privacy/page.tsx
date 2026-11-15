@@ -166,12 +166,12 @@ export default function PrivacyPage() {
             <p>
               When you add or remove a trip, the event includes the country and
               how many days, but not the dates. When you export or download an
-              image, or export a JSON backup, it includes the countries you
-              logged that year, how many days you logged in each and how many
-              separate trips that makes, so we can see which countries are most
-              popular and how long people travel for. It never includes dates.
-              We may publish totals across all Yearly users, such as the most
-              visited countries. These totals never identify anyone.
+              image, the event includes the countries you logged that year, how
+              many days you logged in each and how many separate trips that
+              makes, so we can see which countries are most popular and how long
+              people travel for. It never includes dates. We may publish totals
+              across all Yearly users, such as the most visited countries. These
+              totals never identify anyone.
             </p>
             <p>
               When you open a page, the event also records how you found Yearly:

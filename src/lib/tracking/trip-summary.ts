@@ -14,7 +14,6 @@ export type TripSummary = {
 export const TRIP_SUMMARY_EVENTS = [
   'image_export_click',
   'image_download_click',
-  'json_export',
 ] as const
 
 type DayVisit = { countryCode: string; day: string }

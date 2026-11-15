@@ -101,38 +101,6 @@ export function clearCalendarData(): void {
 }
 
 /**
- * Export calendar data as JSON string
- * @param data - Calendar data to export
- * @returns JSON string
- */
-export function exportToJSON(data: CalendarData): string {
-  const serialized = serializeCalendarData(data)
-  return JSON.stringify(serialized, null, 2)
-}
-
-/**
- * Import calendar data from JSON string
- * @param json - JSON string to parse
- * @returns Calendar data or null if invalid
- */
-export function importFromJSON(json: string): CalendarData | null {
-  try {
-    const parsed: unknown = JSON.parse(json)
-    const result = serializedCalendarDataSchema.safeParse(parsed)
-
-    if (!result.success) {
-      console.error('Invalid calendar data:', result.error.issues)
-      return null
-    }
-
-    return deserializeCalendarData(result.data)
-  } catch (error) {
-    console.error('Failed to import calendar data:', error)
-    return null
-  }
-}
-
-/**
  * Check if local storage is available
  * @returns True if local storage is available
  */

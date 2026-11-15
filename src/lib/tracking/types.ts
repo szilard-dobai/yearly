@@ -22,10 +22,7 @@ export const TRACKING_EVENT_TYPES = [
   'image_download_click',
   'statistics_export_click',
   'monthly_export_click',
-  'developer_mode_toggle',
   'mobile_fab_click',
-  'json_import',
-  'json_export',
   'feedback_prompt_shown',
   'feedback_prompt_dismissed',
   'feedback_dialog_open',
@@ -106,20 +103,6 @@ export type ImageExportClickMetadata = TripSummary
 
 export type ImageDownloadClickMetadata = TripSummary & {
   exportType: ExportType
-}
-
-export interface DeveloperModeToggleMetadata {
-  opened: boolean
-}
-
-export interface JsonImportMetadata {
-  strategy: 'merge' | 'replace'
-  importedVisitCount: number
-  success: boolean
-}
-
-export type JsonExportMetadata = TripSummary & {
-  success: boolean
 }
 
 export interface MonthlyExportClickMetadata {

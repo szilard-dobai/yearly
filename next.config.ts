@@ -8,6 +8,7 @@ const IMMUTABLE = [
 const PLAIN_TEXT = [{ key: 'Content-Type', value: 'text/plain; charset=utf-8' }]
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['@polar-sh/sdk'],
   async headers() {
     return [
       { source: '/emoji/flags/:path*', headers: IMMUTABLE },

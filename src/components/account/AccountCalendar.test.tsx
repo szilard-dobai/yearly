@@ -2,6 +2,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AccountCalendar from './AccountCalendar'
+import {
+  AccountCalendarStatusProvider,
+  useAccountCalendarStatus,
+} from './AccountCalendarStatus'
 
 const { runCalendarSync, loadCalendarData } = vi.hoisted(() => ({
   runCalendarSync: vi.fn(),
@@ -81,6 +85,23 @@ describe('AccountCalendar', () => {
       firstSync: 'merge',
     })
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+
+  it('tells the videos section once the calendar is saved', async () => {
+    runCalendarSync.mockResolvedValue({ pending: false, firstSync: null })
+    function Status() {
+      return <p data-testid="status">{useAccountCalendarStatus()}</p>
+    }
+    render(
+      <AccountCalendarStatusProvider>
+        <AccountCalendar userId="ana" />
+        <Status />
+      </AccountCalendarStatusProvider>
+    )
+
+    expect(screen.getByTestId('status')).toHaveTextContent('loading')
+    await screen.findByText(/saved to your account/)
+    expect(screen.getByTestId('status')).toHaveTextContent('saved')
   })
 
   it('explains when the account can’t be reached', async () => {

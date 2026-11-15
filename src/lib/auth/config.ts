@@ -43,10 +43,16 @@ export function getGoogleCredentials() {
 interface CreateAuthOptions {
   db: Database
   sendSignInCode: (email: string, code: string) => Promise<void>
+  beforeDeleteUser?: (userId: string) => Promise<void>
   secret?: string
 }
 
-export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
+export function createAuth({
+  db,
+  sendSignInCode,
+  beforeDeleteUser,
+  secret,
+}: CreateAuthOptions) {
   const google = getGoogleCredentials()
 
   return betterAuth({
@@ -68,7 +74,14 @@ export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
       updateAge: 24 * 60 * 60,
       cookieCache: { enabled: true, maxAge: SESSION_CACHE_MINUTES * 60 },
     },
-    user: { deleteUser: { enabled: true } },
+    user: {
+      deleteUser: {
+        enabled: true,
+        beforeDelete: beforeDeleteUser
+          ? (user) => beforeDeleteUser(user.id)
+          : undefined,
+      },
+    },
     rateLimit: {
       customStorage: createRateLimitStorage(db),
       customRules: { '/get-session': false },

@@ -7,7 +7,10 @@ import {
   tracesSampleRate,
 } from '@/lib/sentry'
 import { isTrackingOptedOut } from '@/lib/tracking/opt-out'
+import { stripCheckoutToken } from '@/lib/videos/checkout-return'
 import * as Sentry from '@sentry/nextjs'
+
+stripCheckoutToken()
 
 Sentry.init({
   dsn: SENTRY_DSN,

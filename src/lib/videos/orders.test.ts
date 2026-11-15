@@ -28,6 +28,10 @@ const DAYS = {
 }
 const DATA = { days: DAYS, weekStartsOn: 1 }
 
+function withTrip(day: string) {
+  return { days: { ...DAYS, [day]: ['AT'] }, weekStartsOn: 1 }
+}
+
 function file(name: string) {
   return {
     kind: 'year' as const,
@@ -204,7 +208,7 @@ describe('video orders', () => {
       const update = await createUpdate(db, {
         userId: 'ana',
         orderId: order.id,
-        data: DATA,
+        data: withTrip('2026-12-24'),
       })
       if (!update.ok) throw new Error(update.reason)
 
@@ -254,6 +258,56 @@ describe('video orders', () => {
       expect(result).toEqual({ ok: false, reason: 'too-different' })
     })
 
+    it("refuses an update that changes nothing, so it doesn't use one up", async () => {
+      const { order, render } = await paidOrder()
+      await markRenderReady(db, render.id, [])
+
+      expect(
+        await createUpdate(db, {
+          userId: 'ana',
+          orderId: order.id,
+          data: { days: { ...DAYS }, weekStartsOn: 1 },
+        })
+      ).toEqual({ ok: false, reason: 'unchanged' })
+      expect(
+        await createUpdate(db, {
+          userId: 'ana',
+          orderId: order.id,
+          data: { days: DAYS, weekStartsOn: 0 },
+        })
+      ).toMatchObject({ ok: true, render: { version: 1 } })
+    })
+
+    it("retries a failed update in its place, so it doesn't use one up", async () => {
+      const { order, render } = await paidOrder()
+      await markRenderReady(db, render.id, [])
+      const failed = await createUpdate(db, {
+        userId: 'ana',
+        orderId: order.id,
+        data: withTrip('2026-12-24'),
+      })
+      if (!failed.ok) throw new Error(failed.reason)
+      await markRenderFailed(db, failed.render.id, 'Sandbox down')
+
+      const retry = await createUpdate(db, {
+        userId: 'ana',
+        orderId: order.id,
+        data: withTrip('2026-12-25'),
+      })
+
+      expect(retry).toMatchObject({
+        ok: true,
+        render: {
+          id: failed.render.id,
+          version: 1,
+          status: 'queued',
+          error: null,
+        },
+      })
+      if (!retry.ok) throw new Error(retry.reason)
+      expect(Object.keys(retry.render.data.days)).toContain('2026-12-25')
+    })
+
     it('allows 3 updates', async () => {
       const { order, render } = await paidOrder()
       await markRenderReady(db, render.id, [])
@@ -262,14 +316,18 @@ describe('video orders', () => {
         const result = await createUpdate(db, {
           userId: 'ana',
           orderId: order.id,
-          data: DATA,
+          data: withTrip(`2026-12-2${i}`),
         })
         if (!result.ok) throw new Error(result.reason)
         await markRenderReady(db, result.render.id, [])
       }
 
       expect(
-        await createUpdate(db, { userId: 'ana', orderId: order.id, data: DATA })
+        await createUpdate(db, {
+          userId: 'ana',
+          orderId: order.id,
+          data: withTrip('2026-12-29'),
+        })
       ).toEqual({
         ok: false,
         reason: 'no-updates-left',

@@ -1,4 +1,5 @@
 import { getVercelOidcToken } from '@vercel/functions/oidc'
+import type { VideoFile } from '@/lib/db/schema'
 import { del, issueSignedToken, presignUrl, put } from '@vercel/blob'
 
 const DOWNLOAD_LINK_MINUTES = 10
@@ -14,7 +15,7 @@ export function blobEnvironment(): string {
   return process.env.VERCEL_ENV ?? 'development'
 }
 
-export async function uploadVideo(
+export async function uploadFile(
   pathname: string,
   file: Buffer,
   contentType: string
@@ -46,7 +47,14 @@ export async function getVideoDownloadUrl(pathname: string): Promise<string> {
   return presignedUrl
 }
 
-export async function deleteVideoFiles(pathnames: string[]) {
+export function filePathnames(files: VideoFile[]): string[] {
+  return files.flatMap((file) =>
+    file.posterPathname ? [file.pathname, file.posterPathname] : [file.pathname]
+  )
+}
+
+export async function deleteVideoFiles(files: VideoFile[]) {
+  const pathnames = filePathnames(files)
   if (pathnames.length === 0) return
   await del(pathnames, await storeOptions())
 }

@@ -128,7 +128,7 @@ describe('POST /api/webhooks/polar', () => {
 
     expect((await post()).status).toBe(202)
     expect(markOrderRefunded).toHaveBeenCalledWith({}, 'polar-order-1')
-    expect(deleteVideoFiles).toHaveBeenCalledWith(['a.mp4'])
+    expect(deleteVideoFiles).toHaveBeenCalledWith([{ pathname: 'a.mp4' }])
   })
 
   it('keeps the videos after a partial refund', async () => {

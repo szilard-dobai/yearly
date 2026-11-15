@@ -1,3 +1,4 @@
+import { sameCalendarDays } from '@/lib/calendar-sync/days'
 import type { Database } from '@/lib/db'
 import {
   user,
@@ -265,6 +266,7 @@ export type UpdateResult =
         | 'not-found'
         | 'not-paid'
         | 'busy'
+        | 'unchanged'
         | 'no-updates-left'
         | 'too-different'
     }
@@ -295,18 +297,39 @@ export async function createUpdate(
     if (renders.some((render) => ACTIVE_RENDER.has(render.status))) {
       return { ok: false, reason: 'busy' }
     }
-    const latest = renders.at(-1)
-    const version = (latest?.version ?? 0) + 1
-    if (version > MAX_UPDATES) return { ok: false, reason: 'no-updates-left' }
-
     const data: VideoRenderData = {
       days: daysInPeriod(input.data.days, periodOf(order)),
       weekStartsOn: input.data.weekStartsOn,
+    }
+    const ready = renders.findLast((render) => render.status === 'ready')
+    if (ready && sameRenderData(ready.data, data)) {
+      return { ok: false, reason: 'unchanged' }
     }
     const first = renders.find((render) => render.version === 0)
     if (first && !keepsEnoughDays(first.data.days, data.days)) {
       return { ok: false, reason: 'too-different' }
     }
+
+    const latest = renders.at(-1)
+    if (latest?.status === 'failed') {
+      const [render] = await tx
+        .update(videoRenders)
+        .set({
+          data,
+          status: 'queued',
+          workflowRunId: null,
+          files: null,
+          error: null,
+          startedAt: null,
+          finishedAt: null,
+        })
+        .where(eq(videoRenders.id, latest.id))
+        .returning()
+      return { ok: true, render, order }
+    }
+
+    const version = (latest?.version ?? 0) + 1
+    if (version > MAX_UPDATES) return { ok: false, reason: 'no-updates-left' }
 
     const [render] = await tx
       .insert(videoRenders)
@@ -320,6 +343,10 @@ export async function createUpdate(
       .returning()
     return { ok: true, render, order }
   })
+}
+
+function sameRenderData(a: VideoRenderData, b: VideoRenderData): boolean {
+  return a.weekStartsOn === b.weekStartsOn && sameCalendarDays(a.days, b.days)
 }
 
 export function updatesUsed(renders: Pick<VideoRender, 'version'>[]): number {

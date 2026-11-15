@@ -13,6 +13,7 @@ const REFUSALS = {
   'not-found': 404,
   'not-paid': 409,
   busy: 409,
+  unchanged: 409,
   'no-updates-left': 409,
   'too-different': 422,
 } as const

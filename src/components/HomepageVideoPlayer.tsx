@@ -6,7 +6,7 @@ import {
   type MonthVideoProps,
 } from '@/components/video/MonthVideo'
 import { STATS_DURATION, StatsVideo } from '@/components/video/StatsVideo'
-import { END_CARD_LENGTH } from '@/components/video/timeline'
+import { stillFrame } from '@/components/video/still-frame'
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
 import { usePrefetchVideoImages } from '@/components/video/usePrefetchVideoImages'
 import {
@@ -36,9 +36,9 @@ const yearTiming = yearFillTimeline(yearData.days.length)
 const monthTiming = monthTimeline(monthData.days.length)
 
 const STILL_FRAME: Record<VideoKind, number> = {
-  year: yearTiming.fillEnd + 30,
-  stats: STATS_DURATION - END_CARD_LENGTH - 10,
-  month: monthTiming.endCard - 10,
+  year: stillFrame('year', yearData.days.length),
+  stats: stillFrame('stats', yearData.days.length),
+  month: stillFrame('month', monthData.days.length),
 }
 
 export default function HomepageVideoPlayer({

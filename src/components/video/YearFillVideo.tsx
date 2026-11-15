@@ -12,12 +12,7 @@ import {
   SANS,
   smooth,
 } from './tokens'
-import {
-  END_CARD_LENGTH,
-  FILL_START,
-  fillLength,
-  revealFrames,
-} from './timeline'
+import { FILL_START, revealFrames, yearFillTimeline } from './timeline'
 import { YearCalendar } from './YearCalendar'
 
 export type VideoProps = {
@@ -26,11 +21,7 @@ export type VideoProps = {
   weekStartsOn: number
 }
 
-export function yearFillTimeline(dayCount: number) {
-  const fillEnd = FILL_START + fillLength(dayCount, 30, 180)
-  const endCard = fillEnd + 84
-  return { fillEnd, endCard, duration: endCard + END_CARD_LENGTH }
-}
+export { yearFillTimeline }
 
 export function YearFillVideo({ data, theme, weekStartsOn }: VideoProps) {
   const palette = PALETTES[theme]

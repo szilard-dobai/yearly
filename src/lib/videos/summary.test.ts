@@ -21,7 +21,15 @@ function render(version: number, status: VideoRender['status'], name?: string) {
     version,
     status,
     files: name
-      ? [{ kind: 'month', theme: 'dark', pathname: name, bytes: 10 }]
+      ? [
+          {
+            kind: 'month',
+            theme: 'dark',
+            pathname: name,
+            bytes: 10,
+            posterPathname: name.replace('.mp4', '.jpg'),
+          },
+        ]
       : null,
   } as VideoRender
 }
@@ -48,6 +56,7 @@ describe('summarizeOrder', () => {
           theme: 'dark',
           bytes: 10,
           url: 'https://signed.example/v1.mp4',
+          posterUrl: 'https://signed.example/v1.jpg',
         },
       ],
       createdAt: '2026-12-02T10:00:00.000Z',

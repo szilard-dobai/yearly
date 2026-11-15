@@ -1,4 +1,5 @@
-import { renderMediaOnVercel } from '@remotion/vercel'
+import { stillFrame } from '@/components/video/still-frame'
+import { renderMediaOnVercel, renderStillOnVercel } from '@remotion/vercel'
 import { APIError, Sandbox } from '@vercel/sandbox'
 import { FatalError, getStepMetadata, RetryableError } from 'workflow'
 import { db } from '@/lib/db'
@@ -10,7 +11,7 @@ import {
   markRenderReady,
   markRenderRendering,
 } from '@/lib/videos/orders'
-import { blobEnvironment, deleteVideoFiles, uploadVideo } from './blob'
+import { blobEnvironment, deleteVideoFiles, uploadFile } from './blob'
 import {
   renderPathname,
   type RenderedVideo,
@@ -18,7 +19,7 @@ import {
   type VideoPack,
   videosInPack,
 } from './packs'
-import { isExampleRender, loadVideoProps } from './props'
+import { isExampleRender, loadVideoProps, type VideoInputProps } from './props'
 import { getDeploymentSnapshotId } from './snapshot'
 
 const VCPUS = 4
@@ -60,8 +61,8 @@ export async function finishRender(renderId: string, videos: RenderedVideo[]) {
 
   if (isExampleRender(renderId)) return
   const replaced = await markRenderReady(db, renderId, videos)
-  await deleteVideoFiles(replaced.map((file) => file.pathname)).catch(
-    (error: unknown) => console.error('Could not delete old video files', error)
+  await deleteVideoFiles(replaced).catch((error: unknown) =>
+    console.error('Could not delete old video files', error)
   )
 
   const job = await getRenderJob(db, renderId)
@@ -94,6 +95,32 @@ function isRateLimited(error: unknown): boolean {
   return error instanceof APIError && error.response.status === 429
 }
 
+async function renderPoster(
+  sandbox: Sandbox,
+  renderId: string,
+  job: VideoJob,
+  inputProps: VideoInputProps
+): Promise<string | undefined> {
+  try {
+    const { sandboxFilePath, contentType } = await renderStillOnVercel({
+      sandbox,
+      compositionId: job.kind,
+      inputProps,
+      frame: stillFrame(job.kind, inputProps.data.days.length),
+      imageFormat: 'jpeg',
+      jpegQuality: 85,
+    })
+    const poster = await sandbox.readFileToBuffer({ path: sandboxFilePath })
+    if (!poster) return undefined
+    const pathname = renderPathname(blobEnvironment(), renderId, job, 'jpg')
+    await uploadFile(pathname, poster, contentType)
+    return pathname
+  } catch (error) {
+    console.error(`Could not make the ${job.kind}-${job.theme} poster`, error)
+    return undefined
+  }
+}
+
 export async function renderVideo({
   renderId,
   ...job
@@ -124,8 +151,14 @@ export async function renderVideo({
     if (!file) throw new Error(`The ${job.kind} render left no file`)
 
     const pathname = renderPathname(blobEnvironment(), renderId, job)
-    await uploadVideo(pathname, file, contentType)
-    return { ...job, pathname, bytes: file.length }
+    await uploadFile(pathname, file, contentType)
+    const posterPathname = await renderPoster(
+      sandbox,
+      renderId,
+      job,
+      inputProps
+    )
+    return { ...job, pathname, bytes: file.length, posterPathname }
   } catch (error) {
     if (error instanceof FatalError) throw error
     const { attempt } = getStepMetadata()

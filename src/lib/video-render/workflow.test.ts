@@ -32,7 +32,8 @@ const sandbox = {
 }
 const createSandbox = vi.fn()
 const renderMediaOnVercel = vi.fn()
-const uploadVideo = vi.fn()
+const uploadFile = vi.fn()
+const renderStillOnVercel = vi.fn()
 const snapshotId = vi.fn()
 
 vi.mock('@vercel/sandbox', async (importOriginal) => ({
@@ -41,10 +42,11 @@ vi.mock('@vercel/sandbox', async (importOriginal) => ({
 }))
 vi.mock('@remotion/vercel', () => ({
   renderMediaOnVercel: (...args: unknown[]) => renderMediaOnVercel(...args),
+  renderStillOnVercel: (...args: unknown[]) => renderStillOnVercel(...args),
 }))
 vi.mock('./blob', () => ({
   blobEnvironment: () => 'preview',
-  uploadVideo: (...args: unknown[]) => uploadVideo(...args),
+  uploadFile: (...args: unknown[]) => uploadFile(...args),
   deleteVideoFiles: (...args: unknown[]) => deleteVideoFiles(...args),
 }))
 vi.mock('./snapshot', () => ({
@@ -67,7 +69,11 @@ describe('renderVideo', () => {
     })
     sandbox.readFileToBuffer.mockReset().mockResolvedValue(file)
     sandbox.stop.mockReset().mockResolvedValue(undefined)
-    uploadVideo.mockReset().mockResolvedValue(undefined)
+    uploadFile.mockReset().mockResolvedValue(undefined)
+    renderStillOnVercel.mockReset().mockResolvedValue({
+      sandboxFilePath: '/tmp/still.jpeg',
+      contentType: 'image/jpeg',
+    })
     orders.getRenderJob.mockReset().mockResolvedValue(null)
   })
 
@@ -91,16 +97,25 @@ describe('renderVideo', () => {
         inputProps: expect.objectContaining({ theme: 'dark' }),
       })
     )
-    expect(uploadVideo).toHaveBeenCalledWith(
+    expect(uploadFile).toHaveBeenCalledWith(
       'preview/renders/example-1/stats-dark.mp4',
       file,
       'video/mp4'
+    )
+    expect(renderStillOnVercel).toHaveBeenCalledWith(
+      expect.objectContaining({ compositionId: 'stats', imageFormat: 'jpeg' })
+    )
+    expect(uploadFile).toHaveBeenCalledWith(
+      'preview/renders/example-1/stats-dark.jpg',
+      file,
+      'image/jpeg'
     )
     expect(video).toEqual({
       kind: 'stats',
       theme: 'dark',
       pathname: 'preview/renders/example-1/stats-dark.mp4',
       bytes: file.length,
+      posterPathname: 'preview/renders/example-1/stats-dark.jpg',
     })
     expect(sandbox.stop).toHaveBeenCalledOnce()
   })
@@ -132,7 +147,7 @@ describe('renderVideo', () => {
     expect(error).toBeInstanceOf(RetryableError)
     expect((error as Error).message).toContain('Chrome crashed')
     expect(sandbox.stop).toHaveBeenCalledOnce()
-    expect(uploadVideo).not.toHaveBeenCalled()
+    expect(uploadFile).not.toHaveBeenCalled()
   })
 
   it('retries later when Sandbox is rate limited', async () => {
@@ -198,7 +213,11 @@ describe('renderVideoPack for an order', () => {
     })
     sandbox.readFileToBuffer.mockReset().mockResolvedValue(file)
     sandbox.stop.mockReset().mockResolvedValue(undefined)
-    uploadVideo.mockReset().mockResolvedValue(undefined)
+    uploadFile.mockReset().mockResolvedValue(undefined)
+    renderStillOnVercel.mockReset().mockResolvedValue({
+      sandboxFilePath: '/tmp/still.jpeg',
+      contentType: 'image/jpeg',
+    })
     orders.getRenderJob.mockReset().mockResolvedValue(job)
     orders.markRenderRendering.mockReset().mockResolvedValue(undefined)
     orders.markRenderReady
@@ -217,7 +236,7 @@ describe('renderVideoPack for an order', () => {
 
     expect(orders.markRenderRendering).toHaveBeenCalledWith({}, 'render-1')
     expect(orders.markRenderReady).toHaveBeenCalledWith({}, 'render-1', videos)
-    expect(deleteVideoFiles).toHaveBeenCalledWith(['old.mp4'])
+    expect(deleteVideoFiles).toHaveBeenCalledWith([{ pathname: 'old.mp4' }])
     expect(sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'ana@example.com',

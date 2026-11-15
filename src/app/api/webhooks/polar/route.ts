@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
   if (event.type === 'order.refunded' && event.data.status === 'refunded') {
     const files = await markOrderRefunded(db, event.data.id)
-    await deleteVideoFiles(files.map((file) => file.pathname))
+    await deleteVideoFiles(files)
   }
 
   return received()

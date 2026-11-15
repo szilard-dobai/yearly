@@ -5,7 +5,13 @@ import {
 } from '@/lib/homepage-examples'
 import { fromCalendarDays } from '@/lib/calendar-sync/days'
 import { db } from '@/lib/db'
-import { buildMonthVideoData, buildYearVideoData } from '@/lib/video'
+import {
+  buildMonthVideoData,
+  buildYearVideoData,
+  type MonthVideoData,
+  type VideoTheme,
+  type YearVideoData,
+} from '@/lib/video'
 import { getRenderJob } from '@/lib/videos/orders'
 import type { VideoJob } from './packs'
 
@@ -15,11 +21,17 @@ export function exampleRenderId(now = Date.now()): string {
   return `${EXAMPLE_RENDER_PREFIX}${now.toString(36)}`
 }
 
+export type VideoInputProps = {
+  data: YearVideoData | MonthVideoData
+  theme: VideoTheme
+  weekStartsOn: number
+}
+
 export function isExampleRender(renderId: string): boolean {
   return renderId.startsWith(EXAMPLE_RENDER_PREFIX)
 }
 
-function exampleProps({ kind, theme }: VideoJob) {
+function exampleProps({ kind, theme }: VideoJob): VideoInputProps {
   const visits = getExampleVisits()
   const data =
     kind === 'month'
@@ -31,7 +43,7 @@ function exampleProps({ kind, theme }: VideoJob) {
 export async function loadVideoProps(
   renderId: string,
   job: VideoJob
-): Promise<Record<string, unknown> | null> {
+): Promise<VideoInputProps | null> {
   if (isExampleRender(renderId)) return exampleProps(job)
 
   const found = await getRenderJob(db, renderId)

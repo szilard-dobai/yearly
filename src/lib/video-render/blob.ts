@@ -1,5 +1,5 @@
 import { getVercelOidcToken } from '@vercel/functions/oidc'
-import { issueSignedToken, presignUrl, put } from '@vercel/blob'
+import { del, issueSignedToken, presignUrl, put } from '@vercel/blob'
 
 const DOWNLOAD_LINK_MINUTES = 10
 
@@ -44,4 +44,9 @@ export async function getVideoDownloadUrl(pathname: string): Promise<string> {
     validUntil,
   })
   return presignedUrl
+}
+
+export async function deleteVideoFiles(pathnames: string[]) {
+  if (pathnames.length === 0) return
+  await del(pathnames, await storeOptions())
 }

@@ -4,6 +4,27 @@ import { FatalError, RetryableError } from 'workflow'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderVideo, renderVideoPack, retryDelayMs } from './workflow'
 
+const orders = {
+  getRenderJob: vi.fn(),
+  markRenderRendering: vi.fn(),
+  markRenderReady: vi.fn(),
+  markRenderFailed: vi.fn(),
+}
+const deleteVideoFiles = vi.fn()
+const sendEmail = vi.fn()
+
+vi.mock('@/lib/db', () => ({ db: {} }))
+vi.mock('@/lib/videos/orders', () => ({
+  getRenderJob: (...args: unknown[]) => orders.getRenderJob(...args),
+  markRenderRendering: (...args: unknown[]) =>
+    orders.markRenderRendering(...args),
+  markRenderReady: (...args: unknown[]) => orders.markRenderReady(...args),
+  markRenderFailed: (...args: unknown[]) => orders.markRenderFailed(...args),
+}))
+vi.mock('@/lib/email/send', () => ({
+  sendEmail: (...args: unknown[]) => sendEmail(...args),
+}))
+
 const sandbox = {
   sandboxId: 'sbx_test',
   readFileToBuffer: vi.fn(),
@@ -24,6 +45,7 @@ vi.mock('@remotion/vercel', () => ({
 vi.mock('./blob', () => ({
   blobEnvironment: () => 'preview',
   uploadVideo: (...args: unknown[]) => uploadVideo(...args),
+  deleteVideoFiles: (...args: unknown[]) => deleteVideoFiles(...args),
 }))
 vi.mock('./snapshot', () => ({
   getDeploymentSnapshotId: () => snapshotId(),
@@ -46,6 +68,7 @@ describe('renderVideo', () => {
     sandbox.readFileToBuffer.mockReset().mockResolvedValue(file)
     sandbox.stop.mockReset().mockResolvedValue(undefined)
     uploadVideo.mockReset().mockResolvedValue(undefined)
+    orders.getRenderJob.mockReset().mockResolvedValue(null)
   })
 
   it('renders from the snapshot, uploads the MP4 and stops the sandbox', async () => {
@@ -153,5 +176,85 @@ describe('renderVideoPack', () => {
       'preview/renders/example-1/month-dark.mp4',
       'preview/renders/example-1/month-light.mp4',
     ])
+  })
+})
+
+describe('renderVideoPack for an order', () => {
+  const job = {
+    order: { year: 2026, month: 5 },
+    render: {
+      version: 1,
+      data: { days: { '2026-06-01': ['FR'] }, weekStartsOn: 1 },
+    },
+    email: 'ana@example.com',
+  }
+
+  beforeEach(() => {
+    snapshotId.mockReturnValue('snap_1')
+    createSandbox.mockReset().mockResolvedValue(sandbox)
+    renderMediaOnVercel.mockReset().mockResolvedValue({
+      sandboxFilePath: '/tmp/out.mp4',
+      contentType: 'video/mp4',
+    })
+    sandbox.readFileToBuffer.mockReset().mockResolvedValue(file)
+    sandbox.stop.mockReset().mockResolvedValue(undefined)
+    uploadVideo.mockReset().mockResolvedValue(undefined)
+    orders.getRenderJob.mockReset().mockResolvedValue(job)
+    orders.markRenderRendering.mockReset().mockResolvedValue(undefined)
+    orders.markRenderReady
+      .mockReset()
+      .mockResolvedValue([{ pathname: 'old.mp4' }])
+    orders.markRenderFailed.mockReset().mockResolvedValue(undefined)
+    deleteVideoFiles.mockReset().mockResolvedValue(undefined)
+    sendEmail.mockReset().mockResolvedValue(undefined)
+  })
+
+  it('marks the render ready, removes the old files and emails the buyer', async () => {
+    const videos = await renderVideoPack({
+      renderId: 'render-1',
+      pack: 'month',
+    })
+
+    expect(orders.markRenderRendering).toHaveBeenCalledWith({}, 'render-1')
+    expect(orders.markRenderReady).toHaveBeenCalledWith({}, 'render-1', videos)
+    expect(deleteVideoFiles).toHaveBeenCalledWith(['old.mp4'])
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'ana@example.com',
+        subject: 'Your updated Yearly videos are ready',
+      })
+    )
+  })
+
+  it("still finishes when the email can't be sent", async () => {
+    sendEmail.mockRejectedValue(new Error('Resend down'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(
+      renderVideoPack({ renderId: 'render-1', pack: 'month' })
+    ).resolves.toHaveLength(2)
+  })
+
+  it('marks the render failed when a video fails for good', async () => {
+    snapshotId.mockReturnValue(null)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(
+      renderVideoPack({ renderId: 'render-1', pack: 'month' })
+    ).rejects.toBeInstanceOf(FatalError)
+    expect(orders.markRenderFailed).toHaveBeenCalledWith(
+      {},
+      'render-1',
+      expect.stringContaining('no render snapshot')
+    )
+    expect(orders.markRenderReady).not.toHaveBeenCalled()
+  })
+
+  it('leaves the database alone for example renders', async () => {
+    await renderVideoPack({ renderId: 'example-1', pack: 'month' })
+
+    expect(orders.markRenderRendering).not.toHaveBeenCalled()
+    expect(orders.markRenderReady).not.toHaveBeenCalled()
+    expect(sendEmail).not.toHaveBeenCalled()
   })
 })

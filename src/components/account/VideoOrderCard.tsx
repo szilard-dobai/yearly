@@ -1,30 +1,21 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import PackUpdate from '@/components/video/PackUpdate'
 import PackVideoPlayer from '@/components/video/PackVideoPlayer'
 import SaveVideoButton from '@/components/video/SaveVideoButton'
 import Segmented from '@/components/video/Segmented'
 import { readStoredDays } from '@/lib/calendar-sync/local'
-import { MONTH_NAMES } from '@/lib/constants'
-import { useSettings } from '@/lib/contexts/SettingsContext'
 import { useResolvedColorScheme } from '@/lib/hooks/useResolvedColorScheme'
-import { trackEvent } from '@/lib/tracking'
 import type { VideoKind, VideoTheme } from '@/lib/video'
 import {
+  orderPeriodLabel,
   orderStage,
   type OrderSummary,
-  requestVideoUpdate,
-  type UpdateRefusal,
 } from '@/lib/videos/client'
-import { MAX_UPDATES } from '@/lib/videos/period'
 import { useVideoOrder } from '@/lib/videos/useVideoOrder'
 import { Loader2 } from 'lucide-react'
-import Link from 'next/link'
 import { useState } from 'react'
 import { useAccountCalendarStatus } from './AccountCalendarStatus'
-
-const linkClassName =
-  'font-medium text-gray-900 underline underline-offset-2 dark:text-zinc-100'
 
 const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
@@ -32,37 +23,11 @@ const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
 })
 
-type UpdateState =
-  | { step: 'idle' }
-  | { step: 'confirm' }
-  | { step: 'sending' }
-  | { step: 'refused'; reason: UpdateRefusal }
-
-function periodLabel(order: OrderSummary) {
-  return order.pack === 'month' && order.month !== null
-    ? `${MONTH_NAMES[order.month]} ${order.year}`
-    : String(order.year)
-}
-
-function refusalMessage(reason: UpdateRefusal) {
-  switch (reason) {
-    case 'busy':
-      return 'Your videos are already being updated. This usually takes under a minute.'
-    case 'no-updates-left':
-      return `You've used all ${MAX_UPDATES} updates for this pack. To add more trips, get a new pack from your calendar.`
-    case 'too-different':
-      return 'These trips are too different from your first video. Updates are for adding trips or fixing a country. For a different calendar, get a new pack.'
-    default:
-      return "We couldn't update your videos. Try again in a moment."
-  }
-}
-
 export default function VideoOrderCard({
   order: initial,
 }: {
   order: OrderSummary
 }) {
-  const { settings } = useSettings()
   const calendarStatus = useAccountCalendarStatus()
   const { order, timedOut, watch, freshOrder, reload } = useVideoOrder(
     initial.id,
@@ -75,7 +40,6 @@ export default function VideoOrderCard({
   const [chosenTheme, setTheme] = useState<VideoTheme | null>(null)
   const siteTheme = useResolvedColorScheme()
   const theme = chosenTheme ?? siteTheme ?? 'dark'
-  const [update, setUpdate] = useState<UpdateState>({ step: 'idle' })
 
   const stage = orderStage(current)
   const working = stage === 'making' || stage === 'confirming'
@@ -87,28 +51,9 @@ export default function VideoOrderCard({
       current.videos.find((item) => item.theme === theme) ??
       current.videos[0])
     : null
-  const label = periodLabel(current)
+  const label = orderPeriodLabel(current)
   const isMonth = current.pack === 'month'
   const noun = isMonth ? 'video' : 'videos'
-
-  const sendUpdate = async () => {
-    setUpdate({ step: 'sending' })
-    const result = await requestVideoUpdate(
-      current,
-      readStoredDays(),
-      settings.weekStartsOn
-    )
-    trackEvent('animated_video_update_requested', {
-      pack: current.pack,
-      result: result.ok ? 'started' : result.reason,
-    })
-    if (result.ok) {
-      watch(result.order)
-      setUpdate({ step: 'idle' })
-    } else {
-      setUpdate({ step: 'refused', reason: result.reason })
-    }
-  }
 
   let status: string | null = null
   if (working) {
@@ -122,9 +67,6 @@ export default function VideoOrderCard({
       ? "Your update didn't work. We're on it, and we'll email you when it's done."
       : `Something went wrong making your ${noun}. We're on it, and we'll email you when ${isMonth ? "it's" : "they're"} ready.`
   }
-
-  const canUpdate =
-    current.updatesLeft > 0 && !working && calendarStatus === 'saved'
 
   return (
     <article className="space-y-4">
@@ -193,83 +135,14 @@ export default function VideoOrderCard({
       )}
 
       {stage !== 'confirming' && (
-        <div className="space-y-2 border-t border-gray-200 pt-4 dark:border-white/8">
-          {current.updatesLeft === 0 ? (
-            <p className="text-sm text-gray-600 dark:text-zinc-400">
-              {refusalMessage('no-updates-left')}{' '}
-              <Link href="/create" className={linkClassName}>
-                Open your calendar
-              </Link>
-            </p>
-          ) : update.step === 'confirm' || update.step === 'sending' ? (
-            <div className="space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-white/5">
-              <p className="text-sm text-gray-700 dark:text-zinc-300">
-                Remake your {label} {noun} from the trips in your calendar now?
-                This uses 1 of the {current.updatesLeft}{' '}
-                {current.updatesLeft === 1 ? 'update' : 'updates'} you have
-                left.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  onClick={sendUpdate}
-                  disabled={update.step === 'sending'}
-                >
-                  {update.step === 'sending' && (
-                    <Loader2 className="size-4 animate-spin" />
-                  )}
-                  Update {noun}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setUpdate({ step: 'idle' })}
-                  disabled={update.step === 'sending'}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                className="w-full whitespace-normal"
-                disabled={!canUpdate}
-                onClick={() => setUpdate({ step: 'confirm' })}
-              >
-                Update with my latest trips ({current.updatesLeft} left)
-              </Button>
-              {calendarStatus === 'loading' && (
-                <p className="text-xs text-gray-500 dark:text-zinc-500">
-                  Checking your saved trips…
-                </p>
-              )}
-              {calendarStatus === 'error' && (
-                <p className="text-xs text-gray-500 dark:text-zinc-500">
-                  We couldn&apos;t reach your saved trips. Try again in a
-                  moment.
-                </p>
-              )}
-              {update.step === 'refused' && (
-                <p
-                  role="alert"
-                  className="text-sm text-gray-700 dark:text-zinc-300"
-                >
-                  {refusalMessage(update.reason)}
-                  {(update.reason === 'too-different' ||
-                    update.reason === 'no-updates-left') && (
-                    <>
-                      {' '}
-                      <Link href="/create" className={linkClassName}>
-                        Open your calendar
-                      </Link>
-                    </>
-                  )}
-                </p>
-              )}
-            </>
-          )}
+        <div className="border-t border-gray-200 pt-4 dark:border-white/8">
+          <PackUpdate
+            order={current}
+            calendar={calendarStatus}
+            readDays={readStoredDays}
+            onStarted={watch}
+            source="account"
+          />
         </div>
       )}
     </article>

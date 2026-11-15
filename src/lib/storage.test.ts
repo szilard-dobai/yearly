@@ -3,8 +3,6 @@ import {
   saveCalendarData,
   loadCalendarData,
   clearCalendarData,
-  exportToJSON,
-  importFromJSON,
   isLocalStorageAvailable,
 } from './storage'
 import type { CalendarData } from './types'
@@ -121,117 +119,32 @@ describe('storage utilities', () => {
     })
   })
 
-  describe('exportToJSON', () => {
-    it('should export calendar data as JSON string', () => {
-      const data: CalendarData = {
-        visits: [
-          {
-            id: '1',
-            countryCode: 'US',
-            date: new Date('2023-05-15'),
-          },
-        ],
-      }
-
-      const json = exportToJSON(data)
-      expect(typeof json).toBe('string')
-      expect(json).toContain('US')
-    })
-
-    it('should be parseable JSON', () => {
-      const data: CalendarData = {
-        visits: [
-          {
-            id: '1',
-            countryCode: 'US',
-            date: new Date('2023-05-15'),
-          },
-        ],
-      }
-
-      const json = exportToJSON(data)
-      expect(() => JSON.parse(json)).not.toThrow()
-    })
-
-    it('should handle empty visits array', () => {
-      const data: CalendarData = {
-        visits: [],
-      }
-
-      const json = exportToJSON(data)
-      const parsed = JSON.parse(json)
-      expect(parsed.visits).toEqual([])
-    })
-  })
-
-  describe('importFromJSON', () => {
-    it('should import valid JSON', () => {
-      const data: CalendarData = {
-        visits: [
-          {
-            id: '1',
-            countryCode: 'US',
-            date: new Date('2023-05-15'),
-          },
-        ],
-      }
-
-      const json = exportToJSON(data)
-      const imported = importFromJSON(json)
-
-      expect(imported).not.toBeNull()
-      expect(imported?.visits).toHaveLength(1)
-      expect(imported?.visits[0].countryCode).toBe('US')
-    })
+  describe('loadCalendarData with invalid stored data', () => {
+    const store = (value: string) =>
+      localStorage.setItem('countries-in-year', value)
 
     it('should return null for invalid JSON', () => {
-      const imported = importFromJSON('invalid json')
-      expect(imported).toBeNull()
+      store('invalid json')
+      expect(loadCalendarData()).toBeNull()
     })
 
     it('should return null for malformed data structure', () => {
-      const badJson = JSON.stringify({ wrong: 'structure' })
-      const imported = importFromJSON(badJson)
-      expect(imported).toBeNull()
+      store(JSON.stringify({ wrong: 'structure' }))
+      expect(loadCalendarData()).toBeNull()
     })
 
     it('should return null for missing required fields', () => {
-      const badJson = JSON.stringify({
-        visits: [{ id: '1' }],
-      })
-      const imported = importFromJSON(badJson)
-      expect(imported).toBeNull()
+      store(JSON.stringify({ visits: [{ id: '1' }] }))
+      expect(loadCalendarData()).toBeNull()
     })
 
     it('should return null for invalid date', () => {
-      const badJson = JSON.stringify({
-        visits: [
-          {
-            id: '1',
-            countryCode: 'US',
-            date: 'not-a-date',
-          },
-        ],
-      })
-      const imported = importFromJSON(badJson)
-      expect(imported).toBeNull()
-    })
-
-    it('should convert date strings back to Date objects', () => {
-      const data: CalendarData = {
-        visits: [
-          {
-            id: '1',
-            countryCode: 'US',
-            date: new Date('2023-05-15'),
-          },
-        ],
-      }
-
-      const json = exportToJSON(data)
-      const imported = importFromJSON(json)
-
-      expect(imported?.visits[0].date).toBeInstanceOf(Date)
+      store(
+        JSON.stringify({
+          visits: [{ id: '1', countryCode: 'US', date: 'not-a-date' }],
+        })
+      )
+      expect(loadCalendarData()).toBeNull()
     })
   })
 
@@ -269,29 +182,6 @@ describe('storage utilities', () => {
           originalData.visits[index].date.toISOString()
         )
       })
-    })
-
-    it('should maintain data integrity through export/import cycle', () => {
-      const originalData: CalendarData = {
-        visits: [
-          {
-            id: 'test-123',
-            countryCode: 'DE',
-            date: new Date('2023-07-10'),
-          },
-        ],
-      }
-
-      const json = exportToJSON(originalData)
-      const imported = importFromJSON(json)
-
-      expect(imported?.visits[0].id).toBe(originalData.visits[0].id)
-      expect(imported?.visits[0].countryCode).toBe(
-        originalData.visits[0].countryCode
-      )
-      expect(imported?.visits[0].date.toDateString()).toBe(
-        originalData.visits[0].date.toDateString()
-      )
     })
   })
 })

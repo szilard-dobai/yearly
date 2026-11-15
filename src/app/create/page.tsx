@@ -12,7 +12,6 @@ import DaySelectionPanel, {
   type AddFromSelectionMeta,
   type ReorderMethod,
 } from '@/components/DaySelectionPanel'
-import DeveloperMode from '@/components/DeveloperMode'
 import FeedbackButton from '@/components/FeedbackButton'
 import FeedbackCard from '@/components/FeedbackCard'
 import FeedbackDialog from '@/components/FeedbackDialog'
@@ -542,28 +541,6 @@ function Create() {
             </aside>
           </div>
 
-          <StandardCard className="p-0 overflow-hidden">
-            <details
-              onToggle={(e) => {
-                const isOpen = (e.target as HTMLDetailsElement).open
-                trackEvent('developer_mode_toggle', { opened: isOpen })
-              }}
-            >
-              <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-zinc-100 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/4 transition-colors rounded-lg list-none flex items-center gap-2">
-                <span className="text-lg">
-                  <Emoji name="wrench" />
-                </span>
-                Developer Mode
-              </summary>
-              <div className="px-6 pb-4 pt-2">
-                <DeveloperMode
-                  calendarData={calendarData}
-                  year={selectedYear}
-                  onDataChange={handleDataChange}
-                />
-              </div>
-            </details>
-          </StandardCard>
           {selection && <div aria-hidden="true" className="h-72" />}
         </main>
 

@@ -1,5 +1,12 @@
 'use client'
 
+import {
+  MonthVideo,
+  monthTimeline,
+  type MonthVideoProps,
+} from '@/components/video/MonthVideo'
+import { STATS_DURATION, StatsVideo } from '@/components/video/StatsVideo'
+import { END_CARD_LENGTH } from '@/components/video/timeline'
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
 import { usePrefetchVideoImages } from '@/components/video/usePrefetchVideoImages'
 import {
@@ -7,23 +14,53 @@ import {
   yearFillTimeline,
   type VideoProps,
 } from '@/components/video/YearFillVideo'
-import { EXAMPLE_YEAR, getExampleVisits } from '@/lib/homepage-examples'
-import { buildYearVideoData, type VideoTheme } from '@/lib/video'
+import {
+  EXAMPLE_MONTH,
+  EXAMPLE_YEAR,
+  getExampleVisits,
+} from '@/lib/homepage-examples'
+import {
+  buildMonthVideoData,
+  buildYearVideoData,
+  type VideoKind,
+  type VideoTheme,
+} from '@/lib/video'
 import { Player, type PlayerRef } from '@remotion/player'
 import { useReducedMotion } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
 
-const data = buildYearVideoData(getExampleVisits(), EXAMPLE_YEAR)
-const timeline = yearFillTimeline(data.days.length)
+const visits = getExampleVisits()
+const yearData = buildYearVideoData(visits, EXAMPLE_YEAR)
+const monthData = buildMonthVideoData(visits, EXAMPLE_YEAR, EXAMPLE_MONTH)
+const yearTiming = yearFillTimeline(yearData.days.length)
+const monthTiming = monthTimeline(monthData.days.length)
 
-export default function HomepageVideoPlayer({ theme }: { theme: VideoTheme }) {
+const STILL_FRAME: Record<VideoKind, number> = {
+  year: yearTiming.fillEnd + 30,
+  stats: STATS_DURATION - END_CARD_LENGTH - 10,
+  month: monthTiming.endCard - 10,
+}
+
+export default function HomepageVideoPlayer({
+  theme,
+  kind = 'year',
+}: {
+  theme: VideoTheme
+  kind?: VideoKind
+}) {
   const playerRef = useRef<PlayerRef>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const reducedMotion = useReducedMotion() ?? false
-  usePrefetchVideoImages(data.countries)
+  usePrefetchVideoImages(
+    kind === 'month' ? monthData.countries : yearData.countries
+  )
 
-  const inputProps = useMemo<VideoProps>(
-    () => ({ data, theme, weekStartsOn: 1 }),
+  const yearProps = useMemo<VideoProps>(
+    () => ({ data: yearData, theme, weekStartsOn: 1 }),
+    [theme]
+  )
+  const monthProps = useMemo<MonthVideoProps>(
+    () => ({ data: monthData, theme, weekStartsOn: 1 }),
     [theme]
   )
 
@@ -41,25 +78,47 @@ export default function HomepageVideoPlayer({ theme }: { theme: VideoTheme }) {
     return () => observer.disconnect()
   }, [reducedMotion])
 
+  const shared = {
+    compositionWidth: VIDEO_WIDTH,
+    compositionHeight: VIDEO_HEIGHT,
+    fps: FPS,
+    initialFrame: reducedMotion ? STILL_FRAME[kind] : 0,
+    loop: true,
+    initiallyMuted: true,
+    controls: reducedMotion,
+    clickToPlay: reducedMotion,
+    showVolumeControls: false,
+    acknowledgeRemotionLicense: true,
+    style: { width: '100%', height: '100%' },
+  }
+
   return (
     <div ref={containerRef} className="size-full">
-      <Player
-        ref={playerRef}
-        component={YearFillVideo}
-        inputProps={inputProps}
-        durationInFrames={timeline.duration}
-        compositionWidth={VIDEO_WIDTH}
-        compositionHeight={VIDEO_HEIGHT}
-        fps={FPS}
-        initialFrame={reducedMotion ? timeline.fillEnd + 30 : 0}
-        loop
-        initiallyMuted
-        controls={reducedMotion}
-        clickToPlay={reducedMotion}
-        showVolumeControls={false}
-        acknowledgeRemotionLicense
-        style={{ width: '100%', height: '100%' }}
-      />
+      {kind === 'month' ? (
+        <Player
+          ref={playerRef}
+          component={MonthVideo}
+          inputProps={monthProps}
+          durationInFrames={monthTiming.duration}
+          {...shared}
+        />
+      ) : kind === 'stats' ? (
+        <Player
+          ref={playerRef}
+          component={StatsVideo}
+          inputProps={yearProps}
+          durationInFrames={STATS_DURATION}
+          {...shared}
+        />
+      ) : (
+        <Player
+          ref={playerRef}
+          component={YearFillVideo}
+          inputProps={yearProps}
+          durationInFrames={yearTiming.duration}
+          {...shared}
+        />
+      )}
     </div>
   )
 }

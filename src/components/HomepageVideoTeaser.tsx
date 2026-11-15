@@ -4,11 +4,14 @@ import { AnimatedSection } from '@/components/AnimatedSection'
 import { TrackingLink } from '@/components/HomepageClient'
 import { HomepageExampleImage } from '@/components/HomepageExampleImage'
 import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
+import {
+  useNearViewport,
+  usePreloadWhenIdle,
+} from '@/lib/hooks/useNearViewport'
 import { useResolvedColorScheme } from '@/lib/hooks/useResolvedColorScheme'
 import { VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useEffect, useRef, useState } from 'react'
 
 const [YEAR_EXAMPLE] = HOMEPAGE_EXAMPLES
 
@@ -16,47 +19,17 @@ function Poster() {
   return <HomepageExampleImage example={YEAR_EXAMPLE} />
 }
 
-const HomepageVideoPlayer = dynamic(() => import('./HomepageVideoPlayer'), {
+const loadPlayer = () => import('./HomepageVideoPlayer')
+
+const HomepageVideoPlayer = dynamic(loadPlayer, {
   ssr: false,
   loading: Poster,
 })
 
-function usePreloadWhenIdle() {
-  useEffect(() => {
-    const preload = () => void import('./HomepageVideoPlayer')
-    if (typeof window.requestIdleCallback === 'function') {
-      const id = window.requestIdleCallback(preload, { timeout: 3000 })
-      return () => window.cancelIdleCallback(id)
-    }
-    const id = setTimeout(preload, 2000)
-    return () => clearTimeout(id)
-  }, [])
-}
-
-function useNearViewport() {
-  const ref = useRef<HTMLElement>(null)
-  const [isNear, setIsNear] = useState(false)
-
-  useEffect(() => {
-    const element = ref.current
-    if (!element || isNear) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setIsNear(true)
-      },
-      { rootMargin: '800px' }
-    )
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [isNear])
-
-  return { ref, isNear }
-}
-
 export function HomepageVideoTeaser() {
   const colorScheme = useResolvedColorScheme()
-  const { ref, isNear } = useNearViewport()
-  usePreloadWhenIdle()
+  const { ref, isNear } = useNearViewport<HTMLElement>()
+  usePreloadWhenIdle(loadPlayer)
 
   return (
     <section className="pb-24" aria-labelledby="video-teaser-heading">
@@ -104,6 +77,13 @@ export function HomepageVideoTeaser() {
             Join the waitlist from your preview and your first video is free.
             Your images stay free.
           </p>
+          <TrackingLink
+            href="/videos"
+            linkType="video_teaser_details"
+            className="mt-2 inline-block text-sm text-gray-700 underline underline-offset-2 hover:text-gray-900 dark:text-zinc-300 dark:hover:text-zinc-100"
+          >
+            See what&apos;s in each pack and the price
+          </TrackingLink>
         </div>
       </AnimatedSection>
     </section>

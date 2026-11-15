@@ -1,5 +1,10 @@
 import { isAccountsEnabled } from '@/lib/auth/enabled'
 import { getFaqs } from '@/lib/faq'
+import {
+  formatPrice,
+  VIDEO_LAUNCH_LABEL,
+  VIDEO_PACK_PRICE,
+} from '@/lib/video-offer'
 
 export const dynamic = 'force-static'
 
@@ -41,6 +46,7 @@ ${getFaqs(accountsEnabled)
 
 - [Yearly](${siteUrl}/): what Yearly makes, how it works and answers to common questions
 - [Make your travel calendar](${siteUrl}/create): the app itself
+- [Animated videos](${siteUrl}/videos): the optional paid video version (${formatPrice(VIDEO_PACK_PRICE)} per pack, launching in ${VIDEO_LAUNCH_LABEL} 2026), what each pack includes, and the refund policy
 - [Privacy](${siteUrl}/privacy): what Yearly stores, what it sends to its servers and how to delete it
 
 ## Optional

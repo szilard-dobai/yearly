@@ -100,4 +100,20 @@ describe('HomepageVideoTeaser', () => {
       linkType: 'video_teaser',
     })
   })
+
+  it('links to the videos page and records the click', async () => {
+    const user = userEvent.setup()
+    renderWithSettings(<HomepageVideoTeaser />)
+
+    const link = screen.getByRole('link', {
+      name: "See what's in each pack and the price",
+    })
+    link.addEventListener('click', (event) => event.preventDefault())
+    await user.click(link)
+
+    expect(link).toHaveAttribute('href', '/videos')
+    expect(trackEvent).toHaveBeenCalledWith('homepage_cta_click', {
+      linkType: 'video_teaser_details',
+    })
+  })
 })

@@ -32,6 +32,14 @@ describe('sitemap', () => {
     expect(homepage?.images).toHaveLength((HOMEPAGE_EXAMPLES.length + 1) * 2)
   })
 
+  it('lists the videos page', async () => {
+    const entries = await loadSitemap('https://www.yearly.world')
+
+    expect(entries.map((entry) => entry.url)).toContain(
+      'https://www.yearly.world/videos'
+    )
+  })
+
   it('keeps image entries off the other pages', async () => {
     const entries = await loadSitemap('https://www.yearly.world')
 

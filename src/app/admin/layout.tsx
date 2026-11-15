@@ -1,5 +1,3 @@
-import { VideoSalesEnabledProvider } from '@/components/admin/VideoSalesEnabledProvider'
-import { isVideoSalesEnabled } from '@/lib/videos/enabled'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -18,9 +16,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <VideoSalesEnabledProvider enabled={isVideoSalesEnabled()}>
-      {children}
-    </VideoSalesEnabledProvider>
-  )
+  return children
 }

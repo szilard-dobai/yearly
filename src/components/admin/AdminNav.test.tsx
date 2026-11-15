@@ -1,15 +1,15 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import AdminNav from './AdminNav'
-import { VideoSalesEnabledProvider } from './VideoSalesEnabledProvider'
+import { VideoSalesProvider } from '@/components/video/VideoSalesProvider'
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/admin/videos' }))
 
 function renderNav(videoSales: boolean) {
   return render(
-    <VideoSalesEnabledProvider enabled={videoSales}>
+    <VideoSalesProvider value={{ enabled: videoSales, googleSignIn: false }}>
       <AdminNav />
-    </VideoSalesEnabledProvider>
+    </VideoSalesProvider>
   )
 }
 

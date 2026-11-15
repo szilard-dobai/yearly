@@ -1,6 +1,6 @@
 'use client'
 
-import { useVideoSalesEnabled } from '@/components/admin/VideoSalesEnabledProvider'
+import { useVideoSales } from '@/components/video/VideoSalesProvider'
 import { cn } from '@/lib/utils'
 import { BarChart3, Clapperboard, MessageSquareText } from 'lucide-react'
 import Link from 'next/link'
@@ -19,7 +19,7 @@ const VIDEOS_LINK = {
 
 export default function AdminNav() {
   const pathname = usePathname()
-  const links = useVideoSalesEnabled()
+  const links = useVideoSales().enabled
     ? [...ADMIN_LINKS, VIDEOS_LINK]
     : ADMIN_LINKS
 

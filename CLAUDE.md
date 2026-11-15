@@ -63,7 +63,7 @@ src/
 │   ├── export/               - Shared export frame (padding, title, watermark), stat tiles and ranking rows
 │   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
-│   ├── video/                - Remotion compositions for the animated video preview (year, month, stats)
+│   ├── video/                - Remotion compositions for the animated video preview (year, month, stats); the paid video flow in the export dialog (`useVideoPurchase`, `SaveVideoButton`, `PackVideoPlayer`) and `VideoSalesProvider` (root layout)
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
 │   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads; tapping it opens the original full size
 │   ├── Emoji.tsx             - The one image component for flags (`Flag`, `DayFlags` for one or two countries) and named emoji (`Emoji`); `size` works like a font size, or leave it out to follow the text; `resolution="large"` in exports and video, Remotion's `Img` via `as` in compositions
@@ -94,7 +94,7 @@ src/
 │   │   ├── useStatisticsExport.ts  - Statistics image export
 │   │   ├── useAccountPrompt.ts     - When the /create account prompt shows (3+ days of trips, 30-day snooze)
 │   │   └── useStatusFeedback.ts    - Loading/error state management
-│   ├── videos/               - Paid video packs: orders, renders and free credits in Postgres, Polar checkout and product IDs (`POLAR_ACCESS_TOKEN`, `POLAR_ENVIRONMENT`), the 80% update rule, starting renders, order summaries with signed links; everything is off unless `VIDEO_SALES_ENABLED=true` and accounts are on
+│   ├── videos/               - Paid video packs: orders, renders and free credits in Postgres, Polar checkout and product IDs (`POLAR_ACCESS_TOKEN`, `POLAR_ENVIRONMENT`), the 80% update rule, starting renders, order summaries with signed links; everything is off unless `VIDEO_SALES_ENABLED=true` and accounts are on. Browser side: `client.ts` (API calls), `useVideoOrder` (polling), `save.ts` (share sheet or download), `checkout-return.ts` (Polar's `customer_session_token` is stripped in `instrumentation-client.ts` before anything else runs)
 │   ├── video-render/         - Paid video rendering: `renderVideoPack` workflow (one step per video: sandbox from the deployment's snapshot, render, upload to the private videos store), packs, signed download links, the deployment's snapshot ID (written by `scripts/video-render.mts prepare`)
 │   ├── retention.ts          - Retention rules (26 months in full, then identifiers removed; 5 years max), run daily by `api/cron/retention` (`vercel.json`, `CRON_SECRET`)
 │   ├── contexts/

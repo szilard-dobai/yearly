@@ -149,7 +149,6 @@ Uses Material Design elevation hierarchy:
 - Calendar data stored in LocalStorage with Zod schema validation
 - Settings managed via React Context (SettingsContext)
 - Undo stack (10 levels) for visit removal
-- Import/export as JSON
 - Signed-in people also get their calendar saved to their account and synced across devices; see Calendar sync in `docs/04-database-and-accounts.md`
 
 ### Year-end reminder email

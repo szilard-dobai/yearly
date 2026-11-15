@@ -17,7 +17,7 @@ const stats: HighLevelStats = {
     statisticsExportClicks: 15,
     imageDownloadClicks: 30,
   },
-  dataManagement: { jsonImports: 1, jsonExports: 2, calendarResets: 3 },
+  dataManagement: { calendarResets: 3 },
   pageViews: { homepage: 500, createPage: 400, notFound: 2 },
   eventBreakdown: {
     homepage_view: 500,

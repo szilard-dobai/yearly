@@ -89,13 +89,7 @@ export function getEventTone(type: string): EventTone {
   ) {
     return 'export'
   }
-  if (
-    type.startsWith('visit_') ||
-    type === 'calendar_reset' ||
-    type === 'json_import'
-  ) {
-    return 'edit'
-  }
+  if (type.startsWith('visit_') || type === 'calendar_reset') return 'edit'
   return 'other'
 }
 
@@ -115,10 +109,7 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   image_download_click: 'Image download clicked',
   statistics_export_click: 'Statistics export clicked',
   monthly_export_click: 'Month export clicked',
-  developer_mode_toggle: 'Developer mode toggled',
   mobile_fab_click: 'Mobile menu opened',
-  json_import: 'JSON imported',
-  json_export: 'JSON exported',
   feedback_prompt_shown: 'Feedback prompt shown',
   feedback_prompt_dismissed: 'Feedback prompt dismissed',
   feedback_dialog_open: 'Feedback form opened',

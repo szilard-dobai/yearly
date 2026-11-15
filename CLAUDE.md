@@ -17,8 +17,9 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Test**: `npm run test` - Runs Vitest tests
 - **Full check**: `npm run check:full` - Runs lint + type-check + tests + build
 - **Emoji images**: `npm run emoji:build` downloads the Noto Emoji SVGs at the commit pinned in `scripts/build-emoji-images.mts`, adjusts their colours, crops the flags to one shared box and writes two WebP sizes to `public/emoji/` plus the manifest `src/lib/emoji-images.ts`. Commit its output; the raw SVGs stay in `node_modules/.cache`. Adding a country to `src/lib/countries.ts` needs a rebuild, or the country drops out of `COUNTRIES`
+- **Paid video renders**: `npm run video:bundle` bundles `src/video-render` with the fonts and `public/emoji` into `.video-render/bundle`; `node scripts/video-render.mts snapshot | sample --snapshot <id> | delete-snapshot <id>` makes a Vercel Sandbox snapshot from it and renders the example videos into `.video-render/out`. Sandbox calls need `VERCEL_OIDC_TOKEN` from `vercel env pull`, kept outside the repo and passed with `node --env-file`. Delete test snapshots afterwards. See Rendering in `docs/06-paid-videos.md`
 - **Database migration**: `npm run db:generate -- --name <name>` writes a SQL migration in `drizzle/` from `src/lib/db/schema.ts`; `npm run db:migrate` applies it. Vercel runs `vercel-build`, which migrates before building, so every migration must work with the code already deployed (add first, remove later)
-- **Install**: `.npmrc` sets `legacy-peer-deps=true`, because Better Auth's optional framework peers (SvelteKit, TanStack Start) want Vite 8 and the tests use Vite 7
+- **Install**: `.npmrc` sets `legacy-peer-deps=true`, because Better Auth's optional framework peers (SvelteKit, TanStack Start) want Vite 8 and the tests use Vite 7. That also leaves peers unresolved, so `ajv` 8 is a direct dev dependency for webpack's `ajv-keywords` (ESLint keeps its own `ajv` 6)
 
 ## Tech Stack
 
@@ -100,7 +101,8 @@ src/
 │   ├── email/                - Resend sender and email templates
 │   ├── feedback/             - Feedback schemas, client API, prompt cooldowns, Slack notifications (`SLACK_FEEDBACK_WEBHOOK_URL`)
 │   └── tracking/             - Event tracking and analytics; `opt-out.ts` backs the Share usage stats setting, which also stops Vercel Analytics (`components/SiteAnalytics.tsx`)
-└── test/                     - Test setup and utilities
+├── test/                     - Test setup and utilities
+└── video-render/             - Remotion entry for server renders of the paid videos: the `year`, `stats` and `month` compositions without the preview watermark, with Geist and Newsreader bundled; built by `scripts/video-render.mts`, not by Next
 ```
 
 ## Key Architecture Patterns

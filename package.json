@@ -19,6 +19,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/db-migrate.mts",
     "db:studio": "drizzle-kit studio",
+    "video:bundle": "node scripts/video-render.mts bundle",
     "emoji:build": "node scripts/build-emoji-images.mts && prettier --write src/lib/emoji-images.ts public/emoji/README.md"
   },
   "dependencies": {
@@ -30,9 +31,11 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-switch": "^1.2.6",
     "@remotion/player": "4.0.541",
+    "@remotion/vercel": "4.0.541",
     "@sentry/nextjs": "^11.12.0",
     "@vercel/analytics": "^1.6.1",
     "@vercel/functions": "^3.11.2",
+    "@vercel/sandbox": "1.6.0",
     "@vercel/speed-insights": "^1.3.1",
     "better-auth": "1.7.22",
     "class-variance-authority": "^0.7.1",
@@ -57,6 +60,9 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.16",
+    "@fontsource-variable/geist": "5.3.0",
+    "@fontsource-variable/newsreader": "5.3.0",
+    "@remotion/bundler": "4.0.541",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
@@ -69,6 +75,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.1.2",
     "@vitest/ui": "^4.0.15",
+    "ajv": "8.20.0",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",

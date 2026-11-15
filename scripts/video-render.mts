@@ -13,6 +13,14 @@
  *     Renders the homepage example year, one sandbox per video, and saves the
  *     MP4s in .video-render/out.
  *   node scripts/video-render.mts delete-snapshot <id>
+ *   node scripts/video-render.mts prepare
+ *     Runs in vercel-build. Bundles, then reuses the snapshot for this bundle or
+ *     makes one, and writes its ID to src/lib/video-render/deployment-snapshot.json
+ *     so the deployment's render steps use it. Production snapshots last until
+ *     pruned (the newest two are kept); preview snapshots expire after 48 hours.
+ *     The bundle-to-snapshot index lives in the private videos Blob store under
+ *     render-snapshots/. Set VIDEO_RENDER_SNAPSHOT=off to skip it in an
+ *     emergency; that deployment can't render videos.
  *
  * Sandbox calls need VERCEL_OIDC_TOKEN, which `vercel env pull` writes and
  * which lasts about 12 hours. Keep the pulled file outside the repo and pass it
@@ -25,9 +33,19 @@ import {
   createSandbox,
   renderMediaOnVercel,
 } from '@remotion/vercel'
+import { del, get, list, put } from '@vercel/blob'
+import { getVercelOidcToken } from '@vercel/functions/oidc'
 import { Sandbox, Snapshot } from '@vercel/sandbox'
 import { createHash } from 'node:crypto'
-import { cp, mkdir, readdir, readFile, rm, stat } from 'node:fs/promises'
+import {
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from 'node:fs/promises'
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 
@@ -35,6 +53,14 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const WORK_DIR = path.join(ROOT, '.video-render')
 const BUNDLE_DIR = path.join(WORK_DIR, 'bundle')
 const OUT_DIR = path.join(WORK_DIR, 'out')
+const DEPLOYMENT_FILE = path.join(
+  ROOT,
+  'src/lib/video-render/deployment-snapshot.json'
+)
+const INDEX_PREFIX = 'render-snapshots/'
+const PREVIEW_SNAPSHOT_HOURS = 48
+const PRODUCTION_SNAPSHOTS_KEPT = 2
+const MIN_HOURS_LEFT_TO_REUSE = 6
 
 const KINDS = ['year', 'stats', 'month'] as const
 const VCPUS = 4
@@ -158,6 +184,132 @@ async function renderSample(
   if (failed.length > 0) process.exitCode = 1
 }
 
+type SnapshotEntry = {
+  bundleHash: string
+  snapshotId: string
+  environment: 'production' | 'preview'
+  createdAt: string
+  expiresAt: string | null
+}
+
+async function indexOptions() {
+  const storeId = process.env.VIDEOS_BLOB_STORE_ID
+  if (!storeId) throw new Error('VIDEOS_BLOB_STORE_ID is not set')
+  return {
+    access: 'private' as const,
+    storeId,
+    oidcToken: await getVercelOidcToken(),
+  }
+}
+
+async function readEntry(pathname: string): Promise<SnapshotEntry | null> {
+  const result = await get(pathname, {
+    ...(await indexOptions()),
+    useCache: false,
+  })
+  if (!result || result.statusCode !== 200) return null
+  return JSON.parse(await new Response(result.stream).text())
+}
+
+async function isReusable(entry: SnapshotEntry, environment: string) {
+  if (environment === 'production' && entry.environment !== 'production') {
+    return false
+  }
+  try {
+    const snapshot = await Snapshot.get({ snapshotId: entry.snapshotId })
+    const hoursLeft = snapshot.expiresAt
+      ? (snapshot.expiresAt.getTime() - Date.now()) / 3_600_000
+      : Infinity
+    return snapshot.status === 'created' && hoursLeft > MIN_HOURS_LEFT_TO_REUSE
+  } catch {
+    return false
+  }
+}
+
+async function pruneSnapshots(currentHash: string) {
+  const options = await indexOptions()
+  const { blobs } = await list({ ...options, prefix: INDEX_PREFIX })
+  const entries = (
+    await Promise.all(
+      blobs.map(async ({ pathname }) => ({
+        pathname,
+        entry: await readEntry(pathname),
+      }))
+    )
+  ).filter((item): item is { pathname: string; entry: SnapshotEntry } =>
+    Boolean(item.entry)
+  )
+
+  const production = entries
+    .filter(({ entry }) => entry.environment === 'production')
+    .filter(({ entry }) => entry.bundleHash !== currentHash)
+    .sort((a, b) => b.entry.createdAt.localeCompare(a.entry.createdAt))
+  const stale = production.slice(PRODUCTION_SNAPSHOTS_KEPT - 1)
+  const expired = entries.filter(
+    ({ entry }) =>
+      entry.expiresAt !== null && Date.parse(entry.expiresAt) < Date.now()
+  )
+
+  for (const { pathname, entry } of stale) {
+    await Snapshot.get({ snapshotId: entry.snapshotId })
+      .then((snapshot) => snapshot.delete())
+      .catch((error: Error) => {
+        console.warn(`Couldn't delete ${entry.snapshotId}: ${error.message}`)
+      })
+    await del(pathname, options)
+    console.log(`Deleted old production snapshot ${entry.snapshotId}`)
+  }
+  for (const { pathname } of expired) await del(pathname, options)
+}
+
+async function prepareDeployment() {
+  const vercelEnv = process.env.VERCEL_ENV
+  if (!vercelEnv) {
+    console.log(
+      'Not a Vercel build, so no render snapshot. Local renders use VIDEO_SNAPSHOT_ID.'
+    )
+    return
+  }
+  if (process.env.VIDEO_RENDER_SNAPSHOT === 'off') {
+    console.warn(
+      "VIDEO_RENDER_SNAPSHOT=off: this deployment can't render videos"
+    )
+    return
+  }
+  const environment = vercelEnv === 'production' ? 'production' : 'preview'
+
+  const { hash } = await bundleVideos()
+  const pathname = `${INDEX_PREFIX}${hash}.json`
+  let entry = await readEntry(pathname)
+  if (entry && (await isReusable(entry, environment))) {
+    console.log(`Reusing snapshot ${entry.snapshotId} for bundle ${hash}`)
+  } else {
+    const hours = environment === 'production' ? 0 : PREVIEW_SNAPSHOT_HOURS
+    const snapshotId = await snapshotBundle(hours)
+    entry = {
+      bundleHash: hash,
+      snapshotId,
+      environment,
+      createdAt: new Date().toISOString(),
+      expiresAt: hours
+        ? new Date(Date.now() + hours * 3_600_000).toISOString()
+        : null,
+    }
+    await put(pathname, JSON.stringify(entry), {
+      ...(await indexOptions()),
+      contentType: 'application/json',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+    })
+  }
+
+  await writeFile(
+    DEPLOYMENT_FILE,
+    JSON.stringify({ snapshotId: entry.snapshotId, bundleHash: hash }) + '\n'
+  )
+  if (environment === 'production') await pruneSnapshots(hash)
+}
+
 const { positionals, values } = parseArgs({
   allowPositionals: true,
   options: {
@@ -190,6 +342,13 @@ if (command === 'bundle') {
     throw new Error('--theme must be dark or light')
   }
   await renderSample(values.snapshot, kinds, values.theme)
+} else if (command === 'prepare') {
+  try {
+    await prepareDeployment()
+  } catch (error) {
+    if (process.env.VERCEL_ENV === 'production') throw error
+    console.warn("Couldn't prepare a render snapshot for this preview", error)
+  }
 } else if (command === 'delete-snapshot') {
   if (!argument) throw new Error('Pass the snapshot ID')
   const snapshot = await Snapshot.get({ snapshotId: argument })
@@ -197,6 +356,6 @@ if (command === 'bundle') {
   console.log(`Deleted ${argument}`)
 } else {
   throw new Error(
-    'Usage: node scripts/video-render.mts bundle | snapshot | sample --snapshot <id> | delete-snapshot <id>'
+    'Usage: node scripts/video-render.mts bundle | snapshot | sample --snapshot <id> | delete-snapshot <id> | prepare'
   )
 }

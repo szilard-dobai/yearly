@@ -1,5 +1,6 @@
 import { withSentryConfig } from '@sentry/nextjs/config'
 import type { NextConfig } from 'next'
+import { withWorkflow } from 'workflow/next'
 
 const IMMUTABLE = [
   { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
@@ -26,7 +27,7 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withWorkflow(nextConfig), {
   org: 'szilard-dobai',
   project: 'yearly',
   authToken: process.env.SENTRY_AUTH_TOKEN,

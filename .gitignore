@@ -20,6 +20,9 @@
 # production
 /build
 
+# paid video bundle and sample renders (scripts/video-render.mts)
+/.video-render
+
 # misc
 .DS_Store
 *.pem

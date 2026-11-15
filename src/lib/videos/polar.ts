@@ -15,6 +15,7 @@ const PRODUCT_IDS: Record<PolarEnvironment, Record<VideoPack, string>> = {
 }
 
 export const ORDER_ID_METADATA_KEY = 'video_order_id'
+export const PERIOD_METADATA_KEY = 'video_period'
 
 export function getPolarEnvironment(): PolarEnvironment {
   return process.env.POLAR_ENVIRONMENT === 'production'
@@ -55,6 +56,7 @@ function rejectsEmail(error: unknown): boolean {
 
 export async function createVideoCheckout(input: {
   orderId: string
+  period: string
   pack: VideoPack
   userId: string
   email: string
@@ -67,7 +69,10 @@ export async function createVideoCheckout(input: {
       external_customer_id: input.userId,
       customer_email: customerEmail,
       customer_ip_address: input.ipAddress,
-      metadata: { [ORDER_ID_METADATA_KEY]: input.orderId },
+      metadata: {
+        [ORDER_ID_METADATA_KEY]: input.orderId,
+        [PERIOD_METADATA_KEY]: input.period,
+      },
       allow_discount_codes: false,
       success_url: `${input.origin}/create?video_order=${input.orderId}`,
       return_url: `${input.origin}/create`,

@@ -149,6 +149,7 @@ describe('/api/videos/orders', () => {
     )
     expect(createVideoCheckout).toHaveBeenCalledWith({
       orderId: 'order-1',
+      period: '2026',
       pack: 'year',
       userId: 'ana',
       email: 'ana@example.com',

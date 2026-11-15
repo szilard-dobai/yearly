@@ -11,6 +11,7 @@ vi.mock('@polar-sh/sdk/2026-10', async (importOriginal) => ({
 
 const INPUT = {
   orderId: 'order-1',
+  period: '2026',
   pack: 'year' as const,
   userId: 'ana',
   email: 'ana@example.com',
@@ -38,7 +39,7 @@ describe('createVideoCheckout', () => {
         products: ['3cd231f4-04f8-44ed-a015-b88f0718852b'],
         external_customer_id: 'ana',
         customer_email: 'ana@example.com',
-        metadata: { video_order_id: 'order-1' },
+        metadata: { video_order_id: 'order-1', video_period: '2026' },
         success_url: 'https://www.yearly.world/create?video_order=order-1',
       })
     )

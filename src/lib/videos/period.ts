@@ -16,6 +16,10 @@ export function periodPrefix(period: VideoPeriod): string {
     : `${period.year}-${String(period.month + 1).padStart(2, '0')}-`
 }
 
+export function periodKey(period: VideoPeriod): string {
+  return periodPrefix(period).slice(0, -1)
+}
+
 export function daysInPeriod(
   days: Record<string, string[]>,
   period: VideoPeriod

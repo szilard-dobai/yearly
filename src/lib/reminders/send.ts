@@ -12,7 +12,11 @@ export const RATE_LIMIT_RETRIES = 3
 const DEFAULT_RATE_LIMIT_WAIT_MS = 1000
 const MAX_RATE_LIMIT_WAIT_MS = 10_000
 
-export type ClaimedReminder = { id: string; email: string }
+export type ClaimedReminder = {
+  id: string
+  email: string
+  maybeSentBefore: boolean
+}
 
 // rejected: Resend refused it, so it wasn't sent; unknown: it may have been sent,
 // so only a retry with the same idempotency key is safe; not_sent: an account
@@ -44,8 +48,16 @@ export type ReminderSendCounts = {
 export interface ReminderSendStore {
   count(now: Date): Promise<ReminderSendCounts>
   claimNext(now: Date): Promise<ClaimedReminder | null>
-  markSent(id: string, emailId: string | null, now: Date): Promise<void>
-  markFailed(id: string, failure: SendFailure, now: Date): Promise<void>
+  markSent(
+    reminder: ClaimedReminder,
+    emailId: string | null,
+    now: Date
+  ): Promise<void>
+  markFailed(
+    reminder: ClaimedReminder,
+    failure: SendFailure,
+    now: Date
+  ): Promise<void>
 }
 
 export type ReminderSender = (
@@ -183,13 +195,13 @@ export async function sendYearEndReminders({
 
     const outcome = await attempt(reminder)
     if (!('kind' in outcome)) {
-      await store.markSent(reminder.id, outcome.id, now())
+      await store.markSent(reminder, outcome.id, now())
       sentNow++
       consecutiveFailures = 0
       continue
     }
 
-    await store.markFailed(reminder.id, outcome, now())
+    await store.markFailed(reminder, outcome, now())
     failed++
     lastError = outcome.code
     if (outcome.stop) {

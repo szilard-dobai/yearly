@@ -20,6 +20,8 @@ type FakeDoc = {
   email: string
   year: number
   sendClaimedAt?: Date
+  sendFirstClaimedAt?: Date
+  sendMaybeSent?: boolean
   sendAttempts?: number
   sentAt?: Date
   sendEmailId?: string
@@ -43,24 +45,29 @@ function createFakeStore(docs: FakeDoc[], year = 2026) {
     async claimNext(now) {
       const doc = forYear().find((candidate) => isClaimable(candidate, now))
       if (!doc) return null
+      const maybeSentBefore = doc.sendMaybeSent === true
       doc.sendClaimedAt = now
+      doc.sendMaybeSent = true
+      doc.sendFirstClaimedAt ??= now
       doc.sendAttempts = (doc.sendAttempts ?? 0) + 1
-      return { id: doc.id, email: doc.email }
+      return { id: doc.id, email: doc.email, maybeSentBefore }
     },
-    async markSent(id, emailId, now) {
+    async markSent({ id }, emailId, now) {
       const doc = docs.find((candidate) => candidate.id === id)!
       doc.sentAt = now
       if (emailId) doc.sendEmailId = emailId
       delete doc.sendClaimedAt
     },
-    async markFailed(id, failure, now) {
+    async markFailed({ id, maybeSentBefore }, failure, now) {
       const doc = docs.find((candidate) => candidate.id === id)!
       doc.sendFailedAt = now
       doc.sendError = failure.code
       if (failure.kind === 'unknown') return
       delete doc.sendClaimedAt
+      doc.sendMaybeSent = maybeSentBefore
       if (failure.kind === 'not_sent') doc.sendAttempts! -= 1
       if (failure.kind === 'give_up') {
+        doc.sendMaybeSent = true
         doc.sendAttempts = Math.max(doc.sendAttempts ?? 0, MAX_SEND_ATTEMPTS)
       }
     },
@@ -249,10 +256,12 @@ describe('sendYearEndReminders', () => {
     const retry = await run(store, send, clock)
 
     expect(retry.sentNow).toBe(1)
-    expect(send).toHaveBeenLastCalledWith({
-      id: 'id-2026-0',
-      email: 'person0@example.com',
-    })
+    expect(send).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        id: 'id-2026-0',
+        email: 'person0@example.com',
+      })
+    )
     expect(reminderIdempotencyKey(2026, 'id-2026-0')).toBe(
       'year-end-reminder/2026/id-2026-0'
     )
@@ -273,6 +282,66 @@ describe('sendYearEndReminders', () => {
 
     expect(send).not.toHaveBeenCalled()
     expect(result).toMatchObject({ left: 1, needsCheck: 1 })
+  })
+
+  it('measures the window from the first send, however many retries came after', async () => {
+    const docs = reminders(1)
+    const store = createFakeStore(docs)
+    const clock = createClock()
+    const send = vi.fn<ReminderSender>(async () => {
+      throw resendError('internal_server_error', 500)
+    })
+
+    await run(store, send, clock)
+    clock.advance(6 * 60 * 60 * 1000)
+    await run(store, send, clock)
+    expect(send).toHaveBeenCalledTimes(2)
+
+    clock.advance(18 * 60 * 60 * 1000)
+    const nextDay = await run(store, send, clock)
+
+    expect(send).toHaveBeenCalledTimes(2)
+    expect(nextDay).toMatchObject({ left: 1, needsCheck: 1 })
+  })
+
+  it('never resends after the window when a retry of a maybe-sent email hit the quota', async () => {
+    const docs = reminders(1)
+    const store = createFakeStore(docs)
+    const clock = createClock()
+    const send = vi
+      .fn<ReminderSender>()
+      .mockRejectedValueOnce(resendError('internal_server_error', 500))
+      .mockRejectedValueOnce(resendError('daily_quota_exceeded', 429))
+      .mockResolvedValue({ id: 'second-copy' })
+
+    await run(store, send, clock)
+    clock.advance(6 * 60 * 60 * 1000)
+    await run(store, send, clock)
+    expect(docs[0]).toMatchObject({ sendMaybeSent: true, sendAttempts: 1 })
+
+    clock.advance(18 * 60 * 60 * 1000)
+    const nextDay = await run(store, send, clock)
+
+    expect(send).toHaveBeenCalledTimes(2)
+    expect(nextDay).toMatchObject({ sentNow: 0, needsCheck: 1 })
+  })
+
+  it('still retries the next day when nothing could have been sent', async () => {
+    const docs = reminders(1)
+    const store = createFakeStore(docs)
+    const clock = createClock()
+    const send = vi
+      .fn<ReminderSender>()
+      .mockRejectedValueOnce(resendError('daily_quota_exceeded', 429))
+      .mockResolvedValue({ id: 'email' })
+
+    await run(store, send, clock)
+    expect(docs[0]).toMatchObject({ sendMaybeSent: false })
+
+    clock.advance(24 * 60 * 60 * 1000)
+    const nextDay = await run(store, send, clock)
+
+    expect(nextDay).toMatchObject({ sentNow: 1, left: 0 })
   })
 
   it('picks up a reminder abandoned by a run that crashed mid-send', async () => {

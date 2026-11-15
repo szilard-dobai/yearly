@@ -165,11 +165,15 @@ describe.skipIf(!MONGO_TEST_URL)(
         {
           ...recent,
           sendClaimedAt: ago(CLAIM_TIMEOUT_MS + 1000),
+          sendFirstClaimedAt: ago(CLAIM_TIMEOUT_MS + 1000),
+          sendMaybeSent: true,
           sendAttempts: 1,
         },
         {
           ...stale,
           sendClaimedAt: ago(IDEMPOTENCY_WINDOW_MS + 1000),
+          sendFirstClaimedAt: ago(IDEMPOTENCY_WINDOW_MS + 1000),
+          sendMaybeSent: true,
           sendAttempts: 1,
         },
       ])
@@ -184,17 +188,47 @@ describe.skipIf(!MONGO_TEST_URL)(
       expect(result).toMatchObject({ sentNow: 1, left: 1, needsCheck: 1 })
     })
 
+    it('never resends after the key window once an attempt may have gone out', async () => {
+      const doc = reminder(0)
+      await reminders.insertOne(doc)
+      let time = NOW.getTime()
+      const now = () => new Date(time)
+      const { EmailSendError } = await import('@/lib/email/send')
+      const outcomes = [
+        new EmailSendError('down', 'internal_server_error', 500),
+        new EmailSendError('quota', 'daily_quota_exceeded', 429),
+      ]
+      let calls = 0
+      const send = async () => {
+        calls++
+        const outcome = outcomes.shift()
+        if (outcome) throw outcome
+        return { id: 'second-copy' }
+      }
+
+      await runs(1, send, now)
+      time += 6 * 60 * 60 * 1000
+      await runs(1, send, now)
+      time += 18 * 60 * 60 * 1000
+      const [nextDay] = await runs(1, send, now)
+
+      expect(calls).toBe(2)
+      expect(nextDay).toMatchObject({ sentNow: 0, left: 1, needsCheck: 1 })
+    })
+
     it('stores each kind of failure the way the next run expects', async () => {
       const store = createReminderSendStore(reminders, 2026)
       const docs = Array.from({ length: 4 }, (_, index) => reminder(index))
       await reminders.insertMany(docs)
+      const claimed = []
       for (let index = 0; index < docs.length; index++) {
-        await store.claimNext(NOW)
+        claimed.push((await store.claimNext(NOW))!)
       }
+      expect(claimed.every((claim) => !claim.maybeSentBefore)).toBe(true)
       const kinds = ['rejected', 'unknown', 'not_sent', 'give_up'] as const
       for (const [index, kind] of kinds.entries()) {
         await store.markFailed(
-          docs[index]._id!.toHexString(),
+          claimed[index],
           { kind, code: `${kind}_code` },
           NOW
         )
@@ -215,6 +249,17 @@ describe.skipIf(!MONGO_TEST_URL)(
         false,
         false,
       ])
+      expect(stored.map((doc) => doc.sendMaybeSent)).toEqual([
+        false,
+        true,
+        false,
+        true,
+      ])
+      expect(
+        stored.every(
+          (doc) => doc.sendFirstClaimedAt?.getTime() === NOW.getTime()
+        )
+      ).toBe(true)
       expect(stored.every((doc) => doc.sendError?.endsWith('_code'))).toBe(true)
     })
 
@@ -233,11 +278,37 @@ describe.skipIf(!MONGO_TEST_URL)(
           sendError: 'x',
         },
         { sendAttempts: 1, sendClaimedAt: ago(1000) },
-        { sendAttempts: 1, sendClaimedAt: ago(CLAIM_TIMEOUT_MS + 1000) },
-        { sendAttempts: 2, sendClaimedAt: ago(IDEMPOTENCY_WINDOW_MS + 1000) },
+        {
+          sendAttempts: 1,
+          sendClaimedAt: ago(CLAIM_TIMEOUT_MS + 1000),
+          sendFirstClaimedAt: ago(CLAIM_TIMEOUT_MS + 1000),
+          sendMaybeSent: true,
+        },
+        {
+          sendAttempts: 2,
+          sendClaimedAt: ago(CLAIM_TIMEOUT_MS + 1000),
+          sendFirstClaimedAt: ago(IDEMPOTENCY_WINDOW_MS + 1000),
+          sendMaybeSent: true,
+        },
         {
           sendAttempts: 0,
           sendFailedAt: ago(RETRY_DELAY_MS + 1000),
+          sendFirstClaimedAt: ago(IDEMPOTENCY_WINDOW_MS + 1000),
+          sendMaybeSent: false,
+          sendError: 'daily_quota_exceeded',
+        },
+        {
+          sendAttempts: 1,
+          sendFailedAt: ago(RETRY_DELAY_MS + 1000),
+          sendFirstClaimedAt: ago(IDEMPOTENCY_WINDOW_MS + 1000),
+          sendMaybeSent: true,
+          sendError: 'daily_quota_exceeded',
+        },
+        {
+          sendAttempts: 1,
+          sendFailedAt: ago(RETRY_DELAY_MS + 1000),
+          sendFirstClaimedAt: ago(60 * 60 * 1000),
+          sendMaybeSent: true,
           sendError: 'daily_quota_exceeded',
         },
       ]
@@ -262,8 +333,8 @@ describe.skipIf(!MONGO_TEST_URL)(
       expect(ids(check)).toEqual(
         ids(docs.filter((doc) => needsCheck(doc, NOW)))
       )
-      expect(ids(claimable)).toHaveLength(4)
-      expect(ids(check)).toHaveLength(2)
+      expect(ids(claimable)).toHaveLength(5)
+      expect(ids(check)).toHaveLength(3)
     })
   }
 )

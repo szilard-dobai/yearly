@@ -142,6 +142,8 @@ export interface ReminderDocument {
   createdAt: Date
   updatedAt: Date
   sendClaimedAt?: Date
+  sendFirstClaimedAt?: Date
+  sendMaybeSent?: boolean
   sendAttempts?: number
   sentAt?: Date
   sendEmailId?: string

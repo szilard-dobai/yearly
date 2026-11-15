@@ -217,24 +217,34 @@ function ImagePreviewContent({
       format,
     })
 
-    if (isMobileOrTablet && !!navigator.share) {
-      const blob = await fetch(imageDataUrl).then((r) => r.blob())
-      const file = new File([blob], filename, { type: blob.type })
-
-      navigator.share({
-        files: [file],
-        title: 'My trips this year',
-        text: buildShareText(
-          process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-        ),
-      })
-    } else {
+    const saveImage = () => {
       const link = document.createElement('a')
       link.download = filename
       link.href = imageDataUrl
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+    }
+
+    if (isMobileOrTablet && !!navigator.share) {
+      const blob = await fetch(imageDataUrl).then((r) => r.blob())
+      const file = new File([blob], filename, { type: blob.type })
+
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'My trips this year',
+          text: buildShareText(
+            process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+          ),
+        })
+      } catch (error) {
+        const cancelled =
+          error instanceof DOMException && error.name === 'AbortError'
+        if (!cancelled) saveImage()
+      }
+    } else {
+      saveImage()
     }
 
     maybeShowPrompt()

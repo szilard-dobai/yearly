@@ -1,15 +1,19 @@
 'use client'
 
 import CopyButton from '@/components/admin/CopyButton'
-import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
+import YearEndReminderSendActions from '@/components/admin/YearEndReminderSendActions'
+import {
+  getReminderSendWindowLabel,
+  REMINDER_DATE_LABEL,
+} from '@/lib/reminders/date'
 import type { ReminderStats } from '@/lib/reminders/stats'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 type Result =
-  | { key: number; stats: ReminderStats; failed: false }
-  | { key: number; stats: null; failed: true }
+  | { key: string; stats: ReminderStats; failed: false }
+  | { key: string; stats: null; failed: true }
 
 function Metric({
   label,
@@ -41,28 +45,30 @@ export default function YearEndReminderPanel({
   refreshKey: number
 }) {
   const [result, setResult] = useState<Result | null>(null)
+  const [reloads, setReloads] = useState(0)
+  const loadKey = `${refreshKey}:${reloads}`
 
   useEffect(() => {
     let cancelled = false
+    const key = `${refreshKey}:${reloads}`
     fetch('/api/reminders/stats')
       .then((response) => {
         if (!response.ok) throw new Error(String(response.status))
         return response.json() as Promise<ReminderStats>
       })
       .then((stats) => {
-        if (!cancelled) setResult({ key: refreshKey, stats, failed: false })
+        if (!cancelled) setResult({ key, stats, failed: false })
       })
       .catch(() => {
-        if (!cancelled)
-          setResult({ key: refreshKey, stats: null, failed: true })
+        if (!cancelled) setResult({ key, stats: null, failed: true })
       })
     return () => {
       cancelled = true
     }
-  }, [refreshKey])
+  }, [refreshKey, reloads])
 
   const stats = result?.stats
-  const isRefreshing = !!result && result.key !== refreshKey
+  const isRefreshing = !!result && result.key !== loadKey
 
   return (
     <section
@@ -100,21 +106,47 @@ export default function YearEndReminderPanel({
           Couldn&apos;t load the reminder stats.
         </p>
       ) : (
-        <dl
-          className={cn(
-            'grid grid-cols-2 gap-6 transition-opacity md:grid-cols-4',
-            isRefreshing && 'opacity-40'
-          )}
-        >
-          <Metric
-            label="Email sign-ups"
-            value={stats.total}
-            hint={`${stats.lastSevenDays.toLocaleString()} in the last 7 days`}
-          />
-          <Metric label="Apple / Outlook" value={stats.calendarAdds.ics} />
-          <Metric label="Google Calendar" value={stats.calendarAdds.google} />
-          <Metric label="Cards shown" value={stats.shown} />
-        </dl>
+        <div className={cn('transition-opacity', isRefreshing && 'opacity-40')}>
+          <dl className="grid grid-cols-2 gap-6 md:grid-cols-4">
+            <Metric
+              label="Email sign-ups"
+              value={stats.total}
+              hint={`${stats.lastSevenDays.toLocaleString()} in the last 7 days`}
+            />
+            <Metric label="Apple / Outlook" value={stats.calendarAdds.ics} />
+            <Metric label="Google Calendar" value={stats.calendarAdds.google} />
+            <Metric label="Cards shown" value={stats.shown} />
+          </dl>
+
+          <div className="mt-6 border-t border-gray-200 pt-4 dark:border-white/8">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-zinc-100">
+              Sending
+            </h3>
+            <p className="mb-4 text-xs text-gray-500 dark:text-zinc-400">
+              The cron sends from {getReminderSendWindowLabel()}. Each address
+              gets one email
+            </p>
+            <dl className="grid grid-cols-2 gap-6 md:grid-cols-4">
+              <Metric label="Sent" value={stats.send.sent} />
+              <Metric
+                label="Failed"
+                value={stats.send.failed}
+                hint={
+                  stats.send.needsCheck > 0
+                    ? `${stats.send.needsCheck.toLocaleString()} won't be retried; check Resend's logs`
+                    : undefined
+                }
+              />
+              <Metric label="Left" value={stats.send.left} />
+            </dl>
+            <div className="mt-4">
+              <YearEndReminderSendActions
+                blocked={stats.send.blocked}
+                onRunFinished={() => setReloads((count) => count + 1)}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </section>
   )

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { GET } from './route'
 
 const requireAdmin = vi.fn()
-const reminders = { find: vi.fn() }
+const reminders = { find: vi.fn(), countDocuments: vi.fn() }
 const tracking = { aggregate: vi.fn() }
 
 vi.mock('@/lib/tracking/api', () => ({
@@ -24,6 +24,12 @@ describe('GET /api/reminders/stats', () => {
       now: new Date('2026-11-07T12:00:00Z'),
     })
     requireAdmin.mockReset().mockResolvedValue(null)
+    reminders.countDocuments.mockReset().mockImplementation(async (filter) => {
+      if (filter.$or) return 0
+      if (filter.sendError) return 0
+      if (filter.sentAt?.$exists === true) return 0
+      return 2
+    })
     reminders.find.mockReset().mockReturnValue({
       toArray: () =>
         Promise.resolve([
@@ -51,6 +57,39 @@ describe('GET /api/reminders/stats', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+    vi.unstubAllEnvs()
+  })
+
+  it('shows how the send is going and allows a run on the day itself', async () => {
+    vi.setSystemTime(new Date('2026-12-01T10:00:00Z'))
+    vi.stubEnv('VERCEL_ENV', 'production')
+    reminders.countDocuments.mockImplementation(async (filter) => {
+      if (filter.$or && filter.sendAttempts) return 0
+      if (filter.$or) return 1
+      if (filter.sendError) return 1
+      if (filter.sentAt?.$exists === true) return 40
+      return 42
+    })
+
+    const response = await GET(request())
+
+    expect((await response.json()).send).toEqual({
+      sent: 40,
+      failed: 1,
+      left: 2,
+      needsCheck: 1,
+      blocked: null,
+    })
+  })
+
+  it('says when sending opens', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production')
+
+    const response = await GET(request())
+
+    expect((await response.json()).send.blocked).toBe(
+      'Reminders only send from 1\u00a0Dec to 3\u00a0Dec (UTC)'
+    )
   })
 
   it('requires an admin session', async () => {
@@ -74,6 +113,13 @@ describe('GET /api/reminders/stats', () => {
       emails: ['early@example.com', 'recent@example.com'],
       shown: 30,
       calendarAdds: { ics: 6, google: 2 },
+      send: {
+        sent: 0,
+        failed: 0,
+        left: 2,
+        needsCheck: 0,
+        blocked: 'Reminders only send from production',
+      },
     })
     expect(reminders.find).toHaveBeenCalledWith(
       { year: 2026 },

@@ -3,6 +3,7 @@ import { user } from '@/lib/db/schema'
 import { sendEmail } from '@/lib/email/send'
 import { signInCodeEmail } from '@/lib/email/sign-in-code'
 import { unlinkUserActivity } from '@/lib/tracking/unlink-user'
+import { deleteUserVideos } from '@/lib/videos/delete'
 import { headers } from 'next/headers'
 import { after } from 'next/server'
 import { createAuth } from './config'
@@ -16,6 +17,7 @@ export const auth = createAuth({
   onSignUp: (signUp) => {
     after(() => notifySignUpToSlack(signUp, () => db.$count(user)))
   },
+  beforeDeleteUser: (userId) => deleteUserVideos(db, userId),
   onUserDeleted: (userId) => {
     after(() => unlinkUserActivity(userId))
   },

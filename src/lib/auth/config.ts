@@ -43,6 +43,7 @@ interface CreateAuthOptions {
   db: Database
   sendSignInCode: (email: string, code: string) => Promise<void>
   onSignUp?: (signUp: SignUp) => void
+  beforeDeleteUser?: (userId: string) => Promise<void>
   onUserDeleted?: (userId: string) => void
   secret?: string
 }
@@ -51,6 +52,7 @@ export function createAuth({
   db,
   sendSignInCode,
   onSignUp,
+  beforeDeleteUser,
   onUserDeleted,
   secret,
 }: CreateAuthOptions) {
@@ -78,6 +80,9 @@ export function createAuth({
     user: {
       deleteUser: {
         enabled: true,
+        beforeDelete: beforeDeleteUser
+          ? (user) => beforeDeleteUser(user.id)
+          : undefined,
         afterDelete: async (user) => onUserDeleted?.(user.id),
       },
     },

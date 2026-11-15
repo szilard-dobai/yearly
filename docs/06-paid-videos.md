@@ -50,7 +50,7 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 5. With a credit: "Your first video is free", then straight to step 7.
 6. Without one: the dialog saves a draft order with the video data it previewed, then opens Polar's checkout over the page, with the account email filled in and the EU consent to immediate delivery of digital content.
 7. Polar's `order.paid` webhook marks the order paid and starts the Workflow run. The browser's return from checkout is never trusted for this.
-8. The dialog shows "Making your videos, about 1–2 minutes" and checks the status every few seconds. An email says when they're ready, so people in an in-app browser can close it.
+8. The dialog shows "Making your videos, usually under a minute" and checks the status every few seconds. An email says when they're ready, so people in an in-app browser can close it.
 9. The videos play without the watermark. **Save video** opens the share sheet on phones (Save to Photos) and downloads on desktop.
 10. Later, on `/account`: download again, or **Update with my latest trips** (with the number of updates left).
 
@@ -63,11 +63,11 @@ Polar sends the receipt. We send the "ready" email, which links to `/account`.
 1. **Draft order.** Before checkout, `POST /api/videos/orders` stores the video data the dialog previewed (`YearVideoData` or `MonthVideoData`, both themes, week start), validated with Zod: the right period, real country codes, size limits. Rendering what was previewed means people get exactly what they saw.
 2. **Payment.** Polar's checkout carries the draft order ID as metadata. The webhook, verified by signature and safe to receive twice, marks the order paid.
 3. **Workflow run**, one per version (the first render or an update):
-   1. Create a sandbox for each video and start the renders in parallel, detached.
-   2. Check progress with durable sleeps, which use no compute and don't touch the database.
-   3. Upload the MP4s to Blob.
+   1. Restore one sandbox per video from the deploy-time snapshot, with 4 vCPU, and start each render detached with `concurrency: 4`.
+   2. Check progress with durable sleeps a few seconds apart, which use no compute and don't touch the database. Each sandbox uploads its MP4 to Blob (detached renders require Blob).
+   3. Stop each sandbox as soon as its render is done or has failed. Otherwise a detached render keeps it running for 30 minutes, which costs about five times the render.
    4. Mark the render ready in Postgres and send the email.
-   5. Retry failed steps. After the last retry: mark it failed, alert Sentry and Slack, and refund from Polar if it can't be fixed the same day. The buyer sees "We're on it, we'll email you", never an error message.
+   5. Retry failed steps, with backoff so a burst after the launch email waits for Sandbox's rate limit. After the last retry: mark it failed, alert Sentry and Slack, and refund from Polar if it can't be fixed the same day. The buyer sees "We're on it, we'll email you", never an error message.
 4. **Updates** post new video data to the pack. The server checks the 80% rule and the update count, then starts a new run.
 
 Neon is touched when the order is created, when it's paid, when the render is ready, and while the buyer's dialog checks the status. There is no per-minute cron and no job queue checking Postgres: each check keeps Neon awake for 5 minutes, so a per-minute cron would use all ~730 hours of a month, against 100 on the free plan.
@@ -79,7 +79,25 @@ The daily `/api/cron/retention` job also deletes unpaid draft orders older than 
 - A Remotion entry registers `YearFillVideo`, `StatsVideo` and `MonthVideo` without `PreviewWatermark`. The preview and the server use the same compositions.
 - The bundle is built with each deployment, so a render uses the same code as the preview people saw.
 - Geist and Newsreader are bundled as font files; the `next/font` CSS variables don't exist outside the app.
-- Pin `@remotion/vercel` exactly. Remotion marks it experimental.
+- Pin `@remotion/vercel`, `remotion` and `@remotion/bundler` at one version (4.0.541 was tested), and `@vercel/sandbox` at 1.6.0. Remotion marks `@remotion/vercel` experimental, and newer `@vercel/sandbox` versions replace the runtimes it relies on.
+- **Snapshots, not fresh sandboxes.** `createSandbox()` installs system packages, glibc, Chrome and npm packages from the internet on every call, which takes about 37 s and depends on outside services. The deploy builds a snapshot instead (about 0.74 GB) and every render restores it in under a second. Build snapshots only in production and only when the bundle changes, and delete old ones: they never expire, Hobby allows 15 GB for the account's lifetime, and Pro charges about $0.06 a month each. A snapshot belongs to one region.
+- The sandbox has no emoji font, so the medals came out blank in the render test. Since PR #69 every flag and medal is an image under `/emoji/`, so the server bundle has to include `public/emoji`.
+
+### Render test (15 November)
+
+The homepage example trips (10 countries, 67 days), 1080×1920 at 30 fps, in `fra1`. 46 renders on 42 sandboxes, none failed.
+
+| Pack                             | Wall-clock (start to all MP4s) | Cost (fra1, Pro rates) | Files  |
+| -------------------------------- | ------------------------------ | ---------------------- | ------ |
+| Year: 4 sandboxes × 4 vCPU       | 15.5–16.1 s                    | about 2.4¢             | 5.1 MB |
+| Year: 1 sandbox, videos in turn  | 53 s                           | about 1.1¢             |        |
+| Month: 2 sandboxes × 4 vCPU      | 12.5–13.0 s                    | about 1.1¢             | 1.5 MB |
+| Month: 1 sandbox, videos in turn | 22 s                           | about 0.7¢             |        |
+
+- Chrome is the bottleneck, not encoding. 4 vCPU with `concurrency: 4` is the fastest setup on Hobby (8 vCPU wasn't available to test).
+- Most of the parallel setup's cost is memory: each sandbox is billed for at least a minute. One sandbox per video is worth it because the buyer is watching the progress.
+- Restoring a snapshot takes 0.7–1.3 s; Chrome starting and picking the composition about 1.5 s per render.
+- Limits: Hobby allows 10 sandboxes at once. Pro starts at 150 new vCPU a minute, about 9 year packs a minute.
 
 ### Flags
 
@@ -102,7 +120,7 @@ New Postgres tables (names follow the existing singular style):
 
 - Deleting an account deletes its orders, renders and their Blob files. Blob files aren't removed by the database cascade, so account deletion has to delete them explicitly.
 - Polar is the seller and keeps the tax records, so our rows don't need to outlive the account.
-- Collecting purchases and storing trip data with them means updating `/privacy` and `docs/05-record-of-processing.md` in the same PR, with Polar as an independent controller and Vercel Sandbox, Workflow and Blob as processors. Check which regions Sandbox offers and prefer an EU one.
+- Collecting purchases and storing trip data with them means updating `/privacy` and `docs/05-record-of-processing.md` in the same PR, with Polar as an independent controller and Vercel Sandbox, Workflow and Blob as processors. Sandboxes run in Frankfurt (`fra1`, the project's default region), so trip data stays in the EU.
 
 ## Pages
 
@@ -122,15 +140,17 @@ User-facing copy is written with the `copywriting` and `cro` skills against `.ag
 
 Per sale, at $2.99:
 
-| Item                       | Cost                                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Polar                      | About 5% + 50¢, plus about 1.5% for non-US cards: roughly $0.65–0.70 (**confirm** on Polar's fee page) |
-| Rendering, year pack       | About 3–4¢ (4 videos, ~1,600 frames, assuming ~3 minutes on 4 CPUs; **measure** in the spike)          |
-| Rendering, month pack      | About 2¢                                                                                               |
-| With all 3 updates used    | Up to about 15¢                                                                                        |
-| Blob storage and downloads | Under 1¢                                                                                               |
+| Item                       | Cost                                                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Tax                        | Included in the $2.99 everywhere except the US, Canada and India, where it's added on top. An EU buyer at 19% VAT leaves $2.51 |
+| Polar                      | About 5% + 50¢, plus about 1.5% for non-US cards: roughly $0.65–0.70 (**confirm** on Polar's fee page)                         |
+| Rendering, year pack       | About 2.4¢ (measured, see Render test)                                                                                         |
+| Rendering, month pack      | About 1.1¢                                                                                                                     |
+| With all 3 updates used    | Up to about 9.4¢ (year) or 4.4¢ (month)                                                                                        |
+| Blob storage and downloads | Under 1¢ (5.1 MB per year pack)                                                                                                |
+| **Left per sale**          | **About $1.85 from an EU buyer, about $2.30 from a US buyer**                                                                  |
 
-Fixed per month once selling: Vercel Pro $20 (Hobby forbids commercial use), Neon Launch about $15, Resend Pro $20 if the waitlist and sign-ins need it. About $55 a month, covered by roughly 25 sales.
+Fixed per month once selling: Vercel Pro $20 (Hobby forbids commercial use), Neon Launch about $15, Resend Pro $20 if the waitlist and sign-ins need it, and about $0.06 per kept snapshot. About $55 a month, covered by roughly 30 sales.
 
 ## Before the first sale
 
@@ -143,7 +163,7 @@ Fixed per month once selling: Vercel Pro $20 (Hobby forbids commercial use), Neo
 
 | When                   | What                                                                                                                                                                        |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 16–20 November         | `/videos` and the purchase terms, then apply to Polar. One-day spike: render the three videos in a Vercel Sandbox and measure time, start-up and cost. Flag image script    |
+| 16–20 November         | Done: `/videos` with the price and refund terms (PR #68), flag images everywhere (PR #69), the Sandbox render test. Apply to Polar                                          |
 | 23–27 November         | Accounts launch (23rd). `video_order`, `video_render`, `video_credit`. Remotion entry and server bundle. The Workflow pipeline with Blob uploads and the "ready" email      |
 | 30 November–4 December | Checkout and progress in the export dialog, `/account` videos and updates, admin orders, privacy and record of processing, paid plans, credits import, launch email. Launch |
 
@@ -154,7 +174,7 @@ The 1 December year-end reminder email goes out in the same week, so it can ment
 - **Stripe Managed Payments.** Cheaper on small sales (3.5% on top of Stripe's normal fees), but access depends on a review and Romania wasn't confirmed as a supported country.
 - **Paddle.** Same fees as Polar, but the strictest and slowest approval, which risks early December.
 - **Lemon Squeezy.** Being folded into Stripe.
-- **Remotion Lambda.** Mature and the cheapest per render (about 1–2¢ a pack), can run in Frankfurt, and has its own completion webhook. Needs an AWS account, permissions and a raised concurrency quota. **The fallback if the Sandbox spike is slow or unreliable.**
+- **Remotion Lambda.** Mature and the cheapest per render (about 1–2¢ a pack), can run in Frankfurt, and has its own completion webhook. Needs an AWS account, permissions and a raised concurrency quota. Not needed: Sandbox made a year pack in about 16 s for about 2.4¢, with no failures in 46 renders.
 - **Rendering in the browser** (`renderMediaOnWeb`). No server cost, but needs Safari 26 or later, may not work in in-app browsers, and stops when the tab goes to the background. A paid video that won't render on the buyer's phone means a refund.
 - **pg-boss and a worker on a server.** A fixed $35–70 a month before any sale, keeps Neon awake all month, one machine renders one pack at a time, and it's a server to maintain.
 - **A table and a per-minute cron.** Keeps Neon awake all month for the same reason.

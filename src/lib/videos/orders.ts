@@ -22,17 +22,18 @@ export type VideoRender = typeof videoRenders.$inferSelect
 
 const ACTIVE_RENDER: ReadonlySet<string> = new Set(['queued', 'rendering'])
 
+function unexpiredCredit(email: string) {
+  return and(
+    eq(videoCredits.email, email.toLowerCase()),
+    gt(videoCredits.expiresAt, sql`now()`)
+  )
+}
+
 export async function hasFreeVideo(db: Database, email: string) {
   const [credit] = await db
     .select({ email: videoCredits.email })
     .from(videoCredits)
-    .where(
-      and(
-        eq(videoCredits.email, email.toLowerCase()),
-        isNull(videoCredits.claimedAt),
-        gt(videoCredits.expiresAt, sql`now()`)
-      )
-    )
+    .where(unexpiredCredit(email))
   return Boolean(credit)
 }
 
@@ -56,15 +57,8 @@ export async function createOrder(
     const orderId = randomUUID()
     const claimed = input.emailVerified
       ? await tx
-          .update(videoCredits)
-          .set({ claimedAt: sql`now()` })
-          .where(
-            and(
-              eq(videoCredits.email, input.email.toLowerCase()),
-              isNull(videoCredits.claimedAt),
-              gt(videoCredits.expiresAt, sql`now()`)
-            )
-          )
+          .delete(videoCredits)
+          .where(unexpiredCredit(input.email))
           .returning({ email: videoCredits.email })
       : []
     const free = claimed.length > 0
@@ -82,13 +76,6 @@ export async function createOrder(
         paidAt: free ? new Date() : null,
       })
       .returning()
-
-    if (free) {
-      await tx
-        .update(videoCredits)
-        .set({ orderId })
-        .where(eq(videoCredits.email, input.email.toLowerCase()))
-    }
 
     const [render] = await tx
       .insert(videoRenders)

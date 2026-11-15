@@ -1,8 +1,6 @@
 CREATE TABLE "video_credit" (
 	"email" text PRIMARY KEY NOT NULL,
 	"source" text NOT NULL,
-	"order_id" text,
-	"claimed_at" timestamp with time zone,
 	"expires_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -40,7 +38,6 @@ CREATE TABLE "video_render" (
 	CONSTRAINT "video_render_version" UNIQUE("order_id","version")
 );
 --> statement-breakpoint
-ALTER TABLE "video_credit" ADD CONSTRAINT "video_credit_order_id_video_order_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."video_order"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "video_order" ADD CONSTRAINT "video_order_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "video_render" ADD CONSTRAINT "video_render_order_id_video_order_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."video_order"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "video_order_user_idx" ON "video_order" USING btree ("user_id");

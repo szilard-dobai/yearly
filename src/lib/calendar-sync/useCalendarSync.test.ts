@@ -154,6 +154,37 @@ describe('useCalendarSync', () => {
     expect(onRemoteChange).not.toHaveBeenCalled()
   })
 
+  it('picks up a sign-in made on the page and is ready once the first sync is answered', async () => {
+    getSession.mockResolvedValueOnce({ data: null })
+    server = { days: { [D2]: ['DE'] }, version: 3 }
+    const { result } = renderSync(calendar([D1, 'FR']))
+    await waitFor(() => expect(result.current.sessionChecked).toBe(true))
+    expect(result.current.ready).toBe(false)
+
+    act(() => result.current.checkSession())
+
+    await waitFor(() => expect(result.current.firstSyncRequest).not.toBeNull())
+    expect(result.current.account?.id).toBe('ana')
+    expect(result.current.ready).toBe(false)
+
+    act(() => result.current.firstSyncRequest?.resolve('merge'))
+
+    await waitFor(() => expect(result.current.ready).toBe(true))
+    expect(server.days).toEqual({ [D1]: ['FR'], [D2]: ['DE'] })
+  })
+
+  it('does not start over when the same account is checked again', async () => {
+    const { result } = renderSync(calendar([D1, 'FR']))
+    await waitFor(() => expect(result.current.ready).toBe(true))
+    const calls = fetchMock.mock.calls.length
+
+    act(() => result.current.checkSession())
+
+    await waitFor(() => expect(getSession).toHaveBeenCalledTimes(2))
+    expect(fetchMock).toHaveBeenCalledTimes(calls)
+    expect(result.current.ready).toBe(true)
+  })
+
   it('stops syncing when the session has ended', async () => {
     fetchMock.mockImplementationOnce(
       async () => new Response('{}', { status: 401 })

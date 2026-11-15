@@ -40,14 +40,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useVideoSales } from '@/components/video/VideoSalesProvider'
 import { getTrafficSource } from '@/lib/attribution/traffic-source'
+import { CalendarAccountContext } from '@/lib/calendar-sync/CalendarAccountContext'
 import { useCalendarSync } from '@/lib/calendar-sync/useCalendarSync'
 import {
   ACCOUNT_PROMPT_MIN_DAYS,
   useAccountPromptDismissed,
 } from '@/lib/hooks/useAccountPrompt'
 import { getCountryByCode } from '@/lib/countries'
-import type { FeedbackSource } from '@/lib/feedback/types'
+import type { ExportType, FeedbackSource } from '@/lib/feedback/types'
 import { MONTH_NAMES, MONTH_NAMES_SHORT } from '@/lib/constants'
 import {
   dismissCalendarHint,
@@ -61,6 +63,13 @@ import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import type { VideoKind, VideoTheme } from '@/lib/video'
+import { VIDEO_PACK_PRICE } from '@/lib/video-offer'
+import {
+  readVideoReturn,
+  removeVideoReturnParams,
+} from '@/lib/videos/checkout-return'
+import { fetchVideoOrder } from '@/lib/videos/client'
 import {
   addCountryToDays,
   removeCountryFromDays,
@@ -68,7 +77,28 @@ import {
 } from '@/lib/visits'
 import { CalendarDays, Loader2, Undo2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
+import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useRef, useState } from 'react'
+
+const AnimatedVideoDialog = dynamic(
+  () => import('@/components/AnimatedVideoDialog'),
+  { ssr: false }
+)
+
+interface VideoReturnDialog {
+  year: number
+  month?: number
+  exportType: ExportType
+  kind?: VideoKind
+  theme?: VideoTheme
+  orderId?: string
+}
+
+const EXPORT_TYPE_FOR_KIND: Record<VideoKind, ExportType> = {
+  year: 'calendar',
+  stats: 'statistics',
+  month: 'monthly',
+}
 
 function getInitialData(): CalendarData {
   if (typeof window === 'undefined') {
@@ -151,6 +181,64 @@ function Create() {
   useEffect(() => {
     trackEvent('create_page_view', getTrafficSource())
   }, [])
+
+  const videoSalesEnabled = useVideoSales().enabled
+  const [videoReturn, setVideoReturn] = useState<VideoReturnDialog | null>(null)
+  const [videoReturnOpen, setVideoReturnOpen] = useState(false)
+
+  useEffect(() => {
+    const found = readVideoReturn(window.location.search)
+    const strip = setTimeout(() => removeVideoReturnParams(), 0)
+    if (!found || !videoSalesEnabled) return () => clearTimeout(strip)
+
+    let cancelled = false
+    const show = (dialog: VideoReturnDialog) => {
+      if (cancelled) return
+      setVideoReturn(dialog)
+      setVideoReturnOpen(true)
+    }
+    if (found.type === 'resume') {
+      const { kind, theme, year, month } = found.resume
+      show({ kind, theme, year, month, exportType: EXPORT_TYPE_FOR_KIND[kind] })
+    } else if (found.type === 'offer') {
+      fetchVideoOrder(found.orderId)
+        .then((order) => {
+          trackEvent('animated_video_checkout_back', {
+            pack: order.pack,
+            year: order.year,
+            ...(order.month !== null && { month: order.month }),
+          })
+          show({
+            year: order.year,
+            month: order.month ?? undefined,
+            exportType: order.pack === 'month' ? 'monthly' : 'calendar',
+          })
+        })
+        .catch(() => {})
+    } else {
+      const { orderId } = found
+      fetchVideoOrder(orderId)
+        .then((order) =>
+          show({
+            orderId,
+            year: order.year,
+            month: order.month ?? undefined,
+            exportType: order.pack === 'month' ? 'monthly' : 'calendar',
+          })
+        )
+        .catch(() =>
+          show({
+            orderId,
+            year: new Date().getFullYear(),
+            exportType: 'calendar',
+          })
+        )
+    }
+    return () => {
+      cancelled = true
+      clearTimeout(strip)
+    }
+  }, [videoSalesEnabled])
 
   const handleDataChange = useCallback(
     (newData: CalendarData) => {
@@ -350,7 +438,7 @@ function Create() {
   }
 
   return (
-    <>
+    <CalendarAccountContext value={calendarSync}>
       <Header>
         <Select
           value={selectedYear.toString()}
@@ -778,7 +866,22 @@ function Create() {
         onFormatChange={changeMonthlyFormat}
         isRendering={monthlyExportStatus === 'loading'}
       />
-    </>
+
+      {videoReturn && (
+        <AnimatedVideoDialog
+          open={videoReturnOpen}
+          onOpenChange={setVideoReturnOpen}
+          calendarData={calendarData}
+          year={videoReturn.year}
+          month={videoReturn.month}
+          exportType={videoReturn.exportType}
+          price={VIDEO_PACK_PRICE}
+          initialKind={videoReturn.kind}
+          initialTheme={videoReturn.theme}
+          initialOrderId={videoReturn.orderId}
+        />
+      )}
+    </CalendarAccountContext>
   )
 }
 

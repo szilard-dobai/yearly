@@ -3,7 +3,9 @@ import { JsonLd } from '@/components/JsonLd'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
 import SiteAnalytics from '@/components/SiteAnalytics'
-import { isAccountsEnabled } from '@/lib/auth/enabled'
+import { VideoSalesProvider } from '@/components/video/VideoSalesProvider'
+import { isAccountsEnabled, isGoogleSignInConfigured } from '@/lib/auth/enabled'
+import { isVideoSalesEnabled } from '@/lib/videos/enabled'
 import type { Metadata } from 'next'
 import { Geist, Newsreader, Roboto } from 'next/font/google'
 import './globals.css'
@@ -93,8 +95,15 @@ export default function RootLayout({
         >
           <SiteAnalytics />
           <AccountsEnabledProvider enabled={isAccountsEnabled()}>
-            <div className="flex-1">{children}</div>
-            <Footer />
+            <VideoSalesProvider
+              value={{
+                enabled: isVideoSalesEnabled(),
+                googleSignIn: isGoogleSignInConfigured(),
+              }}
+            >
+              <div className="flex-1">{children}</div>
+              <Footer />
+            </VideoSalesProvider>
           </AccountsEnabledProvider>
         </body>
       </SettingsProvider>

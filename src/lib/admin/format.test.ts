@@ -3,7 +3,9 @@ import { TRACKING_EVENT_TYPES } from '@/lib/tracking/types'
 import {
   EVENT_LABELS,
   formatLocation,
+  formatMoney,
   formatRelativeTime,
+  formatVideoPack,
   getCountryName,
   getEventLabel,
   getEventTone,
@@ -98,5 +100,30 @@ describe('getCountryName', () => {
   it('returns the country name, or the code when it is not listed', () => {
     expect(getCountryName('DE')).toBe('Germany')
     expect(getCountryName('XX')).toBe('XX')
+  })
+})
+
+describe('formatMoney', () => {
+  it.each([
+    [299, 'usd', '$2.99'],
+    [598, 'USD', '$5.98'],
+    [279, 'eur', '€2.79'],
+    [0, 'usd', '$0.00'],
+  ])('formats %i %s as "%s"', (cents, currency, expected) => {
+    expect(formatMoney(cents, currency)).toBe(expected)
+  })
+})
+
+describe('formatVideoPack', () => {
+  it('names the year of a year pack', () => {
+    expect(formatVideoPack({ pack: 'year', year: 2026, month: null })).toBe(
+      'Year 2026'
+    )
+  })
+
+  it('names the month of a month pack', () => {
+    expect(formatVideoPack({ pack: 'month', year: 2026, month: 2 })).toBe(
+      'March 2026'
+    )
   })
 })

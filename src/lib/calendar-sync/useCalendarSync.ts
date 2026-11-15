@@ -128,28 +128,37 @@ export function useCalendarSync({
     [chooseFirstSync]
   )
 
-  useEffect(() => {
-    if (!enabled) return
-    let cancelled = false
-    authClient
-      .getSession()
-      .then(({ data }) => {
-        if (cancelled) return
+  const loadSession = useCallback(
+    async (isCancelled: () => boolean) => {
+      try {
+        const { data } = await authClient.getSession()
+        if (isCancelled()) return
         setSessionChecked(true)
-        if (!data) return
+        if (!data || accountRef.current?.id === data.user.id) return
         const next = { id: data.user.id, email: data.user.email }
         accountRef.current = next
         setAccount(next)
         void run(true)
-      })
-      .catch((error: unknown) => {
+      } catch (error) {
         console.error('Failed to check the session:', error)
-      })
+      }
+    },
+    [run]
+  )
+
+  useEffect(() => {
+    if (!enabled) return
+    let cancelled = false
+    void loadSession(() => cancelled)
     return () => {
       cancelled = true
       clearTimeout(retryRef.current)
     }
-  }, [enabled, run])
+  }, [enabled, loadSession])
+
+  const checkSession = useCallback(() => {
+    if (enabled) void loadSession(() => false)
+  }, [enabled, loadSession])
 
   useEffect(() => {
     if (!account) return
@@ -157,5 +166,14 @@ export function useCalendarSync({
     return () => clearTimeout(timer)
   }, [account, calendarData, run])
 
-  return { account, sessionChecked, status, firstSyncRequest }
+  const ready = account !== null && status === 'saved' && !firstSyncRequest
+
+  return {
+    account,
+    sessionChecked,
+    status,
+    ready,
+    firstSyncRequest,
+    checkSession,
+  }
 }

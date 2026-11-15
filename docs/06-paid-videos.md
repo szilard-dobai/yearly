@@ -15,7 +15,7 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 | Part      | Choice                                                                          | Why                                                                                                                                                                                                                     |
 | --------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Products  | **Year pack** and **month pack**, $2.99 each                                    | Both videos already exist. One price, no split. Card fees make $1.99 lose about 30%                                                                                                                                     |
-| Payments  | **Polar**, as merchant of record                                                | Handles sales tax and VAT. Accepts individuals, fast approval, an official Better Auth plugin, checkout that opens over the page                                                                                        |
+| Payments  | **Polar**, as merchant of record                                                | Handles sales tax and VAT. Accepts individuals, fast approval, an official Better Auth plugin, a hosted checkout with Apple Pay and Google Pay                                                                          |
 | Rendering | **Vercel Sandbox** (`@remotion/vercel`), run by **Vercel Workflow**             | Stays on Vercel with one bill. Pay per render, no server to run. Workflow retries failed steps and waits without keeping Neon awake                                                                                     |
 | Files     | **Vercel Blob**                                                                 | Where `@remotion/vercel` uploads to. Downloads go through our own route, which checks the owner                                                                                                                         |
 | Flags     | **Noto Color waved flags, colours muted**, the same images in preview and video | Apple Color Emoji can't be used on a server. Noto's waved flags look closest to Apple's once toned down                                                                                                                 |
@@ -35,7 +35,7 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 ### Free first video
 
 - **Everyone on the video waitlist** gets one free pack, year or month, their choice. That includes people who joined before 10 November, who were promised nothing.
-- At launch, the waitlist emails (deduplicated) are copied from MongoDB into `video_credit`. The waitlist form is replaced by the buy button at the same time, so no new credits are created.
+- At launch, the waitlist emails (trimmed, lowercased, deduplicated, invalid ones skipped) are copied from MongoDB into `video_credit` by `scripts/import-video-credits.mts` (see Launch day). The waitlist form is replaced by the buy button at the same time, so no new credits are created.
 - Signing in with a matching, checked email shows "Your first video is free" and skips checkout. The credit row is deleted when the order is created, so the email isn't kept once it's used.
 - A credit can't be claimed by someone else, because signing in needs the code sent to that inbox.
 - Free packs follow the same update rules as paid ones.
@@ -48,13 +48,36 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 3. **Get my videos – $2.99.** Signed-out people sign in inside the dialog, with an email code or Google.
 4. The first-sign-in sync dialog ("This device has trips that aren't in your account") can appear here. It must finish before checkout, and the purchase picks up the merged calendar.
 5. With a credit: "Your first video is free", then straight to step 7.
-6. Without one: the dialog saves a draft order with the video data it previewed, then opens Polar's checkout over the page, with the account email filled in and the EU consent to immediate delivery of digital content.
+6. Without one: the dialog saves a draft order with the video data it previewed, then sends the tab to Polar's hosted checkout (in the site's light or dark theme), with the account email filled in and the EU consent to immediate delivery of digital content. Paying brings the tab back to `/create?video_order=<id>`, which reopens the dialog on that order. See Export dialog below for why it's a redirect rather than an embedded checkout.
 7. Polar's `order.paid` webhook marks the order paid and starts the Workflow run. The browser's return from checkout is never trusted for this.
 8. The dialog shows "Making your videos, usually under a minute" and checks the status every few seconds. An email says when they're ready, so people in an in-app browser can close it.
 9. The videos play without the watermark. **Save video** opens the share sheet on phones (Save to Photos) and downloads on desktop.
 10. Later, on `/account`: download again, or **Update with my latest trips** (with the number of updates left).
 
 Polar sends the receipt. We send the "ready" email, which links to `/account`. For the first version of a paid order, it also confirms that the buyer asked for immediate delivery and that this ended the 14-day right to cancel: EU law wants that confirmation on something the buyer keeps, and Polar's receipt may not repeat the checkout's checkbox answer.
+
+## Export dialog
+
+`AnimatedVideoDialog` keeps the waitlist exactly as it was unless `VIDEO_SALES_ENABLED=true`; the root layout passes the flag (and whether Google sign-in is set up) to the client through `VideoSalesProvider`, the way `AccountsEnabledProvider` does for accounts. With sales on:
+
+- **Pack and price.** A year or stats preview sells the year pack, a month preview the month pack, at `VIDEO_PACK_PRICE`. Signed-in people see whether a free video is waiting (`GET /api/videos/orders`).
+- **A pack they already have.** When the previewed period matches a paid order (a year or stats preview matches that year's pack, a month preview that month's pack), the dialog shows the pack instead of the offer: its videos with their posters, **Save video**, and **Update with my latest trips (N left)**, which posts the `/create` calendar for that period after a confirmation and follows the new version while the old one stays playable. `unchanged` reads "Your videos already include all your trips", `too-different` and running out of updates offer **Get a new pack**, which shows the offer again (buying the same period again is allowed) with a way back to the pack. Signed-out visitors see the offer, and the check runs again once they've signed in and their calendar is saved. The update controls are `PackUpdate`, shared with `/account`.
+- **Sign-in in the dialog.** `SignInForm` with an email code stays on the page; `/create` then checks the session again (`useCalendarSync().checkSession`) and the buy button waits, as "Saving your calendar…", until the first sync has finished, including the "This device has trips" question, which opens over the video dialog. The order is then made from the merged calendar, and the preview redraws from it before anyone pays. Google leaves the page, so its return address is `/create?video=<kind>-<theme>-<year>[-<month>]`, which reopens the dialog where it was (`lib/videos/checkout-return.ts`). Google is hidden in in-app browsers, as on `/sign-in`.
+- **Checkout is a redirect, not embedded.** Polar's embedded checkout (`@polar-sh/checkout`) only offers Apple Pay and Google Pay after Polar support enables wallets for our domain, needs every host listed under Settings → Embedding (production, each preview URL, localhost), and adds a third-party iframe inside Instagram's and TikTok's in-app browsers, where most of our traffic arrives. The hosted page has wallets out of the box, works in every browser, and we need the return path anyway for the email that links back. Before leaving, the dialog says "You'll pay on Polar's secure checkout". Coming back with the browser's back button restores the dialog from the back-forward cache and clears its "Opening checkout…" state. If embedding is wanted later, it can sit behind the same `checkoutUrl` once wallets are enabled for yearly.world.
+- **Back from checkout.** Polar's back arrow returns to `/create?video_offer=<id>`. `/create` removes the parameter after hydration like `video_order`, loads the draft for its pack and period, records `animated_video_checkout_back`, and opens the dialog on the offer, so the buyer can try checkout again.
+- **The return.** Polar adds `customer_session_token` to the success URL. `src/instrumentation-client.ts` removes it with `history.replaceState` before Sentry starts and before React hydrates, so neither Next's router, our tracking events, Sentry nor Vercel Analytics see it. `/create` then reads `video_order`, removes it after hydration (through Next's patched `replaceState`, so the router forgets it too), loads the order for its period and opens the dialog on it. Vercel Analytics' `beforeSend` also drops the token, `video_order` and `video_offer` from page URLs.
+- **Progress.** The dialog checks `GET /api/videos/orders/<id>` every 3 seconds while it's open and the order is a draft, queued or rendering, and stops when it's ready or failed, when it closes, or after 4 minutes ("Still making your videos… we'll email you"). A draft is shown as "Confirming your payment", because the webhook can land a few seconds after the redirect. A failed render shows "We're on it" and never the error. A signed-out visitor on a return link is asked to sign in, and an order that isn't theirs reads as not found.
+- **Ready.** The left side swaps the watermarked preview for the real MP4 (`<video playsInline muted autoPlay loop>`, with the render's poster when it has one), and the same Your year / Your stats and Dark / Light switches pick the file. **Save video** fetches the file into a `File` and, on phones and tablets where `navigator.canShare({ files })` is true, opens the share sheet (Save Video on iOS); everywhere else it downloads as `yearly-<year>-<video>-<theme>.mp4` or `yearly-<year>-<month>-<theme>.mp4`. On phones the selected file is fetched ahead, so the share sheet opens inside the tap; if a browser still refuses, the button asks for a second tap. Signed links last 10 minutes, so saving after 8 minutes fetches the order again first, and a video that fails to load fetches it once more.
+- **Events** (no personal data, no order IDs): `animated_video_buy_click` (now with `signedIn`, and `free` once signed in), `animated_video_sign_in_shown`, `animated_video_checkout_opened`, `animated_video_free_claimed`, `animated_video_ready`, `animated_video_saved` (`share` or `download`), `animated_video_failed` (`stage: 'order'` with the reason, or `stage: 'render'`), `animated_video_checkout_back`, and `animated_video_update_requested` (the pack, the result and where it came from). A purchase of a period they already have adds `again: true` to the buy click. Sign-in events from the dialog carry `source: 'video'`.
+
+## Account page
+
+`/account` lists **Your videos** above the calendar card when sales are on: one card per paid pack (`GET /api/videos/orders`, newest first), with the period, the purchase date and the same player and **Save video** button as the dialog. Each card shows one file at a time (Your year / Your stats for a year pack, Dark / Light), with `preload="metadata"`, no autoplay and the render's poster (older renders without one show a play button on black), so a visit fetches only each file's metadata and its poster until someone presses play.
+
+- **Update with my latest trips (N left)** asks for a confirmation that names the update it uses, then posts this device's calendar for that period. It's the synced calendar: the button stays disabled until the "Your calendar" card has finished syncing with the account, including the first-sync question. While the new version renders, the old videos stay playable and the card says "Updating your videos with your latest trips". The card then polls until it's ready.
+- The update controls are the dialog's `PackUpdate`. Refusals read in plain words: `unchanged` (the videos already include all your trips, and no update is used), `busy` (already updating), `no-updates-left` (all 3 used, get a new pack), `too-different` (updates are for adding trips or fixing a country, so get a new pack for a different calendar). Anything else is "Try again in a moment". On `/account`, "get a new pack" links to `/create`.
+- No packs: a line pointing to `/create`. A free video waiting shows "Your first video is free" with the same link.
+- `animated_video_update_requested` records the pack, the result (`started` or the refusal) and `source: 'account'`.
 
 ## Rendering
 
@@ -93,6 +116,30 @@ Webhook endpoints, subscribed to `order.paid` and `order.refunded`:
 Neon is touched when the order is created, when it's paid, when the render is ready, and while the buyer's dialog checks the status. There is no per-minute cron and no job queue checking Postgres: each check keeps Neon awake for 5 minutes, so a per-minute cron would use all ~730 hours of a month, against 100 on the free plan.
 
 The daily `/api/cron/retention` job also deletes unpaid draft orders older than a day, and alerts Slack about any render stuck for over an hour.
+
+### Admin
+
+`/admin/videos` (behind the admin password, in the admin nav only while sales are on; otherwise the page and its API return 404):
+
+- **Totals:** revenue by currency (the `amount_cents` Polar reports on paid orders, so tax included and Polar's fees not taken off), paid and free orders, refunds, failed renders (an order's latest version), renders queued or rendering, and unexpired credits.
+- **Orders**, newest first, 50 at a time: created, buyer email, pack and period, status, amount and source with a link to the Polar order (refunds are made there), the latest render's version, status, finish time and error, and updates used. Never the trips or file links: the queries don't read `video_render.data` or `files`.
+- **Render again** on an order whose latest render failed, after a confirmation. `POST /api/admin/video-orders/<orderId>/render-again` queues that render again (`resetRenderForRetry`) and starts it; anything that isn't a paid order with a failed latest render gets 409. If the render can't start, it's marked failed again with the reason, so it can be retried. The buyer gets the "ready" email when it finishes.
+
+### Launch day
+
+Before the launch email, give the waitlist its free videos. The script needs `MONGODB_URI`, `MONGODB_DB` and `DATABASE_URL_UNPOOLED` (or `DATABASE_URL`) passed in with `node --env-file`; it never reads `.env.local`, so a variable missing from the production file (Vercel leaves Sensitive ones empty when pulled) stops it rather than pointing it at development. It prints the hosts it reads from and writes to, and counts only, never emails:
+
+```sh
+vercel env pull ~/yearly-production.env --environment=production
+node --env-file=$HOME/yearly-production.env scripts/import-video-credits.mts --expires 2027-01-31
+node --env-file=$HOME/yearly-production.env scripts/import-video-credits.mts --expires 2027-01-31 --commit
+rm ~/yearly-production.env
+```
+
+- The first run is a dry run: check both hosts are production and the counts look right (found, valid, already have a credit, already used a free video, would insert). It writes only with `--commit`.
+- `--expires` is the last day a credit works; it ends at midnight UTC after it, and the retention cron then deletes unused credits.
+- Running it again is safe: emails that already have a credit are skipped (`ON CONFLICT DO NOTHING`), and so are emails whose account already used a free video, since that credit row was deleted when it was used.
+- If a variable comes back empty because it's Sensitive, copy its value from the Vercel dashboard into the file by hand.
 
 ### Video code
 
@@ -158,7 +205,7 @@ New Postgres tables (names follow the existing singular style):
 | `/terms`                 | Purchases, refunds (a refund if a video fails or comes out wrong; otherwise the EU right to cancel ends with the consent at checkout), seller details                |
 | `/privacy`               | Purchases, the trip data kept with them, Polar, Sandbox, Workflow and Blob                                                                                           |
 | Credits (`/privacy`)     | Noto Emoji, Apache License 2.0, colours adjusted                                                                                                                     |
-| `/admin`                 | Orders: status, render errors, run a render again, link to the Polar order for refunds                                                                               |
+| `/admin/videos`          | Done: totals, orders with status and render errors, run a failed render again, link to the Polar order for refunds (see Admin)                                       |
 
 User-facing copy is written with the `copywriting` and `cro` skills against `.agents/product-marketing.md`.
 
@@ -210,7 +257,7 @@ The 1 December year-end reminder email goes out in the same week. It can't menti
 
 ## Open questions
 
-- **Credit expiry.** Proposed 31 January 2027: it gives the launch email a deadline, and unclaimed emails are then deleted from Postgres, in line with deleting the waitlist 12 months after launch.
+- **Credit expiry.** Proposed 31 January 2027: it gives the launch email a deadline, and unclaimed emails are then deleted from Postgres, in line with deleting the waitlist 12 months after launch. It's the import's `--expires` parameter, so it's decided on launch day.
 - **Launch date** within the first week of December, and whether the 1 December reminder mentions videos.
 - **Consent at checkout.** Settled: both products carry a required checkbox, `delivery_consent`, asking for immediate delivery and accepting that the right to cancel ends.
 - **Remotion licence.** Free for individuals and companies of up to 3 people; recheck if that changes.

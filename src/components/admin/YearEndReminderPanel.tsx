@@ -1,7 +1,9 @@
 'use client'
 
 import CopyButton from '@/components/admin/CopyButton'
-import YearEndReminderSendActions from '@/components/admin/YearEndReminderSendActions'
+import YearEndReminderSendActions, {
+  describeRun,
+} from '@/components/admin/YearEndReminderSendActions'
 import {
   getReminderSendWindowLabel,
   REMINDER_DATE_LABEL,
@@ -46,6 +48,7 @@ export default function YearEndReminderPanel({
 }) {
   const [result, setResult] = useState<Result | null>(null)
   const [reloads, setReloads] = useState(0)
+  const [lastRun, setLastRun] = useState<string | null>(null)
   const loadKey = `${refreshKey}:${reloads}`
 
   useEffect(() => {
@@ -142,11 +145,22 @@ export default function YearEndReminderPanel({
             <div className="mt-4">
               <YearEndReminderSendActions
                 blocked={stats.send.blocked}
-                onRunFinished={() => setReloads((count) => count + 1)}
+                onRunFinished={(run) => {
+                  setLastRun(describeRun(run))
+                  setReloads((count) => count + 1)
+                }}
               />
             </div>
           </div>
         </div>
+      )}
+      {lastRun && (
+        <p
+          role="status"
+          className="mt-3 text-xs text-gray-600 dark:text-zinc-300"
+        >
+          Last run: {lastRun}
+        </p>
       )}
     </section>
   )

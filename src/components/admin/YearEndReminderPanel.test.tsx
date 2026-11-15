@@ -117,13 +117,45 @@ describe('YearEndReminderPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Send now' }))
 
     expect(
-      await screen.findByText('Sent 3, 0 failed, 1 left.')
+      await screen.findByText('Last run: Sent 3, 0 failed, 1 left.')
     ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/reminders/send',
       expect.objectContaining({ method: 'POST' })
     )
     await vi.waitFor(() => expect(metric('Sent')).toHaveTextContent('12'))
+  })
+
+  it('keeps the last run in view when the numbers fail to reload', async () => {
+    const user = userEvent.setup()
+    respond(openStats)
+    render(<YearEndReminderPanel refreshKey={0} />)
+    await user.click(await screen.findByRole('button', { name: 'Run now' }))
+
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            year: 2026,
+            total: 13,
+            alreadySent: 9,
+            sentNow: 2,
+            failed: 1,
+            left: 2,
+            needsCheck: 1,
+            stopped: 'time',
+          })
+        )
+      )
+      .mockResolvedValueOnce(new Response('{}', { status: 500 }))
+    await user.click(screen.getByRole('button', { name: 'Send now' }))
+
+    expect(
+      await screen.findByText("Couldn't load the reminder stats.")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Last run: Sent 2, 1 failed, 2 left.')
+    ).toBeInTheDocument()
   })
 
   it('sends a test to the address typed in', async () => {

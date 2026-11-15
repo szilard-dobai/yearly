@@ -201,27 +201,15 @@ export default function YearEndReminderSendActions({
   onRunFinished,
 }: {
   blocked: string | null
-  onRunFinished: () => void
+  onRunFinished: (result: ReminderSendResult) => void
 }) {
-  const [lastRun, setLastRun] = useState<string | null>(null)
-
   return (
     <div className="flex flex-wrap items-center gap-2">
       <SendTestButton />
       {blocked ? (
         <p className="text-xs text-gray-500 dark:text-zinc-400">{blocked}</p>
       ) : (
-        <RunNowButton
-          onFinished={(result) => {
-            setLastRun(describeRun(result))
-            onRunFinished()
-          }}
-        />
-      )}
-      {lastRun && (
-        <p role="status" className="text-xs text-gray-600 dark:text-zinc-300">
-          {lastRun}
-        </p>
+        <RunNowButton onFinished={onRunFinished} />
       )}
     </div>
   )

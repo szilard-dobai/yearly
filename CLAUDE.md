@@ -62,7 +62,7 @@ src/
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
 │   ├── video/                - Remotion compositions for the animated video preview (year, month, stats)
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
-│   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads
+│   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads; tapping it opens the original full size
 │   ├── Emoji.tsx             - The one image component for flags (`Flag`, `DayFlags` for one or two countries) and named emoji (`Emoji`); `size` works like a font size, or leave it out to follow the text; `resolution="large"` in exports and video, Remotion's `Img` via `as` in compositions
 │   ├── CountryInput.tsx      - Country and date picker
 │   ├── Statistics.tsx        - Travel statistics display

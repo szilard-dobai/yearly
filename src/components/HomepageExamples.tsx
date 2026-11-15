@@ -40,9 +40,7 @@ export function HomepageExamples() {
               delay={idx * 0.1}
             >
               <figure>
-                <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/8 shadow-lg dark:shadow-[0_0_40px_rgba(255,255,255,0.06)]">
-                  <HomepageExampleImage example={example} />
-                </div>
+                <HomepageExampleImage example={example} />
                 <figcaption className="mt-4 text-center text-gray-600 dark:text-zinc-400">
                   {example.caption}
                 </figcaption>

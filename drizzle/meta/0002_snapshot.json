@@ -1,5 +1,5 @@
 {
-  "id": "fca7540e-0f83-4e8c-a35c-00c62179594d",
+  "id": "6abb13a0-8651-4788-b985-addff339c625",
   "prevId": "8f020ac5-6a1c-41bd-beab-3a9618c92276",
   "version": "7",
   "dialect": "postgresql",
@@ -103,18 +103,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "order_id": {
-          "name": "order_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "claimed_at": {
-          "name": "claimed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "expires_at": {
           "name": "expires_at",
           "type": "timestamp with time zone",
@@ -130,21 +118,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "video_credit_order_id_video_order_id_fk": {
-          "name": "video_credit_order_id_video_order_id_fk",
-          "tableFrom": "video_credit",
-          "tableTo": "video_order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

@@ -81,14 +81,20 @@ export async function POST(request: Request) {
     return json({ orderId: order.id, free: true }, 201)
   }
 
-  const checkout = await createVideoCheckout({
-    orderId: order.id,
-    pack: order.pack,
-    userId: user.id,
-    email: user.email,
-    ipAddress: clientIp(request),
-    origin: new URL(request.url).origin,
-  })
+  let checkout: { id: string; url: string }
+  try {
+    checkout = await createVideoCheckout({
+      orderId: order.id,
+      pack: order.pack,
+      userId: user.id,
+      email: user.email,
+      ipAddress: clientIp(request),
+      origin: new URL(request.url).origin,
+    })
+  } catch (error) {
+    console.error('Could not create a Polar checkout', error)
+    return json({ error: "Checkout isn't available right now" }, 502)
+  }
   await setCheckout(db, order.id, checkout.id)
   return json(
     { orderId: order.id, free: false, checkoutUrl: checkout.url },

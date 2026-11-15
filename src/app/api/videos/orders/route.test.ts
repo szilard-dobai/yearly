@@ -159,6 +159,19 @@ describe('/api/videos/orders', () => {
     expect(startRender).not.toHaveBeenCalled()
   })
 
+  it("says so when Polar can't make a checkout", async () => {
+    createVideoCheckout.mockRejectedValue(new Error('Polar down'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const response = await post(BODY)
+
+    expect(response.status).toBe(502)
+    expect(await response.json()).toEqual({
+      error: "Checkout isn't available right now",
+    })
+    expect(orders.setCheckout).not.toHaveBeenCalled()
+  })
+
   it('starts the render straight away for a free video', async () => {
     orders.createOrder.mockResolvedValue({
       order: { id: 'order-1', pack: 'month' },

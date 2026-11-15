@@ -36,7 +36,7 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 
 - **Everyone on the video waitlist** gets one free pack, year or month, their choice. That includes people who joined before 10 November, who were promised nothing.
 - At launch, the waitlist emails (deduplicated) are copied from MongoDB into `video_credit`. The waitlist form is replaced by the buy button at the same time, so no new credits are created.
-- Signing in with a matching email shows "Your first video is free" and skips checkout. The credit is used when the first render starts.
+- Signing in with a matching, checked email shows "Your first video is free" and skips checkout. The credit row is deleted when the order is created, so the email isn't kept once it's used.
 - A credit can't be claimed by someone else, because signing in needs the code sent to that inbox.
 - Free packs follow the same update rules as paid ones.
 - The launch email goes to the whole waitlist through Resend. The free plan allows 100 emails a day, shared with sign-in codes, so either send in batches or move to Resend Pro first.
@@ -142,7 +142,7 @@ New Postgres tables (names follow the existing singular style):
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `video_order`  | User, pack (`year` or `month`, year, month), source (`polar` or `credit`), status (`draft`, `paid`, `refunded`), Polar checkout and order IDs, amount, updates used, times       |
 | `video_render` | Order, version (0 for the first, 1–3 for updates), the video data it was made from, status (`queued`, `rendering`, `ready`, `failed`), Workflow run ID, Blob paths, error, times |
-| `video_credit` | Email, source (`waitlist`), the order that claimed it, expiry                                                                                                                    |
+| `video_credit` | Email, source (`waitlist`), expiry. The row is deleted when the free video is used                                                                                               |
 
 - Deleting an account deletes its orders, renders and their Blob files. Blob files aren't removed by the database cascade, so Better Auth's `beforeDelete` hook deletes them first (`src/lib/videos/delete.ts`); if that fails, the account isn't deleted.
 - The daily retention cron deletes drafts older than a day and credits past their expiry.

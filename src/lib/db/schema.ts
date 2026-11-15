@@ -95,10 +95,6 @@ export const videoRenders = pgTable(
 export const videoCredits = pgTable('video_credit', {
   email: text('email').primaryKey(),
   source: text('source').$type<'waitlist'>().notNull(),
-  orderId: text('order_id').references(() => videoOrders.id, {
-    onDelete: 'set null',
-  }),
-  claimedAt: timestamp('claimed_at', { withTimezone: true }),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()

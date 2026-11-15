@@ -1,5 +1,5 @@
 import type { VideoPack } from '@/lib/db/schema'
-import { createPolar, type Environment } from '@polar-sh/sdk/2026-10'
+import { createPolar, errors, type Environment } from '@polar-sh/sdk/2026-10'
 
 export type PolarEnvironment = 'production' | 'sandbox'
 
@@ -46,6 +46,13 @@ function getPolar() {
   return client
 }
 
+function rejectsEmail(error: unknown): boolean {
+  return (
+    error instanceof errors.HTTPValidationError &&
+    JSON.stringify(error.error).includes('customer_email')
+  )
+}
+
 export async function createVideoCheckout(input: {
   orderId: string
   pack: VideoPack
@@ -54,17 +61,23 @@ export async function createVideoCheckout(input: {
   ipAddress?: string
   origin: string
 }): Promise<{ id: string; url: string }> {
-  const checkout = await getPolar().checkouts.create({
-    products: [getProductId(input.pack)],
-    external_customer_id: input.userId,
-    customer_email: input.email,
-    customer_ip_address: input.ipAddress,
-    metadata: { [ORDER_ID_METADATA_KEY]: input.orderId },
-    allow_discount_codes: false,
-    success_url: `${input.origin}/create?video_order=${input.orderId}`,
-    return_url: `${input.origin}/create`,
-    embed_origin: input.origin,
-    locale: 'en',
+  const create = (customerEmail?: string) =>
+    getPolar().checkouts.create({
+      products: [getProductId(input.pack)],
+      external_customer_id: input.userId,
+      customer_email: customerEmail,
+      customer_ip_address: input.ipAddress,
+      metadata: { [ORDER_ID_METADATA_KEY]: input.orderId },
+      allow_discount_codes: false,
+      success_url: `${input.origin}/create?video_order=${input.orderId}`,
+      return_url: `${input.origin}/create`,
+      embed_origin: input.origin,
+      locale: 'en',
+    })
+
+  const checkout = await create(input.email).catch((error: unknown) => {
+    if (rejectsEmail(error)) return create()
+    throw error
   })
   return { id: checkout.id, url: checkout.url }
 }

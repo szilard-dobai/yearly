@@ -110,7 +110,7 @@ describe('video orders', () => {
       expect(Object.keys(render.data.days)).toHaveLength(5)
     })
 
-    it('uses the free video for a checked email, once', async () => {
+    it('uses the free video for a checked email once, and forgets the email', async () => {
       await addCredit()
 
       const first = await createOrder(db, {
@@ -131,9 +131,7 @@ describe('video orders', () => {
       expect(first.free).toBe(true)
       expect(first.order).toMatchObject({ status: 'paid', source: 'credit' })
       expect(second.free).toBe(false)
-      const [credit] = await db.select().from(videoCredits)
-      expect(credit.orderId).toBe(first.order.id)
-      expect(credit.claimedAt).not.toBeNull()
+      expect(await db.select().from(videoCredits)).toEqual([])
       expect(await hasFreeVideo(db, 'ana@example.com')).toBe(false)
     })
 

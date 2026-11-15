@@ -41,6 +41,7 @@ describe('createVideoCheckout', () => {
         customer_email: 'ana@example.com',
         metadata: { video_order_id: 'order-1', video_period: '2026' },
         success_url: 'https://www.yearly.world/create?video_order=order-1',
+        return_url: 'https://www.yearly.world/create?video_offer=order-1',
       })
     )
   })

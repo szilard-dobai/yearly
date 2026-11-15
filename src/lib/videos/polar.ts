@@ -75,7 +75,7 @@ export async function createVideoCheckout(input: {
       },
       allow_discount_codes: false,
       success_url: `${input.origin}/create?video_order=${input.orderId}`,
-      return_url: `${input.origin}/create`,
+      return_url: `${input.origin}/create?video_offer=${input.orderId}`,
       embed_origin: input.origin,
       locale: 'en',
     })

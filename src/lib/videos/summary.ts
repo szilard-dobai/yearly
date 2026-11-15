@@ -6,6 +6,7 @@ export type VideoSummary = {
   kind: 'year' | 'stats' | 'month'
   theme: 'dark' | 'light'
   url: string
+  posterUrl: string | null
   bytes: number
 }
 
@@ -33,6 +34,9 @@ export async function summarizeOrder(
       theme: file.theme,
       bytes: file.bytes,
       url: await getVideoDownloadUrl(file.pathname),
+      posterUrl: file.posterPathname
+        ? await getVideoDownloadUrl(file.posterPathname)
+        : null,
     }))
   )
   return {

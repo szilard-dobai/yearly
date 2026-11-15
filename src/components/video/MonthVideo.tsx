@@ -16,12 +16,7 @@ import {
   SANS,
   smooth,
 } from './tokens'
-import {
-  END_CARD_LENGTH,
-  FILL_START,
-  fillLength,
-  revealFrames,
-} from './timeline'
+import { FILL_START, revealFrames, monthTimeline } from './timeline'
 import { DayCell, SETTLED } from './YearCalendar'
 
 export type MonthVideoProps = {
@@ -41,21 +36,7 @@ const FILL_AREA_TOP = 270
 const FILL_AREA_BOTTOM = 1740
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-export function monthTimeline(dayCount: number) {
-  const fillEnd = FILL_START + fillLength(dayCount, 30, 120)
-  const settle = fillEnd + 14
-  const stats = settle + 18
-  const list = stats + 26
-  const endCard = fillEnd + 144
-  return {
-    fillEnd,
-    settle,
-    stats,
-    list,
-    endCard,
-    duration: endCard + END_CARD_LENGTH,
-  }
-}
+export { monthTimeline }
 
 function fitSize(line: string, max: number, budget: number) {
   return Math.min(max, Math.floor(budget / line.length))

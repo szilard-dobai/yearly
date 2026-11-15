@@ -1,6 +1,7 @@
 import { MONTH_NAMES } from '@/lib/constants'
 import { EXPORT_CANVAS } from '@/lib/export-canvas'
 import type { ReactNode } from 'react'
+import { STATS_DURATION } from './timeline'
 import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from 'remotion'
 import { EndCard, WordReveal } from './Brand'
 import { StatsCard } from './StatsCard'
@@ -29,7 +30,7 @@ const END_CARD = 352
 const CARD_SCALE = 0.83
 const CARD_TOP = 256
 const CARD_SIZE = EXPORT_CANVAS.story
-export const STATS_DURATION = 418
+export { STATS_DURATION }
 
 function valueFontSize(value: string) {
   const base = value.length > 4 ? 240 : 320

@@ -43,6 +43,7 @@ export type VideoFile = {
   theme: 'dark' | 'light'
   pathname: string
   bytes: number
+  posterPathname?: string
 }
 
 export const videoOrders = pgTable(

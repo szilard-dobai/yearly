@@ -174,7 +174,42 @@ describe('SignInForm', () => {
     expect(social).toHaveBeenCalledWith({
       provider: 'google',
       callbackURL: '/create',
-      errorCallbackURL: '/sign-in',
+      errorCallbackURL: '/sign-in?next=%2Fcreate',
     })
+  })
+
+  it('keeps the plain sign-in page for errors when returning to the account', async () => {
+    social.mockResolvedValue({ data: {}, error: null })
+    render(<SignInForm googleEnabled next="/account" />)
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continue with Google' })
+    )
+
+    expect(social).toHaveBeenCalledWith(
+      expect.objectContaining({ errorCallbackURL: '/sign-in' })
+    )
+  })
+
+  it('stays on the page when signing in from the video dialog', async () => {
+    sendVerificationOtp.mockResolvedValue(OK)
+    emailOtp.mockResolvedValue(OK)
+    const onSignedIn = vi.fn()
+    render(
+      <SignInForm
+        googleEnabled={false}
+        next="/create?video=year-dark-2026"
+        source="video"
+        onSignedIn={onSignedIn}
+      />
+    )
+
+    await requestCode()
+    await userEvent.type(screen.getByLabelText('Code'), '123456')
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+
+    expect(onSignedIn).toHaveBeenCalledTimes(1)
+    expect(replace).not.toHaveBeenCalled()
+    expect(refresh).not.toHaveBeenCalled()
   })
 })

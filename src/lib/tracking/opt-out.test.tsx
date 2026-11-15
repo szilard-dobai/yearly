@@ -45,6 +45,18 @@ describe('usage stats opt-out', () => {
     expect(dropWhenOptedOut(event)).toBeNull()
   })
 
+  it('keeps the checkout token and order ID out of Vercel analytics', () => {
+    const event = {
+      type: 'pageview' as const,
+      url: 'https://www.yearly.world/create?video_order=o1&customer_session_token=secret',
+    }
+
+    expect(dropWhenOptedOut(event)).toEqual({
+      type: 'pageview',
+      url: 'https://www.yearly.world/create',
+    })
+  })
+
   it('lets components follow the setting', () => {
     const { result } = renderHook(() => useTrackingOptedOut())
     expect(result.current).toBe(false)

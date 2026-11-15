@@ -1,6 +1,7 @@
 'use client'
 
 import { FreeVideoPrice } from '@/components/FreeVideoPrice'
+import SignInForm from '@/components/account/SignInForm'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,33 +12,57 @@ import {
 import { Input } from '@/components/ui/input'
 import { VideoWaitlistJoined } from '@/components/VideoWaitlistJoined'
 import { monthTimeline } from '@/components/video/MonthVideo'
+import PackVideoPlayer from '@/components/video/PackVideoPlayer'
 import {
   PreviewVideo,
   type PreviewVideoProps,
 } from '@/components/video/PreviewVideo'
+import SaveVideoButton from '@/components/video/SaveVideoButton'
+import Segmented from '@/components/video/Segmented'
 import { STATS_DURATION } from '@/components/video/StatsVideo'
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
 import { usePrefetchVideoImages } from '@/components/video/usePrefetchVideoImages'
+import { useVideoPurchase } from '@/components/video/useVideoPurchase'
+import { useVideoSales } from '@/components/video/VideoSalesProvider'
 import { yearFillTimeline } from '@/components/video/YearFillVideo'
+import { detectInAppBrowser } from '@/lib/attribution/in-app-browser'
 import { MONTH_NAMES } from '@/lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
 import { useAccountEmail } from '@/lib/hooks/useAccountEmail'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
+import { cn } from '@/lib/utils'
 import {
   buildMonthVideoData,
   buildYearVideoData,
   type VideoKind,
   type VideoTheme,
 } from '@/lib/video'
-import { VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
+import { formatPrice, VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
+import { videoResumePath } from '@/lib/videos/checkout-return'
+import type { CreateOrderError, OrderStage } from '@/lib/videos/client'
+import type { VideoPeriod } from '@/lib/videos/period'
 import { joinWaitlist, leaveWaitlist } from '@/lib/waitlist/client'
 import { useWaitlistStatus } from '@/lib/waitlist/useWaitlistStatus'
 import { Player } from '@remotion/player'
-import { Check, Loader2, Sparkles } from 'lucide-react'
+import {
+  Check,
+  CheckCircle2,
+  Gift,
+  Loader2,
+  Sparkles,
+  TriangleAlert,
+} from 'lucide-react'
 import Link from 'next/link'
-import { type FormEvent, useMemo, useState } from 'react'
+import {
+  type FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 
 interface AnimatedVideoDialogProps {
   open: boolean
@@ -47,6 +72,9 @@ interface AnimatedVideoDialogProps {
   month?: number
   exportType: ExportType
   price: number
+  initialKind?: VideoKind
+  initialTheme?: VideoTheme
+  initialOrderId?: string
 }
 
 type Step = 'offer' | 'waitlist' | 'joined'
@@ -56,41 +84,111 @@ const FORMAT_AND_PAYMENT = [
   'One-time payment, saved to your free account',
 ]
 
-function Segmented<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string
-  value: T
-  options: { value: T; label: string }[]
-  onChange: (value: T) => void
-}) {
-  return (
-    <div
-      role="radiogroup"
-      aria-label={label}
-      className="inline-flex rounded-full bg-gray-200/70 p-0.5 text-xs font-medium dark:bg-white/8"
-    >
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          role="radio"
-          aria-checked={value === option.value}
-          onClick={() => onChange(option.value)}
-          className="cursor-pointer rounded-full px-3 py-1.5 text-gray-600 transition-colors hover:text-gray-900 aria-checked:bg-white aria-checked:text-gray-900 aria-checked:shadow-sm dark:text-zinc-400 dark:hover:text-zinc-100 dark:aria-checked:bg-zinc-100 dark:aria-checked:text-gray-900"
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  )
-}
+const UPDATES_LINE = 'Update it with new trips, up to 3 times'
+
+const linkClassName =
+  'font-medium text-gray-900 underline underline-offset-2 dark:text-zinc-100'
 
 function initialTheme(): VideoTheme {
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+}
+
+const subscribeNothing = () => () => {}
+
+function useGoogleSignIn(configured: boolean) {
+  return useSyncExternalStore(
+    subscribeNothing,
+    () => configured && !detectInAppBrowser(navigator.userAgent, window),
+    () => false
+  )
+}
+
+function errorMessage(error: CreateOrderError, periodLabel: string) {
+  switch (error) {
+    case 'no-trips':
+      return `Add a trip in ${periodLabel} first.`
+    case 'rate-limited':
+      return 'Too many tries in the last hour. Try again later.'
+    case 'checkout-unavailable':
+      return "Checkout isn't available right now. Try again in a few minutes."
+    default:
+      return 'Something went wrong. Try again.'
+  }
+}
+
+function orderCopy(
+  stage: OrderStage | 'loading' | 'not-found' | 'signed-out',
+  timedOut: boolean,
+  isMonthly: boolean
+): { title: string; description: string; working: boolean } {
+  const noun = isMonthly ? 'video' : 'videos'
+  const they = isMonthly ? "it's" : "they're"
+  const them = isMonthly ? 'it' : 'them'
+  const are = isMonthly ? 'is' : 'are'
+  switch (stage) {
+    case 'loading':
+      return {
+        title: 'Checking your order',
+        description: 'One moment.',
+        working: true,
+      }
+    case 'confirming':
+      return timedOut
+        ? {
+            title: 'Your payment is still going through',
+            description: `We'll email you when your ${noun} ${are} ready.`,
+            working: false,
+          }
+        : {
+            title: 'Confirming your payment',
+            description: 'This usually takes a few seconds.',
+            working: true,
+          }
+    case 'making':
+      return timedOut
+        ? {
+            title: `Still making your ${noun}`,
+            description: `This is taking longer than usual. We'll email you when ${they} ready, and you'll find ${them} in your account.`,
+            working: false,
+          }
+        : {
+            title: `Making your ${noun}`,
+            description: `Usually under a minute. We'll email you when ${they} ready, so you can close this.`,
+            working: true,
+          }
+    case 'ready':
+      return {
+        title: `Your ${noun} ${are} ready`,
+        description: isMonthly
+          ? 'Pick dark or light, then save it.'
+          : 'Pick a video and dark or light, then save it.',
+        working: false,
+      }
+    case 'failed':
+      return {
+        title: "We're on it",
+        description: `Something went wrong making your ${noun}. We'll fix it and email you when ${they} ready.`,
+        working: false,
+      }
+    case 'refunded':
+      return {
+        title: 'This order was refunded',
+        description: `Its ${noun} ${are} no longer available.`,
+        working: false,
+      }
+    case 'not-found':
+      return {
+        title: "We couldn't find this order",
+        description: `If you paid, your ${noun} will be in your account.`,
+        working: false,
+      }
+    case 'signed-out':
+      return {
+        title: `Sign in to see your ${noun}`,
+        description: `Your ${noun} ${are} saved to the account you used to buy ${them}.`,
+        working: false,
+      }
+  }
 }
 
 export default function AnimatedVideoDialog({
@@ -101,14 +199,21 @@ export default function AnimatedVideoDialog({
   month,
   exportType,
   price,
+  initialKind,
+  initialTheme: startTheme,
+  initialOrderId,
 }: AnimatedVideoDialogProps) {
   const { settings } = useSettings()
   const accountEmail = useAccountEmail()
+  const videoSales = useVideoSales()
+  const salesEnabled = videoSales.enabled
+  const googleEnabled = useGoogleSignIn(videoSales.googleSignIn)
   const isMonthly = exportType === 'monthly' && month !== undefined
   const [kind, setKind] = useState<VideoKind>(
-    isMonthly ? 'month' : exportType === 'statistics' ? 'stats' : 'year'
+    initialKind ??
+      (isMonthly ? 'month' : exportType === 'statistics' ? 'stats' : 'year')
   )
-  const [theme, setTheme] = useState<VideoTheme>(initialTheme)
+  const [theme, setTheme] = useState<VideoTheme>(startTheme ?? initialTheme)
   const [step, setStep] = useState<Step>('offer')
   const [joinedOnAccount, setJoinedOnAccount] = useWaitlistStatus(
     'animated_video',
@@ -117,6 +222,11 @@ export default function AnimatedVideoDialog({
   const [email, setEmail] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  const period: VideoPeriod = isMonthly
+    ? { pack: 'month', year, month }
+    : { pack: 'year', year }
 
   const yearData = useMemo(
     () => buildYearVideoData(calendarData.visits, year),
@@ -153,9 +263,19 @@ export default function AnimatedVideoDialog({
         : STATS_DURATION
 
   const monthName = month === undefined ? '' : MONTH_NAMES[month]
-  const included = isMonthly
-    ? ['Dark and light versions', ...FORMAT_AND_PAYMENT]
-    : ['Both videos, in dark and light', ...FORMAT_AND_PAYMENT]
+  const periodLabel = isMonthly ? `${monthName} ${year}` : String(year)
+  const noun = isMonthly ? 'video' : 'videos'
+  const included = salesEnabled
+    ? [
+        isMonthly
+          ? 'Month pack: dark and light versions'
+          : 'Year pack: both videos, in dark and light',
+        ...FORMAT_AND_PAYMENT,
+        UPDATES_LINE,
+      ]
+    : isMonthly
+      ? ['Dark and light versions', ...FORMAT_AND_PAYMENT]
+      : ['Both videos, in dark and light', ...FORMAT_AND_PAYMENT]
   const context = {
     exportType,
     videoKind: kind,
@@ -163,6 +283,41 @@ export default function AnimatedVideoDialog({
     ...(isMonthly && { month }),
     price,
   }
+
+  const purchase = useVideoPurchase({
+    open: open && salesEnabled,
+    period,
+    visits: calendarData.visits,
+    weekStartsOn: settings.weekStartsOn,
+    price,
+    clickContext: { ...context, theme },
+    initialOrderId,
+  })
+  const salesStep = salesEnabled ? purchase.step : null
+  const readyOrder =
+    salesStep === 'order' &&
+    purchase.stage === 'ready' &&
+    purchase.order &&
+    purchase.order.videos.length > 0
+      ? purchase.order
+      : null
+  const readyVideo = readyOrder
+    ? (readyOrder.videos.find(
+        (video) => video.kind === kind && video.theme === theme
+      ) ??
+      readyOrder.videos.find((video) => video.theme === theme) ??
+      readyOrder.videos[0])
+    : null
+  const panelFirst =
+    salesStep === 'sign-in' || (salesStep === 'order' && !readyOrder)
+
+  const lastStepRef = useRef(salesStep)
+  useEffect(() => {
+    if (lastStepRef.current === salesStep) return
+    lastStepRef.current = salesStep
+    panelRef.current?.scrollIntoView?.({ block: 'nearest' })
+    panelRef.current?.focus({ preventScroll: true })
+  }, [salesStep])
 
   const handleBuy = () => {
     trackEvent('animated_video_buy_click', { ...context, theme })
@@ -196,29 +351,236 @@ export default function AnimatedVideoDialog({
 
   const shownStep: Step = joinedOnAccount === true ? 'joined' : step
 
+  const offerHeader = (
+    <>
+      <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400">
+        <Sparkles className="size-3.5" />
+        New: animated video
+      </span>
+      <DialogTitle className="mb-2 font-serif text-2xl leading-tight font-normal text-gray-900 md:mb-3 md:text-3xl dark:text-zinc-100">
+        Your {isMonthly ? monthName : year}, animated
+      </DialogTitle>
+      <DialogDescription className="mb-5 text-sm leading-relaxed text-gray-600 md:text-base dark:text-zinc-400">
+        {isMonthly
+          ? `A short video made from your trips in ${monthName}: the month filling up flag by flag, then your numbers.`
+          : 'Two short videos made from your trips: your calendar filling up flag by flag, and your stats counting up.'}{' '}
+        Made for Reels, Stories and TikTok.
+      </DialogDescription>
+
+      <ul className="mb-6 space-y-2">
+        {included.map((item) => (
+          <li
+            key={item}
+            className="flex items-center gap-2 text-sm text-gray-700 dark:text-zinc-300"
+          >
+            <Check className="size-4 shrink-0 text-red-500" />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+
+  const stepHeader = (title: string, description: string) => (
+    <>
+      <DialogTitle className="mb-2 font-serif text-2xl leading-tight font-normal text-gray-900 md:mb-3 md:text-3xl dark:text-zinc-100">
+        {title}
+      </DialogTitle>
+      <DialogDescription className="mb-5 text-sm leading-relaxed text-gray-600 md:text-base dark:text-zinc-400">
+        {description}
+      </DialogDescription>
+    </>
+  )
+
+  const renderSalesOffer = () => {
+    const buyLabel = purchase.busy
+      ? purchase.freeVideo
+        ? `Starting your ${noun}…`
+        : 'Opening checkout…'
+      : purchase.savingCalendar
+        ? 'Saving your calendar…'
+        : !purchase.accountReady
+          ? 'One moment…'
+          : purchase.freeVideo
+            ? `Get my ${noun} free`
+            : `Get my ${noun} · ${formatPrice(price)}`
+    const waiting = purchase.busy !== null || !purchase.accountReady
+
+    return (
+      <>
+        {offerHeader}
+        {purchase.ownsPeriod && (
+          <p className="mb-3 text-sm text-gray-600 dark:text-zinc-400">
+            You already have videos for {periodLabel}.{' '}
+            <Link href="/account" className={linkClassName}>
+              See them in your account
+            </Link>
+          </p>
+        )}
+        {purchase.freeVideo && (
+          <p className="mb-3 flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+            <Gift className="size-4 shrink-0" />
+            Your first video is free
+          </p>
+        )}
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={purchase.buy}
+          disabled={waiting}
+        >
+          {waiting && <Loader2 className="size-4 animate-spin" />}
+          {buyLabel}
+        </Button>
+        {purchase.error && (
+          <p
+            role="alert"
+            className="mt-3 text-center text-sm text-red-600 dark:text-red-400"
+          >
+            {errorMessage(purchase.error, periodLabel)}
+          </p>
+        )}
+        {purchase.syncFailed && (
+          <p
+            role="status"
+            className="mt-3 text-center text-sm text-gray-600 dark:text-zinc-400"
+          >
+            We couldn&apos;t reach your account. We&apos;ll keep trying.
+          </p>
+        )}
+        <p className="mt-3 text-center text-xs break-words text-gray-500 dark:text-zinc-500">
+          {purchase.account
+            ? `${purchase.freeVideo ? '' : "You'll pay on Polar's secure checkout. "}Signed in as ${purchase.account.email}.`
+            : "You'll sign in with your email next. Your images stay free."}
+        </p>
+      </>
+    )
+  }
+
+  const renderSignIn = () => (
+    <>
+      {stepHeader(
+        `Sign in to get your ${noun}`,
+        `Your ${noun} ${isMonthly ? 'is' : 'are'} saved to a free account, so you can download ${isMonthly ? 'it' : 'them'} again or add trips later. New here? Signing in creates your account.`
+      )}
+      <SignInForm
+        googleEnabled={googleEnabled}
+        next={videoResumePath({ kind, theme, year, month })}
+        source="video"
+        onSignedIn={purchase.handleSignedIn}
+      />
+      <p className="mt-4 text-xs text-gray-500 dark:text-zinc-500">
+        By signing in, you agree to the{' '}
+        <Link href="/terms" target="_blank" className={linkClassName}>
+          Terms
+        </Link>{' '}
+        and the{' '}
+        <Link href="/privacy" target="_blank" className={linkClassName}>
+          Privacy policy
+        </Link>
+        .
+      </p>
+      <Button
+        variant="link"
+        className="mt-2 h-auto w-fit p-0"
+        onClick={() => purchase.setStep('offer')}
+      >
+        Back
+      </Button>
+    </>
+  )
+
+  const renderOrder = () => {
+    const stage = purchase.missing ?? purchase.stage ?? 'loading'
+    const copy = orderCopy(stage, purchase.timedOut, isMonthly)
+
+    return (
+      <>
+        {copy.working && (
+          <Loader2
+            aria-hidden
+            className="mb-4 size-6 animate-spin text-red-500"
+          />
+        )}
+        {stage === 'failed' && (
+          <TriangleAlert aria-hidden className="mb-4 size-6 text-amber-500" />
+        )}
+        {stage === 'ready' && (
+          <CheckCircle2 aria-hidden className="mb-4 size-6 text-emerald-500" />
+        )}
+        {stepHeader(copy.title, copy.description)}
+        {readyOrder && readyVideo && (
+          <SaveVideoButton
+            order={readyOrder}
+            video={readyVideo}
+            freshOrder={purchase.freshOrder}
+            source="dialog"
+          />
+        )}
+        {stage === 'signed-out' && (
+          <Button asChild size="lg" className="w-full">
+            <Link href="/sign-in?next=/account">Sign in</Link>
+          </Button>
+        )}
+        {stage === 'not-found' && (
+          <Button asChild variant="outline" size="lg" className="w-full">
+            <Link href="/account">Go to your account</Link>
+          </Button>
+        )}
+        {(stage === 'ready' ||
+          stage === 'making' ||
+          stage === 'confirming' ||
+          stage === 'failed') && (
+          <p className="mt-4 text-sm text-gray-600 dark:text-zinc-400">
+            {stage === 'ready'
+              ? `${isMonthly ? "It's" : "They're"} saved in your account too.`
+              : `You'll find your ${noun} in your account once ${isMonthly ? "it's" : "they're"} ready.`}{' '}
+            <Link href="/account" className={linkClassName}>
+              Your account
+            </Link>
+          </p>
+        )}
+      </>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90dvh] p-0 gap-0 overflow-auto scrollbar-hide bg-white dark:bg-[#141414] border dark:border-white/8">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90dvh] p-0 gap-0 overflow-auto scrollbar-hide bg-white outline-none dark:bg-[#141414] border dark:border-white/8">
         <div className="grid md:grid-cols-2">
-          <div className="flex flex-col items-center justify-center gap-3 bg-linear-to-br from-gray-50 to-stone-50 p-4 pt-12 md:p-8 dark:bg-none dark:bg-[#111111]">
+          <div
+            className={cn(
+              'flex flex-col items-center justify-center gap-3 bg-linear-to-br from-gray-50 to-stone-50 p-4 md:p-8 dark:bg-none dark:bg-[#111111]',
+              !panelFirst && 'pt-12'
+            )}
+          >
             <div className="relative aspect-9/16 w-full max-w-[26dvh] overflow-hidden rounded-xl shadow-2xl ring-1 ring-black/5 md:max-w-[38dvh] dark:ring-white/8">
-              <Player
-                key={kind}
-                component={PreviewVideo}
-                inputProps={inputProps}
-                durationInFrames={duration}
-                compositionWidth={VIDEO_WIDTH}
-                compositionHeight={VIDEO_HEIGHT}
-                fps={FPS}
-                autoPlay
-                loop
-                initiallyMuted
-                controls
-                clickToPlay
-                showVolumeControls={false}
-                acknowledgeRemotionLicense
-                style={{ width: '100%', height: '100%' }}
-              />
+              {readyVideo ? (
+                <PackVideoPlayer
+                  video={readyVideo}
+                  autoPlay
+                  preload="auto"
+                  onExpired={purchase.reloadOrder}
+                />
+              ) : (
+                <Player
+                  key={kind}
+                  component={PreviewVideo}
+                  inputProps={inputProps}
+                  durationInFrames={duration}
+                  compositionWidth={VIDEO_WIDTH}
+                  compositionHeight={VIDEO_HEIGHT}
+                  fps={FPS}
+                  autoPlay
+                  loop
+                  initiallyMuted
+                  controls
+                  clickToPlay
+                  showVolumeControls={false}
+                  acknowledgeRemotionLicense
+                  style={{ width: '100%', height: '100%' }}
+                />
+              )}
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2">
               {!isMonthly && (
@@ -244,34 +606,21 @@ export default function AnimatedVideoDialog({
             </div>
           </div>
 
-          <div className="flex flex-col justify-center p-6 md:p-10">
-            <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400">
-              <Sparkles className="size-3.5" />
-              New: animated video
-            </span>
-            <DialogTitle className="mb-2 font-serif text-2xl leading-tight font-normal text-gray-900 md:mb-3 md:text-3xl dark:text-zinc-100">
-              Your {isMonthly ? monthName : year}, animated
-            </DialogTitle>
-            <DialogDescription className="mb-5 text-sm leading-relaxed text-gray-600 md:text-base dark:text-zinc-400">
-              {isMonthly
-                ? `A short video made from your trips in ${monthName}: the month filling up flag by flag, then your numbers.`
-                : 'Two short videos made from your trips: your calendar filling up flag by flag, and your stats counting up.'}{' '}
-              Made for Reels, Stories and TikTok.
-            </DialogDescription>
+          <div
+            ref={panelRef}
+            tabIndex={-1}
+            className={cn(
+              'flex scroll-mt-4 flex-col justify-center p-6 outline-none md:p-10',
+              panelFirst && 'order-first pt-12 md:order-none md:pt-10'
+            )}
+          >
+            {salesStep === 'offer' && renderSalesOffer()}
+            {salesStep === 'sign-in' && renderSignIn()}
+            {salesStep === 'order' && renderOrder()}
 
-            <ul className="mb-6 space-y-2">
-              {included.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-2 text-sm text-gray-700 dark:text-zinc-300"
-                >
-                  <Check className="size-4 shrink-0 text-red-500" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            {salesStep === null && offerHeader}
 
-            {shownStep === 'offer' && (
+            {salesStep === null && shownStep === 'offer' && (
               <>
                 <Button size="lg" className="w-full" onClick={handleBuy}>
                   Get the {isMonthly ? 'video' : 'videos'} ·{' '}
@@ -284,7 +633,7 @@ export default function AnimatedVideoDialog({
               </>
             )}
 
-            {shownStep === 'waitlist' && (
+            {salesStep === null && shownStep === 'waitlist' && (
               <form
                 onSubmit={handleJoin}
                 className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-white/8 dark:bg-white/5"
@@ -345,7 +694,7 @@ export default function AnimatedVideoDialog({
               </form>
             )}
 
-            {shownStep === 'joined' && (
+            {salesStep === null && shownStep === 'joined' && (
               <VideoWaitlistJoined
                 onLeave={accountEmail ? handleLeave : undefined}
                 className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-white/8 dark:bg-white/5 dark:text-zinc-300"

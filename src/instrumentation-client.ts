@@ -8,8 +8,10 @@ import {
 } from '@/lib/sentry'
 import { isTrackingOptedOut } from '@/lib/tracking/opt-out'
 import { installTranslationGuard } from '@/lib/translation-guard'
+import { stripCheckoutToken } from '@/lib/videos/checkout-return'
 import * as Sentry from '@sentry/nextjs'
 
+stripCheckoutToken()
 installTranslationGuard()
 
 Sentry.init({

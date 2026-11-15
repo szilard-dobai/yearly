@@ -200,6 +200,21 @@ function Create() {
     if (found.type === 'resume') {
       const { kind, theme, year, month } = found.resume
       show({ kind, theme, year, month, exportType: EXPORT_TYPE_FOR_KIND[kind] })
+    } else if (found.type === 'offer') {
+      fetchVideoOrder(found.orderId)
+        .then((order) => {
+          trackEvent('animated_video_checkout_back', {
+            pack: order.pack,
+            year: order.year,
+            ...(order.month !== null && { month: order.month }),
+          })
+          show({
+            year: order.year,
+            month: order.month ?? undefined,
+            exportType: order.pack === 'month' ? 'monthly' : 'calendar',
+          })
+        })
+        .catch(() => {})
     } else {
       const { orderId } = found
       fetchVideoOrder(orderId)

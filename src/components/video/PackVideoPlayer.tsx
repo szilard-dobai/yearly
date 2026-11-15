@@ -33,6 +33,7 @@ export default function PackVideoPlayer({
     <video
       key={`${video.kind}-${video.theme}`}
       src={video.url}
+      poster={video.posterUrl ?? undefined}
       aria-label={`${KIND_LABELS[video.kind]}, ${video.theme}`}
       playsInline
       muted

@@ -42,6 +42,8 @@ export const TRACKING_EVENT_TYPES = [
   'animated_video_ready',
   'animated_video_saved',
   'animated_video_failed',
+  'animated_video_checkout_back',
+  'animated_video_update_requested',
   'year_end_reminder_open',
   'year_end_reminder_shown',
   'year_end_reminder_calendar_add',

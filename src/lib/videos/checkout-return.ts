@@ -2,14 +2,15 @@ import type { VideoKind, VideoTheme } from '@/lib/video'
 
 export const CHECKOUT_TOKEN_PARAM = 'customer_session_token'
 export const VIDEO_ORDER_PARAM = 'video_order'
+export const VIDEO_OFFER_PARAM = 'video_offer'
 export const VIDEO_RESUME_PARAM = 'video'
 
-const PRIVATE_PARAMS = [CHECKOUT_TOKEN_PARAM, VIDEO_ORDER_PARAM]
-const RETURN_PARAMS = [
+const PRIVATE_PARAMS = [
   CHECKOUT_TOKEN_PARAM,
   VIDEO_ORDER_PARAM,
-  VIDEO_RESUME_PARAM,
+  VIDEO_OFFER_PARAM,
 ]
+const RETURN_PARAMS = [...PRIVATE_PARAMS, VIDEO_RESUME_PARAM]
 
 const ORDER_ID = /^[A-Za-z0-9-]{1,64}$/
 const YEAR_RESUME = /^(year|stats)-(dark|light)-(\d{4})$/
@@ -24,6 +25,7 @@ export interface VideoResume {
 
 export type VideoReturn =
   | { type: 'order'; orderId: string }
+  | { type: 'offer'; orderId: string }
   | { type: 'resume'; resume: VideoResume }
 
 function withoutParams(href: string, names: string[]): string | null {
@@ -93,6 +95,10 @@ export function readVideoReturn(search: string): VideoReturn | null {
   const params = new URLSearchParams(search)
   const orderId = params.get(VIDEO_ORDER_PARAM)
   if (orderId && ORDER_ID.test(orderId)) return { type: 'order', orderId }
+  const offerId = params.get(VIDEO_OFFER_PARAM)
+  if (offerId && ORDER_ID.test(offerId)) {
+    return { type: 'offer', orderId: offerId }
+  }
   const resume = decodeVideoResume(params.get(VIDEO_RESUME_PARAM) ?? '')
   return resume ? { type: 'resume', resume } : null
 }

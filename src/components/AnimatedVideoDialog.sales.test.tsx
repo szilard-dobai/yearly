@@ -80,6 +80,7 @@ interface Server {
   orders?: OrderSummary[]
   create?: () => Response
   order?: () => Response
+  update?: () => Response
 }
 
 function routeFetch(server: Server) {
@@ -95,6 +96,11 @@ function routeFetch(server: Server) {
           freeVideo: server.freeVideo ?? false,
           orders: server.orders ?? [],
         })
+      )
+    }
+    if (url.endsWith('/updates')) {
+      return Promise.resolve(
+        server.update?.() ?? new Response('{}', { status: 500 })
       )
     }
     if (url.startsWith('/api/videos/orders/')) {
@@ -334,16 +340,230 @@ describe('AnimatedVideoDialog with video sales on', () => {
     expect(screen.getByRole('button', { name: 'Save video' })).toBeVisible()
   })
 
-  it('mentions a pack they already have for the same period', async () => {
-    routeFetch({ orders: [orderSummary()] })
-    render(salesDialog(SIGNED_IN))
+  describe('with a pack for the previewed period', () => {
+    const owned = orderSummary({ videos: YEAR_PACK_VIDEOS })
 
-    expect(
-      await screen.findByText(/You already have videos for 2026/)
-    ).toBeVisible()
-    expect(
-      screen.getByRole('link', { name: 'See them in your account' })
-    ).toHaveAttribute('href', '/account')
+    it('shows the pack instead of the offer, with posters', async () => {
+      routeFetch({ orders: [owned] })
+      render(salesDialog(SIGNED_IN))
+
+      expect(
+        await screen.findByRole('heading', { name: 'Your 2026 videos' })
+      ).toBeVisible()
+      expect(
+        screen.getByText(
+          'You have the year pack for 2026. Pick a video and dark or light, then save it.'
+        )
+      ).toBeVisible()
+      expect(
+        screen.queryByRole('button', { name: /Get my videos/ })
+      ).not.toBeInTheDocument()
+      expect(screen.queryByTestId('player')).not.toBeInTheDocument()
+      const video = screen.getByLabelText('Your year video, dark')
+      expect(video).toHaveAttribute(
+        'src',
+        'https://videos.test/year-dark.mp4?token=t'
+      )
+      expect(video).toHaveAttribute(
+        'poster',
+        'https://videos.test/year-dark.jpg?token=t'
+      )
+      expect(screen.getByRole('button', { name: 'Save video' })).toBeVisible()
+      expect(
+        screen.getByRole('button', {
+          name: 'Update with my latest trips (3 left)',
+        })
+      ).toBeEnabled()
+    })
+
+    it('plays without a poster for older renders', async () => {
+      routeFetch({
+        orders: [
+          orderSummary({
+            videos: YEAR_PACK_VIDEOS.map((video) => ({
+              ...video,
+              posterUrl: null,
+            })),
+          }),
+        ],
+      })
+      render(salesDialog(SIGNED_IN))
+
+      const video = await screen.findByLabelText('Your year video, dark')
+      expect(video).not.toHaveAttribute('poster')
+    })
+
+    it('updates the pack with the calendar for that period', async () => {
+      const user = userEvent.setup()
+      const updating = orderSummary({
+        videos: YEAR_PACK_VIDEOS,
+        render: { version: 1, status: 'rendering' },
+        updatesLeft: 2,
+      })
+      routeFetch({
+        orders: [owned],
+        update: () => jsonResponse(updating, 202),
+        order: () => jsonResponse(updating),
+      })
+      render(salesDialog(SIGNED_IN))
+
+      await user.click(
+        await screen.findByRole('button', {
+          name: 'Update with my latest trips (3 left)',
+        })
+      )
+      expect(
+        screen.getByText(/This uses 1 of the 3 updates you have left/)
+      ).toBeVisible()
+      await user.click(screen.getByRole('button', { name: 'Update videos' }))
+
+      expect(
+        await screen.findByText(
+          'Updating your videos with your latest trips. Usually under a minute.'
+        )
+      ).toBeVisible()
+      const [url, init] = fetchMock.mock.calls.find(([path]) =>
+        String(path).endsWith('/updates')
+      )!
+      expect(url).toBe('/api/videos/orders/order-1/updates')
+      expect(JSON.parse(init.body)).toEqual({
+        days: {
+          '2026-03-20': ['JP'],
+          '2026-03-21': ['JP'],
+          '2026-07-01': ['FR'],
+        },
+        weekStartsOn: 1,
+      })
+      expect(
+        screen.getByRole('button', {
+          name: 'Update with my latest trips (2 left)',
+        })
+      ).toBeDisabled()
+      expect(screen.getByLabelText('Your year video, dark')).toBeVisible()
+      expect(trackEvent).toHaveBeenCalledWith(
+        'animated_video_update_requested',
+        { pack: 'year', result: 'started', source: 'dialog' }
+      )
+    })
+
+    it.each([
+      [
+        'unchanged',
+        409,
+        'Your videos already include all your trips. Add a trip to your calendar, then update them.',
+      ],
+      ['busy', 409, 'Your videos are already being updated.'],
+      [
+        'too-different',
+        422,
+        'These trips are too different from your first videos.',
+      ],
+    ])('explains a %s refusal', async (reason, status, message) => {
+      const user = userEvent.setup()
+      routeFetch({
+        orders: [owned],
+        update: () => jsonResponse({ error: reason }, status),
+      })
+      render(salesDialog(SIGNED_IN))
+
+      await user.click(
+        await screen.findByRole('button', {
+          name: 'Update with my latest trips (3 left)',
+        })
+      )
+      await user.click(screen.getByRole('button', { name: 'Update videos' }))
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(message)
+      expect(
+        screen.queryByRole('button', { name: 'Get a new pack' }) !== null
+      ).toBe(reason === 'too-different')
+    })
+
+    it('offers a new pack once the updates are used up', async () => {
+      const user = userEvent.setup()
+      routeFetch({ orders: [orderSummary({ ...owned, updatesLeft: 0 })] })
+      render(salesDialog(SIGNED_IN))
+
+      expect(
+        await screen.findByText(
+          "You've used all 3 updates for this pack. To add more trips, get a new pack."
+        )
+      ).toBeVisible()
+      await user.click(screen.getByRole('button', { name: 'Get a new pack' }))
+
+      expect(
+        await screen.findByRole('button', { name: 'Get my videos · $2.99' })
+      ).toBeEnabled()
+      expect(screen.getByText(/You already have videos for 2026/)).toBeVisible()
+
+      await user.click(
+        screen.getByRole('button', { name: 'Back to your videos' })
+      )
+      expect(
+        screen.getByRole('heading', { name: 'Your 2026 videos' })
+      ).toBeVisible()
+    })
+
+    it('shows the offer to signed-out visitors, then the pack once signed in', async () => {
+      routeFetch({ orders: [owned] })
+      const { rerender } = render(salesDialog(SIGNED_OUT))
+
+      expect(
+        screen.getByRole('button', { name: 'Get my videos · $2.99' })
+      ).toBeVisible()
+
+      rerender(salesDialog(SIGNED_IN))
+
+      expect(
+        await screen.findByRole('heading', { name: 'Your 2026 videos' })
+      ).toBeVisible()
+    })
+
+    it("matches a month preview to that month's pack only", async () => {
+      routeFetch({
+        orders: [
+          owned,
+          orderSummary({
+            id: 'month-1',
+            pack: 'month',
+            month: 6,
+            videos: YEAR_PACK_VIDEOS,
+          }),
+        ],
+      })
+      render(salesDialog(SIGNED_IN, { exportType: 'monthly', month: 2 }))
+
+      expect(await enabledButton('Get my video · $2.99')).toBeVisible()
+      expect(
+        screen.queryByText(/You already have videos/)
+      ).not.toBeInTheDocument()
+    })
+
+    it("shows a month's pack for that month", async () => {
+      routeFetch({
+        orders: [
+          orderSummary({
+            id: 'month-1',
+            pack: 'month',
+            month: 2,
+            videos: [
+              { ...YEAR_PACK_VIDEOS[0], kind: 'month' },
+              { ...YEAR_PACK_VIDEOS[1], kind: 'month' },
+            ],
+          }),
+        ],
+      })
+      render(salesDialog(SIGNED_IN, { exportType: 'monthly', month: 2 }))
+
+      expect(
+        await screen.findByRole('heading', { name: 'Your March video' })
+      ).toBeVisible()
+      expect(
+        screen.getByText(
+          'You have the month pack for March 2026. Pick dark or light, then save it.'
+        )
+      ).toBeVisible()
+    })
   })
 
   it.each([

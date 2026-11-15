@@ -15,6 +15,9 @@ import {
   PreviewVideo,
   type PreviewVideoProps,
 } from '@/components/video/PreviewVideo'
+import PackUpdate, {
+  type PackCalendarState,
+} from '@/components/video/PackUpdate'
 import SaveVideoButton from '@/components/video/SaveVideoButton'
 import Segmented from '@/components/video/Segmented'
 import { STATS_DURATION } from '@/components/video/StatsVideo'
@@ -24,6 +27,8 @@ import { useVideoPurchase } from '@/components/video/useVideoPurchase'
 import { useVideoSales } from '@/components/video/VideoSalesProvider'
 import { yearFillTimeline } from '@/components/video/YearFillVideo'
 import { detectInAppBrowser } from '@/lib/attribution/in-app-browser'
+import { useCalendarAccount } from '@/lib/calendar-sync/CalendarAccountContext'
+import { toCalendarDays } from '@/lib/calendar-sync/days'
 import { MONTH_NAMES } from '@/lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
@@ -200,6 +205,7 @@ export default function AnimatedVideoDialog({
   initialOrderId,
 }: AnimatedVideoDialogProps) {
   const { settings } = useSettings()
+  const calendarAccount = useCalendarAccount()
   const videoSales = useVideoSales()
   const salesEnabled = videoSales.enabled
   const googleEnabled = useGoogleSignIn(videoSales.googleSignIn)
@@ -285,22 +291,27 @@ export default function AnimatedVideoDialog({
     initialOrderId,
   })
   const salesStep = salesEnabled ? purchase.step : null
-  const readyOrder =
-    salesStep === 'order' &&
-    purchase.stage === 'ready' &&
-    purchase.order &&
-    purchase.order.videos.length > 0
+  const packOrder =
+    salesStep === 'owned' ||
+    (salesStep === 'order' && purchase.stage === 'ready')
       ? purchase.order
       : null
-  const readyVideo = readyOrder
-    ? (readyOrder.videos.find(
+  const shownOrder = packOrder && packOrder.videos.length > 0 ? packOrder : null
+  const shownVideo = shownOrder
+    ? (shownOrder.videos.find(
         (video) => video.kind === kind && video.theme === theme
       ) ??
-      readyOrder.videos.find((video) => video.theme === theme) ??
-      readyOrder.videos[0])
+      shownOrder.videos.find((video) => video.theme === theme) ??
+      shownOrder.videos[0])
     : null
   const panelFirst =
-    salesStep === 'sign-in' || (salesStep === 'order' && !readyOrder)
+    salesStep === 'sign-in' ||
+    ((salesStep === 'order' || salesStep === 'owned') && !shownOrder)
+  const calendarState: PackCalendarState = calendarAccount.ready
+    ? 'saved'
+    : calendarAccount.status === 'error'
+      ? 'error'
+      : 'loading'
 
   const lastStepRef = useRef(salesStep)
   useEffect(() => {
@@ -393,10 +404,15 @@ export default function AnimatedVideoDialog({
         {offerHeader}
         {purchase.ownsPeriod && (
           <p className="mb-3 text-sm text-gray-600 dark:text-zinc-400">
-            You already have videos for {periodLabel}.{' '}
-            <Link href="/account" className={linkClassName}>
-              See them in your account
-            </Link>
+            You already have videos for {periodLabel}. A new pack comes with 3
+            more updates.{' '}
+            <Button
+              variant="link"
+              className="h-auto p-0 align-baseline text-sm text-gray-900 underline dark:text-zinc-100"
+              onClick={purchase.showOwned}
+            >
+              Back to your {noun}
+            </Button>
           </p>
         )}
         {purchase.freeVideo && (
@@ -491,10 +507,10 @@ export default function AnimatedVideoDialog({
           <CheckCircle2 aria-hidden className="mb-4 size-6 text-emerald-500" />
         )}
         {stepHeader(copy.title, copy.description)}
-        {readyOrder && readyVideo && (
+        {shownOrder && shownVideo && (
           <SaveVideoButton
-            order={readyOrder}
-            video={readyVideo}
+            order={shownOrder}
+            video={shownVideo}
             freshOrder={purchase.freshOrder}
             source="dialog"
           />
@@ -526,6 +542,69 @@ export default function AnimatedVideoDialog({
     )
   }
 
+  const renderOwned = () => {
+    const order = purchase.order
+    if (!shownOrder || !shownVideo || !order) return renderOrder()
+    const stage = purchase.stage
+    const working = stage === 'making' || stage === 'confirming'
+    const are = isMonthly ? 'is' : 'are'
+    let status: string | null = null
+    if (working) {
+      status = purchase.timedOut
+        ? `This is taking longer than usual. We'll email you when your ${noun} ${are} ready.`
+        : `Updating your ${noun} with your latest trips. Usually under a minute.`
+    } else if (stage === 'failed') {
+      status =
+        "Your last update didn't work. We're on it, and we'll email you when it's done."
+    }
+
+    return (
+      <>
+        {stepHeader(
+          isMonthly ? `Your ${monthName} video` : `Your ${year} videos`,
+          `You have the ${isMonthly ? 'month' : 'year'} pack for ${periodLabel}. ${
+            isMonthly
+              ? 'Pick dark or light, then save it.'
+              : 'Pick a video and dark or light, then save it.'
+          }`
+        )}
+        {status && (
+          <p
+            role="status"
+            className="mb-4 flex items-start gap-2 text-sm text-gray-600 dark:text-zinc-400"
+          >
+            {working && !purchase.timedOut && (
+              <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin" />
+            )}
+            {status}
+          </p>
+        )}
+        <SaveVideoButton
+          order={shownOrder}
+          video={shownVideo}
+          freshOrder={purchase.freshOrder}
+          source="dialog"
+        />
+        <div className="mt-5 border-t border-gray-200 pt-5 dark:border-white/8">
+          <PackUpdate
+            order={order}
+            calendar={calendarState}
+            readDays={() => toCalendarDays(calendarData.visits)}
+            onStarted={purchase.watchOrder}
+            onNewPack={purchase.showNewPack}
+            source="dialog"
+          />
+        </div>
+        <p className="mt-4 text-sm text-gray-600 dark:text-zinc-400">
+          {isMonthly ? "It's" : "They're"} saved in your account too.{' '}
+          <Link href="/account" className={linkClassName}>
+            Your account
+          </Link>
+        </p>
+      </>
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90dvh] p-0 gap-0 overflow-auto scrollbar-hide bg-white outline-none dark:bg-[#141414] border dark:border-white/8">
@@ -537,9 +616,9 @@ export default function AnimatedVideoDialog({
             )}
           >
             <div className="relative aspect-9/16 w-full max-w-[26dvh] overflow-hidden rounded-xl shadow-2xl ring-1 ring-black/5 md:max-w-[38dvh] dark:ring-white/8">
-              {readyVideo ? (
+              {shownVideo ? (
                 <PackVideoPlayer
-                  video={readyVideo}
+                  video={shownVideo}
                   autoPlay
                   preload="auto"
                   onExpired={purchase.reloadOrder}
@@ -599,6 +678,7 @@ export default function AnimatedVideoDialog({
             {salesStep === 'offer' && renderSalesOffer()}
             {salesStep === 'sign-in' && renderSignIn()}
             {salesStep === 'order' && renderOrder()}
+            {salesStep === 'owned' && renderOwned()}
 
             {salesStep === null && offerHeader}
 

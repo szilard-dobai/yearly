@@ -10,6 +10,7 @@ import {
   fetchVideoAccount,
   goToCheckout,
   orderStage,
+  type OrderSummary,
   type VideoAccount,
   withCheckoutTheme,
 } from '@/lib/videos/client'
@@ -17,7 +18,7 @@ import type { VideoPeriod } from '@/lib/videos/period'
 import { useVideoOrder } from '@/lib/videos/useVideoOrder'
 import { useEffect, useRef, useState } from 'react'
 
-export type PurchaseStep = 'offer' | 'sign-in' | 'order'
+export type PurchaseStep = 'offer' | 'sign-in' | 'order' | 'owned'
 
 interface VideoPurchaseOptions {
   open: boolean
@@ -55,9 +56,10 @@ export function useVideoPurchase({
 }: VideoPurchaseOptions) {
   const calendarAccount = useCalendarAccount()
   const { account, ready } = calendarAccount
-  const [step, setStep] = useState<PurchaseStep>(
+  const [step, setStep] = useState<Exclude<PurchaseStep, 'owned'>>(
     initialOrderId ? 'order' : 'offer'
   )
+  const [buyAgain, setBuyAgain] = useState(false)
   const [orderId, setOrderId] = useState<string | null>(initialOrderId ?? null)
   const [busy, setBusy] = useState<'creating' | 'redirecting' | null>(null)
   const [error, setError] = useState<CreateOrderError | null>(null)
@@ -66,12 +68,21 @@ export function useVideoPurchase({
     userId: string
     data: VideoAccount | null
   } | null>(null)
-  const watched = useVideoOrder(step === 'order' ? orderId : null, {
-    enabled: open,
-  })
   const trackedRef = useRef(new Set<string>())
 
   const accountId = account?.id ?? null
+  const accountInfo =
+    videoAccount && videoAccount.userId === accountId ? videoAccount : null
+  const ownedOrder: OrderSummary | null =
+    accountInfo?.data?.orders.find(
+      (order) => order.status === 'paid' && samePeriod(order, period)
+    ) ?? null
+  const view: PurchaseStep =
+    step === 'offer' && ownedOrder && !buyAgain ? 'owned' : step
+  const watched = useVideoOrder(
+    view === 'order' ? orderId : view === 'owned' ? ownedOrder!.id : null,
+    { enabled: open, initial: view === 'owned' ? ownedOrder : null }
+  )
   const periodContext = {
     pack: period.pack,
     year: period.year,
@@ -105,7 +116,8 @@ export function useVideoPurchase({
   const pack = watched.order?.pack ?? period.pack
 
   useEffect(() => {
-    if (!orderId || (stage !== 'ready' && stage !== 'failed')) return
+    if (view !== 'order' || !orderId) return
+    if (stage !== 'ready' && stage !== 'failed') return
     const key = `${orderId}:${stage}`
     if (trackedRef.current.has(key)) return
     trackedRef.current.add(key)
@@ -113,19 +125,13 @@ export function useVideoPurchase({
       stage === 'ready' ? 'animated_video_ready' : 'animated_video_failed',
       stage === 'ready' ? { pack } : { pack, stage: 'render' }
     )
-  }, [orderId, stage, pack])
+  }, [view, orderId, stage, pack])
 
-  const accountInfo =
-    videoAccount && videoAccount.userId === accountId ? videoAccount : null
   const savingCalendar =
     (awaitingAccount && !account) || (account !== null && !ready)
   const checkingAccount =
     savingCalendar || (account !== null && accountInfo === null)
   const freeVideo = accountInfo?.data?.freeVideo ?? false
-  const ownsPeriod =
-    accountInfo?.data?.orders.some(
-      (order) => order.status === 'paid' && samePeriod(order, period)
-    ) ?? false
 
   const buy = async () => {
     setError(null)
@@ -133,6 +139,7 @@ export function useVideoPurchase({
       ...clickContext,
       signedIn: account !== null,
       ...(account && { free: freeVideo }),
+      ...(ownedOrder && { again: true }),
     })
     if (!account) {
       trackEvent('animated_video_sign_in_shown', periodContext)
@@ -176,14 +183,18 @@ export function useVideoPurchase({
   }
 
   return {
-    step,
+    step: view,
     setStep,
+    ownedOrder,
+    showNewPack: () => setBuyAgain(true),
+    showOwned: () => setBuyAgain(false),
+    watchOrder: watched.watch,
     account,
     accountReady: !checkingAccount,
     savingCalendar,
     syncFailed: account !== null && calendarAccount.status === 'error',
     freeVideo,
-    ownsPeriod,
+    ownsPeriod: ownedOrder !== null,
     busy,
     error,
     buy,

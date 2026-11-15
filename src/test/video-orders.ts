@@ -8,6 +8,7 @@ export function videoFile(
     kind,
     theme,
     url: `https://videos.test/${kind}-${theme}.mp4?token=t`,
+    posterUrl: `https://videos.test/${kind}-${theme}.jpg?token=t`,
     bytes: 1000,
   }
 }

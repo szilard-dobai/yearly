@@ -57,7 +57,7 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 9. The videos play without the watermark. **Save video** opens the share sheet on phones (Save to Photos) and downloads on desktop.
 10. Later, on `/account`: download again, or **Update with my latest trips** (with the number of updates left).
 
-Polar sends the receipt. We send the "ready" email, which links to `/account`.
+Polar sends the receipt. We send the "ready" email, which links to `/account`. For the first version of a paid order, it also confirms that the buyer asked for immediate delivery and that this ended the 14-day right to cancel: EU law wants that confirmation on something the buyer keeps, and Polar's receipt may not repeat the checkout's checkbox answer.
 
 ## Rendering
 

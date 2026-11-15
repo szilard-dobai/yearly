@@ -1,8 +1,16 @@
 import type { Email } from './send'
 
+const CONSENT_LINE =
+  "You asked us to make your videos right away, so your 14-day right to cancel has ended. If something isn't right, reply to this email and we'll fix it or refund you."
+const HELP_LINE = "If something doesn't look right, reply to this email."
+
 export function videosReadyEmail(
   to: string,
-  { accountUrl, updated }: { accountUrl: string; updated: boolean }
+  {
+    accountUrl,
+    updated,
+    confirmConsent,
+  }: { accountUrl: string; updated: boolean; confirmConsent: boolean }
 ): Email {
   const subject = updated
     ? 'Your updated Yearly videos are ready'
@@ -10,6 +18,9 @@ export function videosReadyEmail(
   const lead = updated
     ? 'Your videos now include your latest trips.'
     : 'Your videos are ready to watch and save.'
+  const keep =
+    'They stay on your account, so you can save them again whenever you like.'
+  const closing = confirmConsent ? CONSENT_LINE : HELP_LINE
   return {
     to,
     subject,
@@ -18,7 +29,9 @@ export function videosReadyEmail(
       '',
       `Watch and save them on your account: ${accountUrl}`,
       '',
-      "They stay there, so you can save them again whenever you like. If something doesn't look right, reply to this email.",
+      keep,
+      '',
+      closing,
     ].join('\n'),
     html: `<!doctype html>
 <html>
@@ -32,7 +45,8 @@ export function videosReadyEmail(
                 <p style="margin:0 0 24px;font-size:20px;font-weight:600;">Yearly</p>
                 <p style="margin:0 0 24px;font-size:16px;line-height:1.5;">${lead}</p>
                 <p style="margin:0 0 24px;"><a href="${accountUrl}" style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;padding:12px 20px;border-radius:10px;">Watch your videos</a></p>
-                <p style="margin:0;font-size:14px;line-height:1.5;color:#52525b;">They stay on your account, so you can save them again whenever you like. If something doesn&#39;t look right, reply to this email.</p>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#52525b;">${keep}</p>
+                <p style="margin:0;font-size:14px;line-height:1.5;color:#52525b;">${closing.replace(/'/g, '&#39;')}</p>
               </td>
             </tr>
           </table>

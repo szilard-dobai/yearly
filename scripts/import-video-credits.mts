@@ -17,13 +17,14 @@
  * --expires is the last day a credit can be used. It ends at midnight UTC
  * after that day, and the daily retention cron then deletes unused credits.
  *
- * Environment variables (read from .env.local locally; variables already set,
- * for example with `node --env-file=<file>`, win):
+ * Environment variables, which must be passed in explicitly, for example with
+ * `node --env-file=<file>`. The script never reads .env.local, so a variable
+ * missing from a production file (Vercel leaves Sensitive ones empty when
+ * pulled) stops it instead of quietly using a development database:
  *   - MONGODB_URI and MONGODB_DB
  *   - DATABASE_URL_UNPOOLED, or DATABASE_URL
  */
 
-import { config } from 'dotenv'
 import { MongoClient } from 'mongodb'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -173,7 +174,6 @@ export function formatReport(
 }
 
 async function main() {
-  config({ path: ['.env.local', '.env'], quiet: true })
   const options = parseOptions(process.argv.slice(2), new Date())
 
   const mongoUri = process.env.MONGODB_URI
@@ -181,9 +181,13 @@ async function main() {
   const postgresUrl =
     process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL
   if (!mongoUri || !mongoDb)
-    throw new Error('MONGODB_URI and MONGODB_DB are needed')
+    throw new Error(
+      'MONGODB_URI and MONGODB_DB are needed: pass them with node --env-file=<file>'
+    )
   if (!postgresUrl)
-    throw new Error('DATABASE_URL_UNPOOLED or DATABASE_URL is needed')
+    throw new Error(
+      'DATABASE_URL_UNPOOLED or DATABASE_URL is needed: pass it with node --env-file=<file>'
+    )
 
   console.log(`Reading from MongoDB ${describeTarget(mongoUri, mongoDb)}`)
   console.log(`Writing to Postgres ${describeTarget(postgresUrl)}`)

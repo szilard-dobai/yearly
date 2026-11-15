@@ -54,7 +54,7 @@ src/
 │   ├── sign-in/page.tsx      - Email code or Google; `?next=` returns you afterwards; signed-in visitors are sent on (noindex)
 │   ├── account/page.tsx      - Signed-in account page; signed-out visitors go to `/sign-in?next=/account` (noindex)
 │   ├── terms/page.tsx        - Terms; 404 until accounts are on
-│   └── api/                  - API routes (tracking, feedback, Better Auth at api/auth/[...all], the signed-in calendar at api/calendar, admin auth/devices, admin example video renders at api/admin/video-renders; admin-only DELETE on events, feedback and whole devices; the year-end reminder cron at api/cron/year-end-reminders and its admin actions at api/reminders/send and api/reminders/test-email; the video launch email at api/waitlist/launch-email and its one-click unsubscribe at api/waitlist/unsubscribe)
+│   └── api/                  - API routes (tracking, feedback, Better Auth at api/auth/[...all], the signed-in calendar at api/calendar, admin auth/devices, admin example video renders at api/admin/video-renders, video orders and updates at api/videos/orders, the Polar webhook at api/webhooks/polar (`POLAR_WEBHOOK_SECRET`); admin-only DELETE on events, feedback and whole devices; the year-end reminder cron at api/cron/year-end-reminders and its admin actions at api/reminders/send and api/reminders/test-email; the video launch email at api/waitlist/launch-email and its one-click unsubscribe at api/waitlist/unsubscribe)
 ├── components/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
@@ -99,6 +99,7 @@ src/
 │   │   ├── useAccountPrompt.ts     - When the /create account prompt shows (3+ days of trips, 30-day snooze)
 │   │   ├── useStatusFeedback.ts    - Loading/error state management
 │   │   └── useTodayKey.ts          - Today's local date key, null on the server and during hydration, so date-based cards render only in the browser
+│   ├── videos/               - Paid video packs: orders, renders and free credits in Postgres, Polar checkout and product IDs (`POLAR_ACCESS_TOKEN`, `POLAR_ENVIRONMENT`), the 80% update rule, starting renders, order summaries with signed links; everything is off unless `VIDEO_SALES_ENABLED=true` and accounts are on
 │   ├── video-render/         - Paid video rendering: `renderVideoPack` workflow (one step per video: sandbox from the deployment's snapshot, render, upload to the private videos store), packs, signed download links, the deployment's snapshot ID (written by `scripts/video-render.mts prepare`)
 │   ├── retention.ts          - Retention rules (26 months in full, then identifiers removed; 5 years max), run daily by `api/cron/retention` (`vercel.json`, `CRON_SECRET`)
 │   ├── contexts/

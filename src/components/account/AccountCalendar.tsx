@@ -8,6 +8,7 @@ import {
 } from '@/lib/calendar-sync/sync'
 import { trackEvent } from '@/lib/tracking'
 import Link from 'next/link'
+import { useReportAccountCalendarStatus } from './AccountCalendarStatus'
 import FirstSyncDialog from './FirstSyncDialog'
 import { useEffect, useState } from 'react'
 
@@ -20,6 +21,7 @@ export default function AccountCalendar({ userId }: { userId: string }) {
   const [state, setState] = useState<State>({ status: 'loading' })
   const [firstSyncRequest, setFirstSyncRequest] =
     useState<FirstSyncRequest | null>(null)
+  const reportStatus = useReportAccountCalendarStatus()
 
   useEffect(() => {
     let cancelled = false
@@ -51,16 +53,20 @@ export default function AccountCalendar({ userId }: { userId: string }) {
             status: 'saved',
             days: countCalendarDays(readStoredDays()),
           })
+          reportStatus?.('saved')
         }
       })
       .catch((error: unknown) => {
         console.error('Failed to sync calendar:', error)
-        if (!cancelled) setState({ status: 'error' })
+        if (!cancelled) {
+          setState({ status: 'error' })
+          reportStatus?.('error')
+        }
       })
     return () => {
       cancelled = true
     }
-  }, [userId])
+  }, [userId, reportStatus])
 
   const linkClassName =
     'font-medium text-gray-900 underline underline-offset-2 dark:text-zinc-100'

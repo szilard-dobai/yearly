@@ -73,7 +73,7 @@ src/
 │   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
 │   ├── FeedbackCard.tsx      - Rating card on the create page, hidden once the user rates or dismisses
-│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (calendar, sign out, delete), first-sync dialog, `AccountsEnabledProvider` (root layout)
+│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (your videos with updates, calendar, sign out, delete), first-sync dialog, `AccountsEnabledProvider` (root layout)
 │   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/

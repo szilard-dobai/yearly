@@ -73,6 +73,15 @@ Polar sends the receipt. We send the "ready" email, which links to `/account`. F
 - **Ready.** The left side swaps the watermarked preview for the real MP4 (`<video playsInline muted autoPlay loop>`, with the render's poster when it has one), and the same Your year / Your stats and Dark / Light switches pick the file. **Save video** fetches the file into a `File` and, on phones and tablets where `navigator.canShare({ files })` is true, opens the share sheet (Save Video on iOS); everywhere else it downloads as `yearly-<year>-<video>-<theme>.mp4` or `yearly-<year>-<month>-<theme>.mp4`. On phones the selected file is fetched ahead, so the share sheet opens inside the tap; if a browser still refuses, the button asks for a second tap. Signed links last 10 minutes, so saving after 8 minutes fetches the order again first, and a video that fails to load fetches it once more.
 - **Events** (no personal data, no order IDs): `animated_video_buy_click` (now with `signedIn`, and `free` once signed in), `animated_video_sign_in_shown`, `animated_video_checkout_opened`, `animated_video_free_claimed`, `animated_video_ready`, `animated_video_saved` (`share` or `download`), `animated_video_failed` (`stage: 'order'` with the reason, or `stage: 'render'`), `animated_video_checkout_back`, and `animated_video_update_requested` (the pack, the result and where it came from). A purchase of a period they already have adds `again: true` to the buy click. Sign-in events from the dialog carry `source: 'video'`.
 
+## Account page
+
+`/account` lists **Your videos** above the calendar card when sales are on: one card per paid pack (`GET /api/videos/orders`, newest first), with the period, the purchase date and the same player and **Save video** button as the dialog. Each card shows one file at a time (Your year / Your stats for a year pack, Dark / Light), with `preload="metadata"` and no autoplay, so a visit fetches only each file's metadata until someone presses play.
+
+- **Update with my latest trips (N left)** asks for a confirmation that names the update it uses, then posts this device's calendar for that period. It's the synced calendar: the button stays disabled until the "Your calendar" card has finished syncing with the account, including the first-sync question. While the new version renders, the old videos stay playable and the card says "Updating your videos with your latest trips". The card then polls until it's ready.
+- Refusals read in plain words: `busy` (already updating), `no-updates-left` (all 3 used, get a new pack), `too-different` (updates are for adding trips or fixing a country, so get a new pack for a different calendar). Anything else is "Try again in a moment".
+- No packs: a line pointing to `/create`. A free video waiting shows "Your first video is free" with the same link.
+- `animated_video_update_requested` records the pack and the result (`started` or the refusal).
+
 ## Rendering
 
 ### Pipeline

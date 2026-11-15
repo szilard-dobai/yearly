@@ -148,6 +148,46 @@ describe('ImagePreviewModal video offer', () => {
     }
   })
 
+  it.each([
+    ['saves nothing when the share sheet is closed', 'AbortError', 0],
+    ['downloads the image when sharing fails', 'NotAllowedError', 1],
+  ])('%s', async (_, errorName, downloads) => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)'
+    )
+    let shareCalls = 0
+    Object.defineProperty(navigator, 'share', {
+      value: () => {
+        shareCalls++
+        return Promise.reject(new DOMException('Share failed', errorName))
+      },
+      configurable: true,
+    })
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(new Blob(['image'], { type: 'image/jpeg' }))
+    )
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+    const unhandled = vi.fn()
+    process.on('unhandledRejection', unhandled)
+    const user = userEvent.setup()
+    renderModal('calendar')
+
+    try {
+      await user.click(screen.getByRole('button', { name: /Download Image/ }))
+
+      await waitFor(() => expect(shareCalls).toBe(1))
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(click).toHaveBeenCalledTimes(downloads)
+      expect(unhandled).not.toHaveBeenCalled()
+    } finally {
+      process.off('unhandledRejection', unhandled)
+      vi.restoreAllMocks()
+      Reflect.deleteProperty(navigator, 'share')
+    }
+  })
+
   it('opens the preview with the pack price and records it', async () => {
     const user = userEvent.setup()
     renderModal('calendar')

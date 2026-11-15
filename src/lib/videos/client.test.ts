@@ -126,6 +126,7 @@ describe('video order client', () => {
 
   it.each([
     [409, 'busy'],
+    [409, 'unchanged'],
     [409, 'no-updates-left'],
     [422, 'too-different'],
     [404, 'not-found'],

@@ -40,11 +40,11 @@ describe('checkout return', () => {
     expect(window.history.length).toBe(before)
   })
 
-  it('removes the order and resume parameters once they are read', () => {
+  it('removes the order, offer and resume parameters once they are read', () => {
     window.history.replaceState(
       null,
       '',
-      '/create?video_order=abc&video=year-dark-2026&utm_source=x'
+      '/create?video_order=abc&video_offer=abc&video=year-dark-2026&utm_source=x'
     )
 
     removeVideoReturnParams()
@@ -58,6 +58,9 @@ describe('checkout return', () => {
         'https://www.yearly.world/create?video_order=abc&customer_session_token=secret&utm_source=x'
       )
     ).toBe('https://www.yearly.world/create?utm_source=x')
+    expect(
+      scrubPrivateParams('https://www.yearly.world/create?video_offer=abc')
+    ).toBe('https://www.yearly.world/create')
     expect(scrubPrivateParams('https://www.yearly.world/create')).toBe(
       'https://www.yearly.world/create'
     )
@@ -73,6 +76,11 @@ describe('checkout return', () => {
       type: 'resume',
       resume: { kind: 'stats', theme: 'light', year: 2025 },
     })
+    expect(readVideoReturn('?video_offer=4d4eee76-785c-408e')).toEqual({
+      type: 'offer',
+      orderId: '4d4eee76-785c-408e',
+    })
+    expect(readVideoReturn('?video_offer=a/b')).toBeNull()
     expect(readVideoReturn('?video_order=../../etc')).toBeNull()
     expect(readVideoReturn('?video=nonsense')).toBeNull()
     expect(readVideoReturn('')).toBeNull()

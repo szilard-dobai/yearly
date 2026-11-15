@@ -1,4 +1,5 @@
 import { type CalendarDays, toCalendarDays } from '@/lib/calendar-sync/days'
+import { MONTH_NAMES } from '@/lib/constants'
 import type { CountryVisit } from '@/lib/types'
 import { daysInPeriod, type VideoPeriod } from './period'
 import type { OrderSummary, VideoSummary } from './summary'
@@ -28,6 +29,7 @@ export type UpdateRefusal =
   | 'not-found'
   | 'not-paid'
   | 'busy'
+  | 'unchanged'
   | 'no-updates-left'
   | 'too-different'
   | 'failed'
@@ -51,6 +53,7 @@ const UPDATE_REFUSALS = new Set<UpdateRefusal>([
   'not-found',
   'not-paid',
   'busy',
+  'unchanged',
   'no-updates-left',
   'too-different',
 ])
@@ -59,6 +62,14 @@ export function periodOfOrder(order: OrderSummary): VideoPeriod {
   return order.pack === 'month'
     ? { pack: 'month', year: order.year, month: order.month ?? 0 }
     : { pack: 'year', year: order.year }
+}
+
+export function orderPeriodLabel(
+  order: Pick<OrderSummary, 'pack' | 'year' | 'month'>
+) {
+  return order.pack === 'month' && order.month !== null
+    ? `${MONTH_NAMES[order.month]} ${order.year}`
+    : String(order.year)
 }
 
 export function orderStage(order: OrderSummary): OrderStage {

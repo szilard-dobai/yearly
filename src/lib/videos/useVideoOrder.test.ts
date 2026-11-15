@@ -147,4 +147,28 @@ describe('useVideoOrder', () => {
       status: 'ready',
     })
   })
+
+  it('follows a different order when the ID changes', async () => {
+    const year = orderSummary()
+    const month = orderSummary({ id: 'order-2', pack: 'month', month: 2 })
+    fetchMock.mockResolvedValue(jsonResponse(month))
+
+    const { result, rerender } = renderHook(
+      ({ id, initial }) => useVideoOrder(id, { initial }),
+      { initialProps: { id: 'order-1', initial: year } }
+    )
+    expect(result.current.order?.id).toBe('order-1')
+
+    rerender({ id: 'order-2', initial: month })
+    expect(result.current.order).toBe(month)
+    await advance(ORDER_POLL_MS * 2)
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    rerender({ id: 'order-3', initial: month })
+    expect(result.current.order).toBeNull()
+    await flush()
+    expect(fetchMock).toHaveBeenCalledWith('/api/videos/orders/order-3', {
+      cache: 'no-store',
+    })
+  })
 })

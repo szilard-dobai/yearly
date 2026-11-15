@@ -81,7 +81,7 @@ The daily `/api/cron/retention` job also deletes unpaid draft orders older than 
 - Geist and Newsreader are bundled as font files; the `next/font` CSS variables don't exist outside the app.
 - Pin `@remotion/vercel`, `remotion` and `@remotion/bundler` at one version (4.0.541 was tested), and `@vercel/sandbox` at 1.6.0. Remotion marks `@remotion/vercel` experimental, and newer `@vercel/sandbox` versions replace the runtimes it relies on.
 - **Snapshots, not fresh sandboxes.** `createSandbox()` installs system packages, glibc, Chrome and npm packages from the internet on every call, which takes about 37 s and depends on outside services. The deploy builds a snapshot instead (about 0.74 GB) and every render restores it in under a second. Build snapshots only in production and only when the bundle changes, and delete old ones: they never expire, Hobby allows 15 GB for the account's lifetime, and Pro charges about $0.06 a month each. A snapshot belongs to one region.
-- The sandbox has no emoji font: the medals in the stats video render blank until they're Noto images, which the flag change does.
+- The sandbox has no emoji font, so the medals came out blank in the render test. Since PR #69 every flag and medal is an image under `/emoji/`, so the server bundle has to include `public/emoji`.
 
 ### Render test (15 November)
 
@@ -163,7 +163,7 @@ Fixed per month once selling: Vercel Pro $20 (Hobby forbids commercial use), Neo
 
 | When                   | What                                                                                                                                                                        |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 16–20 November         | `/videos` and the purchase terms (PR #68), then apply to Polar. Flag images everywhere (separate PR). The Sandbox render test is done (see Render test)                     |
+| 16–20 November         | Done: `/videos` with the price and refund terms (PR #68), flag images everywhere (PR #69), the Sandbox render test. Apply to Polar                                          |
 | 23–27 November         | Accounts launch (23rd). `video_order`, `video_render`, `video_credit`. Remotion entry and server bundle. The Workflow pipeline with Blob uploads and the "ready" email      |
 | 30 November–4 December | Checkout and progress in the export dialog, `/account` videos and updates, admin orders, privacy and record of processing, paid plans, credits import, launch email. Launch |
 

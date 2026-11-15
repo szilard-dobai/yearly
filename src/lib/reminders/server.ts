@@ -2,11 +2,13 @@ import {
   getCalendarRemindersCollection,
   getRemindersCollection,
 } from '@/lib/mongodb'
+import { getReminderSignupClose } from './date'
 import type { ReminderTotals } from './types'
 
 export function isOpenReminderYear(year: number, now = new Date()): boolean {
   const currentYear = now.getUTCFullYear()
-  return year === currentYear || year === currentYear + 1
+  if (year === currentYear) return now < getReminderSignupClose(year)
+  return year === currentYear + 1
 }
 
 export async function getReminderTotals(year: number): Promise<ReminderTotals> {

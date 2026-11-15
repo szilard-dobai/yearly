@@ -1,3 +1,4 @@
+import { Emoji } from '@/components/Emoji'
 import { useState, useRef } from 'react'
 import type { CalendarData } from '../lib/types'
 import { importFromJSON } from '../lib/storage'
@@ -262,8 +263,8 @@ export default function ImportButton({
                     Replace all data
                   </div>
                   <div className="text-xs text-red-600 dark:text-red-400 mt-0.5">
-                    ⚠️ This will delete your current {currentVisits}{' '}
-                    {currentVisits === 1 ? 'visit' : 'visits'}
+                    <Emoji name="warning" /> This will delete your current{' '}
+                    {currentVisits} {currentVisits === 1 ? 'visit' : 'visits'}
                   </div>
                 </div>
               </label>

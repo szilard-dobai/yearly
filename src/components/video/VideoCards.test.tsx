@@ -2,6 +2,7 @@ import { EXPORT_CANVAS, EXPORT_FRAME } from '@/lib/export-canvas'
 import type { CalendarData } from '@/lib/types'
 import { buildYearVideoData } from '@/lib/video'
 import { render, within } from '@testing-library/react'
+import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import StatisticsExportLayout from '../StatisticsExportLayout'
 import { StatsCard } from './StatsCard'
@@ -13,6 +14,8 @@ const timeline = vi.hoisted(() => ({ frame: 1000 }))
 vi.mock('remotion', async (importOriginal) => ({
   ...(await importOriginal<typeof import('remotion')>()),
   useCurrentFrame: () => timeline.frame,
+  // eslint-disable-next-line @next/next/no-img-element
+  Img: (props: ComponentProps<'img'>) => <img alt="" {...props} />,
 }))
 
 function trip(countryCode: string, month: number, from: number, to: number) {
@@ -46,7 +49,6 @@ function renderStatsCard() {
     <StatsCard
       data={buildYearVideoData(calendarData.visits, 2026)}
       palette={PALETTES.light}
-      flagMode="emoji"
       statsStart={0}
       listStart={0}
     />
@@ -75,7 +77,6 @@ describe('StatsCard', () => {
           calendarData={calendarData}
           year={2026}
           format="story"
-          flagDisplayMode="emoji"
         />
       ).container
     )
@@ -96,6 +97,28 @@ describe('StatsCard', () => {
     expect(video.getByText('Australia').style.fontSize).toBe(
       image.getByText('Australia').style.fontSize
     )
+  })
+
+  it('draws the same flag and medal images at the same sizes as the image export', () => {
+    const images = (container: HTMLElement) =>
+      [...container.querySelectorAll('img')].map((image) => ({
+        src: image.getAttribute('src'),
+        width: image.style.width,
+        height: image.style.height,
+      }))
+    const video = images(renderStatsCard().container)
+    const image = images(
+      render(
+        <StatisticsExportLayout
+          calendarData={calendarData}
+          year={2026}
+          format="story"
+        />
+      ).container
+    )
+
+    expect(video).toHaveLength(8)
+    expect(video).toEqual(image)
   })
 
   it('counts the numbers up from zero as the tiles come in', () => {
@@ -121,7 +144,6 @@ describe('YearCalendar', () => {
           revealAt={() => undefined}
           monthOpacity={() => 1}
           weekStartsOn={1}
-          flagMode="emoji"
         />
       ).container
     )

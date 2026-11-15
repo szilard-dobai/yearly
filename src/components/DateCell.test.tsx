@@ -4,6 +4,17 @@ import { renderWithSettings } from '@/test/test-utils'
 import DateCell from './DateCell'
 import type { CountryVisit } from '@/lib/types'
 
+function flagImages(container: HTMLElement) {
+  return [...container.querySelectorAll<HTMLImageElement>('[data-day] img')]
+}
+
+function flagCodes(container: HTMLElement) {
+  return flagImages(container).map(
+    (image) =>
+      image.getAttribute('src')?.match(/\/([a-z]{2})\.[0-9a-f]+\.webp$/)?.[1]
+  )
+}
+
 describe('DateCell', () => {
   describe('Empty date cell', () => {
     it('should render empty cell when date is null', () => {
@@ -42,43 +53,36 @@ describe('DateCell', () => {
       },
     ]
 
-    it('should render single flag emoji centered', () => {
-      const date = new Date(2025, 1, 15)
+    it('shows the flag image in place of the day number', () => {
       const { container } = renderWithSettings(
-        <DateCell date={date} visits={singleVisit} />
+        <DateCell date={new Date(2025, 1, 15)} visits={singleVisit} />
       )
 
-      // Check that flag emoji is rendered (US flag)
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toBeInTheDocument()
-      expect(cell).toHaveTextContent('🇺🇸')
+      expect(flagCodes(container)).toEqual(['us'])
+      expect(screen.queryByText('15')).not.toBeInTheDocument()
     })
 
-    it('should render single flag icon when flagDisplayMode is icon', () => {
-      const date = new Date(2025, 1, 15)
-      // This test would need to modify the context value, but for now we'll just test the emoji mode
-      // The icon mode is tested through integration tests
+    it('leaves the flag out of the accessible name, which the button already gives', () => {
       const { container } = renderWithSettings(
-        <DateCell date={date} visits={singleVisit} />
+        <DateCell date={new Date(2025, 1, 15)} visits={singleVisit} />
       )
 
-      // Check that flag emoji is rendered (default mode)
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toBeInTheDocument()
-    })
-
-    it('does not render a remove button that a tap could trigger by accident', () => {
-      const date = new Date(2025, 1, 15)
-      renderWithSettings(<DateCell date={date} visits={singleVisit} />)
-
-      expect(
-        screen.queryByRole('button', { name: /remove/i })
-      ).not.toBeInTheDocument()
+      expect(flagImages(container)[0]).toHaveAttribute('alt', '')
       expect(
         screen.getByRole('button', {
           name: 'February 15, visited United States',
         })
       ).toBeInTheDocument()
+    })
+
+    it('does not render a remove button that a tap could trigger by accident', () => {
+      renderWithSettings(
+        <DateCell date={new Date(2025, 1, 15)} visits={singleVisit} />
+      )
+
+      expect(
+        screen.queryByRole('button', { name: /remove/i })
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -133,7 +137,7 @@ describe('DateCell', () => {
     })
   })
 
-  describe('Two countries visit - vertical stacking', () => {
+  describe('Two countries on one day', () => {
     const twoVisits: CountryVisit[] = [
       {
         id: 'visit-1',
@@ -147,78 +151,25 @@ describe('DateCell', () => {
       },
     ]
 
-    it('should render two flag emojis with diagonal split', () => {
-      const date = new Date(2025, 1, 2)
+    it('splits the two flags diagonally, in the order they were added', () => {
       const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
+        <DateCell date={new Date(2025, 1, 2)} visits={twoVisits} />
       )
 
-      // Check that both flags are present
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toBeInTheDocument()
-      expect(cell?.textContent).toContain('🇱🇻') // Latvia
-      expect(cell?.textContent).toContain('🇻🇦') // Vatican City
-
-      // Check for absolutely positioned containers (diagonal split)
-      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
-      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
+      const [first, second] = flagImages(container)
+      expect(flagCodes(container)).toEqual(['lv', 'va'])
+      expect(first.style.clipPath).toBe('polygon(0 0, 100% 0, 0 100%)')
+      expect(second.style.clipPath).toBe('polygon(100% 0, 100% 100%, 0 100%)')
+      expect(first.style.position).toBe('absolute')
+      expect(second.style.position).toBe('absolute')
     })
 
-    it('should render two flag icons with diagonal split when flagDisplayMode is icon', () => {
-      const date = new Date(2025, 1, 2)
-      // This test would need to modify the context value, but for now we'll just test the emoji mode
-      // The icon mode is tested through integration tests
+    it('names both countries in the button label', () => {
       const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
+        <DateCell date={new Date(2025, 1, 2)} visits={twoVisits} />
       )
 
-      // Check that both flags are present
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toBeInTheDocument()
-      expect(cell?.textContent).toContain('🇱🇻')
-      expect(cell?.textContent).toContain('🇻🇦')
-    })
-
-    it('should use appropriate font size for diagonal split flags', () => {
-      const date = new Date(2025, 1, 2)
-      const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
-      )
-
-      // Check that both flags are present
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toBeInTheDocument()
-      expect(cell?.textContent).toContain('🇱🇻')
-      expect(cell?.textContent).toContain('🇻🇦')
-
-      // Check that they're positioned absolutely for the diagonal split
-      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
-      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
-    })
-
-    it('should use clip-path for clean diagonal split', () => {
-      const date = new Date(2025, 1, 2)
-      const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
-      )
-
-      // Check for absolutely positioned containers with clip-path
-      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
-      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
-
-      // Check for overflow-hidden on clip-path containers
-      const overflowContainers = container.querySelectorAll('.overflow-hidden')
-      expect(overflowContainers.length).toBeGreaterThanOrEqual(2)
-    })
-
-    it('should have correct aria-label with both countries', () => {
-      const date = new Date(2025, 1, 2)
-      const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
-      )
-
-      const button = container.querySelector('[data-day]')
-      expect(button).toHaveAttribute(
+      expect(container.querySelector('[data-day]')).toHaveAttribute(
         'aria-label',
         'February 2, visited Latvia, Vatican City'
       )
@@ -242,7 +193,7 @@ describe('DateCell', () => {
       expect(screen.getByText('15')).toBeInTheDocument()
     })
 
-    it('should handle country without name gracefully', () => {
+    it('shows the code for a country without a flag image', () => {
       const date = new Date(2025, 1, 15)
       const visits: CountryVisit[] = [
         {
@@ -256,92 +207,8 @@ describe('DateCell', () => {
         <DateCell date={date} visits={visits} />
       )
 
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toBeInTheDocument()
-    })
-  })
-
-  describe('Regression tests for two-country diagonal split', () => {
-    it('should use diagonal split layout with clip-path', () => {
-      const date = new Date(2025, 1, 2)
-      const twoVisits: CountryVisit[] = [
-        {
-          id: 'visit-1',
-          countryCode: 'LV',
-          date: new Date(2025, 1, 2),
-        },
-        {
-          id: 'visit-2',
-          countryCode: 'VA',
-          date: new Date(2025, 1, 2),
-        },
-      ]
-
-      const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
-      )
-
-      // Should have absolutely positioned flag containers (not simple flex layout)
-      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
-      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
-    })
-
-    it('should render exactly two flags when there are two visits', () => {
-      const date = new Date(2025, 1, 2)
-      const twoVisits: CountryVisit[] = [
-        {
-          id: 'visit-1',
-          countryCode: 'UG',
-          date: new Date(2025, 1, 2),
-        },
-        {
-          id: 'visit-2',
-          countryCode: 'KE',
-          date: new Date(2025, 1, 2),
-        },
-      ]
-
-      const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
-      )
-
-      // Check that both flags are present
-      const cell = container.querySelector('[role="gridcell"]')
-      expect(cell).toBeInTheDocument()
-      expect(cell?.textContent).toContain('🇺🇬') // Uganda
-      expect(cell?.textContent).toContain('🇰🇪') // Kenya
-
-      // Should have absolutely positioned containers
-      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
-      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
-    })
-
-    it('should use absolute positioning for diagonal split triangles', () => {
-      const date = new Date(2025, 1, 2)
-      const twoVisits: CountryVisit[] = [
-        {
-          id: 'visit-1',
-          countryCode: 'FR',
-          date: new Date(2025, 1, 2),
-        },
-        {
-          id: 'visit-2',
-          countryCode: 'ES',
-          date: new Date(2025, 1, 2),
-        },
-      ]
-
-      const { container } = renderWithSettings(
-        <DateCell date={date} visits={twoVisits} />
-      )
-
-      // Both flag containers should be absolutely positioned with inset-0
-      const absoluteContainers = container.querySelectorAll('.absolute.inset-0')
-      expect(absoluteContainers.length).toBeGreaterThanOrEqual(2)
-
-      // Each should have overflow-hidden for clip-path
-      const overflowContainers = container.querySelectorAll('.overflow-hidden')
-      expect(overflowContainers.length).toBeGreaterThanOrEqual(2)
+      expect(container.querySelector('[data-day] img')).toBeNull()
+      expect(screen.getByText('XX')).toBeInTheDocument()
     })
   })
 })

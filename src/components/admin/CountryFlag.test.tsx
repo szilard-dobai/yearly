@@ -7,7 +7,7 @@ describe('CountryFlag', () => {
     render(<CountryFlag code="DE" />)
 
     const flag = screen.getByRole('img', { name: 'Germany' })
-    expect(flag).toHaveTextContent('🇩🇪')
+    expect(flag).toHaveAttribute('src', expect.stringMatching(/\/de\./))
     expect(flag).toHaveAttribute('title', 'Germany')
   })
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { Flag } from '@/components/Emoji'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -179,7 +180,17 @@ export default function CountryInput({
                   selectedCountry && 'pr-8'
                 )}
               >
-                {selectedCountry ? selectedCountry.name : 'Select country...'}
+                {selectedCountry ? (
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Flag
+                      code={selectedCountry.code}
+                      className="text-base sm:text-lg"
+                    />
+                    <span className="truncate">{selectedCountry.name}</span>
+                  </span>
+                ) : (
+                  'Select country...'
+                )}
                 {!selectedCountry && (
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 )}
@@ -207,6 +218,11 @@ export default function CountryInput({
                               ? 'opacity-100'
                               : 'opacity-0'
                           )}
+                        />
+                        <Flag
+                          code={country.code}
+                          className="text-base sm:text-lg"
+                          lazy
                         />
                         {country.name}
                       </CommandItem>

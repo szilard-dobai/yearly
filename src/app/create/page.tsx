@@ -1,5 +1,6 @@
 'use client'
 
+import { Emoji } from '@/components/Emoji'
 import AccountPrompt from '@/components/account/AccountPrompt'
 import AccountSyncStatus from '@/components/account/AccountSyncStatus'
 import FirstSyncDialog from '@/components/account/FirstSyncDialog'
@@ -400,7 +401,9 @@ function Create() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
-                      <span className="text-2xl">✈️</span>
+                      <span className="text-2xl">
+                        <Emoji name="airplane" />
+                      </span>
                       Add Visit
                     </CardTitle>
                     {undoStack.length > 0 && (
@@ -429,7 +432,9 @@ function Create() {
                 <DarkCard>
                   <CardHeader>
                     <CardTitle className="text-lg font-medium flex items-center gap-2">
-                      <span className="text-2xl">📸</span>
+                      <span className="text-2xl">
+                        <Emoji name="cameraWithFlash" />
+                      </span>
                       Export
                     </CardTitle>
                   </CardHeader>
@@ -494,7 +499,9 @@ function Create() {
               <StandardCard>
                 <CardHeader>
                   <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
-                    <span className="text-2xl">📊</span>
+                    <span className="text-2xl">
+                      <Emoji name="barChart" />
+                    </span>
                     Statistics
                   </CardTitle>
                 </CardHeader>
@@ -510,7 +517,9 @@ function Create() {
               <StandardCard>
                 <CardHeader>
                   <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
-                    <span className="text-2xl">⚙️</span>
+                    <span className="text-2xl">
+                      <Emoji name="gear" />
+                    </span>
                     Settings
                   </CardTitle>
                 </CardHeader>
@@ -541,7 +550,9 @@ function Create() {
               }}
             >
               <summary className="px-6 py-4 cursor-pointer text-gray-900 dark:text-zinc-100 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/4 transition-colors rounded-lg list-none flex items-center gap-2">
-                <span className="text-lg">🔧</span>
+                <span className="text-lg">
+                  <Emoji name="wrench" />
+                </span>
                 Developer Mode
               </summary>
               <div className="px-6 pb-4 pt-2">
@@ -648,7 +659,9 @@ function Create() {
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span className="text-2xl">✈️</span>
+              <span className="text-2xl">
+                <Emoji name="airplane" />
+              </span>
               Add Visit
             </DialogTitle>
           </DialogHeader>
@@ -670,7 +683,9 @@ function Create() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span className="text-2xl">📅</span>
+              <span className="text-2xl">
+                <Emoji name="calendar" />
+              </span>
               Download Month
             </DialogTitle>
           </DialogHeader>

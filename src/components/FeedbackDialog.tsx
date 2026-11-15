@@ -1,5 +1,6 @@
 'use client'
 
+import { Emoji } from '@/components/Emoji'
 import StarRating from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
 import {
@@ -89,7 +90,9 @@ function FeedbackForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
-          <span className="text-2xl">💬</span>
+          <span className="text-2xl">
+            <Emoji name="speechBalloon" />
+          </span>
           Share your feedback
         </DialogTitle>
         <DialogDescription>

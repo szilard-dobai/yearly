@@ -1,9 +1,8 @@
 'use client'
 
 import CountryPickerDialog from '@/components/CountryPickerDialog'
-import Flag from '@/components/Flag'
+import { Flag } from '@/components/Emoji'
 import { Button } from '@/components/ui/button'
-import { useSettings } from '@/lib/contexts/SettingsContext'
 import { getCountryByCode } from '@/lib/countries'
 import {
   formatSelectionLabel,
@@ -72,14 +71,9 @@ function ExistingCountryChipContent({
   removeLabel,
   onRemove,
 }: ExistingCountryChipProps) {
-  const { settings } = useSettings()
   return (
     <>
-      <Flag
-        countryCode={countryCode}
-        size="sm"
-        displayMode={settings.flagDisplayMode}
-      />
+      <Flag code={countryCode} className="text-base sm:text-lg" />
       <span className="truncate">{name}</span>
       {count !== null && (
         <span className="text-gray-500 dark:text-zinc-400">{count}d</span>
@@ -164,7 +158,6 @@ export default function DaySelectionPanel({
   onReorder,
   onClose,
 }: DaySelectionPanelProps) {
-  const { settings } = useSettings()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [emptyOnly, setEmptyOnly] = useState(false)
   const [dragOrder, setDragOrder] = useState<string[] | null>(null)
@@ -405,11 +398,7 @@ export default function DaySelectionPanel({
                     className={chipClassName}
                     aria-label={`Add ${name}`}
                   >
-                    <Flag
-                      countryCode={code}
-                      size="sm"
-                      displayMode={settings.flagDisplayMode}
-                    />
+                    <Flag code={code} className="text-base sm:text-lg" />
                     {name}
                   </button>
                 )

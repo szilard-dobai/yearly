@@ -1,4 +1,3 @@
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import type { VideoTheme, YearVideoData } from '@/lib/video'
 import { useMemo } from 'react'
 import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from 'remotion'
@@ -24,7 +23,6 @@ import { YearCalendar } from './YearCalendar'
 export type VideoProps = {
   data: YearVideoData
   theme: VideoTheme
-  flagMode: FlagDisplayMode
   weekStartsOn: number
 }
 
@@ -34,12 +32,7 @@ export function yearFillTimeline(dayCount: number) {
   return { fillEnd, endCard, duration: endCard + END_CARD_LENGTH }
 }
 
-export function YearFillVideo({
-  data,
-  theme,
-  flagMode,
-  weekStartsOn,
-}: VideoProps) {
+export function YearFillVideo({ data, theme, weekStartsOn }: VideoProps) {
   const palette = PALETTES[theme]
   const frame = useCurrentFrame()
   const { fillEnd, endCard } = yearFillTimeline(data.days.length)
@@ -139,7 +132,6 @@ export function YearFillVideo({
           revealAt={revealAt}
           monthOpacity={monthOpacity}
           weekStartsOn={weekStartsOn}
-          flagMode={flagMode}
         />
       </div>
 

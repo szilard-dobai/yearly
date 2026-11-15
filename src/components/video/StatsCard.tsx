@@ -1,5 +1,5 @@
 import { MONTH_NAMES } from '@/lib/constants'
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
+import { MEDAL_EMOJI } from '@/lib/emoji'
 import {
   EXPORT_CANVAS,
   EXPORT_FRAME,
@@ -15,19 +15,17 @@ import {
 import type { YearVideoData } from '@/lib/video'
 import type { CSSProperties, ReactNode } from 'react'
 import { useCurrentFrame } from 'remotion'
+import { Emoji, Flag } from '../Emoji'
 import { getCountryName } from '../export/ExportBlocks'
 import { VideoWatermark } from './Brand'
 import {
   countUp,
-  EMOJI_FONT,
   fadeUp,
   type Palette,
   plural,
   SANS,
+  VIDEO_IMAGE,
 } from './tokens'
-import { VideoFlag } from './VideoFlag'
-
-const MEDALS = ['🥇', '🥈', '🥉']
 
 export function StatTile({
   label,
@@ -68,16 +66,15 @@ export function RankRow({
   code,
   days,
   palette,
-  flagMode,
   style,
 }: {
   rank: number
   code: string
   days: number
   palette: Palette
-  flagMode: FlagDisplayMode
   style?: CSSProperties
 }) {
+  const medal = MEDAL_EMOJI[rank - 1]
   return (
     <div
       style={{
@@ -96,14 +93,13 @@ export function RankRow({
           width: 48,
           display: 'flex',
           justifyContent: 'center',
-          fontSize: rank <= 3 ? 48 : 32,
+          fontSize: medal ? 48 : 32,
           fontWeight: 600,
           color: palette.muted,
-          fontFamily: rank <= 3 ? EMOJI_FONT : SANS,
           lineHeight: 1,
         }}
       >
-        {rank <= 3 ? MEDALS[rank - 1] : `${rank}.`}
+        {medal ? <Emoji name={medal} size={48} {...VIDEO_IMAGE} /> : `${rank}.`}
       </div>
       <div
         style={{
@@ -114,7 +110,7 @@ export function RankRow({
           minWidth: 0,
         }}
       >
-        <VideoFlag code={code} size={48} mode={flagMode} />
+        <Flag code={code} size={48} {...VIDEO_IMAGE} />
         <span
           style={{
             fontSize: 32,
@@ -227,7 +223,6 @@ function CardRankRow({
   sizes,
   nameSize,
   palette,
-  flagMode,
   style,
 }: {
   rank: number
@@ -236,10 +231,9 @@ function CardRankRow({
   sizes: RankRowSizes
   nameSize: number
   palette: Palette
-  flagMode: FlagDisplayMode
   style?: CSSProperties
 }) {
-  const medal = rank <= MEDALS.length
+  const medal = MEDAL_EMOJI[rank - 1]
 
   return (
     <div
@@ -262,14 +256,17 @@ function CardRankRow({
           flexShrink: 0,
           justifyContent: 'center',
           width: sizes.rankWidth,
-          fontFamily: medal ? EMOJI_FONT : SANS,
           fontSize: medal ? sizes.medalSize : sizes.rankSize,
           fontWeight: 600,
           lineHeight: 1,
           color: palette.label,
         }}
       >
-        {medal ? MEDALS[rank - 1] : `${rank}.`}
+        {medal ? (
+          <Emoji name={medal} size={sizes.medalSize} {...VIDEO_IMAGE} />
+        ) : (
+          `${rank}.`
+        )}
       </span>
       <span
         style={{
@@ -280,7 +277,7 @@ function CardRankRow({
           width: sizes.flagSize,
         }}
       >
-        <VideoFlag code={code} size={sizes.flagSize} mode={flagMode} />
+        <Flag code={code} size={sizes.flagSize} {...VIDEO_IMAGE} />
       </span>
       <span
         style={{
@@ -319,13 +316,11 @@ function CardRankRow({
 export function StatsCard({
   data,
   palette,
-  flagMode,
   statsStart,
   listStart,
 }: {
   data: YearVideoData
   palette: Palette
-  flagMode: FlagDisplayMode
   statsStart: number
   listStart: number
 }) {
@@ -483,7 +478,6 @@ export function StatsCard({
                   sizes={layout.rank}
                   nameSize={nameSize}
                   palette={palette}
-                  flagMode={flagMode}
                   style={rowStyle(i + 1)}
                 />
               ))}

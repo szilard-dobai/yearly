@@ -1,14 +1,12 @@
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import { getCountryByCode } from '@/lib/countries'
+import { MEDAL_EMOJI } from '@/lib/emoji'
 import {
   UNIT_SCALE,
   type RankRowSizes,
   type StatValue,
 } from '@/lib/export-canvas'
 import { cn } from '@/lib/utils'
-import { ExportFlag } from './ExportFlag'
-
-const MEDALS = ['🥇', '🥈', '🥉']
+import { Emoji, Flag } from '../Emoji'
 
 export function getCountryName(code: string) {
   return getCountryByCode(code)?.name ?? code
@@ -71,7 +69,6 @@ interface ExportRankRowProps {
   days: number
   sizes: RankRowSizes
   nameSize: number
-  flagMode: FlagDisplayMode
 }
 
 export function ExportRankRow({
@@ -80,8 +77,8 @@ export function ExportRankRow({
   days,
   sizes,
   nameSize,
-  flagMode,
 }: ExportRankRowProps) {
+  const medal = MEDAL_EMOJI[rank - 1]
   return (
     <div
       className="flex items-center rounded-4xl border bg-gray-100 dark:bg-white/5"
@@ -95,16 +92,20 @@ export function ExportRankRow({
         className="flex shrink-0 justify-center font-semibold leading-none text-gray-500 dark:text-gray-400"
         style={{
           width: sizes.rankWidth,
-          fontSize: rank <= MEDALS.length ? sizes.medalSize : sizes.rankSize,
+          fontSize: medal ? sizes.medalSize : sizes.rankSize,
         }}
       >
-        {rank <= MEDALS.length ? MEDALS[rank - 1] : `${rank}.`}
+        {medal ? (
+          <Emoji name={medal} size={sizes.medalSize} resolution="large" />
+        ) : (
+          `${rank}.`
+        )}
       </span>
       <span
         className="flex shrink-0 items-center justify-center"
         style={{ width: sizes.flagSize }}
       >
-        <ExportFlag code={code} size={sizes.flagSize} mode={flagMode} />
+        <Flag code={code} size={sizes.flagSize} resolution="large" />
       </span>
       <span
         className="min-w-0 flex-1 truncate font-medium text-gray-900 dark:text-white"

@@ -1,5 +1,6 @@
 'use client'
 
+import { Emoji } from '@/components/Emoji'
 import AcquisitionSurvey from '@/components/AcquisitionSurvey'
 import FeedbackPrompt from '@/components/FeedbackPrompt'
 import {
@@ -298,7 +299,7 @@ function ImagePreviewContent({
         >
           <div className="mb-4 md:mb-8">
             <h2 className="text-gray-900 dark:text-zinc-100 mb-2 md:mb-3 text-2xl md:text-3xl font-serif font-normal leading-tight">
-              Your Yearly is ready! 🎉
+              Your Yearly is ready! <Emoji name="partyPopper" />
             </h2>
             <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-sm md:text-base">
               Share your year-in-review with the world. Download the

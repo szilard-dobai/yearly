@@ -1,17 +1,15 @@
 import { getCountryCodesByDay, getMonthData } from '@/lib/calendar'
 import { MONTH_NAMES_SHORT } from '@/lib/constants'
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import { getYearLayout, type ExportFormat } from '@/lib/export-canvas'
 import { toDayKey } from '@/lib/selection'
 import type { CalendarData } from '@/lib/types'
+import { DayFlags } from './Emoji'
 import ExportFrame from './export/ExportFrame'
-import { ExportDayFlags } from './export/ExportFlag'
 
 interface YearExportLayoutProps {
   calendarData: CalendarData
   year: number
   format: ExportFormat
-  flagDisplayMode: FlagDisplayMode
   weekStartsOn: number
 }
 
@@ -19,7 +17,6 @@ export default function YearExportLayout({
   calendarData,
   year,
   format,
-  flagDisplayMode,
   weekStartsOn,
 }: YearExportLayoutProps) {
   const layout = getYearLayout(year, weekStartsOn, format)
@@ -62,10 +59,10 @@ export default function YearExportLayout({
                     >
                       {date &&
                         (codes ? (
-                          <ExportDayFlags
+                          <DayFlags
                             codes={codes}
                             size={layout.flagSize}
-                            mode={flagDisplayMode}
+                            resolution="large"
                           />
                         ) : (
                           <span

@@ -69,8 +69,11 @@ describe('AnalyticsOverviewDialog', () => {
       />
     )
 
-    expect(screen.getByText('Germany')).toBeInTheDocument()
-    expect(screen.getByText('🇩🇪')).toBeInTheDocument()
+    const germany = screen.getByText('Germany').closest('li') as HTMLElement
+    expect(germany.querySelector('img')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/flags\/small\/de\./)
+    )
     expect(screen.getByText('device')).toBeInTheDocument()
     expect(
       screen.queryByRole('heading', { name: 'Interesting mentions' })
@@ -92,11 +95,14 @@ describe('AnalyticsOverviewDialog', () => {
     }).parentElement as HTMLElement
     const rows = within(panel)
       .getAllByRole('listitem')
-      .map((row) => row.textContent)
+      .map((row) => [
+        row.querySelector('img')?.getAttribute('src')?.split('/')[4],
+        row.textContent,
+      ])
 
     expect(rows).toEqual([
-      '1🇯🇵Japan18 devices · 240 days',
-      '2🇮🇸Iceland4 devices · 1 day',
+      [expect.stringMatching(/^jp\./), '1Japan18 devices · 240 days'],
+      [expect.stringMatching(/^is\./), '2Iceland4 devices · 1 day'],
     ])
   })
 })

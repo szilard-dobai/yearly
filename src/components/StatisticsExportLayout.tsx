@@ -1,5 +1,4 @@
 import { MONTH_NAMES } from '@/lib/constants'
-import type { FlagDisplayMode } from '@/lib/contexts/SettingsContext'
 import {
   fitRankNameSize,
   fitStatValueSize,
@@ -27,14 +26,12 @@ interface StatisticsExportLayoutProps {
   calendarData: CalendarData
   year: number
   format: ExportFormat
-  flagDisplayMode: FlagDisplayMode
 }
 
 export default function StatisticsExportLayout({
   calendarData,
   year,
   format,
-  flagDisplayMode,
 }: StatisticsExportLayoutProps) {
   const visits = calendarData.visits.filter(
     (visit) => visit.date.getFullYear() === year
@@ -126,7 +123,6 @@ export default function StatisticsExportLayout({
                 days={item.days}
                 sizes={layout.rank}
                 nameSize={nameSize}
-                flagMode={flagDisplayMode}
               />
             ))}
           </div>

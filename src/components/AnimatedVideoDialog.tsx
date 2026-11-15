@@ -15,6 +15,7 @@ import {
 } from '@/components/video/PreviewVideo'
 import { STATS_DURATION } from '@/components/video/StatsVideo'
 import { FPS, VIDEO_HEIGHT, VIDEO_WIDTH } from '@/components/video/tokens'
+import { usePrefetchVideoImages } from '@/components/video/usePrefetchVideoImages'
 import { yearFillTimeline } from '@/components/video/YearFillVideo'
 import { MONTH_NAMES } from '@/lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
@@ -122,7 +123,6 @@ export default function AnimatedVideoDialog({
   const inputProps = useMemo<PreviewVideoProps>(() => {
     const shared = {
       theme,
-      flagMode: settings.flagDisplayMode,
       weekStartsOn: settings.weekStartsOn,
     }
     if (kind === 'month' && monthData) {
@@ -133,14 +133,8 @@ export default function AnimatedVideoDialog({
       kind: kind === 'stats' ? 'stats' : 'year',
       data: yearData,
     }
-  }, [
-    kind,
-    monthData,
-    yearData,
-    theme,
-    settings.flagDisplayMode,
-    settings.weekStartsOn,
-  ])
+  }, [kind, monthData, yearData, theme, settings.weekStartsOn])
+  usePrefetchVideoImages(inputProps.data.countries)
 
   const duration =
     inputProps.kind === 'month'

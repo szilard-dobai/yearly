@@ -1,7 +1,9 @@
 import { getCountryByCode } from '../lib/countries'
-import { useSettings } from '@/lib/contexts/SettingsContext'
-import Flag from './Flag'
+import { MEDAL_EMOJI } from '@/lib/emoji'
+import { Emoji, Flag } from './Emoji'
 import { Badge } from '@/components/ui/badge'
+
+const MEDAL_LABELS = ['1st place', '2nd place', '3rd place']
 
 export interface CountryRankingItem {
   countryCode: string
@@ -18,7 +20,6 @@ export default function CountryRankingList({
   items,
   maxItems = 10,
 }: CountryRankingListProps) {
-  const { settings } = useSettings()
   const displayItems = maxItems > 0 ? items.slice(0, maxItems) : items
 
   if (displayItems.length === 0) {
@@ -30,32 +31,18 @@ export default function CountryRankingList({
   }
 
   const getRankBadge = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return (
-          <span className="text-lg" title="1st place">
-            🥇
-          </span>
-        )
-      case 2:
-        return (
-          <span className="text-lg" title="2nd place">
-            🥈
-          </span>
-        )
-      case 3:
-        return (
-          <span className="text-lg" title="3rd place">
-            🥉
-          </span>
-        )
-      default:
-        return (
-          <span className="text-sm font-medium text-gray-500 dark:text-zinc-400 w-6 text-center">
-            {rank}
-          </span>
-        )
+    if (rank <= MEDAL_EMOJI.length) {
+      return (
+        <span className="text-lg" title={MEDAL_LABELS[rank - 1]}>
+          <Emoji name={MEDAL_EMOJI[rank - 1]} alt={MEDAL_LABELS[rank - 1]} />
+        </span>
+      )
     }
+    return (
+      <span className="text-sm font-medium text-gray-500 dark:text-zinc-400 w-6 text-center">
+        {rank}
+      </span>
+    )
   }
 
   return (
@@ -74,10 +61,7 @@ export default function CountryRankingList({
             </div>
 
             <div className="shrink-0 w-8 h-6 flex items-center">
-              <Flag
-                countryCode={item.countryCode}
-                displayMode={settings.flagDisplayMode}
-              />
+              <Flag code={item.countryCode} className="text-lg sm:text-2xl" />
             </div>
 
             <div className="flex-1 min-w-0">

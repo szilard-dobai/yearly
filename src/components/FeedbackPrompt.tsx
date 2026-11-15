@@ -1,5 +1,6 @@
 'use client'
 
+import { Emoji } from '@/components/Emoji'
 import ChoiceChip from '@/components/ChoiceChip'
 import StarRating from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
@@ -258,7 +259,7 @@ export default function FeedbackPrompt({
               className="text-sm text-gray-700 dark:text-zinc-300"
             >
               <span className="font-medium text-gray-900 dark:text-zinc-100">
-                Thanks for the feedback! 🙌
+                Thanks for the feedback! <Emoji name="raisingHands" />
               </span>{' '}
               It helps us make Yearly better.
             </motion.p>

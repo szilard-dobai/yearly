@@ -26,7 +26,7 @@ Yearly helps you create a visual summary of your travel year. Add your countries
 **Key features:**
 
 - Clean 3×4 calendar grid showing all 12 months
-- Country flags automatically appear on your travel dates (emoji or icon mode)
+- Country flags automatically appear on your travel dates, drawn the same on every platform
 - Three export types: full-year calendar, monthly story (9:16), and statistics overview
 - Dark mode support with Material Design elevation hierarchy
 - Travel statistics: countries visited, days abroad, average trip length, and more

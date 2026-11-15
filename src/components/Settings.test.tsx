@@ -16,38 +16,12 @@ describe('Settings', () => {
     vi.clearAllMocks()
   })
 
-  describe('Flag display mode', () => {
-    it('should render flag display mode switch', () => {
+  describe('Flags', () => {
+    it('has no choice of flag style, since every flag is an image', () => {
       renderWithSettings(<Settings {...defaultProps} />)
 
-      expect(
-        screen.getByRole('switch', { name: /use flag icons/i })
-      ).toBeInTheDocument()
-    })
-
-    it('should show switch as unchecked when mode is emoji (default)', () => {
-      renderWithSettings(<Settings {...defaultProps} />)
-
-      const switchElement = screen.getByRole('switch', {
-        name: /use flag icons/i,
-      })
-      expect(switchElement).not.toBeChecked()
-    })
-
-    it('should toggle switch when clicked', async () => {
-      const user = userEvent.setup()
-      renderWithSettings(<Settings {...defaultProps} />)
-
-      const switchElement = screen.getByRole('switch', {
-        name: /use flag icons/i,
-      })
-      expect(switchElement).not.toBeChecked()
-
-      await user.click(switchElement)
-      expect(switchElement).toBeChecked()
-
-      await user.click(switchElement)
-      expect(switchElement).not.toBeChecked()
+      expect(screen.queryByText(/flag/i)).not.toBeInTheDocument()
+      expect(screen.getAllByRole('switch')).toHaveLength(2)
     })
   })
 
@@ -136,15 +110,6 @@ describe('Settings', () => {
   })
 
   describe('Labels and descriptions', () => {
-    it('should have label for flag display mode', () => {
-      renderWithSettings(<Settings {...defaultProps} />)
-
-      expect(screen.getByText('Use flag icons')).toBeInTheDocument()
-      expect(
-        screen.getByText(/display country flags as icons instead of emoji/i)
-      ).toBeInTheDocument()
-    })
-
     it('should have label for week starts on', () => {
       renderWithSettings(<Settings {...defaultProps} />)
 

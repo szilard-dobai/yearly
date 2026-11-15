@@ -44,6 +44,12 @@ describe('getReminderLink', () => {
     expect(getReminderLink(2026, SITE_URL)).toBe(LINK)
     expect(getReminderLink(2026, `${SITE_URL}/`)).toBe(LINK)
   })
+
+  it('tags the email link with its own medium', () => {
+    expect(getReminderLink(2026, SITE_URL, 'email')).toBe(
+      'https://yearly.world/create?utm_source=reminder&utm_medium=email&utm_campaign=year_end_2026'
+    )
+  })
 })
 
 describe('escapeIcsText', () => {

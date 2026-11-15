@@ -16,10 +16,14 @@ export function shouldOfferYearEndReminder(
   )
 }
 
-export function getReminderLink(year: number, siteUrl: string): string {
+export function getReminderLink(
+  year: number,
+  siteUrl: string,
+  medium: 'calendar' | 'email' = 'calendar'
+): string {
   const params = new URLSearchParams({
     utm_source: 'reminder',
-    utm_medium: 'calendar',
+    utm_medium: medium,
     utm_campaign: `year_end_${year}`,
   })
   return `${siteUrl.replace(/\/+$/, '')}/create?${params}`

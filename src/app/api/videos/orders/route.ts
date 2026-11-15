@@ -15,7 +15,7 @@ import {
   listOrdersForUser,
   setCheckout,
 } from '@/lib/videos/orders'
-import { createOrderSchema, daysInPeriod } from '@/lib/videos/period'
+import { createOrderSchema, daysInPeriod, periodKey } from '@/lib/videos/period'
 import { createVideoCheckout } from '@/lib/videos/polar'
 import { startRender } from '@/lib/videos/render'
 import { summarizeOrder } from '@/lib/videos/summary'
@@ -85,6 +85,7 @@ export async function POST(request: Request) {
   try {
     checkout = await createVideoCheckout({
       orderId: order.id,
+      period: periodKey(period),
       pack: order.pack,
       userId: user.id,
       email: user.email,

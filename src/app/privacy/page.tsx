@@ -1,5 +1,6 @@
 import { ProductName, withProductName } from '@/components/ProductName'
 import Header from '@/components/Header'
+import { isVideoSalesEnabled } from '@/lib/videos/enabled'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -39,6 +40,8 @@ const email = (
 )
 
 export default function PrivacyPage() {
+  const videos = isVideoSalesEnabled()
+
   return (
     <>
       <Header />
@@ -266,7 +269,63 @@ export default function PrivacyPage() {
               deletes your email from the list. When it goes out, we record when
               it was sent and Resend&apos;s ID for it.
             </p>
+            {videos && (
+              <p>
+                Everyone on the waitlist gets their first video free. To make
+                that work, we copied the waitlist emails to our accounts
+                database. When you sign in with one of them, your free video is
+                waiting. We keep the copy until you use the free video or it
+                expires.
+              </p>
+            )}
           </Section>
+
+          {videos && (
+            <Section title="Animated videos">
+              <p>When you buy a video pack or use a free one, we store:</p>
+              <List>
+                <li>
+                  which pack you chose, and the year or month it&apos;s for
+                </li>
+                <li>
+                  the trips in that year or month (which countries, on which
+                  days) and the day your week starts, which we make the videos
+                  from. Each update stores the trips it was made from too.
+                </li>
+                <li>
+                  the order: when you placed it, whether it&apos;s paid, the
+                  amount and currency, and Polar&apos;s IDs for the checkout and
+                  the order
+                </li>
+                <li>the finished videos</li>
+              </List>
+              <p>
+                Polar sells the videos to you as our merchant of record. Its
+                checkout collects your payment details, billing country and
+                address, works out the tax and sends your receipt. Polar decides
+                how it uses that data, under{' '}
+                <a
+                  href="https://polar.sh/legal/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={linkClassName}
+                >
+                  its own privacy policy
+                </a>
+                . We send Polar your email address and account ID so the
+                checkout is filled in and the order is linked to your account,
+                and your IP address so it can show the right currency and tax.
+                We never see your card details.
+              </p>
+              <p>
+                To make the videos, Vercel runs a short-lived computer in
+                Frankfurt, Germany, that turns your trips into video files, and
+                stores the files privately in Frankfurt. Only you can download
+                them, through links that stop working after 10 minutes. We email
+                you when they&apos;re ready.
+              </p>
+            </Section>
+          )}
 
           <Section title="Year-end reminder">
             <p>
@@ -345,6 +404,12 @@ export default function PrivacyPage() {
                 Sign-in sessions, sign-in codes and limits on sign-in attempts:
                 our legitimate interest in keeping accounts secure.
               </li>
+              {videos && (
+                <li>
+                  Video orders, the trips they&apos;re made from and the
+                  finished videos: selling and delivering what you bought.
+                </li>
+              )}
               <li>
                 Error reports and page timings: our legitimate interest in
                 keeping <ProductName /> working.
@@ -404,13 +469,38 @@ export default function PrivacyPage() {
                 Scrambled IP addresses used to limit sign-in attempts: up to 2
                 days.
               </li>
+              {videos && (
+                <>
+                  <li>
+                    Video orders, their trips and videos: until you delete your
+                    account. When you update a pack, we delete the old videos
+                    once the new ones are ready. If an order is refunded, we
+                    delete its trips and videos.
+                  </li>
+                  <li>
+                    Checkouts you didn&apos;t finish: deleted within 2 days.
+                  </li>
+                  <li>
+                    Free video emails copied from the waitlist: until the free
+                    video is used or expires.
+                  </li>
+                  <li>
+                    Polar keeps its own records of your payment, as tax law
+                    requires.
+                  </li>
+                </>
+              )}
             </List>
           </Section>
 
           <Section title="Who handles the data">
             <List>
               <li>
-                Vercel hosts <ProductName /> and provides the analytics.
+                Vercel hosts <ProductName /> and provides the analytics
+                {videos
+                  ? ', and makes and stores the animated videos in Frankfurt, Germany'
+                  : ''}
+                .
               </li>
               <li>
                 MongoDB stores usage events, feedback, the waitlist and year-end
@@ -421,9 +511,18 @@ export default function PrivacyPage() {
                 Germany.
               </li>
               <li>
-                Resend sends sign-in codes, the year-end reminder email and the
-                video launch email, from servers in Ireland.
+                Resend sends{' '}
+                {videos
+                  ? 'sign-in codes, the email that your videos are ready, the year-end reminder email and the video launch email'
+                  : 'sign-in codes, the year-end reminder email and the video launch email'}
+                , from servers in Ireland.
               </li>
+              {videos && (
+                <li>
+                  Polar sells the animated videos and handles their payments, as
+                  described above.
+                </li>
+              )}
               <li>
                 Google handles sign-in if you choose Continue with Google.
               </li>
@@ -451,13 +550,14 @@ export default function PrivacyPage() {
               Our servers and databases are in Frankfurt, Germany. Some of the
               companies we use are based in the US: Vercel, MongoDB, Resend,
               Sentry, Slack, ImprovMX and Yahoo, and for accounts, Neon and
-              Google. Slack keeps our notifications in the US, and the others
-              may access your data from outside the European Economic Area.
-              These transfers are covered by the EU–US Data Privacy Framework or
-              the European Commission&apos;s standard contractual clauses,
-              except for ImprovMX, which we use on its free plan without such
-              terms. Email us and we&apos;ll tell you which one covers each
-              company and send you a copy.
+              Google{videos ? ', and Polar for video payments' : ''}. Slack
+              keeps our notifications in the US, and the others may access your
+              data from outside the European Economic Area. These transfers are
+              covered by the EU–US Data Privacy Framework or the European
+              Commission&apos;s standard contractual clauses, except for
+              ImprovMX, which we use on its free plan without such terms. Email
+              us and we&apos;ll tell you which one covers each company and send
+              you a copy.
             </p>
           </Section>
 
@@ -517,10 +617,13 @@ export default function PrivacyPage() {
                 . It takes effect right away, and copies in our database
                 provider&apos;s backups are gone within 7 days. It also removes
                 your account ID from your usage events and feedback. Trips on
-                your device stay there until you clear them. Deleting your
-                account doesn&apos;t remove your email from the video waitlist
-                or the year-end reminder, so remove it from those first, as
-                below, or ask us.
+                your device stay there until you clear them.
+                {videos
+                  ? ' It also deletes your video orders and videos, so save any you want to keep first. Polar keeps its own record of your payments.'
+                  : ''}{' '}
+                Deleting your account doesn&apos;t remove your email from the
+                video waitlist or the year-end reminder, so remove it from those
+                first, as below, or ask us.
               </li>
               <li>
                 While you&apos;re signed in, you can remove the email you sign

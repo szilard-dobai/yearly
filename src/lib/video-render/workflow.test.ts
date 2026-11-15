@@ -181,7 +181,7 @@ describe('renderVideoPack', () => {
 
 describe('renderVideoPack for an order', () => {
   const job = {
-    order: { year: 2026, month: 5 },
+    order: { year: 2026, month: 5, source: 'polar' },
     render: {
       version: 1,
       data: { days: { '2026-06-01': ['FR'] }, weekStartsOn: 1 },
@@ -222,6 +222,38 @@ describe('renderVideoPack for an order', () => {
       expect.objectContaining({
         to: 'ana@example.com',
         subject: 'Your updated Yearly videos are ready',
+      })
+    )
+  })
+
+  it('confirms the consent to immediate delivery for a first paid render', async () => {
+    orders.getRenderJob.mockResolvedValue({
+      ...job,
+      render: { ...job.render, version: 0 },
+    })
+
+    await renderVideoPack({ renderId: 'render-1', pack: 'month' })
+
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: 'Your Yearly videos are ready',
+        text: expect.stringContaining('14-day right to cancel has ended'),
+      })
+    )
+  })
+
+  it("doesn't mention the right to cancel for a free video", async () => {
+    orders.getRenderJob.mockResolvedValue({
+      ...job,
+      order: { ...job.order, source: 'credit' },
+      render: { ...job.render, version: 0 },
+    })
+
+    await renderVideoPack({ renderId: 'render-1', pack: 'month' })
+
+    expect(sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: expect.not.stringContaining('right to cancel'),
       })
     )
   })

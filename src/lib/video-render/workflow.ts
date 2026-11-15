@@ -71,6 +71,7 @@ export async function finishRender(renderId: string, videos: RenderedVideo[]) {
     videosReadyEmail(job.email, {
       accountUrl: `${siteUrl}/account`,
       updated: job.render.version > 0,
+      confirmConsent: job.order.source === 'polar' && job.render.version === 0,
     })
   ).catch((error: unknown) =>
     console.error('Could not send the videos ready email', error)

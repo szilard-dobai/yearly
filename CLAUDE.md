@@ -65,7 +65,7 @@ src/
 │   ├── export/               - Shared export frame (padding, title, watermark), stat tiles and ranking rows
 │   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
-│   ├── video/                - Remotion compositions for the animated video preview (year, month, stats); the paid video flow in the export dialog (`useVideoPurchase`, `SaveVideoButton`, `PackVideoPlayer`) and `VideoSalesProvider` (root layout)
+│   ├── video/                - Remotion compositions for the animated video preview (year, month, stats); the paid video flow in the export dialog (`useVideoPurchase`, `SaveVideoButton`, `PackVideoPlayer`, `PackUpdate`, shared with `/account`) and `VideoSalesProvider` (root layout)
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
 │   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads; tapping it opens the original full size
 │   ├── Emoji.tsx             - The one image component for flags (`Flag`, `DayFlags` for one or two countries) and named emoji (`Emoji`); `size` works like a font size, or leave it out to follow the text; `resolution="large"` in exports and video, Remotion's `Img` via `as` in compositions

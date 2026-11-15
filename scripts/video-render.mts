@@ -173,7 +173,11 @@ const [command, argument] = positionals
 if (command === 'bundle') {
   await bundleVideos()
 } else if (command === 'snapshot') {
-  await snapshotBundle(Number(values['expires-hours']))
+  const expiresHours = Number(values['expires-hours'])
+  if (!Number.isFinite(expiresHours) || expiresHours < 0) {
+    throw new Error('--expires-hours must be 0 or more')
+  }
+  await snapshotBundle(expiresHours)
 } else if (command === 'sample') {
   if (!values.snapshot) throw new Error('Pass --snapshot <id>')
   const kinds = values.kinds.split(',')
@@ -182,6 +186,9 @@ if (command === 'bundle') {
   )
   if (unknown.length > 0)
     throw new Error(`Unknown kinds: ${unknown.join(', ')}`)
+  if (!['dark', 'light'].includes(values.theme)) {
+    throw new Error('--theme must be dark or light')
+  }
   await renderSample(values.snapshot, kinds, values.theme)
 } else if (command === 'delete-snapshot') {
   if (!argument) throw new Error('Pass the snapshot ID')

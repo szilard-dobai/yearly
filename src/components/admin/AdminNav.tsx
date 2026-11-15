@@ -1,7 +1,8 @@
 'use client'
 
+import { useVideoSalesEnabled } from '@/components/admin/VideoSalesEnabledProvider'
 import { cn } from '@/lib/utils'
-import { BarChart3, MessageSquareText } from 'lucide-react'
+import { BarChart3, Clapperboard, MessageSquareText } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -10,15 +11,24 @@ const ADMIN_LINKS = [
   { href: '/admin/feedback', label: 'Feedback', icon: MessageSquareText },
 ] as const
 
+const VIDEOS_LINK = {
+  href: '/admin/videos',
+  label: 'Videos',
+  icon: Clapperboard,
+} as const
+
 export default function AdminNav() {
   const pathname = usePathname()
+  const links = useVideoSalesEnabled()
+    ? [...ADMIN_LINKS, VIDEOS_LINK]
+    : ADMIN_LINKS
 
   return (
     <nav
       aria-label="Admin sections"
       className="inline-flex items-center gap-1 rounded-lg border border-gray-200 dark:border-white/8 bg-white dark:bg-[#141414] p-1"
     >
-      {ADMIN_LINKS.map(({ href, label, icon: Icon }) => {
+      {links.map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href
         return (
           <Link

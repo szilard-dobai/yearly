@@ -1,3 +1,4 @@
+import { MONTH_NAMES } from '@/lib/constants'
 import { getCountryByCode } from '@/lib/countries'
 import type { TrackingEventType } from '@/lib/tracking/types'
 
@@ -32,6 +33,23 @@ export function formatDateTime(
     dateStyle: 'medium',
     timeStyle: precision === 'seconds' ? 'medium' : 'short',
   })
+}
+
+export function formatMoney(cents: number, currency: string): string {
+  return new Intl.NumberFormat('en', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(cents / 100)
+}
+
+export function formatVideoPack(order: {
+  pack: 'year' | 'month'
+  year: number
+  month: number | null
+}): string {
+  return order.pack === 'month' && order.month !== null
+    ? `${MONTH_NAMES[order.month]} ${order.year}`
+    : `Year ${order.year}`
 }
 
 export function shortId(id: string): string {

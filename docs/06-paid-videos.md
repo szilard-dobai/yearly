@@ -76,12 +76,14 @@ The daily `/api/cron/retention` job also deletes unpaid draft orders older than 
 
 ### Video code
 
-- A Remotion entry registers `YearFillVideo`, `StatsVideo` and `MonthVideo` without `PreviewWatermark`. The preview and the server use the same compositions.
-- The bundle is built with each deployment, so a render uses the same code as the preview people saw.
-- Geist and Newsreader are bundled as font files; the `next/font` CSS variables don't exist outside the app.
-- Pin `@remotion/vercel`, `remotion` and `@remotion/bundler` at one version (4.0.541 was tested), and `@vercel/sandbox` at 1.6.0. Remotion marks `@remotion/vercel` experimental, and newer `@vercel/sandbox` versions replace the runtimes it relies on.
-- **Snapshots, not fresh sandboxes.** `createSandbox()` installs system packages, glibc, Chrome and npm packages from the internet on every call, which takes about 37 s and depends on outside services. The deploy builds a snapshot instead (about 0.74 GB) and every render restores it in under a second. Build snapshots only in production and only when the bundle changes, and delete old ones: they never expire, Hobby allows 15 GB for the account's lifetime, and Pro charges about $0.06 a month each. A snapshot belongs to one region.
-- The sandbox has no emoji font, so the medals came out blank in the render test. Since PR #69 every flag and medal is an image under `/emoji/`, so the server bundle has to include `public/emoji`.
+- `src/video-render/entry.ts` registers the `year`, `stats` and `month` compositions (the `VideoKind` names) with `YearFillVideo`, `StatsVideo` and `MonthVideo`, without `PreviewWatermark`. The preview and the server use the same components, and `Root.test.tsx` checks the server's durations match the preview's. With no input props, each renders the homepage example year.
+- Geist and Newsreader come from the `@fontsource-variable` packages, because the `next/font` CSS variables don't exist outside the app. `src/video-render/fonts.ts` loads every face before the first frame.
+- Every flag and medal is an image under `/emoji/` (PR #69), and the sandbox has no emoji font, so `npm run video:bundle` copies `public/emoji` into the bundle.
+- `scripts/video-render.mts` bundles (`npm run video:bundle`, about 3 s, 37 MB), makes a snapshot, renders sample videos and deletes snapshots. Sandbox calls need a `VERCEL_OIDC_TOKEN` from `vercel env pull`, kept outside the repo.
+- The bundle will be built with each production deployment, so a render uses the same code as the preview people saw.
+- Pin `@remotion/vercel`, `remotion` and `@remotion/bundler` at one version (4.0.541), and `@vercel/sandbox` at 1.6.0. Remotion marks `@remotion/vercel` experimental, and newer `@vercel/sandbox` versions replace the runtimes it relies on. In 4.0.541, `addBundleToSandbox` creates subfolders before the bundle folder, so the script makes that folder first.
+- **Snapshots, not fresh sandboxes.** `createSandbox()` installs system packages, glibc, Chrome and npm packages from the internet on every call, which takes about 37 s and depends on outside services. A snapshot (about 0.74 GB, about 1 minute to make) restores in under a second. Build snapshots only in production and only when the bundle changes, and delete old ones: they last until deleted unless they're given an expiry, Hobby allows 15 GB for the account's lifetime, and Pro charges about $0.06 a month each. A snapshot belongs to one region.
+- First server render of the real compositions (15 November): the three example videos, one sandbox each, took 18.8 s from snapshot to MP4s on this machine, in dark and in light. Fonts, flags and medals match the preview.
 
 ### Render test (15 November)
 

@@ -78,7 +78,7 @@ src/
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
 │   ├── FeedbackCard.tsx      - Rating card on the create page, hidden once the user rates or dismisses
 │   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (your videos with updates, calendar, sign out, delete), first-sync dialog
-│   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles, video orders and render again, `VideoSalesEnabledProvider` from the admin layout for the nav; the year-end reminder panel with "Send a test" and "Run now")
+│   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles, video orders and render again; the year-end reminder panel with "Send a test" and "Run now"; the nav shows Videos when `useVideoSales()` says sales are on)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/
 │   ├── types.ts              - Core types (Country, CountryVisit, CalendarData)

@@ -1,4 +1,6 @@
 import { getRemindersCollection, getTrackingCollection } from '@/lib/mongodb'
+import { getReminderSendBlock } from '@/lib/reminders/send-run'
+import { createReminderSendStore } from '@/lib/reminders/send-store'
 import {
   REMINDER_STATS_EVENTS,
   type ReminderEventAggregate,
@@ -16,7 +18,8 @@ export async function GET(request: Request) {
   const denied = await requireAdmin(request)
   if (denied) return denied
 
-  const year = new Date().getUTCFullYear()
+  const now = new Date()
+  const year = now.getUTCFullYear()
 
   try {
     const [reminders, tracking] = await Promise.all([
@@ -24,7 +27,7 @@ export async function GET(request: Request) {
       getTrackingCollection(),
     ])
 
-    const [signups, rows] = await Promise.all([
+    const [signups, rows, sendCounts] = await Promise.all([
       reminders
         .find(
           { year },
@@ -58,6 +61,7 @@ export async function GET(request: Request) {
           },
         ])
         .toArray(),
+      createReminderSendStore(reminders, year).count(now),
     ])
 
     const weekAgo = Date.now() - SEVEN_DAYS_MS
@@ -69,6 +73,13 @@ export async function GET(request: Request) {
       ).length,
       emails: signups.map((signup) => signup.email),
       ...summarizeReminderEvents(rows),
+      send: {
+        sent: sendCounts.sent,
+        failed: sendCounts.failed,
+        left: sendCounts.total - sendCounts.sent,
+        needsCheck: sendCounts.needsCheck,
+        blocked: getReminderSendBlock(now),
+      },
     }
 
     return NextResponse.json(stats)

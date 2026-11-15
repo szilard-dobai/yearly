@@ -14,10 +14,14 @@ const reminderRequestFields = {
   deviceType: z.enum(['mobile', 'tablet', 'desktop']).optional(),
 }
 
+const reminderEmail = z.string().trim().toLowerCase().max(254).pipe(z.email())
+
 export const createReminderSchema = z.object({
   ...reminderRequestFields,
-  email: z.string().trim().toLowerCase().max(254).pipe(z.email()),
+  email: reminderEmail,
 })
+
+export const testReminderEmailSchema = z.object({ email: reminderEmail })
 
 export type CreateReminderInput = z.infer<typeof createReminderSchema>
 

@@ -155,6 +155,34 @@ describe('POST /api/reminders', () => {
     expect(collection.updateOne).not.toHaveBeenCalled()
   })
 
+  it('still accepts this year until 1 Dec has started in every time zone', async () => {
+    vi.setSystemTime(new Date('2026-12-01T11:59:59Z'))
+
+    const response = await POST(postRequest(validBody))
+
+    expect(response.status).toBe(201)
+  })
+
+  it("closes this year's reminders once 1 Dec has started everywhere", async () => {
+    vi.setSystemTime(new Date('2026-12-01T12:00:00Z'))
+
+    const response = await POST(postRequest(validBody))
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      error: 'Reminders for 2026 closed on 1 Dec',
+    })
+    expect(collection.updateOne).not.toHaveBeenCalled()
+  })
+
+  it('accepts next year in December', async () => {
+    vi.setSystemTime(new Date('2026-12-20T12:00:00Z'))
+
+    const response = await POST(postRequest({ ...validBody, year: 2027 }))
+
+    expect(response.status).toBe(201)
+  })
+
   it('rejects malformed JSON', async () => {
     const response = await POST(postRequest('{nope'))
 

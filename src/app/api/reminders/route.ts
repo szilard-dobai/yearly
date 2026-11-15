@@ -1,4 +1,5 @@
 import { getRemindersCollection, type ReminderDocument } from '@/lib/mongodb'
+import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
 import { getReminderTotals, isOpenReminderYear } from '@/lib/reminders/server'
 import { notifyReminderToSlack } from '@/lib/reminders/slack'
 import { createReminderSchema } from '@/lib/reminders/types'
@@ -47,7 +48,15 @@ export async function POST(request: Request) {
 
   const { email, deviceId, year, deviceType } = parsed.data
   if (!isOpenReminderYear(year)) {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    const closed = year === new Date().getUTCFullYear()
+    return NextResponse.json(
+      {
+        error: closed
+          ? `Reminders for ${year} closed on ${REMINDER_DATE_LABEL}`
+          : 'Invalid request',
+      },
+      { status: 400 }
+    )
   }
 
   try {

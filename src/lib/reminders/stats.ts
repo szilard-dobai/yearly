@@ -6,6 +6,14 @@ export const REMINDER_STATS_EVENTS = [
   'year_end_reminder_calendar_add',
 ] as const satisfies readonly TrackingEventType[]
 
+export type ReminderSendStats = {
+  sent: number
+  failed: number
+  left: number
+  needsCheck: number
+  blocked: string | null
+}
+
 export type ReminderStats = {
   year: number
   total: number
@@ -13,6 +21,7 @@ export type ReminderStats = {
   emails: string[]
   shown: number
   calendarAdds: Record<CalendarProvider, number>
+  send: ReminderSendStats
 }
 
 export type ReminderEventAggregate = {

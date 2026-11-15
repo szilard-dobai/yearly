@@ -1,24 +1,14 @@
+import { isCronAuthorized } from '@/lib/cron'
 import { db } from '@/lib/db'
 import getMongoDb from '@/lib/mongodb'
 import { applyMongoRetention, applyPostgresRetention } from '@/lib/retention'
-import { timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-function isAuthorized(request: Request) {
-  const secret = process.env.CRON_SECRET
-  if (!secret) return false
-  const expected = Buffer.from(`Bearer ${secret}`)
-  const received = Buffer.from(request.headers.get('authorization') ?? '')
-  return (
-    expected.length === received.length && timingSafeEqual(expected, received)
-  )
-}
-
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

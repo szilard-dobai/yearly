@@ -127,7 +127,7 @@ The daily `/api/cron/retention` job also deletes unpaid draft orders older than 
 
 ### Launch day
 
-Before the launch email, give the waitlist its free videos. The script reads `MONGODB_URI`, `MONGODB_DB` and `DATABASE_URL_UNPOOLED` (or `DATABASE_URL`), from `.env.local` unless they're already set, and prints the hosts it reads from and writes to. It prints counts only, never emails:
+Before the launch email, give the waitlist its free videos. The script needs `MONGODB_URI`, `MONGODB_DB` and `DATABASE_URL_UNPOOLED` (or `DATABASE_URL`) passed in with `node --env-file`; it never reads `.env.local`, so a variable missing from the production file (Vercel leaves Sensitive ones empty when pulled) stops it rather than pointing it at development. It prints the hosts it reads from and writes to, and counts only, never emails:
 
 ```sh
 vercel env pull ~/yearly-production.env --environment=production
@@ -139,7 +139,7 @@ rm ~/yearly-production.env
 - The first run is a dry run: check both hosts are production and the counts look right (found, valid, already have a credit, already used a free video, would insert). It writes only with `--commit`.
 - `--expires` is the last day a credit works; it ends at midnight UTC after it, and the retention cron then deletes unused credits.
 - Running it again is safe: emails that already have a credit are skipped (`ON CONFLICT DO NOTHING`), and so are emails whose account already used a free video, since that credit row was deleted when it was used.
-- `npm run video:import-credits -- --expires 2027-01-31` runs the same script with the local `.env.local`.
+- If a variable comes back empty because it's Sensitive, copy its value from the Vercel dashboard into the file by hand.
 
 ### Video code
 

@@ -20,6 +20,7 @@
     "db:migrate": "node scripts/db-migrate.mts",
     "db:studio": "drizzle-kit studio",
     "video:bundle": "node scripts/video-render.mts bundle",
+    "video:import-credits": "node scripts/import-video-credits.mts",
     "emoji:build": "node scripts/build-emoji-images.mts && prettier --write src/lib/emoji-images.ts public/emoji/README.md"
   },
   "dependencies": {

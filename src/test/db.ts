@@ -10,6 +10,7 @@ export async function createTestDb() {
   await migrate(db, { migrationsFolder: 'drizzle' })
   return {
     db: db as unknown as Database,
+    client,
     close: () => client.close(),
   }
 }

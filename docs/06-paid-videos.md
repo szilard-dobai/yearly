@@ -72,12 +72,12 @@ Polar sends the receipt. We send the "ready" email, which links to `/account`. F
 
 ## Account page
 
-`/account` lists **Your videos** above the calendar card when sales are on: one card per paid pack (`GET /api/videos/orders`, newest first), with the period, the purchase date and the same player and **Save video** button as the dialog. Each card shows one file at a time (Your year / Your stats for a year pack, Dark / Light), with `preload="metadata"` and no autoplay, so a visit fetches only each file's metadata until someone presses play.
+`/account` lists **Your videos** above the calendar card when sales are on: one card per paid pack (`GET /api/videos/orders`, newest first), with the period, the purchase date and the same player and **Save video** button as the dialog. Each card shows one file at a time (Your year / Your stats for a year pack, Dark / Light), with `preload="metadata"`, no autoplay and the render's poster (older renders without one show a play button on black), so a visit fetches only each file's metadata and its poster until someone presses play.
 
 - **Update with my latest trips (N left)** asks for a confirmation that names the update it uses, then posts this device's calendar for that period. It's the synced calendar: the button stays disabled until the "Your calendar" card has finished syncing with the account, including the first-sync question. While the new version renders, the old videos stay playable and the card says "Updating your videos with your latest trips". The card then polls until it's ready.
-- Refusals read in plain words: `busy` (already updating), `no-updates-left` (all 3 used, get a new pack), `too-different` (updates are for adding trips or fixing a country, so get a new pack for a different calendar). Anything else is "Try again in a moment".
+- The update controls are the dialog's `PackUpdate`. Refusals read in plain words: `unchanged` (the videos already include all your trips, and no update is used), `busy` (already updating), `no-updates-left` (all 3 used, get a new pack), `too-different` (updates are for adding trips or fixing a country, so get a new pack for a different calendar). Anything else is "Try again in a moment". On `/account`, "get a new pack" links to `/create`.
 - No packs: a line pointing to `/create`. A free video waiting shows "Your first video is free" with the same link.
-- `animated_video_update_requested` records the pack and the result (`started` or the refusal).
+- `animated_video_update_requested` records the pack, the result (`started` or the refusal) and `source: 'account'`.
 
 ## Rendering
 

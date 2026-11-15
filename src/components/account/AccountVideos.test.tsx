@@ -130,6 +130,10 @@ describe('AccountVideos', () => {
       expect(video).toHaveAttribute('preload', 'metadata')
       expect(video).not.toHaveAttribute('autoplay')
     })
+    expect(within(month).getByLabelText(/Your month video/)).toHaveAttribute(
+      'poster',
+      expect.stringMatching(/month-(dark|light)\.jpg/)
+    )
 
     await userEvent.click(
       within(year).getByRole('radio', { name: 'Your stats' })
@@ -191,18 +195,24 @@ describe('AccountVideos', () => {
     expect(trackEvent).toHaveBeenCalledWith('animated_video_update_requested', {
       pack: 'month',
       result: 'started',
+      source: 'account',
     })
   })
 
   it.each([
-    ['busy', 409, 'Your videos are already being updated.'],
+    [
+      'unchanged',
+      409,
+      'Your video already includes all your trips. Add a trip to your calendar, then update it.',
+    ],
+    ['busy', 409, 'Your video is already being updated.'],
     ['no-updates-left', 409, "You've used all 3 updates for this pack."],
     [
       'too-different',
       422,
       'These trips are too different from your first video.',
     ],
-    ['not-paid', 409, "We couldn't update your videos. Try again in a moment."],
+    ['not-paid', 409, "We couldn't update your video. Try again in a moment."],
   ])('explains a %s refusal', async (reason, status, message) => {
     serve({
       orders: [MONTH_ORDER],
@@ -222,6 +232,7 @@ describe('AccountVideos', () => {
     expect(trackEvent).toHaveBeenCalledWith('animated_video_update_requested', {
       pack: 'month',
       result: reason,
+      source: 'account',
     })
   })
 

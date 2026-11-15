@@ -35,7 +35,7 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 ### Free first video
 
 - **Everyone on the video waitlist** gets one free pack, year or month, their choice. That includes people who joined before 10 November, who were promised nothing.
-- At launch, the waitlist emails (deduplicated) are copied from MongoDB into `video_credit`. The waitlist form is replaced by the buy button at the same time, so no new credits are created.
+- At launch, the waitlist emails (trimmed, lowercased, deduplicated, invalid ones skipped) are copied from MongoDB into `video_credit` by `scripts/import-video-credits.mts` (see Launch day). The waitlist form is replaced by the buy button at the same time, so no new credits are created.
 - Signing in with a matching, checked email shows "Your first video is free" and skips checkout. The credit row is deleted when the order is created, so the email isn't kept once it's used.
 - A credit can't be claimed by someone else, because signing in needs the code sent to that inbox.
 - Free packs follow the same update rules as paid ones.
@@ -120,6 +120,30 @@ Neon is touched when the order is created, when it's paid, when the render is re
 
 The daily `/api/cron/retention` job also deletes unpaid draft orders older than a day, and alerts Slack about any render stuck for over an hour.
 
+### Admin
+
+`/admin/videos` (behind the admin password, in the admin nav only while sales are on; otherwise the page and its API return 404):
+
+- **Totals:** revenue by currency (the `amount_cents` Polar reports on paid orders, so tax included and Polar's fees not taken off), paid and free orders, refunds, failed renders (an order's latest version), renders queued or rendering, and unexpired credits.
+- **Orders**, newest first, 50 at a time: created, buyer email, pack and period, status, amount and source with a link to the Polar order (refunds are made there), the latest render's version, status, finish time and error, and updates used. Never the trips or file links: the queries don't read `video_render.data` or `files`.
+- **Render again** on an order whose latest render failed, after a confirmation. `POST /api/admin/video-orders/<orderId>/render-again` queues that render again (`resetRenderForRetry`) and starts it; anything that isn't a paid order with a failed latest render gets 409. If the render can't start, it's marked failed again with the reason, so it can be retried. The buyer gets the "ready" email when it finishes.
+
+### Launch day
+
+Before the launch email, give the waitlist its free videos. The script reads `MONGODB_URI`, `MONGODB_DB` and `DATABASE_URL_UNPOOLED` (or `DATABASE_URL`), from `.env.local` unless they're already set, and prints the hosts it reads from and writes to. It prints counts only, never emails:
+
+```sh
+vercel env pull ~/yearly-production.env --environment=production
+node --env-file=$HOME/yearly-production.env scripts/import-video-credits.mts --expires 2027-01-31
+node --env-file=$HOME/yearly-production.env scripts/import-video-credits.mts --expires 2027-01-31 --commit
+rm ~/yearly-production.env
+```
+
+- The first run is a dry run: check both hosts are production and the counts look right (found, valid, already have a credit, already used a free video, would insert). It writes only with `--commit`.
+- `--expires` is the last day a credit works; it ends at midnight UTC after it, and the retention cron then deletes unused credits.
+- Running it again is safe: emails that already have a credit are skipped (`ON CONFLICT DO NOTHING`), and so are emails whose account already used a free video, since that credit row was deleted when it was used.
+- `npm run video:import-credits -- --expires 2027-01-31` runs the same script with the local `.env.local`.
+
 ### Video code
 
 - `src/video-render/entry.ts` registers the `year`, `stats` and `month` compositions (the `VideoKind` names) with `YearFillVideo`, `StatsVideo` and `MonthVideo`, without `PreviewWatermark`. The preview and the server use the same components, and `Root.test.tsx` checks the server's durations match the preview's. With no input props, each renders the homepage example year.
@@ -184,7 +208,7 @@ New Postgres tables (names follow the existing singular style):
 | `/terms`                 | Purchases, refunds (a refund if a video fails or comes out wrong; otherwise the EU right to cancel ends with the consent at checkout), seller details                |
 | `/privacy`               | Purchases, the trip data kept with them, Polar, Sandbox, Workflow and Blob                                                                                           |
 | Credits (`/privacy`)     | Noto Emoji, Apache License 2.0, colours adjusted                                                                                                                     |
-| `/admin`                 | Orders: status, render errors, run a render again, link to the Polar order for refunds                                                                               |
+| `/admin/videos`          | Done: totals, orders with status and render errors, run a failed render again, link to the Polar order for refunds (see Admin)                                       |
 
 User-facing copy is written with the `copywriting` and `cro` skills against `.agents/product-marketing.md`.
 
@@ -236,7 +260,7 @@ The 1 December year-end reminder email goes out in the same week. It can't menti
 
 ## Open questions
 
-- **Credit expiry.** Proposed 31 January 2027: it gives the launch email a deadline, and unclaimed emails are then deleted from Postgres, in line with deleting the waitlist 12 months after launch.
+- **Credit expiry.** Proposed 31 January 2027: it gives the launch email a deadline, and unclaimed emails are then deleted from Postgres, in line with deleting the waitlist 12 months after launch. It's the import's `--expires` parameter, so it's decided on launch day.
 - **Launch date** within the first week of December, and whether the 1 December reminder mentions videos.
 - **Consent at checkout.** Settled: both products carry a required checkbox, `delivery_consent`, asking for immediate delivery and accepting that the right to cancel ends.
 - **Remotion licence.** Free for individuals and companies of up to 3 people; recheck if that changes.

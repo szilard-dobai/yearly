@@ -53,7 +53,8 @@ Both inbox gaps are accepted for now (owner, 14 November 2026): few emails, all 
 - Only the owner can reach the vendor dashboards, and every vendor account has two-factor sign-in.
 - No IP addresses at rest: session IPs are dropped, rate-limit keys are hashed, and Sentry's "Prevent storing IP addresses" is on.
 - Sign-in codes are hashed, expire after 10 minutes and allow 3 tries. Sign-in requests are rate limited. Google tokens aren't stored.
-- Admin pages need a password and use an expiring, HMAC-signed cookie.
+- Admin pages need a password and use an expiring, HMAC-signed cookie. The video orders page shows buyer emails with each order's status and render errors, never the trips or video links.
+- The launch-day import of free video credits prints counts only, never emails.
 - Public APIs check the request comes from Yearly, and feedback, waitlist and reminder sign-ups are rate limited per device.
 - Sentry gets no request bodies, cookies or server headers, and element labels are stripped from breadcrumbs and timings.
 - A daily cron enforces retention, with a dry run and a check that refuses unsafe cutoffs.

@@ -141,6 +141,12 @@ export interface ReminderDocument {
   region?: string
   createdAt: Date
   updatedAt: Date
+  sendClaimedAt?: Date
+  sendAttempts?: number
+  sentAt?: Date
+  sendEmailId?: string
+  sendFailedAt?: Date
+  sendError?: string
 }
 
 let reminderIndexesPromise: Promise<unknown> | null = null

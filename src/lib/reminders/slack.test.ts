@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { buildReminderSlackMessage, notifyReminderToSlack } from './slack'
+import type { ReminderSendResult } from './send'
+import {
+  buildReminderSendSlackMessage,
+  buildReminderSlackMessage,
+  notifyReminderToSlack,
+} from './slack'
 
 const reminder = {
   method: 'email' as const,
@@ -107,5 +112,52 @@ describe('notifyReminderToSlack', () => {
     await expect(
       notifyReminderToSlack(reminder, totals)
     ).resolves.toBeUndefined()
+  })
+})
+
+describe('buildReminderSendSlackMessage', () => {
+  const result: ReminderSendResult = {
+    year: 2026,
+    total: 120,
+    alreadySent: 0,
+    sentNow: 80,
+    failed: 2,
+    left: 40,
+    needsCheck: 1,
+    stopped: 'time',
+    lastError: 'validation_error',
+  }
+
+  it('reports the counts, why it stopped and what started it', () => {
+    const message = buildReminderSendSlackMessage(
+      result,
+      'cron',
+      'https://yearly.world'
+    )
+
+    expect(message.text).toBe('Sent 80 year-end reminder emails, 2 failed')
+    expect(contextText(message)).toBe(
+      '2026 · 80 of 120 sent, 40 left · 1 to check by hand · Stopped at its time limit; the next run carries on · last error validation_error · by the cron · <https://yearly.world/admin/analytics|Open in admin>'
+    )
+  })
+
+  it('keeps a clean run short', () => {
+    const message = buildReminderSendSlackMessage(
+      {
+        ...result,
+        sentNow: 1,
+        failed: 0,
+        left: 0,
+        needsCheck: 0,
+        stopped: 'done',
+        lastError: undefined,
+      },
+      'admin'
+    )
+
+    expect(message.text).toBe('Sent 1 year-end reminder email')
+    expect(contextText(message)).toBe(
+      '2026 · 120 of 120 sent, 0 left · from admin'
+    )
   })
 })

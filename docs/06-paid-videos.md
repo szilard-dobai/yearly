@@ -60,8 +60,11 @@ Polar sends the receipt. We send the "ready" email, which links to `/account`.
 
 ### Pipeline
 
-1. **Draft order.** Before checkout, `POST /api/videos/orders` stores the video data the dialog previewed (`YearVideoData` or `MonthVideoData`, both themes, week start), validated with Zod: the right period, real country codes, size limits. Rendering what was previewed means people get exactly what they saw.
-2. **Payment.** Polar's checkout carries the draft order ID as metadata. The webhook, verified by signature and safe to receive twice, marks the order paid.
+1. **Draft order.** Before checkout, `POST /api/videos/orders` (signed in, same origin, 10 an hour per account) takes the pack and period, the calendar's days (the day-map format of calendar sync) and the week start, validated with Zod: real country codes, the period, size limits. It keeps only the days in the period and stores them on render version 0. The render step builds the video data from them with the same `buildYearVideoData` / `buildMonthVideoData` as the preview, so people get exactly what they saw. A period with no trips is refused before anything is stored.
+   - With a free credit (a matching, checked email), the order is created paid, the credit is marked used and the render starts at once.
+   - Otherwise it's a draft, and the response carries a Polar checkout URL (`src/lib/videos/polar.ts`) with the account email filled in, `external_customer_id` set to the account ID, the order ID in metadata, discount codes off and `success_url` back to `/create?video_order=<id>`.
+   - Polar is called with `@polar-sh/sdk` directly rather than the Better Auth plugin, so only buyers become Polar customers, not everyone who signs in. Product IDs for production and sandbox are in the code; `POLAR_ENVIRONMENT` picks one.
+2. **Payment.** `POST /api/webhooks/polar` verifies Polar's signature. `order.paid` with our order ID moves the draft to paid (once; a repeat finds it already paid) and starts the render. Only one caller can claim a render's start, and a failed start is released, so Polar's retry starts it. `order.refunded` (full refunds only) marks the order refunded and deletes its renders, trips and videos. `GET /api/videos/orders/<id>` also starts a paid render that never started, as a safety net.
 3. **Workflow run** (`renderVideoPack` in `src/lib/video-render/workflow.ts`), one per version (the first render or an update). Built and tested with example data; orders aren't connected yet.
    1. One step per video, all in parallel (4 for a year pack, 2 for a month pack). Each restores a sandbox from the deployment's snapshot with 4 vCPU, renders with `concurrency: 4` and waits for it (about 15–20 s), reads the MP4 back and uploads it to the private videos store. The step's function waiting is cheaper and simpler than a detached render with polling, and the sandbox never holds Blob credentials.
    2. Each step stops its sandbox when it finishes or fails.
@@ -69,6 +72,22 @@ Polar sends the receipt. We send the "ready" email, which links to `/account`.
    4. A failed step retries up to 6 times, 5 s apart and doubling (about 5 minutes in all), which also covers Sandbox's rate limit after the launch email. A deployment without a snapshot, or a render with nothing to render, fails at once. After the last retry: mark it failed, alert Sentry and Slack, and refund from Polar if it can't be fixed the same day. The buyer sees "We're on it, we'll email you", never an error message.
    5. Run inputs and outputs hold only the render ID, the pack and Blob paths. The step loads the trip data itself (from Postgres once orders exist), so trip data isn't copied into Workflow's run history.
 4. **Updates** post new video data to the pack. The server checks the 80% rule and the update count, then starts a new run.
+
+### Setup
+
+Everything under `/api/videos` and the webhook returns 404 unless `VIDEO_SALES_ENABLED=true` (and accounts are on). `/privacy` and `/terms` show the purchase sections only then too.
+
+| Variable               | Production                  | Preview and Development  |
+| ---------------------- | --------------------------- | ------------------------ |
+| `VIDEO_SALES_ENABLED`  | `true` at launch            | `true` to test           |
+| `POLAR_ACCESS_TOKEN`   | production token            | sandbox token            |
+| `POLAR_ENVIRONMENT`    | `production`                | `sandbox`                |
+| `POLAR_WEBHOOK_SECRET` | from the production webhook | from the sandbox webhook |
+
+Webhook endpoints, subscribed to `order.paid` and `order.refunded`:
+
+- Production: `https://www.yearly.world/api/webhooks/polar`.
+- Sandbox: a preview URL. Previews are behind Vercel Authentication, which Polar can't pass, so add `?x-vercel-protection-bypass=<secret>` from Vercel's Protection Bypass for Automation.
 
 Neon is touched when the order is created, when it's paid, when the render is ready, and while the buyer's dialog checks the status. There is no per-minute cron and no job queue checking Postgres: each check keeps Neon awake for 5 minutes, so a per-minute cron would use all ~730 hours of a month, against 100 on the free plan.
 
@@ -122,7 +141,9 @@ New Postgres tables (names follow the existing singular style):
 | `video_render` | Order, version (0 for the first, 1–3 for updates), the video data it was made from, status (`queued`, `rendering`, `ready`, `failed`), Workflow run ID, Blob paths, error, times |
 | `video_credit` | Email, source (`waitlist`), the order that claimed it, expiry                                                                                                                    |
 
-- Deleting an account deletes its orders, renders and their Blob files. Blob files aren't removed by the database cascade, so account deletion has to delete them explicitly.
+- Deleting an account deletes its orders, renders and their Blob files. Blob files aren't removed by the database cascade, so Better Auth's `beforeDelete` hook deletes them first (`src/lib/videos/delete.ts`); if that fails, the account isn't deleted.
+- The daily retention cron deletes drafts older than a day and credits past their expiry.
+- When an update is ready, the previous version's files are deleted and its row forgets them.
 - Polar is the seller and keeps the tax records, so our rows don't need to outlive the account.
 - Collecting purchases and storing trip data with them means updating `/privacy` and `docs/05-record-of-processing.md` in the same PR, with Polar as an independent controller and Vercel Sandbox, Workflow and Blob as processors. Sandboxes run in Frankfurt (`fra1`, the project's default region), so trip data stays in the EU.
 
@@ -171,7 +192,7 @@ Fixed per month once selling: Vercel Pro $20 (Hobby forbids commercial use), Neo
 | 23–27 November         | Accounts launch (23rd). `video_order`, `video_render`, `video_credit`. Remotion entry and server bundle. The Workflow pipeline with Blob uploads and the "ready" email      |
 | 30 November–4 December | Checkout and progress in the export dialog, `/account` videos and updates, admin orders, privacy and record of processing, paid plans, credits import, launch email. Launch |
 
-The 1 December year-end reminder email goes out in the same week, so it can mention the videos if they're live by then.
+The 1 December year-end reminder email goes out in the same week. It can't mention the videos: `/privacy` promises that email is never used for marketing, so the launch goes to the video waitlist instead.
 
 ## Alternatives considered
 
@@ -190,5 +211,5 @@ The 1 December year-end reminder email goes out in the same week, so it can ment
 
 - **Credit expiry.** Proposed 31 January 2027: it gives the launch email a deadline, and unclaimed emails are then deleted from Postgres, in line with deleting the waitlist 12 months after launch.
 - **Launch date** within the first week of December, and whether the 1 December reminder mentions videos.
-- **Consent at checkout.** Confirm that Polar's checkout collects the EU consent to immediate delivery of digital content; otherwise ask for it in the dialog before checkout.
+- **Consent at checkout.** Settled: both products carry a required checkbox, `delivery_consent`, asking for immediate delivery and accepting that the right to cancel ends.
 - **Remotion licence.** Free for individuals and companies of up to 3 people; recheck if that changes.

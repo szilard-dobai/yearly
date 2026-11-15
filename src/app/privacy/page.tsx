@@ -587,6 +587,26 @@ export default function PrivacyPage() {
               and the date at the top.
             </p>
           </Section>
+
+          <Section title="Image credits">
+            <p>
+              The flag and emoji images come from{' '}
+              <a
+                href="https://github.com/googlefonts/noto-emoji"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClassName}
+              >
+                Noto Emoji
+              </a>
+              , with their colours adjusted, and are used under the{' '}
+              <a href="/emoji/LICENSE" className={linkClassName}>
+                Apache License 2.0
+              </a>
+              . We serve them from our own site, so showing them doesn&apos;t
+              contact anyone else.
+            </p>
+          </Section>
         </article>
       </main>
     </>

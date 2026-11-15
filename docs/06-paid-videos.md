@@ -106,15 +106,15 @@ New Postgres tables (names follow the existing singular style):
 
 ## Pages
 
-| Page                         | What changes                                                                                                                                                         |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/videos` (new, indexed)     | What the videos are, example videos from the homepage example trips, the price, what's included, updates, refunds. Polar checks for this page before approving us    |
-| Export dialog                | Buy button with the real price, sign-in step, free credit, checkout, progress, the finished videos. Remove "One-time payment, no account needed" and the price split |
-| `/account`                   | **Your videos**: one card per pack with each file to download and **Update with my latest trips (N left)**                                                           |
-| `/terms`                     | Purchases, refunds (a refund if a video fails or comes out wrong; otherwise the EU right to cancel ends with the consent at checkout), seller details                |
-| `/privacy`                   | Purchases, the trip data kept with them, Polar, Sandbox, Workflow and Blob                                                                                           |
-| Credits (footer or `/terms`) | Noto Emoji, Apache License 2.0, colours adjusted                                                                                                                     |
-| `/admin`                     | Orders: status, render errors, run a render again, link to the Polar order for refunds                                                                               |
+| Page                     | What changes                                                                                                                                                         |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/videos` (new, indexed) | What the videos are, example videos from the homepage example trips, the price, what's included, updates, refunds. Polar checks for this page before approving us    |
+| Export dialog            | Buy button with the real price, sign-in step, free credit, checkout, progress, the finished videos. Remove "One-time payment, no account needed" and the price split |
+| `/account`               | **Your videos**: one card per pack with each file to download and **Update with my latest trips (N left)**                                                           |
+| `/terms`                 | Purchases, refunds (a refund if a video fails or comes out wrong; otherwise the EU right to cancel ends with the consent at checkout), seller details                |
+| `/privacy`               | Purchases, the trip data kept with them, Polar, Sandbox, Workflow and Blob                                                                                           |
+| Credits (`/privacy`)     | Noto Emoji, Apache License 2.0, colours adjusted                                                                                                                     |
+| `/admin`                 | Orders: status, render errors, run a render again, link to the Polar order for refunds                                                                               |
 
 User-facing copy is written with the `copywriting` and `cro` skills against `.agents/product-marketing.md`.
 

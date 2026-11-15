@@ -29,7 +29,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **UI**: Radix UI primitives + shadcn/ui components
 - **Animations**: Motion (Framer Motion)
 - **Image export**: html-to-image (toSvg), drawn to a canvas
-- **Emoji**: every flag and emoji is an image from Google's Noto Emoji (waved flags), never an emoji font, so they look the same on every platform. Images live in `public/emoji/` with their LICENSE (Apache 2.0) and README; their names carry a content hash, so `next.config.ts` caches them for a year. The footer carries the credit
+- **Emoji**: every flag and emoji is an image from Google's Noto Emoji (waved flags), never an emoji font, so they look the same on every platform. Images live in `public/emoji/` with their LICENSE (Apache 2.0) and README; their names carry a content hash, so `next.config.ts` caches them for a year. The credit is at the bottom of `/privacy`; Apache 2.0 needs the licence copy and the note about changed colours, not a credit on every page
 - **Validation**: Zod
 - **Database**: Postgres on Neon through Drizzle for accounts and new data; MongoDB for tracking events, feedback, waitlist and reminders until they move (see `docs/04-database-and-accounts.md`)
 - **Auth**: Better Auth (version pinned exactly), optional accounts with a 6-digit email code or Google (hidden in in-app browsers); no passwords. Everything is behind `ACCOUNTS_ENABLED=true`, otherwise `/sign-in`, `/account` and `/api/auth` return 404. Pages, access rules and flows are in `docs/04-database-and-accounts.md`

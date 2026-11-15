@@ -36,25 +36,6 @@ export default function Footer() {
 
         <ThemeToggle />
       </div>
-      <p className="container mx-auto m-0 text-xs text-muted-foreground">
-        Flag and emoji images from{' '}
-        <a
-          href="https://github.com/googlefonts/noto-emoji"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:opacity-80 transition-opacity underline"
-        >
-          Noto Emoji
-        </a>
-        , under the{' '}
-        <a
-          href="/emoji/LICENSE"
-          className="hover:opacity-80 transition-opacity underline"
-        >
-          Apache License 2.0
-        </a>
-        .
-      </p>
     </footer>
   )
 }

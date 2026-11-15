@@ -79,6 +79,18 @@ describe('privacy, terms and footer', () => {
       render(<Footer />)
       expect(screen.queryByRole('link', { name: 'Terms' })).toBeNull()
     })
+
+    it('credits the flag and emoji images on the privacy page', () => {
+      render(<PrivacyPage />)
+
+      expect(
+        screen.getByRole('link', { name: 'Apache License 2.0' })
+      ).toHaveAttribute('href', '/emoji/LICENSE')
+      expect(screen.getByRole('link', { name: 'Noto Emoji' })).toHaveAttribute(
+        'href',
+        'https://github.com/googlefonts/noto-emoji'
+      )
+    })
   })
 
   describe('once accounts are on', () => {

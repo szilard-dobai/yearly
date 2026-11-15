@@ -1,7 +1,13 @@
 import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import type { PropsWithChildren } from 'react'
-import { renderWithSettings, screen, TestWrapper } from '@/test/test-utils'
+import userEvent from '@testing-library/user-event'
+import {
+  renderWithSettings,
+  screen,
+  TestWrapper,
+  within,
+} from '@/test/test-utils'
 import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
 import { HomepageExamples } from './HomepageExamples'
 
@@ -113,6 +119,51 @@ describe('HomepageExamples', () => {
         expect(image).toHaveAttribute('height', String(example[variant].height))
       }
     })
+  })
+
+  it.each(['light', 'dark'] as const)(
+    'opens each example full size in the %s colour scheme',
+    async (colorScheme) => {
+      storeColorScheme(colorScheme)
+      const user = userEvent.setup()
+      renderWithSettings(<HomepageExamples />)
+
+      const buttons = screen.getAllByRole('button', { name: /Open full size/ })
+      expect(buttons).toHaveLength(HOMEPAGE_EXAMPLES.length)
+
+      for (const [index, example] of HOMEPAGE_EXAMPLES.entries()) {
+        await user.click(buttons[index])
+
+        const dialog = screen.getByRole('dialog', {
+          name: `${example.caption} example`,
+        })
+        expect(within(dialog).getByAltText(example.alt)).toHaveAttribute(
+          'src',
+          example[colorScheme].src
+        )
+
+        await user.keyboard('{Escape}')
+        expect(screen.queryByRole('dialog')).toBeNull()
+      }
+    }
+  )
+
+  it('closes the full-size view with the close button or a tap on the image', async () => {
+    const user = userEvent.setup()
+    renderWithSettings(<HomepageExamples />)
+    const [example] = HOMEPAGE_EXAMPLES
+    const [button] = screen.getAllByRole('button', { name: /Open full size/ })
+
+    await user.click(button)
+    await user.click(screen.getByRole('button', { name: 'Close' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(button).toHaveFocus()
+
+    await user.click(button)
+    await user.click(
+      within(screen.getByRole('dialog')).getByAltText(example.alt)
+    )
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('captions each example', () => {

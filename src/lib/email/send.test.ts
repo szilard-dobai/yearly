@@ -32,12 +32,29 @@ describe('sendEmail', () => {
     sendMock.mockResolvedValue({ data: { id: '1' }, error: null })
     const { sendEmail } = await import('./send')
 
-    await sendEmail(EMAIL)
+    const sent = await sendEmail(EMAIL)
 
-    expect(sendMock).toHaveBeenCalledWith({
-      from: 'Yearly <hi@yearly.world>',
-      ...EMAIL,
-    })
+    expect(sendMock).toHaveBeenCalledWith(
+      { from: 'Yearly <hi@yearly.world>', ...EMAIL },
+      {}
+    )
+    expect(sent).toEqual({ id: '1' })
+  })
+
+  it('passes an idempotency key and reply-to address through', async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test')
+    sendMock.mockResolvedValue({ data: { id: '1' }, error: null })
+    const { sendEmail } = await import('./send')
+
+    await sendEmail(
+      { ...EMAIL, replyTo: 'hello@yearly.world' },
+      { idempotencyKey: 'year-end-reminder/2026/abc' }
+    )
+
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ replyTo: 'hello@yearly.world' }),
+      { idempotencyKey: 'year-end-reminder/2026/abc' }
+    )
   })
 
   it('falls back to the default sender', async () => {
@@ -49,7 +66,8 @@ describe('sendEmail', () => {
     await sendEmail(EMAIL)
 
     expect(sendMock).toHaveBeenCalledWith(
-      expect.objectContaining({ from: DEFAULT_EMAIL_FROM })
+      expect.objectContaining({ from: DEFAULT_EMAIL_FROM }),
+      {}
     )
   })
 
@@ -64,16 +82,40 @@ describe('sendEmail', () => {
     await expect(sendEmail(EMAIL)).rejects.toThrow('Domain not verified')
   })
 
+  it("keeps Resend's error code, status and retry delay", async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test')
+    sendMock.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'Too many requests',
+        name: 'rate_limit_exceeded',
+        statusCode: 429,
+      },
+      headers: { 'retry-after': '2' },
+    })
+    const { sendEmail, EmailSendError } = await import('./send')
+
+    const error = await sendEmail(EMAIL).catch((e: unknown) => e)
+
+    expect(error).toBeInstanceOf(EmailSendError)
+    expect(error).toMatchObject({
+      code: 'rate_limit_exceeded',
+      statusCode: 429,
+      retryAfterMs: 2000,
+    })
+  })
+
   it('logs the email instead of sending it in development without a key', async () => {
     vi.stubEnv('RESEND_API_KEY', '')
     vi.stubEnv('NODE_ENV', 'development')
     const info = vi.spyOn(console, 'info').mockImplementation(() => {})
     const { sendEmail } = await import('./send')
 
-    await sendEmail(EMAIL)
+    const sent = await sendEmail(EMAIL)
 
     expect(sendMock).not.toHaveBeenCalled()
     expect(info).toHaveBeenCalledWith(expect.stringContaining('Hi'))
+    expect(sent).toEqual({ id: null })
   })
 
   it('throws in production without a key', async () => {
@@ -81,6 +123,9 @@ describe('sendEmail', () => {
     vi.stubEnv('NODE_ENV', 'production')
     const { sendEmail } = await import('./send')
 
-    await expect(sendEmail(EMAIL)).rejects.toThrow('RESEND_API_KEY')
+    await expect(sendEmail(EMAIL)).rejects.toMatchObject({
+      message: 'RESEND_API_KEY is not set',
+      code: 'missing_api_key',
+    })
   })
 })

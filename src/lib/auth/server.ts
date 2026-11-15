@@ -6,7 +6,9 @@ import { createAuth } from './config'
 
 export const auth = createAuth({
   db,
-  sendSignInCode: (email, code) => sendEmail(signInCodeEmail(email, code)),
+  sendSignInCode: async (email, code) => {
+    await sendEmail(signInCodeEmail(email, code))
+  },
 })
 
 export type Session = typeof auth.$Infer.Session

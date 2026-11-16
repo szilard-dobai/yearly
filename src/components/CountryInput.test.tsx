@@ -3,6 +3,7 @@ import * as countries from '@/lib/countries'
 import type { CalendarData } from '@/lib/types'
 import * as utils from '@/lib/utils'
 import { renderWithSettings } from '@/test/test-utils'
+import { simulateTranslation } from '@/test/translate'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { DateRange } from 'react-day-picker'
@@ -281,6 +282,35 @@ describe('CountryInput', () => {
         // Combobox should now show the selected country
         expect(combobox).toHaveTextContent('United States')
       })
+    })
+
+    it('selects a country after the browser translated the page', async () => {
+      const user = userEvent.setup()
+      vi.mocked(countries.searchCountries).mockReturnValue([
+        { code: 'US', name: 'United States' },
+      ])
+
+      renderWithSettings(
+        <CountryInput
+          year={year}
+          calendarData={mockCalendarData}
+          onDataChange={mockOnDataChange}
+        />
+      )
+
+      const combobox = screen.getByRole('combobox')
+      simulateTranslation(combobox)
+      await user.click(combobox)
+
+      const usaOption = await screen.findByRole('option', {
+        name: 'United States',
+      })
+      await user.click(usaOption)
+
+      await waitFor(() => {
+        expect(combobox).toHaveTextContent('United States')
+      })
+      expect(combobox).not.toHaveTextContent('Select country...')
     })
 
     it('closes dropdown when country is selected', async () => {

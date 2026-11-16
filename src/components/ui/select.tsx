@@ -119,7 +119,16 @@ function SelectItem({
           <CheckIcon className="size-4" />
         </SelectPrimitive.ItemIndicator>
       </span>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText>
+        {/* Radix copies this into the trigger; bare text there breaks under browser translation */}
+        {React.Children.map(children, (child) =>
+          typeof child === 'string' || typeof child === 'number' ? (
+            <span>{child}</span>
+          ) : (
+            child
+          )
+        )}
+      </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
 }

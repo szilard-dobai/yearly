@@ -189,7 +189,7 @@ export default function CountryInput({
                     <span className="truncate">{selectedCountry.name}</span>
                   </span>
                 ) : (
-                  'Select country...'
+                  <span>Select country...</span>
                 )}
                 {!selectedCountry && (
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

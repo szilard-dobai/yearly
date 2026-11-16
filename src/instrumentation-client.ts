@@ -7,7 +7,10 @@ import {
   tracesSampleRate,
 } from '@/lib/sentry'
 import { isTrackingOptedOut } from '@/lib/tracking/opt-out'
+import { installTranslationGuard } from '@/lib/translation-guard'
 import * as Sentry from '@sentry/nextjs'
+
+installTranslationGuard()
 
 Sentry.init({
   dsn: SENTRY_DSN,

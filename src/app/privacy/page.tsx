@@ -1,3 +1,4 @@
+import { ProductName, withProductName } from '@/components/ProductName'
 import Header from '@/components/Header'
 import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { Metadata } from 'next'
@@ -18,7 +19,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-3">
       <h2 className="font-serif text-2xl font-normal text-gray-900 dark:text-zinc-100">
-        {title}
+        {withProductName(title)}
       </h2>
       {children}
     </section>
@@ -54,9 +55,9 @@ export default function PrivacyPage() {
               Last updated {LAST_UPDATED}
             </p>
             <p>
-              Yearly is a small, independent project. This page explains what
-              Yearly stores, what it sends to our servers, and how to get your
-              data deleted.{' '}
+              <ProductName /> is a small, independent project. This page
+              explains what <ProductName /> stores, what it sends to our
+              servers, and how to get your data deleted.{' '}
               {accounts
                 ? "Accounts are optional, there are no ads, and we don't sell your data."
                 : "There are no accounts and no ads, and we don't sell your data."}
@@ -65,9 +66,9 @@ export default function PrivacyPage() {
 
           <Section title="Who we are">
             <p>
-              Yearly is run by Szilard Dobai, in Romania, who is responsible for
-              your data (the controller, in data protection terms). For anything
-              on this page, email {email}.
+              <ProductName /> is run by Szilard Dobai, in Romania, who is
+              responsible for your data (the controller, in data protection
+              terms). For anything on this page, email {email}.
             </p>
           </Section>
 
@@ -114,9 +115,9 @@ export default function PrivacyPage() {
                 <li>
                   if you sign in with Google, the name on your Google account,
                   which we use only for the initials on your account icon, and a
-                  link between your Yearly account and your Google account. We
-                  don&apos;t keep your Google profile photo or any access to
-                  your Google account.
+                  link between your <ProductName /> account and your Google
+                  account. We don&apos;t keep your Google profile photo or any
+                  access to your Google account.
                 </li>
               </List>
               <p>
@@ -135,8 +136,8 @@ export default function PrivacyPage() {
               </p>
               <p>
                 You stay signed in on a device until you sign out, or until you
-                haven&apos;t opened Yearly there for 60 days. Signing out
-                removes your trips from that device. They stay saved in your
+                haven&apos;t opened <ProductName /> there for 60 days. Signing
+                out removes your trips from that device. They stay saved in your
                 account.
               </p>
             </Section>
@@ -144,8 +145,9 @@ export default function PrivacyPage() {
 
           <Section title="Usage events">
             <p>
-              We record what people do in Yearly, such as opening a page, adding
-              a trip or exporting an image. Each event includes:
+              We record what people do in <ProductName spaceAfter={false} />,
+              such as opening a page, adding a trip or exporting an image. Each
+              event includes:
             </p>
             <List>
               <li>
@@ -170,11 +172,12 @@ export default function PrivacyPage() {
               logged that year, how many days you logged in each and how many
               separate trips that makes, so we can see which countries are most
               popular and how long people travel for. It never includes dates.
-              We may publish totals across all Yearly users, such as the most
-              visited countries. These totals never identify anyone.
+              We may publish totals across all <ProductName /> users, such as
+              the most visited countries. These totals never identify anyone.
             </p>
             <p>
-              When you open a page, the event also records how you found Yearly:
+              When you open a page, the event also records how you found{' '}
+              <ProductName spaceAfter={false} />:
             </p>
             <List>
               <li>
@@ -190,8 +193,8 @@ export default function PrivacyPage() {
                 your browser&apos;s user agent, a line of text every browser
                 sends to websites. It names your browser and its version, your
                 operating system, sometimes your phone model, and the app
-                you&apos;re in if you opened Yearly inside an app such as
-                Instagram or TikTok. We also store the name of that app.
+                you&apos;re in if you opened <ProductName /> inside an app such
+                as Instagram or TikTok. We also store the name of that app.
               </li>
             </List>
             <p>
@@ -217,11 +220,11 @@ export default function PrivacyPage() {
 
           <Section title="Error reports">
             <p>
-              When something breaks, Yearly sends an error report to Sentry so
-              we can fix it. A report says what went wrong and where in our
-              code, with your browser, operating system and device type. For
-              about 1 in 10 visits, Yearly also sends page timings, which show
-              how long pages and requests took.
+              When something breaks, <ProductName /> sends an error report to
+              Sentry so we can fix it. A report says what went wrong and where
+              in our code, with your browser, operating system and device type.
+              For about 1 in 10 visits, <ProductName /> also sends page timings,
+              which show how long pages and requests took.
             </p>
             <p>
               Reports and timings don&apos;t include your IP address, your email
@@ -253,10 +256,11 @@ export default function PrivacyPage() {
 
           <Section title="How you heard about Yearly">
             <p>
-              After you download an image, we may ask how you heard about
-              Yearly. If you answer, we store your answer as a usage event,
-              along with the note you typed if you chose Other. If you answer or
-              close the question, we won&apos;t ask again in that browser.
+              After you download an image, we may ask how you heard about{' '}
+              <ProductName spaceAfter={false} />. If you answer, we store your
+              answer as a usage event, along with the note you typed if you
+              chose Other. If you answer or close the question, we won&apos;t
+              ask again in that browser.
             </p>
           </Section>
 
@@ -277,8 +281,8 @@ export default function PrivacyPage() {
 
           <Section title="Year-end reminder">
             <p>
-              After you export an image, Yearly can remind you on 1 December,
-              when year-in-review season starts. You can choose how:
+              After you export an image, <ProductName /> can remind you on 1
+              December, when year-in-review season starts. You can choose how:
             </p>
             <List>
               <li>
@@ -334,10 +338,11 @@ export default function PrivacyPage() {
             <List>
               <li>
                 Usage events, Vercel Web Analytics and Speed Insights, reminders
-                added to a calendar, feedback and how you heard about Yearly:
-                our legitimate interest in understanding how Yearly is used and
-                improving it. You can object at any time, for example by turning
-                off Share usage stats.
+                added to a calendar, feedback and how you heard about{' '}
+                <ProductName spaceAfter={false} />: our legitimate interest in
+                understanding how <ProductName /> is used and improving it. You
+                can object at any time, for example by turning off Share usage
+                stats.
               </li>
               <li>
                 The video waitlist and the year-end reminder email: your
@@ -358,7 +363,7 @@ export default function PrivacyPage() {
               )}
               <li>
                 Error reports and page timings: our legitimate interest in
-                keeping Yearly working.
+                keeping <ProductName /> working.
               </li>
               <li>
                 Slack notifications: our legitimate interest in reading feedback
@@ -375,10 +380,10 @@ export default function PrivacyPage() {
             <List>
               <li>
                 Usage events: in full for 26 months. After that we remove the
-                random ID, your region, the user agent, the app you opened
-                Yearly in, the site that sent you, campaign tags and any note
-                you typed, and keep only the day each event happened. We delete
-                what&apos;s left after 5 years.
+                random ID, your region, the user agent, the app you opened{' '}
+                <ProductName /> in, the site that sent you, campaign tags and
+                any note you typed, and keep only the day each event happened.
+                We delete what&apos;s left after 5 years.
               </li>
               <li>
                 Reminders added to a calendar: in full for 26 months, then
@@ -410,7 +415,7 @@ export default function PrivacyPage() {
                   </li>
                   <li>
                     Sign-in sessions: until you sign out, or 60 days after you
-                    last opened Yearly on that device.
+                    last opened <ProductName /> on that device.
                   </li>
                   <li>
                     Sign-in codes: deleted once used, or within a day if not.
@@ -426,7 +431,9 @@ export default function PrivacyPage() {
 
           <Section title="Who handles the data">
             <List>
-              <li>Vercel hosts Yearly and provides the analytics.</li>
+              <li>
+                Vercel hosts <ProductName /> and provides the analytics.
+              </li>
               <li>
                 MongoDB stores usage events, feedback, the waitlist and year-end
                 reminders.
@@ -486,13 +493,15 @@ export default function PrivacyPage() {
 
           <Section title="Storage on your device">
             <p>
-              Yearly uses your browser&apos;s local storage for your trips,
-              settings and the random ID, and to remember small things such as
-              whether you&apos;ve seen a tip, answered a question, set a
+              <ProductName /> uses your browser&apos;s local storage for your
+              trips, settings and the random ID, and to remember small things
+              such as whether you&apos;ve seen a tip, answered a question, set a
               year-end reminder or turned off usage stats.{' '}
-              {accounts
-                ? "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets a cookie only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
-                : "It doesn't set cookies for visitors. The only cookie is the sign-in cookie for Yearly's admin pages."}
+              {withProductName(
+                accounts
+                  ? "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets a cookie only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
+                  : "It doesn't set cookies for visitors. The only cookie is the sign-in cookie for Yearly's admin pages."
+              )}
             </p>
           </Section>
 
@@ -583,8 +592,8 @@ export default function PrivacyPage() {
 
           <Section title="Changes">
             <p>
-              If we change how Yearly handles data, we&apos;ll update this page
-              and the date at the top.
+              If we change how <ProductName /> handles data, we&apos;ll update
+              this page and the date at the top.
             </p>
           </Section>
 

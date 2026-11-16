@@ -1,3 +1,4 @@
+import { ProductName } from '@/components/ProductName'
 import SignInForm from '@/components/account/SignInForm'
 import Header from '@/components/Header'
 import { CardContent } from '@/components/ui/card'
@@ -84,8 +85,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </StandardCard>
 
           <p className="text-sm text-gray-500 dark:text-zinc-500">
-            You can keep using Yearly without an account. Your trips stay in
-            this browser.{' '}
+            You can keep using <ProductName /> without an account. Your trips
+            stay in this browser.{' '}
             <Link
               href={next === '/account' ? '/create' : next}
               className={linkClassName}

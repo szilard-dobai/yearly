@@ -1,5 +1,6 @@
 'use client'
 
+import { ProductName } from '@/components/ProductName'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -70,7 +71,7 @@ export default function DeleteAccount() {
             <AlertDialogDescription>
               This deletes your account and the trips saved to it, and it
               can&apos;t be undone. Trips on this device stay here, so you can
-              keep using Yearly without an account.
+              keep using <ProductName /> without an account.
             </AlertDialogDescription>
           </AlertDialogHeader>
 

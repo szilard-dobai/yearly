@@ -1,6 +1,7 @@
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { render, screen } from '@testing-library/react'
+import { textAcrossElements } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ImagePreviewModal from './ImagePreviewModal'
@@ -20,9 +21,11 @@ const calendarData: CalendarData = {
   visits: [{ id: '1', countryCode: 'JP', date: new Date(2026, 2, 20) }],
 }
 
-const SURVEY = 'How did you hear about Yearly?'
-const FEEDBACK = 'Enjoying Yearly?'
-const FEEDBACK_AFTER_SURVEY = 'Thanks! One more tap: enjoying Yearly?'
+const SURVEY = textAcrossElements('How did you hear about Yearly?')
+const FEEDBACK = textAcrossElements('Enjoying Yearly?')
+const FEEDBACK_AFTER_SURVEY = textAcrossElements(
+  'Thanks! One more tap: enjoying Yearly?'
+)
 
 function renderModal() {
   return render(

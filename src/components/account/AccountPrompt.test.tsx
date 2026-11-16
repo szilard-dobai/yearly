@@ -1,4 +1,5 @@
 import { render, renderHook, screen } from '@testing-library/react'
+import { textAcrossElements } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -27,7 +28,9 @@ describe('AccountPrompt', () => {
       screen.getByText(/Clearing your browser data deletes them/)
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/You can keep using Yearly without one\./)
+      screen.getByText(
+        textAcrossElements(/You can keep using Yearly without one\./)
+      )
     ).toBeInTheDocument()
   })
 

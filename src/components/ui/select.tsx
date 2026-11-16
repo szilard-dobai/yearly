@@ -120,8 +120,14 @@ function SelectItem({
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>
-        {/* Radix copies this into the trigger; an element survives browser translation where bare text doesn't */}
-        <span className="contents">{children}</span>
+        {/* Radix copies this into the trigger; bare text there breaks under browser translation */}
+        {React.Children.map(children, (child) =>
+          typeof child === 'string' || typeof child === 'number' ? (
+            <span>{child}</span>
+          ) : (
+            child
+          )
+        )}
       </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )

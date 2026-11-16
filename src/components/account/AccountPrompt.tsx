@@ -1,5 +1,6 @@
 'use client'
 
+import { ProductName } from '@/components/ProductName'
 import { dismissAccountPrompt } from '@/lib/hooks/useAccountPrompt'
 import { trackEvent } from '@/lib/tracking'
 import { CloudUpload, X } from 'lucide-react'
@@ -45,7 +46,7 @@ export default function AccountPrompt({ days, onSeen }: AccountPromptProps) {
           <p className="text-white/70 dark:text-gray-600">
             Clearing your browser data deletes them. Save your calendar to a
             free account to keep it and see it on any phone or computer. You can
-            keep using Yearly without one.
+            keep using <ProductName /> without one.
           </p>
         </div>
         <button

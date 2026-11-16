@@ -1,3 +1,4 @@
+import { ProductName } from '@/components/ProductName'
 import { AnimatedSection } from '@/components/AnimatedSection'
 import { HomepageExampleImage } from '@/components/HomepageExampleImage'
 import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
@@ -18,7 +19,7 @@ export function HomepageExamples() {
           id="examples-heading"
           className="mb-4 text-gray-900 dark:text-zinc-100 text-4xl font-serif font-normal text-balance"
         >
-          What your Yearly looks like
+          What your <ProductName /> looks like
         </h2>
         <p className="text-gray-600 dark:text-zinc-400 text-lg leading-relaxed">
           Export your full year, a single month or your travel stats as an

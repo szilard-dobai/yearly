@@ -1,5 +1,6 @@
 import { trackEvent } from '@/lib/tracking'
 import { render, screen, waitFor, within } from '@testing-library/react'
+import { textAcrossElements } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import FeedbackPrompt from './FeedbackPrompt'
@@ -185,7 +186,9 @@ describe('FeedbackPrompt', () => {
       />
     )
 
-    expect(screen.getByText("How's Yearly so far?")).toBeInTheDocument()
+    expect(
+      screen.getByText(textAcrossElements("How's Yearly so far?"))
+    ).toBeInTheDocument()
     await user.click(screen.getByRole('radio', { name: /^4 stars/ }))
 
     expect(onRate).toHaveBeenCalled()

@@ -1,3 +1,4 @@
+import { ProductName } from '@/components/ProductName'
 import { AnimatedSection } from '@/components/AnimatedSection'
 import { CalendarMockup } from '@/components/CalendarMockup'
 import { Faq } from '@/components/Faq'
@@ -77,9 +78,9 @@ export default function Home() {
             </h1>
 
             <p className="text-gray-600 dark:text-zinc-400 mb-12 max-w-2xl mx-auto text-xl leading-relaxed">
-              Yearly turns the countries you visited into a calendar, with a
-              flag on every day you were there. Download the whole year as an
-              image to share. It&apos;s free, and you don&apos;t need an
+              <ProductName /> turns the countries you visited into a calendar,
+              with a flag on every day you were there. Download the whole year
+              as an image to share. It&apos;s free, and you don&apos;t need an
               account.
             </p>
 
@@ -89,7 +90,7 @@ export default function Home() {
                 linkType="hero"
                 className="px-8 py-4 bg-black dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
               >
-                Create your Yearly
+                Create your <ProductName />
                 <ArrowRight className="w-5 h-5" />
               </TrackingLink>
             </div>
@@ -106,7 +107,7 @@ export default function Home() {
 
         <section className="py-24" aria-labelledby="features-heading">
           <h2 id="features-heading" className="sr-only">
-            What Yearly does
+            What <ProductName /> does
           </h2>
           <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             {features.map((feature, idx) => (

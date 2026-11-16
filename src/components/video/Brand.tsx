@@ -38,6 +38,7 @@ function Wordmark({ size, color }: { size: number; color: string }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: size * 0.3 }}>
       <LogoMark size={size * 1.33} color={color} />
       <span
+        translate="no"
         style={{
           fontFamily: SERIF,
           fontSize: size,

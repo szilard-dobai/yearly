@@ -1,5 +1,6 @@
 'use client'
 
+import { ProductName } from '@/components/ProductName'
 import { Emoji } from '@/components/Emoji'
 import StarRating from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
@@ -102,7 +103,7 @@ function FeedbackForm({
 
       <div className="space-y-2">
         <p className="text-sm font-medium text-gray-900 dark:text-zinc-100">
-          How would you rate Yearly?{' '}
+          How would you rate <ProductName />?{' '}
           <span className="font-normal text-gray-500 dark:text-zinc-500">
             (optional)
           </span>

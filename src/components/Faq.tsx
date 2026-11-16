@@ -1,3 +1,4 @@
+import { ProductName, withProductName } from '@/components/ProductName'
 import { AnimatedSection } from '@/components/AnimatedSection'
 import { JsonLd } from '@/components/JsonLd'
 import { isAccountsEnabled } from '@/lib/auth/enabled'
@@ -13,7 +14,7 @@ export function Faq() {
             id="faq-heading"
             className="text-center mb-16 text-gray-900 dark:text-zinc-100 text-4xl font-serif font-normal"
           >
-            Questions about Yearly
+            Questions about <ProductName />
           </h2>
         </AnimatedSection>
 
@@ -24,10 +25,10 @@ export function Faq() {
           {getFaqs(isAccountsEnabled()).map((faq) => (
             <div key={faq.question} className="p-6 sm:p-8">
               <h3 className="mb-2 text-gray-900 dark:text-zinc-100 text-lg font-medium">
-                {faq.question}
+                {withProductName(faq.question)}
               </h3>
               <p className="text-gray-600 dark:text-zinc-400 leading-relaxed">
-                {faq.answer}
+                {withProductName(faq.answer)}
               </p>
             </div>
           ))}

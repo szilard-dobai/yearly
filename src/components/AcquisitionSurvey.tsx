@@ -1,5 +1,6 @@
 'use client'
 
+import { ProductName, withProductName } from '@/components/ProductName'
 import { Emoji } from '@/components/Emoji'
 import ChoiceChip from '@/components/ChoiceChip'
 import { Button } from '@/components/ui/button'
@@ -97,7 +98,7 @@ export default function AcquisitionSurvey({
                 id="acquisition-survey-heading"
                 className="text-sm font-medium text-gray-900 dark:text-zinc-100 pr-6"
               >
-                How did you hear about Yearly?
+                How did you hear about <ProductName />?
               </p>
               <p className="text-xs text-gray-500 dark:text-zinc-400 mb-3">
                 One tap — it helps us reach more travellers.
@@ -117,7 +118,7 @@ export default function AcquisitionSurvey({
                       onClick={() => handleChoose(value)}
                       aria-expanded={isOther ? isActive : undefined}
                     >
-                      {label}
+                      {withProductName(label)}
                     </ChoiceChip>
                   )
                 })}

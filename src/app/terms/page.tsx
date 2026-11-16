@@ -1,3 +1,4 @@
+import { ProductName, withProductName } from '@/components/ProductName'
 import Header from '@/components/Header'
 import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { Metadata } from 'next'
@@ -20,7 +21,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-3">
       <h2 className="font-serif text-2xl font-normal text-gray-900 dark:text-zinc-100">
-        {title}
+        {withProductName(title)}
       </h2>
       {children}
     </section>
@@ -52,18 +53,18 @@ export default function TermsPage() {
               Last updated {LAST_UPDATED}
             </p>
             <p>
-              These terms cover your use of Yearly at yearly.world. Yearly is a
-              small, independent project run by Szilard Dobai. If anything here
-              is unclear, email {email}.
+              These terms cover your use of <ProductName /> at yearly.world.{' '}
+              <ProductName /> is a small, independent project run by Szilard
+              Dobai. If anything here is unclear, email {email}.
             </p>
           </header>
 
           <Section title="Using Yearly">
             <p>
-              Making and downloading your calendar and stats images is free.
-              Yearly is for your own travel, so please don&apos;t use it to
-              break the law, sign up with automated tools or in bulk, get into
-              other people&apos;s accounts, or try to overload or break the
+              Making and downloading your calendar and stats images is free.{' '}
+              <ProductName /> is for your own travel, so please don&apos;t use
+              it to break the law, sign up with automated tools or in bulk, get
+              into other people&apos;s accounts, or try to overload or break the
               site.
             </p>
           </Section>
@@ -93,23 +94,24 @@ export default function TermsPage() {
 
           <Section title="If Yearly changes">
             <p>
-              Yearly will change over time, and features may come and go. If we
-              ever stop offering accounts, we&apos;ll email account holders at
-              least 30 days before, so you can download a backup of your
-              calendar.
+              <ProductName /> will change over time, and features may come and
+              go. If we ever stop offering accounts, we&apos;ll email account
+              holders at least 30 days before, so you can download a backup of
+              your calendar.
             </p>
           </Section>
 
           <Section title="No guarantees">
             <p>
-              We work to keep Yearly running and your data safe, but it&apos;s
-              provided as is, without a promise that it will always be available
-              or free of errors. Keep a backup of anything you can&apos;t afford
-              to lose. As far as the law allows, we aren&apos;t responsible for
-              indirect losses or lost data. This doesn&apos;t apply to injury or
-              to harm we cause on purpose or through gross negligence, which the
-              law doesn&apos;t let us limit. Nothing in these terms limits
-              rights you have under consumer law that can&apos;t be limited.
+              We work to keep <ProductName /> running and your data safe, but
+              it&apos;s provided as is, without a promise that it will always be
+              available or free of errors. Keep a backup of anything you
+              can&apos;t afford to lose. As far as the law allows, we
+              aren&apos;t responsible for indirect losses or lost data. This
+              doesn&apos;t apply to injury or to harm we cause on purpose or
+              through gross negligence, which the law doesn&apos;t let us limit.
+              Nothing in these terms limits rights you have under consumer law
+              that can&apos;t be limited.
             </p>
           </Section>
 

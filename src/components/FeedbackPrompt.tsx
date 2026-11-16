@@ -1,5 +1,6 @@
 'use client'
 
+import { ProductName, withProductName } from '@/components/ProductName'
 import { Emoji } from '@/components/Emoji'
 import ChoiceChip from '@/components/ChoiceChip'
 import StarRating from '@/components/StarRating'
@@ -165,7 +166,7 @@ export default function FeedbackPrompt({
                 <X className="size-4" />
               </button>
               <p className="text-sm font-medium text-gray-900 dark:text-zinc-100 pr-6">
-                {title}
+                {withProductName(title)}
               </p>
               <p className="text-xs text-gray-500 dark:text-zinc-400 mb-3">
                 {description}
@@ -261,7 +262,7 @@ export default function FeedbackPrompt({
               <span className="font-medium text-gray-900 dark:text-zinc-100">
                 Thanks for the feedback! <Emoji name="raisingHands" />
               </span>{' '}
-              It helps us make Yearly better.
+              It helps us make <ProductName /> better.
             </motion.p>
           )}
         </AnimatePresence>

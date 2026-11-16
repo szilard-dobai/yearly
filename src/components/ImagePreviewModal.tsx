@@ -1,5 +1,6 @@
 'use client'
 
+import { ProductName } from '@/components/ProductName'
 import { Emoji } from '@/components/Emoji'
 import AcquisitionSurvey from '@/components/AcquisitionSurvey'
 import FeedbackPrompt from '@/components/FeedbackPrompt'
@@ -307,7 +308,7 @@ function ImagePreviewContent({
         >
           <div className="mb-4 md:mb-8">
             <h2 className="text-gray-900 dark:text-zinc-100 mb-2 md:mb-3 text-2xl md:text-3xl font-serif font-normal leading-tight">
-              Your Yearly is ready! <Emoji name="partyPopper" />
+              Your <ProductName /> is ready! <Emoji name="partyPopper" />
             </h2>
             <p className="text-gray-600 dark:text-zinc-400 leading-relaxed text-sm md:text-base">
               Share your year-in-review with the world. Download the
@@ -426,7 +427,7 @@ export default function ImagePreviewModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[80vh] p-0 gap-0 overflow-auto scrollbar-hide bg-white dark:bg-[#141414] border dark:border-white/8 shadow-stone-900">
         <DialogTitle className="sr-only">
-          Export Your Yearly Calendar
+          Export Your <ProductName /> Calendar
         </DialogTitle>
         <DialogDescription className="sr-only">
           Download or share your travel calendar to social media platforms

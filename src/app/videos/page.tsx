@@ -1,3 +1,4 @@
+import { ProductName, withProductName } from '@/components/ProductName'
 import { ExampleVideo } from '@/components/ExampleVideo'
 import Header from '@/components/Header'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
@@ -335,9 +336,9 @@ export default function VideosPage() {
                 processes the payment, handles the tax and sends your receipt.
               </p>
               <p>
-                Buying needs a free Yearly account, so you can download your
-                videos again later. Making and downloading images never needs an
-                account.
+                Buying needs a free <ProductName /> account, so you can download
+                your videos again later. Making and downloading images never
+                needs an account.
               </p>
               <p>
                 If a video fails or comes out wrong, email{' '}
@@ -367,10 +368,10 @@ export default function VideosPage() {
               {faqs.map((faq) => (
                 <div key={faq.question} className="p-6 sm:p-8">
                   <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-zinc-100">
-                    {faq.question}
+                    {withProductName(faq.question)}
                   </h3>
                   <p className="leading-relaxed text-gray-600 dark:text-zinc-400">
-                    {faq.answer}
+                    {withProductName(faq.answer)}
                   </p>
                 </div>
               ))}

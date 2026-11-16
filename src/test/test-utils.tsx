@@ -10,5 +10,17 @@ function renderWithSettings(ui: React.ReactElement, options?: RenderOptions) {
   return render(ui, { wrapper: TestWrapper, ...options })
 }
 
-export { renderWithSettings, TestWrapper }
+function textAcrossElements(text: string | RegExp) {
+  const matches = (element: Element) =>
+    typeof text === 'string'
+      ? element.textContent === text
+      : text.test(element.textContent ?? '')
+
+  return (_content: string, element: Element | null) =>
+    element !== null &&
+    matches(element) &&
+    Array.from(element.children).every((child) => !matches(child))
+}
+
+export { renderWithSettings, textAcrossElements, TestWrapper }
 export * from '@testing-library/react'

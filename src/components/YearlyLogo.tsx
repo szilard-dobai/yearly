@@ -9,7 +9,10 @@ export function YearlyLogo({ className }: { className?: string }) {
         <LogoSvg className="w-full h-full" />
       </div>
 
-      <span className="text-3xl leading-none pt-2 font-serif font-normal tracking-tight">
+      <span
+        className="text-3xl leading-none pt-2 font-serif font-normal tracking-tight"
+        translate="no"
+      >
         Yearly
       </span>
     </Link>

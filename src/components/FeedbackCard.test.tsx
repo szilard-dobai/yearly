@@ -1,6 +1,7 @@
 import { markFeedbackSubmitted } from '@/lib/feedback/prompt'
 import { trackEvent } from '@/lib/tracking'
 import { act, render, screen } from '@testing-library/react'
+import { textAcrossElements } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import FeedbackCard from './FeedbackCard'
@@ -14,7 +15,7 @@ vi.mock('@/lib/tracking/device-id', () => ({
   getDeviceId: () => 'device-123',
 }))
 
-const TITLE = "How's Yearly so far?"
+const TITLE = textAcrossElements("How's Yearly so far?")
 const fetchMock = vi.fn()
 
 function shownEvents() {

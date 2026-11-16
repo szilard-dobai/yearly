@@ -119,7 +119,10 @@ function SelectItem({
           <CheckIcon className="size-4" />
         </SelectPrimitive.ItemIndicator>
       </span>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText>
+        {/* Radix copies this into the trigger; an element survives browser translation where bare text doesn't */}
+        <span className="contents">{children}</span>
+      </SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
 }

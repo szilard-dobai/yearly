@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithSettings } from '@/test/test-utils'
+import { simulateTranslation } from '@/test/translate'
 import userEvent from '@testing-library/user-event'
 import { isTrackingOptedOut } from '@/lib/tracking/opt-out'
 import Settings from './Settings'
@@ -82,6 +83,22 @@ describe('Settings', () => {
 
       // After selection, the combobox should show Sunday
       expect(combobox).toHaveTextContent('Sunday')
+    })
+
+    it('shows the chosen day once after the browser translated the page', async () => {
+      localStorage.clear()
+      const user = userEvent.setup()
+      renderWithSettings(<Settings {...defaultProps} />)
+
+      const combobox = screen.getByRole('combobox')
+      for (let i = 0; i < 3; i++) {
+        simulateTranslation(combobox)
+        await user.click(combobox)
+        await screen.findByRole('option', { name: 'Monday' })
+        await user.keyboard('{Escape}')
+      }
+
+      expect(combobox.textContent?.match(/Monday/g)).toHaveLength(1)
     })
 
     it('should render all 7 days of the week in dropdown', async () => {

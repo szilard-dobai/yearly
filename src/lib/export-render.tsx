@@ -144,6 +144,7 @@ export async function renderExportImage(
   const background = EXPORT_BACKGROUND[theme]
   const container = document.createElement('div')
   container.setAttribute('aria-hidden', 'true')
+  container.setAttribute('translate', 'no')
   Object.assign(container.style, {
     position: 'fixed',
     left: '0',

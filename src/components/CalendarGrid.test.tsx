@@ -289,6 +289,18 @@ describe('CalendarGrid', () => {
       const gridContainer = container.querySelector('.grid')
       expect(gridContainer).toBeInTheDocument()
     })
+
+    it('keeps browser translation out of the year and months', () => {
+      renderWithSettings(
+        <CalendarGrid year={2024} calendarData={mockCalendarData} />
+      )
+
+      const untranslated = screen
+        .getByRole('heading', { name: '2024' })
+        .closest('[translate="no"]')
+      expect(untranslated).toContainElement(screen.getByTestId('month-grid-0'))
+      expect(untranslated).toContainElement(screen.getByTestId('month-grid-11'))
+    })
   })
 
   describe('edge cases', () => {

@@ -98,7 +98,7 @@ export default function AcquisitionSurvey({
                 id="acquisition-survey-heading"
                 className="text-sm font-medium text-gray-900 dark:text-zinc-100 pr-6"
               >
-                How did you hear about <ProductName />?
+                How did you hear about <ProductName spaceAfter={false} />?
               </p>
               <p className="text-xs text-gray-500 dark:text-zinc-400 mb-3">
                 One tap — it helps us reach more travellers.
@@ -118,7 +118,7 @@ export default function AcquisitionSurvey({
                       onClick={() => handleChoose(value)}
                       aria-expanded={isOther ? isActive : undefined}
                     >
-                      {withProductName(label)}
+                      <span>{withProductName(label)}</span>
                     </ChoiceChip>
                   )
                 })}

@@ -145,8 +145,9 @@ export default function PrivacyPage() {
 
           <Section title="Usage events">
             <p>
-              We record what people do in <ProductName />, such as opening a
-              page, adding a trip or exporting an image. Each event includes:
+              We record what people do in <ProductName spaceAfter={false} />,
+              such as opening a page, adding a trip or exporting an image. Each
+              event includes:
             </p>
             <List>
               <li>
@@ -176,7 +177,7 @@ export default function PrivacyPage() {
             </p>
             <p>
               When you open a page, the event also records how you found{' '}
-              <ProductName />:
+              <ProductName spaceAfter={false} />:
             </p>
             <List>
               <li>
@@ -256,10 +257,10 @@ export default function PrivacyPage() {
           <Section title="How you heard about Yearly">
             <p>
               After you download an image, we may ask how you heard about{' '}
-              <ProductName />. If you answer, we store your answer as a usage
-              event, along with the note you typed if you chose Other. If you
-              answer or close the question, we won&apos;t ask again in that
-              browser.
+              <ProductName spaceAfter={false} />. If you answer, we store your
+              answer as a usage event, along with the note you typed if you
+              chose Other. If you answer or close the question, we won&apos;t
+              ask again in that browser.
             </p>
           </Section>
 
@@ -338,9 +339,10 @@ export default function PrivacyPage() {
               <li>
                 Usage events, Vercel Web Analytics and Speed Insights, reminders
                 added to a calendar, feedback and how you heard about{' '}
-                <ProductName />: our legitimate interest in understanding how{' '}
-                <ProductName /> is used and improving it. You can object at any
-                time, for example by turning off Share usage stats.
+                <ProductName spaceAfter={false} />: our legitimate interest in
+                understanding how <ProductName /> is used and improving it. You
+                can object at any time, for example by turning off Share usage
+                stats.
               </li>
               <li>
                 The video waitlist and the year-end reminder email: your

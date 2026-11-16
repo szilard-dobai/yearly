@@ -90,7 +90,9 @@ export default function Home() {
                 linkType="hero"
                 className="px-8 py-4 bg-black dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 transition-all hover:scale-105 flex items-center gap-2 shadow-lg"
               >
-                Create your <ProductName />
+                <span>
+                  Create your <ProductName />
+                </span>
                 <ArrowRight className="w-5 h-5" />
               </TrackingLink>
             </div>

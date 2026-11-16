@@ -11,10 +11,10 @@ function renderWithSettings(ui: React.ReactElement, options?: RenderOptions) {
 }
 
 function textAcrossElements(text: string | RegExp) {
-  const matches = (element: Element) =>
-    typeof text === 'string'
-      ? element.textContent === text
-      : text.test(element.textContent ?? '')
+  const matches = (element: Element) => {
+    const content = (element.textContent ?? '').replace(/\s+/g, ' ').trim()
+    return typeof text === 'string' ? content === text : text.test(content)
+  }
 
   return (_content: string, element: Element | null) =>
     element !== null &&

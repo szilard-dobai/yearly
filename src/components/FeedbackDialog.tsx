@@ -103,7 +103,7 @@ function FeedbackForm({
 
       <div className="space-y-2">
         <p className="text-sm font-medium text-gray-900 dark:text-zinc-100">
-          How would you rate <ProductName />?{' '}
+          How would you rate <ProductName spaceAfter={false} />?{' '}
           <span className="font-normal text-gray-500 dark:text-zinc-500">
             (optional)
           </span>

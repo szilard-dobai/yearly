@@ -2,6 +2,7 @@ import { attachDatabasePool } from '@vercel/functions'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
 import { Pool } from 'pg'
+import { withVerifyFullSsl } from './connection-string'
 import * as schema from './schema'
 
 export type Database = PgDatabase<PgQueryResultHKT, typeof schema>
@@ -11,7 +12,9 @@ declare global {
 }
 
 function createPool() {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+  const pool = new Pool({
+    connectionString: withVerifyFullSsl(process.env.DATABASE_URL),
+  })
   attachDatabasePool(pool)
   return pool
 }

@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useAccountEmail } from '@/lib/hooks/useAccountEmail'
 import { VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
 import { joinWaitlist } from '@/lib/waitlist/client'
 import { CheckCircle2, Loader2 } from 'lucide-react'
@@ -11,6 +12,7 @@ import { type FormEvent, useState } from 'react'
 const INPUT_ID = 'videos-waitlist-email'
 
 export function VideoWaitlistForm() {
+  const accountEmail = useAccountEmail()
   const [email, setEmail] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [isJoined, setIsJoined] = useState(false)
@@ -22,7 +24,7 @@ export function VideoWaitlistForm() {
     setError(null)
     try {
       await joinWaitlist({
-        email,
+        email: accountEmail ?? email,
         feature: 'animated_video',
         context: { launchOffer: 'first_video_free' },
       })
@@ -74,10 +76,11 @@ export function VideoWaitlistForm() {
           required
           autoComplete="email"
           placeholder="you@example.com"
-          value={email}
+          value={accountEmail ?? email}
+          readOnly={accountEmail !== null}
           onChange={(e) => setEmail(e.target.value)}
           aria-invalid={!!error || undefined}
-          className="h-11 bg-white dark:bg-[#1a1a1a]"
+          className="h-11 bg-white read-only:bg-gray-100 read-only:text-gray-600 dark:bg-[#1a1a1a] dark:read-only:bg-white/5 dark:read-only:text-zinc-400"
         />
         <Button type="submit" disabled={isSending} className="h-11 px-5">
           {isSending && <Loader2 className="size-4 animate-spin" />}
@@ -85,7 +88,9 @@ export function VideoWaitlistForm() {
         </Button>
       </div>
       <p className="text-xs text-gray-500 dark:text-zinc-500">
-        We&apos;ll only use your email for this.{' '}
+        {accountEmail
+          ? "This is the email you sign in with. We'll only use it for this."
+          : "We'll only use your email for this."}{' '}
         <Link
           href="/privacy"
           className="underline underline-offset-2 hover:text-gray-900 dark:hover:text-zinc-100"

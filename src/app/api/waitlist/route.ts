@@ -1,3 +1,5 @@
+import { isAccountsEnabled } from '@/lib/auth/enabled'
+import { auth } from '@/lib/auth/server'
 import { getWaitlistCollection, type WaitlistDocument } from '@/lib/mongodb'
 import { validateSameOrigin } from '@/lib/tracking/api'
 import { notifyWaitlistToSlack } from '@/lib/waitlist/slack'
@@ -10,6 +12,17 @@ export const dynamic = 'force-dynamic'
 const MAX_BODY_BYTES = 4 * 1024
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000
 const RATE_LIMIT_MAX_SIGNUPS = 5
+
+async function getAccountEmail(request: Request): Promise<string | null> {
+  if (!isAccountsEnabled()) return null
+  try {
+    const session = await auth.api.getSession({ headers: request.headers })
+    return session?.user.email.trim().toLowerCase() ?? null
+  } catch (error) {
+    console.error('Failed to check the session for a waitlist sign-up:', error)
+    return null
+  }
+}
 
 export async function POST(request: Request) {
   const forbidden = validateSameOrigin(request)
@@ -44,7 +57,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const { email, deviceId, feature, context, deviceType } = parsed.data
+  const { deviceId, feature, context, deviceType } = parsed.data
+  const email = (await getAccountEmail(request)) ?? parsed.data.email
 
   try {
     const collection = await getWaitlistCollection()

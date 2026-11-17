@@ -1,5 +1,5 @@
 import { MongoServerError } from 'mongodb'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { POST } from './route'
 
 const collection = {
@@ -8,6 +8,11 @@ const collection = {
 }
 
 const notifyWaitlistToSlack = vi.fn()
+const getSession = vi.fn()
+
+vi.mock('@/lib/auth/server', () => ({
+  auth: { api: { getSession: (...args: unknown[]) => getSession(...args) } },
+}))
 
 vi.mock('@/lib/mongodb', () => ({
   getWaitlistCollection: () => Promise.resolve(collection),
@@ -51,6 +56,57 @@ describe('POST /api/waitlist', () => {
     notifyWaitlistToSlack.mockReset()
     collection.countDocuments.mockReset().mockResolvedValue(0)
     collection.updateOne.mockReset().mockResolvedValue({ upsertedCount: 1 })
+    getSession.mockReset().mockResolvedValue(null)
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.restoreAllMocks()
+  })
+
+  function upsertedEmail() {
+    return collection.updateOne.mock.calls[0][0].email
+  }
+
+  it('does not look for a session while accounts are off', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'false')
+
+    const response = await POST(postRequest(validBody))
+
+    expect(response.status).toBe(201)
+    expect(getSession).not.toHaveBeenCalled()
+    expect(upsertedEmail()).toBe('traveller@example.com')
+  })
+
+  it('uses the signed-in email instead of the one sent', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
+    getSession.mockResolvedValue({ user: { email: 'Ana@Example.com' } })
+
+    const response = await POST(postRequest(validBody))
+
+    expect(response.status).toBe(201)
+    expect(upsertedEmail()).toBe('ana@example.com')
+  })
+
+  it('uses the email sent when nobody is signed in', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
+
+    await POST(postRequest(validBody))
+
+    expect(getSession).toHaveBeenCalledTimes(1)
+    expect(upsertedEmail()).toBe('traveller@example.com')
+  })
+
+  it('falls back to the email sent when the session check fails', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    getSession.mockRejectedValue(new Error('database down'))
+
+    const response = await POST(postRequest(validBody))
+
+    expect(response.status).toBe(201)
+    expect(upsertedEmail()).toBe('traveller@example.com')
+    expect(console.error).toHaveBeenCalled()
   })
 
   it('upserts the normalised email with request metadata', async () => {

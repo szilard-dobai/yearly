@@ -1,11 +1,12 @@
 import { isAccountsEnabled } from '@/lib/auth/enabled'
-import { auth } from '@/lib/auth/server'
+import { getSessionEmail } from '@/lib/auth/session-email'
 import { getWaitlistCollection, type WaitlistDocument } from '@/lib/mongodb'
 import { validateSameOrigin } from '@/lib/tracking/api'
 import { notifyWaitlistToSlack } from '@/lib/waitlist/slack'
-import { joinWaitlistSchema } from '@/lib/waitlist/types'
+import { joinWaitlistSchema, WAITLIST_FEATURES } from '@/lib/waitlist/types'
 import { MongoServerError } from 'mongodb'
 import { after, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,14 +14,69 @@ const MAX_BODY_BYTES = 4 * 1024
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000
 const RATE_LIMIT_MAX_SIGNUPS = 5
 
-async function getAccountEmail(request: Request): Promise<string | null> {
-  if (!isAccountsEnabled()) return null
+const NO_STORE = { 'Cache-Control': 'no-store' }
+
+const featureSchema = z.enum(WAITLIST_FEATURES)
+
+async function getAccountEntry(request: Request) {
+  if (!isAccountsEnabled()) {
+    return { error: new NextResponse(null, { status: 404 }) }
+  }
+  const feature = featureSchema.safeParse(
+    new URL(request.url).searchParams.get('feature')
+  )
+  if (!feature.success) {
+    return {
+      error: NextResponse.json({ error: 'Invalid request' }, { status: 400 }),
+    }
+  }
+  const email = await getSessionEmail(request)
+  if (!email) {
+    return {
+      error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+    }
+  }
+  return { feature: feature.data, email }
+}
+
+export async function GET(request: Request) {
+  const entry = await getAccountEntry(request)
+  if (entry.error) return entry.error
+
   try {
-    const session = await auth.api.getSession({ headers: request.headers })
-    return session?.user.email.trim().toLowerCase() ?? null
+    const collection = await getWaitlistCollection()
+    const joined =
+      (await collection.countDocuments(
+        { feature: entry.feature, email: entry.email },
+        { limit: 1 }
+      )) > 0
+    return NextResponse.json({ joined }, { headers: NO_STORE })
   } catch (error) {
-    console.error('Failed to check the session for a waitlist sign-up:', error)
-    return null
+    console.error('Failed to read the waitlist:', error)
+    return NextResponse.json(
+      { error: 'Failed to read the waitlist' },
+      { status: 500, headers: NO_STORE }
+    )
+  }
+}
+
+export async function DELETE(request: Request) {
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
+
+  const entry = await getAccountEntry(request)
+  if (entry.error) return entry.error
+
+  try {
+    const collection = await getWaitlistCollection()
+    await collection.deleteOne({ feature: entry.feature, email: entry.email })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to leave the waitlist:', error)
+    return NextResponse.json(
+      { error: 'Failed to leave the waitlist' },
+      { status: 500 }
+    )
   }
 }
 
@@ -58,7 +114,7 @@ export async function POST(request: Request) {
   }
 
   const { deviceId, feature, context, deviceType } = parsed.data
-  const email = (await getAccountEmail(request)) ?? parsed.data.email
+  const email = (await getSessionEmail(request)) ?? parsed.data.email
 
   try {
     const collection = await getWaitlistCollection()

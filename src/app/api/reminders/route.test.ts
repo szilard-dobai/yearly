@@ -1,14 +1,20 @@
 import { MongoServerError } from 'mongodb'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { POST } from './route'
+import { DELETE, GET, POST } from './route'
 
 const collection = {
   countDocuments: vi.fn(),
   updateOne: vi.fn(),
+  deleteOne: vi.fn(),
 }
 const calendarCollection = { countDocuments: vi.fn() }
 
 const notifyReminderToSlack = vi.fn()
+const getSession = vi.fn()
+
+vi.mock('@/lib/auth/server', () => ({
+  auth: { api: { getSession: (...args: unknown[]) => getSession(...args) } },
+}))
 
 vi.mock('@/lib/mongodb', () => ({
   getRemindersCollection: () => Promise.resolve(collection),
@@ -52,10 +58,36 @@ describe('POST /api/reminders', () => {
     collection.countDocuments.mockReset().mockResolvedValue(0)
     collection.updateOne.mockReset().mockResolvedValue({ upsertedCount: 1 })
     calendarCollection.countDocuments.mockReset().mockResolvedValue(30)
+    getSession.mockReset().mockResolvedValue(null)
   })
 
   afterEach(() => {
     vi.useRealTimers()
+    vi.unstubAllEnvs()
+  })
+
+  it('uses the signed-in email instead of the one sent', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
+    getSession.mockResolvedValue({ user: { email: 'Ana@Example.com' } })
+
+    const response = await POST(postRequest(validBody))
+
+    expect(response.status).toBe(201)
+    expect(collection.updateOne.mock.calls[0][0]).toEqual({
+      year: 2026,
+      email: 'ana@example.com',
+    })
+  })
+
+  it('does not look for a session while accounts are off', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'false')
+
+    await POST(postRequest(validBody))
+
+    expect(getSession).not.toHaveBeenCalled()
+    expect(collection.updateOne.mock.calls[0][0].email).toBe(
+      'traveller@example.com'
+    )
   })
 
   it('upserts one reminder per email and year with request metadata', async () => {
@@ -227,5 +259,91 @@ describe('POST /api/reminders', () => {
     const response = await POST(postRequest(validBody))
 
     expect(response.status).toBe(500)
+  })
+})
+
+function accountRequest(
+  method: 'GET' | 'DELETE',
+  query = '?year=2026',
+  headers: Record<string, string> = { 'sec-fetch-site': 'same-origin' }
+) {
+  return new Request(`http://localhost/api/reminders${query}`, {
+    method,
+    headers,
+  })
+}
+
+describe('the signed-in reminder', () => {
+  beforeEach(() => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
+    collection.countDocuments.mockReset().mockResolvedValue(1)
+    collection.deleteOne.mockReset().mockResolvedValue({ deletedCount: 1 })
+    getSession.mockReset().mockResolvedValue({
+      user: { email: 'Ana@Example.com' },
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('says whether the signed-in email has a reminder for the year', async () => {
+    const response = await GET(accountRequest('GET'))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(await response.json()).toEqual({ set: true })
+    expect(collection.countDocuments).toHaveBeenCalledWith(
+      { year: 2026, email: 'ana@example.com' },
+      { limit: 1 }
+    )
+
+    collection.countDocuments.mockResolvedValue(0)
+    expect(await (await GET(accountRequest('GET'))).json()).toEqual({
+      set: false,
+    })
+  })
+
+  it("turns off the signed-in email's reminder for the year", async () => {
+    const response = await DELETE(accountRequest('DELETE'))
+
+    expect(response.status).toBe(200)
+    expect(collection.deleteOne).toHaveBeenCalledWith({
+      year: 2026,
+      email: 'ana@example.com',
+    })
+  })
+
+  it('needs someone signed in', async () => {
+    getSession.mockResolvedValue(null)
+
+    expect((await GET(accountRequest('GET'))).status).toBe(401)
+    expect((await DELETE(accountRequest('DELETE'))).status).toBe(401)
+    expect(collection.deleteOne).not.toHaveBeenCalled()
+  })
+
+  it('returns 404 while accounts are off', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', '')
+
+    expect((await GET(accountRequest('GET'))).status).toBe(404)
+    expect((await DELETE(accountRequest('DELETE'))).status).toBe(404)
+    expect(getSession).not.toHaveBeenCalled()
+  })
+
+  it('rejects a missing or invalid year', async () => {
+    expect((await GET(accountRequest('GET', ''))).status).toBe(400)
+    expect((await GET(accountRequest('GET', '?year=soon'))).status).toBe(400)
+    expect((await DELETE(accountRequest('DELETE', '?year=1999'))).status).toBe(
+      400
+    )
+  })
+
+  it('rejects turning it off from other sites', async () => {
+    const response = await DELETE(
+      accountRequest('DELETE', '?year=2026', { 'sec-fetch-site': 'cross-site' })
+    )
+
+    expect(response.status).toBe(403)
+    expect(collection.deleteOne).not.toHaveBeenCalled()
   })
 })

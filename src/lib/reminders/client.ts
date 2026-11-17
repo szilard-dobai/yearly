@@ -44,3 +44,20 @@ export async function createYearEndReminder(input: {
 
   trackEvent('year_end_reminder_email_submit', { year: input.year })
 }
+
+export async function getReminderStatus(year: number): Promise<boolean> {
+  const response = await fetch(`/api/reminders?year=${year}`, {
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error('Failed to load the reminder')
+  const data: { set?: unknown } = await response.json()
+  return data.set === true
+}
+
+export async function turnOffYearEndReminder(year: number): Promise<void> {
+  const response = await fetch(`/api/reminders?year=${year}`, {
+    method: 'DELETE',
+  })
+  if (!response.ok) throw new Error('Something went wrong, please try again')
+  trackEvent('year_end_reminder_email_turn_off', { year })
+}

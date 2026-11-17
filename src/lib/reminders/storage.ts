@@ -25,6 +25,14 @@ export function getSavedReminder(year: number): ReminderMethod | null {
   return readSaved()[year] ?? null
 }
 
+export function forgetReminder(year: number): void {
+  try {
+    const saved = readSaved()
+    delete saved[year]
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved))
+  } catch {}
+}
+
 export function saveReminder(year: number, method: ReminderMethod): void {
   try {
     localStorage.setItem(

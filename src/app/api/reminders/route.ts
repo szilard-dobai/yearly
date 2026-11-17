@@ -1,3 +1,5 @@
+import { isAccountsEnabled } from '@/lib/auth/enabled'
+import { getSessionEmail } from '@/lib/auth/session-email'
 import { getRemindersCollection, type ReminderDocument } from '@/lib/mongodb'
 import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
 import { getReminderTotals, isOpenReminderYear } from '@/lib/reminders/server'
@@ -6,12 +8,78 @@ import { createReminderSchema } from '@/lib/reminders/types'
 import { validateSameOrigin } from '@/lib/tracking/api'
 import { MongoServerError } from 'mongodb'
 import { after, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
 const MAX_BODY_BYTES = 4 * 1024
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000
 const RATE_LIMIT_MAX_SIGNUPS = 5
+const NO_STORE = { 'Cache-Control': 'no-store' }
+
+const yearSchema = z.coerce.number().int().min(2000).max(2200)
+
+async function getAccountReminder(request: Request) {
+  if (!isAccountsEnabled()) {
+    return { error: new NextResponse(null, { status: 404 }) }
+  }
+  const year = yearSchema.safeParse(
+    new URL(request.url).searchParams.get('year')
+  )
+  if (!year.success) {
+    return {
+      error: NextResponse.json({ error: 'Invalid request' }, { status: 400 }),
+    }
+  }
+  const email = await getSessionEmail(request)
+  if (!email) {
+    return {
+      error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }),
+    }
+  }
+  return { year: year.data, email }
+}
+
+export async function GET(request: Request) {
+  const reminder = await getAccountReminder(request)
+  if (reminder.error) return reminder.error
+
+  try {
+    const collection = await getRemindersCollection()
+    const set =
+      (await collection.countDocuments(
+        { year: reminder.year, email: reminder.email },
+        { limit: 1 }
+      )) > 0
+    return NextResponse.json({ set }, { headers: NO_STORE })
+  } catch (error) {
+    console.error('Failed to read the reminder:', error)
+    return NextResponse.json(
+      { error: 'Failed to read the reminder' },
+      { status: 500, headers: NO_STORE }
+    )
+  }
+}
+
+export async function DELETE(request: Request) {
+  const forbidden = validateSameOrigin(request)
+  if (forbidden) return forbidden
+
+  const reminder = await getAccountReminder(request)
+  if (reminder.error) return reminder.error
+
+  try {
+    const collection = await getRemindersCollection()
+    await collection.deleteOne({ year: reminder.year, email: reminder.email })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to turn off the reminder:', error)
+    return NextResponse.json(
+      { error: 'Failed to turn off the reminder' },
+      { status: 500 }
+    )
+  }
+}
 
 export async function POST(request: Request) {
   const forbidden = validateSameOrigin(request)
@@ -46,7 +114,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const { email, deviceId, year, deviceType } = parsed.data
+  const { deviceId, year, deviceType } = parsed.data
   if (!isOpenReminderYear(year)) {
     const closed = year === new Date().getUTCFullYear()
     return NextResponse.json(
@@ -58,6 +126,8 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
+
+  const email = (await getSessionEmail(request)) ?? parsed.data.email
 
   try {
     const collection = await getRemindersCollection()

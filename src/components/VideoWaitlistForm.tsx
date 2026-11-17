@@ -2,10 +2,11 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { VideoWaitlistJoined } from '@/components/VideoWaitlistJoined'
 import { useAccountEmail } from '@/lib/hooks/useAccountEmail'
-import { VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
-import { joinWaitlist } from '@/lib/waitlist/client'
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { joinWaitlist, leaveWaitlist } from '@/lib/waitlist/client'
+import { useWaitlistStatus } from '@/lib/waitlist/useWaitlistStatus'
+import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { type FormEvent, useState } from 'react'
 
@@ -13,6 +14,10 @@ const INPUT_ID = 'videos-waitlist-email'
 
 export function VideoWaitlistForm() {
   const accountEmail = useAccountEmail()
+  const [joinedOnAccount, setJoinedOnAccount] = useWaitlistStatus(
+    'animated_video',
+    accountEmail
+  )
   const [email, setEmail] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [isJoined, setIsJoined] = useState(false)
@@ -29,6 +34,7 @@ export function VideoWaitlistForm() {
         context: { launchOffer: 'first_video_free' },
       })
       setIsJoined(true)
+      if (accountEmail) setJoinedOnAccount(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -36,21 +42,18 @@ export function VideoWaitlistForm() {
     }
   }
 
-  if (isJoined) {
+  const handleLeave = async () => {
+    await leaveWaitlist('animated_video')
+    setJoinedOnAccount(false)
+    setIsJoined(false)
+  }
+
+  if (isJoined || joinedOnAccount === true) {
     return (
-      <div
-        role="status"
-        className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-left text-gray-700 shadow-sm dark:border-white/8 dark:bg-[#141414] dark:text-zinc-300"
-      >
-        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-500" />
-        <p>
-          <span className="font-medium text-gray-900 dark:text-zinc-100">
-            You&apos;re on the list.
-          </span>{' '}
-          We&apos;ll email you when videos launch in {VIDEO_LAUNCH_LABEL}. Your
-          first video is free.
-        </p>
-      </div>
+      <VideoWaitlistJoined
+        onLeave={accountEmail ? handleLeave : undefined}
+        className="rounded-2xl border border-gray-200 bg-white p-5 text-left text-gray-700 shadow-sm dark:border-white/8 dark:bg-[#141414] dark:text-zinc-300"
+      />
     )
   }
 

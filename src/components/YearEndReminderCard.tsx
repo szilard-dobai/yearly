@@ -7,13 +7,20 @@ import {
   downloadReminderIcs,
   shouldOfferYearEndReminder,
 } from '@/lib/reminders/calendar'
+import { useAccountEmail } from '@/lib/hooks/useAccountEmail'
 import {
   createYearEndReminder,
   recordCalendarReminder,
+  turnOffYearEndReminder,
 } from '@/lib/reminders/client'
 import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
-import { getSavedReminder, saveReminder } from '@/lib/reminders/storage'
+import {
+  forgetReminder,
+  getSavedReminder,
+  saveReminder,
+} from '@/lib/reminders/storage'
 import type { CalendarProvider, ReminderMethod } from '@/lib/reminders/types'
+import { useReminderStatus } from '@/lib/reminders/useReminderStatus'
 import { trackEvent } from '@/lib/tracking'
 import { cn } from '@/lib/utils'
 import { BellRing, Check, Loader2 } from 'lucide-react'
@@ -39,6 +46,20 @@ export default function YearEndReminderCard({ year }: { year: number }) {
   const emailId = useId()
   const calendarLabelId = useId()
   const offered = shouldOfferYearEndReminder(year, now)
+  const accountEmail = useAccountEmail()
+  const [onAccount, setOnAccount] = useReminderStatus(
+    year,
+    offered ? accountEmail : null
+  )
+  const [turnOff, setTurnOff] = useState<'idle' | 'busy' | 'failed'>('idle')
+
+  const accountReminder = typeof onAccount === 'boolean' ? onAccount : null
+  const method: ReminderMethod | null =
+    accountReminder === true
+      ? 'email'
+      : accountReminder === false && saved === 'email'
+        ? null
+        : saved
 
   useEffect(() => {
     if (offered && !saved) trackEvent('year_end_reminder_shown', { year })
@@ -74,8 +95,9 @@ export default function YearEndReminderCard({ year }: { year: number }) {
     setIsSending(true)
     setError(null)
     try {
-      await createYearEndReminder({ email, year })
+      await createYearEndReminder({ email: accountEmail ?? email, year })
       markSet('email')
+      if (accountEmail) setOnAccount(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
@@ -83,7 +105,22 @@ export default function YearEndReminderCard({ year }: { year: number }) {
     }
   }
 
-  if (saved && !retrying) {
+  const handleTurnOff = async () => {
+    setTurnOff('busy')
+    try {
+      await turnOffYearEndReminder(year)
+      if (saved === 'email') {
+        forgetReminder(year)
+        setSaved(null)
+      }
+      setOnAccount(false)
+      setTurnOff('idle')
+    } catch {
+      setTurnOff('failed')
+    }
+  }
+
+  if (method && !retrying) {
     return (
       <div
         role="status"
@@ -96,11 +133,24 @@ export default function YearEndReminderCard({ year }: { year: number }) {
           <span className="font-medium text-gray-900 dark:text-zinc-100">
             Reminder set
           </span>{' '}
-          {saved === 'email'
-            ? `We'll email you on ${REMINDER_DATE_LABEL}.`
-            : `for ${REMINDER_DATE_LABEL} in your calendar.`}
+          {turnOff === 'failed'
+            ? "We couldn't turn it off. Please try again."
+            : method === 'email'
+              ? `We'll email you on ${REMINDER_DATE_LABEL}.`
+              : `for ${REMINDER_DATE_LABEL} in your calendar.`}
         </p>
-        {saved !== 'email' && (
+        {method === 'email' && accountReminder === true && (
+          <button
+            type="button"
+            onClick={handleTurnOff}
+            disabled={turnOff === 'busy'}
+            className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 text-xs text-gray-500 underline underline-offset-2 hover:text-gray-900 disabled:cursor-default disabled:opacity-60 dark:text-zinc-500 dark:hover:text-zinc-100"
+          >
+            {turnOff === 'busy' && <Loader2 className="size-3 animate-spin" />}
+            Turn off
+          </button>
+        )}
+        {method !== 'email' && (
           <button
             type="button"
             onClick={() => setRetrying(true)}
@@ -132,28 +182,38 @@ export default function YearEndReminderCard({ year }: { year: number }) {
       </div>
 
       <form onSubmit={handleEmail} className="mt-3">
-        <label htmlFor={emailId} className="sr-only">
-          Email for your reminder
-        </label>
+        {!accountEmail && (
+          <label htmlFor={emailId} className="sr-only">
+            Email for your reminder
+          </label>
+        )}
         <div className="flex flex-col gap-2 @min-[14rem]:flex-row">
-          <Input
-            id={emailId}
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={!!error || undefined}
-            className="bg-white dark:bg-[#141414]"
-          />
+          {!accountEmail && (
+            <Input
+              id={emailId}
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={!!error || undefined}
+              className="bg-white dark:bg-[#141414]"
+            />
+          )}
           <Button type="submit" disabled={isSending}>
             {isSending && <Loader2 className="size-4 animate-spin" />}
             Remind me
           </Button>
         </div>
         <p className="mt-2 text-xs text-gray-500 dark:text-zinc-500">
-          We&apos;ll email you once, on {REMINDER_DATE_LABEL}. Nothing else.{' '}
+          We&apos;ll email{' '}
+          {accountEmail ? (
+            <span className="break-all">{accountEmail}</span>
+          ) : (
+            'you'
+          )}{' '}
+          once, on {REMINDER_DATE_LABEL}. Nothing else.{' '}
           <Link
             href="/privacy"
             target="_blank"

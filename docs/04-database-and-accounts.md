@@ -48,7 +48,7 @@ We chose codes over emailed links. Trips live only in the browser that made them
 | `/videos` (to build) | What the animated video is, examples and price                                                | Open                                 | Open                                                | Index   |
 | `/privacy`, `/terms` | Policies. `/terms` returns 404 until accounts are on; refunds are added before the first sale | Open                                 | Open                                                | Index   |
 | `/sign-in`           | Email code or Google. `?next=/path` returns you afterwards                                    | Form                                 | Redirect to `next`, or `/account`                   | Noindex |
-| `/account`           | Your videos (download again), email, sign out, delete account                                 | Redirect to `/sign-in?next=/account` | Open                                                | Noindex |
+| `/account`           | Your videos (download again), year-end reminder on or off, email, sign out, delete account    | Redirect to `/sign-in?next=/account` | Open                                                | Noindex |
 | `/admin/*`           | Analytics and feedback                                                                        | Password for now                     | 404 for everyone but the owner, once on Better Auth | Noindex |
 
 Rules:

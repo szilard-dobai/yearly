@@ -67,7 +67,7 @@ export function useCalendarSync({
   )
 
   const run = useCallback(
-    async (refresh: boolean): Promise<void> => {
+    async function runSync(refresh: boolean): Promise<void> {
       const current = accountRef.current
       if (!current) return
       if (runningRef.current) {
@@ -115,7 +115,10 @@ export function useCalendarSync({
         } else {
           console.error('Failed to sync calendar:', error)
           setStatus('error')
-          retryRef.current = setTimeout(() => void run(true), RETRY_DELAY_MS)
+          retryRef.current = setTimeout(
+            () => void runSync(true),
+            RETRY_DELAY_MS
+          )
         }
       } finally {
         runningRef.current = false
@@ -123,7 +126,7 @@ export function useCalendarSync({
 
       const next = queuedRef.current ?? followUp
       queuedRef.current = null
-      if (next !== null) await run(next)
+      if (next !== null) await runSync(next)
     },
     [chooseFirstSync]
   )

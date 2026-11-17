@@ -61,7 +61,9 @@ describe('ImagePreviewModal video offer', () => {
       renderModal(exportType)
 
       expect(
-        screen.getByRole('button', { name: /Make it a video/ })
+        screen.getByRole('button', {
+          name: /Make it a video.*Free instead of \$2\.99.*when you join before launch/,
+        })
       ).toBeInTheDocument()
     }
   )

@@ -34,7 +34,15 @@ describe('videos page', () => {
       })
     ).toBeInTheDocument()
     expect(screen.getByText('Coming in early December')).toBeInTheDocument()
-    expect(screen.getByText('$2.99 per pack, paid once.')).toBeInTheDocument()
+    expect(screen.getByText('Free instead of $2.99')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'for your first video when you join the list before launch'
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/After that, \$2\.99 per pack, paid once\./)
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Year pack' })
     ).toBeInTheDocument()
@@ -48,7 +56,7 @@ describe('videos page', () => {
     render(<VideosPage />)
 
     expect(
-      screen.getByText('Your calendar and stats images stay free.')
+      screen.getByText(/Your calendar and stats images stay free\./)
     ).toBeInTheDocument()
   })
 

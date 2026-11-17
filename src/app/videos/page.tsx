@@ -1,5 +1,6 @@
 import { ProductName, withProductName } from '@/components/ProductName'
 import { ExampleVideo } from '@/components/ExampleVideo'
+import { FreeVideoPrice } from '@/components/FreeVideoPrice'
 import Header from '@/components/Header'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
 import { VideoWaitlistForm } from '@/components/VideoWaitlistForm'
@@ -16,7 +17,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 const title = 'Your year in travel, animated'
-const description = `A short video of your calendar filling up with flags, then your travel stats. ${formatPrice(VIDEO_PACK_PRICE)} per pack, paid once. Launching in ${VIDEO_LAUNCH_LABEL} 2026.`
+const description = `A short video of your calendar filling up with flags, then your travel stats. Join the list before launch in ${VIDEO_LAUNCH_LABEL} 2026 and your first video is free. Then ${formatPrice(VIDEO_PACK_PRICE)} per pack.`
 
 export const metadata: Metadata = {
   title,
@@ -187,12 +188,21 @@ export default function VideosPage() {
               flag by flag, then your numbers count up. Each video is sized for
               Reels, Stories and TikTok.
             </p>
-            <p className="mb-8 text-gray-900 dark:text-zinc-100">
-              <span className="font-medium">{PRICE} per pack, paid once.</span>{' '}
-              <span className="text-gray-600 dark:text-zinc-400">
-                Your calendar and stats images stay free.
-              </span>
-            </p>
+            <div className="mb-8">
+              <p className="mb-2 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1">
+                <FreeVideoPrice
+                  className="text-3xl font-medium text-gray-900 dark:text-zinc-100"
+                  freeClassName="text-emerald-600 dark:text-emerald-400"
+                />
+                <span className="text-lg text-gray-900 dark:text-zinc-100">
+                  for your first video when you join the list before launch
+                </span>
+              </p>
+              <p className="text-gray-600 dark:text-zinc-400">
+                After that, {PRICE} per pack, paid once. Your calendar and stats
+                images stay free.
+              </p>
+            </div>
             <div id="join" className="mx-auto max-w-xl scroll-mt-24">
               <VideoWaitlistForm />
             </div>

@@ -57,9 +57,15 @@ describe('HomepageVideoTeaser', () => {
       screen.getByRole('region', { name: 'Your year, animated' })
     ).toBeInTheDocument()
     expect(screen.getByText('Coming in early December')).toBeInTheDocument()
+    expect(screen.getByText('Free instead of $2.99')).toBeInTheDocument()
     expect(
       screen.getByText(
-        'Join the waitlist from your preview and your first video is free. Your images stay free.'
+        'for your first video when you join the list before launch'
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Join the list from your preview. Your images stay free.'
       )
     ).toBeInTheDocument()
   })

@@ -4,6 +4,7 @@ import { ProductName } from '@/components/ProductName'
 import { Emoji } from '@/components/Emoji'
 import AcquisitionSurvey from '@/components/AcquisitionSurvey'
 import FeedbackPrompt from '@/components/FeedbackPrompt'
+import { FreeVideoPrice } from '@/components/FreeVideoPrice'
 import {
   Dialog,
   DialogContent,
@@ -376,7 +377,14 @@ function ImagePreviewContent({
                   </span>
                 </span>
                 <span className="block text-xs text-gray-600 dark:text-zinc-400">
-                  {VIDEO_OFFER_COPY[exportType]} Preview it free.
+                  {VIDEO_OFFER_COPY[exportType]}
+                </span>
+                <span className="mt-1 flex flex-wrap items-baseline gap-x-1.5 text-xs text-gray-600 dark:text-zinc-400">
+                  <FreeVideoPrice
+                    className="text-sm font-semibold text-gray-900 dark:text-zinc-100"
+                    freeClassName="text-emerald-600 dark:text-emerald-400"
+                  />
+                  when you join before launch
                 </span>
               </span>
               <ChevronRight className="size-4 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5 dark:text-zinc-500" />

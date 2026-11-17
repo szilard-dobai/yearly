@@ -1,5 +1,6 @@
 'use client'
 
+import { FreeVideoPrice } from '@/components/FreeVideoPrice'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -28,7 +29,7 @@ import {
   type VideoKind,
   type VideoTheme,
 } from '@/lib/video'
-import { formatPrice, VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
+import { VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
 import { joinWaitlist } from '@/lib/waitlist/client'
 import { Player } from '@remotion/player'
 import { Check, CheckCircle2, Loader2, Sparkles } from 'lucide-react'
@@ -257,10 +258,11 @@ export default function AnimatedVideoDialog({
               <>
                 <Button size="lg" className="w-full" onClick={handleBuy}>
                   Get the {isMonthly ? 'video' : 'videos'} ·{' '}
-                  {formatPrice(price)}
+                  <FreeVideoPrice price={price} />
                 </Button>
                 <p className="mt-3 text-center text-xs text-gray-500 dark:text-zinc-500">
-                  Your images stay free.
+                  Free when you join the list before launch. Your images stay
+                  free.
                 </p>
               </>
             )}

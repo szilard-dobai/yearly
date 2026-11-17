@@ -123,7 +123,9 @@ describe('AnimatedVideoDialog', () => {
     ).not.toBeInTheDocument()
 
     await user.click(
-      screen.getByRole('button', { name: 'Get the video · $2.99' })
+      screen.getByRole('button', {
+        name: 'Get the video · Free instead of $2.99',
+      })
     )
 
     expect(trackEvent).toHaveBeenCalledWith('animated_video_buy_click', {
@@ -140,8 +142,15 @@ describe('AnimatedVideoDialog', () => {
     const user = userEvent.setup()
     renderDialog()
 
+    expect(
+      screen.getByText(
+        'Free when you join the list before launch. Your images stay free.'
+      )
+    ).toBeVisible()
     await user.click(
-      screen.getByRole('button', { name: 'Get the videos · $2.99' })
+      screen.getByRole('button', {
+        name: 'Get the videos · Free instead of $2.99',
+      })
     )
 
     expect(trackEvent).toHaveBeenCalledWith('animated_video_buy_click', {

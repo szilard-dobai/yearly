@@ -1,6 +1,7 @@
 'use client'
 
 import { AnimatedSection } from '@/components/AnimatedSection'
+import { FreeVideoPrice } from '@/components/FreeVideoPrice'
 import { TrackingLink } from '@/components/HomepageClient'
 import { HomepageExampleImage } from '@/components/HomepageExampleImage'
 import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
@@ -65,6 +66,15 @@ export function HomepageVideoTeaser() {
             A short video made from your own trips, for Reels, Stories and
             TikTok.
           </p>
+          <p className="mb-6 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 md:justify-start">
+            <FreeVideoPrice
+              className="text-2xl font-medium text-gray-900 dark:text-zinc-100"
+              freeClassName="text-emerald-600 dark:text-emerald-400"
+            />
+            <span className="text-gray-600 dark:text-zinc-400">
+              for your first video when you join the list before launch
+            </span>
+          </p>
           <TrackingLink
             href="/create"
             linkType="video_teaser"
@@ -74,8 +84,7 @@ export function HomepageVideoTeaser() {
             <ArrowRight className="size-4" />
           </TrackingLink>
           <p className="mt-3 text-sm text-gray-500 dark:text-zinc-500">
-            Join the waitlist from your preview and your first video is free.
-            Your images stay free.
+            Join the list from your preview. Your images stay free.
           </p>
           <TrackingLink
             href="/videos"

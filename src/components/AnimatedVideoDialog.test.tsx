@@ -1,3 +1,4 @@
+import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
 import { monthTimeline } from '@/components/video/MonthVideo'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
@@ -36,6 +37,10 @@ vi.mock('@/lib/tracking/device-id', () => ({
 
 const fetchMock = vi.fn()
 
+const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }))
+
+vi.mock('@/lib/auth/client', () => ({ authClient: { getSession } }))
+
 const calendarData: CalendarData = {
   visits: [
     { id: '1', countryCode: 'JP', date: new Date(2026, 2, 20) },
@@ -67,6 +72,7 @@ function jsonResponse(body: unknown, status = 200) {
 describe('AnimatedVideoDialog', () => {
   beforeEach(() => {
     fetchMock.mockReset()
+    getSession.mockReset().mockResolvedValue({ data: null })
     vi.mocked(trackEvent).mockClear()
     vi.stubGlobal('fetch', fetchMock)
     document.documentElement.classList.add('dark')
@@ -211,6 +217,62 @@ describe('AnimatedVideoDialog', () => {
       price: 2.99,
       launchOffer: 'first_video_free',
     })
+  })
+
+  it('joins with the signed-in email without asking for one', async () => {
+    const user = userEvent.setup()
+    fetchMock.mockReturnValue(jsonResponse({ success: true }, 201))
+    getSession.mockResolvedValue({
+      data: { user: { id: 'ana', email: 'ana@example.com' } },
+    })
+    render(
+      <AccountsEnabledProvider enabled>
+        <SettingsProvider>
+          <AnimatedVideoDialog
+            open
+            onOpenChange={vi.fn()}
+            calendarData={calendarData}
+            year={2026}
+            exportType="calendar"
+            price={2.99}
+          />
+        </SettingsProvider>
+      </AccountsEnabledProvider>
+    )
+
+    await user.click(screen.getByRole('button', { name: /Get the videos/ }))
+    const input = screen.getByLabelText(
+      /Join the list to get your first video free/
+    )
+    expect(await screen.findByDisplayValue('ana@example.com')).toBe(input)
+    expect(input).toHaveAttribute('readonly')
+    expect(
+      screen.getByText(
+        /This is the email you sign in with\. We'll only use it for this\./
+      )
+    ).toBeVisible()
+
+    await user.type(input, 'other@example.com')
+    await user.click(screen.getByRole('button', { name: 'Notify me' }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      "You're on the list."
+    )
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).email).toBe(
+      'ana@example.com'
+    )
+  })
+
+  it('does not check for a session while accounts are off', async () => {
+    const user = userEvent.setup()
+    renderDialog()
+
+    await user.click(screen.getByRole('button', { name: /Get the videos/ }))
+
+    expect(getSession).not.toHaveBeenCalled()
+    expect(
+      screen.getByLabelText(/Join the list to get your first video free/)
+    ).not.toHaveAttribute('readonly')
   })
 
   it('shows why a sign-up failed', async () => {

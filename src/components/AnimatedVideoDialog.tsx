@@ -21,6 +21,7 @@ import { yearFillTimeline } from '@/components/video/YearFillVideo'
 import { MONTH_NAMES } from '@/lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
+import { useAccountEmail } from '@/lib/hooks/useAccountEmail'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import {
@@ -100,6 +101,7 @@ export default function AnimatedVideoDialog({
   price,
 }: AnimatedVideoDialogProps) {
   const { settings } = useSettings()
+  const accountEmail = useAccountEmail()
   const isMonthly = exportType === 'monthly' && month !== undefined
   const [kind, setKind] = useState<VideoKind>(
     isMonthly ? 'month' : exportType === 'statistics' ? 'stats' : 'year'
@@ -167,7 +169,7 @@ export default function AnimatedVideoDialog({
     setError(null)
     try {
       await joinWaitlist({
-        email,
+        email: accountEmail ?? email,
         feature: 'animated_video',
         context: { ...context, launchOffer: 'first_video_free' },
       })
@@ -294,10 +296,11 @@ export default function AnimatedVideoDialog({
                     required
                     autoComplete="email"
                     placeholder="you@example.com"
-                    value={email}
+                    value={accountEmail ?? email}
+                    readOnly={accountEmail !== null}
                     onChange={(e) => setEmail(e.target.value)}
                     aria-invalid={!!error || undefined}
-                    className="bg-white dark:bg-[#141414]"
+                    className="bg-white read-only:bg-gray-100 read-only:text-gray-600 dark:bg-[#141414] dark:read-only:bg-white/5 dark:read-only:text-zinc-400"
                   />
                   <Button type="submit" disabled={isSending}>
                     {isSending && <Loader2 className="size-4 animate-spin" />}
@@ -305,7 +308,9 @@ export default function AnimatedVideoDialog({
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-zinc-500">
-                  We&apos;ll only use your email for this.{' '}
+                  {accountEmail
+                    ? "This is the email you sign in with. We'll only use it for this."
+                    : "We'll only use your email for this."}{' '}
                   <Link
                     href="/privacy"
                     target="_blank"

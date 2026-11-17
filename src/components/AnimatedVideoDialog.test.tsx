@@ -4,7 +4,7 @@ import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AnimatedVideoDialog from './AnimatedVideoDialog'
@@ -219,13 +219,23 @@ describe('AnimatedVideoDialog', () => {
     })
   })
 
-  it('joins with the signed-in email without asking for one', async () => {
-    const user = userEvent.setup()
-    fetchMock.mockReturnValue(jsonResponse({ success: true }, 201))
+  function mockWaitlistApi({ joined = false } = {}) {
+    fetchMock.mockImplementation((_url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET'
+      if (method === 'GET') return jsonResponse({ joined })
+      return jsonResponse({ success: true }, method === 'POST' ? 201 : 200)
+    })
+  }
+
+  function requestsWith(method: string) {
+    return fetchMock.mock.calls.filter(([, init]) => init?.method === method)
+  }
+
+  function renderSignedIn() {
     getSession.mockResolvedValue({
       data: { user: { id: 'ana', email: 'ana@example.com' } },
     })
-    render(
+    return render(
       <AccountsEnabledProvider enabled>
         <SettingsProvider>
           <AnimatedVideoDialog
@@ -239,7 +249,19 @@ describe('AnimatedVideoDialog', () => {
         </SettingsProvider>
       </AccountsEnabledProvider>
     )
+  }
 
+  it('joins with the signed-in email without asking for one', async () => {
+    const user = userEvent.setup()
+    mockWaitlistApi()
+    renderSignedIn()
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/waitlist?feature=animated_video',
+        { cache: 'no-store' }
+      )
+    )
     await user.click(screen.getByRole('button', { name: /Get the videos/ }))
     const input = screen.getByLabelText(
       /Join the list to get your first video free/
@@ -258,9 +280,79 @@ describe('AnimatedVideoDialog', () => {
     expect(await screen.findByRole('status')).toHaveTextContent(
       "You're on the list."
     )
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body).email).toBe(
+    expect(JSON.parse(requestsWith('POST')[0][1].body).email).toBe(
       'ana@example.com'
     )
+  })
+
+  it('shows a signed-in person that they are already on the list', async () => {
+    mockWaitlistApi({ joined: true })
+    renderSignedIn()
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      "You're on the list."
+    )
+    expect(
+      screen.queryByRole('button', { name: /Get the videos/ })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Remove me from the list' })
+    ).toBeVisible()
+  })
+
+  it('lets a signed-in person leave the list', async () => {
+    const user = userEvent.setup()
+    mockWaitlistApi({ joined: true })
+    renderSignedIn()
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Remove me from the list' })
+    )
+
+    expect(
+      await screen.findByRole('button', { name: /Get the videos/ })
+    ).toBeVisible()
+    expect(requestsWith('DELETE')).toEqual([
+      ['/api/waitlist?feature=animated_video', { method: 'DELETE' }],
+    ])
+    expect(trackEvent).toHaveBeenCalledWith('animated_video_waitlist_leave')
+  })
+
+  it('says when leaving the list failed', async () => {
+    const user = userEvent.setup()
+    fetchMock.mockImplementation((_url: string, init?: RequestInit) =>
+      init?.method === 'DELETE'
+        ? jsonResponse({ error: 'Failed' }, 500)
+        : jsonResponse({ joined: true })
+    )
+    renderSignedIn()
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Remove me from the list' })
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "We couldn't remove you. Please try again."
+    )
+    expect(screen.getByRole('status')).toHaveTextContent("You're on the list.")
+  })
+
+  it('does not offer to leave the list when signed out', async () => {
+    const user = userEvent.setup()
+    fetchMock.mockReturnValue(jsonResponse({ success: true }, 201))
+    renderDialog()
+
+    await user.click(screen.getByRole('button', { name: /Get the videos/ }))
+    await user.type(
+      screen.getByLabelText(/Join the list to get your first video free/),
+      'me@example.com'
+    )
+    await user.click(screen.getByRole('button', { name: 'Notify me' }))
+
+    expect(await screen.findByRole('status')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Remove me from the list' })
+    ).not.toBeInTheDocument()
   })
 
   it('does not check for a session while accounts are off', async () => {

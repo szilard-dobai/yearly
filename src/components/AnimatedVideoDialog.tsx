@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { VideoWaitlistJoined } from '@/components/VideoWaitlistJoined'
 import { monthTimeline } from '@/components/video/MonthVideo'
 import {
   PreviewVideo,
@@ -31,9 +32,10 @@ import {
   type VideoTheme,
 } from '@/lib/video'
 import { VIDEO_LAUNCH_LABEL } from '@/lib/video-offer'
-import { joinWaitlist } from '@/lib/waitlist/client'
+import { joinWaitlist, leaveWaitlist } from '@/lib/waitlist/client'
+import { useWaitlistStatus } from '@/lib/waitlist/useWaitlistStatus'
 import { Player } from '@remotion/player'
-import { Check, CheckCircle2, Loader2, Sparkles } from 'lucide-react'
+import { Check, Loader2, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { type FormEvent, useMemo, useState } from 'react'
 
@@ -108,6 +110,10 @@ export default function AnimatedVideoDialog({
   )
   const [theme, setTheme] = useState<VideoTheme>(initialTheme)
   const [step, setStep] = useState<Step>('offer')
+  const [joinedOnAccount, setJoinedOnAccount] = useWaitlistStatus(
+    'animated_video',
+    accountEmail
+  )
   const [email, setEmail] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -174,12 +180,21 @@ export default function AnimatedVideoDialog({
         context: { ...context, launchOffer: 'first_video_free' },
       })
       setStep('joined')
+      if (accountEmail) setJoinedOnAccount(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setIsSending(false)
     }
   }
+
+  const handleLeave = async () => {
+    await leaveWaitlist('animated_video')
+    setJoinedOnAccount(false)
+    setStep('offer')
+  }
+
+  const shownStep: Step = joinedOnAccount === true ? 'joined' : step
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -256,7 +271,7 @@ export default function AnimatedVideoDialog({
               ))}
             </ul>
 
-            {step === 'offer' && (
+            {shownStep === 'offer' && (
               <>
                 <Button size="lg" className="w-full" onClick={handleBuy}>
                   Get the {isMonthly ? 'video' : 'videos'} ·{' '}
@@ -269,7 +284,7 @@ export default function AnimatedVideoDialog({
               </>
             )}
 
-            {step === 'waitlist' && (
+            {shownStep === 'waitlist' && (
               <form
                 onSubmit={handleJoin}
                 className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-white/8 dark:bg-white/5"
@@ -330,20 +345,11 @@ export default function AnimatedVideoDialog({
               </form>
             )}
 
-            {step === 'joined' && (
-              <div
-                role="status"
-                className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-white/8 dark:bg-white/5 dark:text-zinc-300"
-              >
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-500" />
-                <p>
-                  <span className="font-medium text-gray-900 dark:text-zinc-100">
-                    You&apos;re on the list.
-                  </span>{' '}
-                  We&apos;ll email you when videos launch in{' '}
-                  {VIDEO_LAUNCH_LABEL}. Your first video is free.
-                </p>
-              </div>
+            {shownStep === 'joined' && (
+              <VideoWaitlistJoined
+                onLeave={accountEmail ? handleLeave : undefined}
+                className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-white/8 dark:bg-white/5 dark:text-zinc-300"
+              />
             )}
           </div>
         </div>

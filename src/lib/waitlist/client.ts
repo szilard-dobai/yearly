@@ -27,3 +27,22 @@ export async function joinWaitlist(input: {
 
   trackEvent('animated_video_waitlist_join', { ...input.context })
 }
+
+export async function getWaitlistStatus(
+  feature: WaitlistFeature
+): Promise<boolean> {
+  const response = await fetch(`/api/waitlist?feature=${feature}`, {
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error('Failed to load the waitlist')
+  const data: { joined?: unknown } = await response.json()
+  return data.joined === true
+}
+
+export async function leaveWaitlist(feature: WaitlistFeature): Promise<void> {
+  const response = await fetch(`/api/waitlist?feature=${feature}`, {
+    method: 'DELETE',
+  })
+  if (!response.ok) throw new Error('Something went wrong, please try again')
+  trackEvent('animated_video_waitlist_leave')
+}

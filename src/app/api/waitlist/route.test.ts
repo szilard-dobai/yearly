@@ -1,10 +1,11 @@
 import { MongoServerError } from 'mongodb'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { POST } from './route'
+import { DELETE, GET, POST } from './route'
 
 const collection = {
   countDocuments: vi.fn(),
   updateOne: vi.fn(),
+  deleteOne: vi.fn(),
 }
 
 const notifyWaitlistToSlack = vi.fn()
@@ -213,5 +214,92 @@ describe('POST /api/waitlist', () => {
     const response = await POST(postRequest(validBody))
 
     expect(response.status).toBe(201)
+  })
+})
+
+function accountRequest(
+  method: 'GET' | 'DELETE',
+  query = '?feature=animated_video',
+  headers: Record<string, string> = { 'sec-fetch-site': 'same-origin' }
+) {
+  return new Request(`http://localhost/api/waitlist${query}`, {
+    method,
+    headers,
+  })
+}
+
+describe('the signed-in waitlist entry', () => {
+  beforeEach(() => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
+    collection.countDocuments.mockReset().mockResolvedValue(1)
+    collection.deleteOne.mockReset().mockResolvedValue({ deletedCount: 1 })
+    getSession.mockReset().mockResolvedValue({
+      user: { email: 'Ana@Example.com' },
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('says whether the signed-in email is on the list', async () => {
+    const response = await GET(accountRequest('GET'))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(await response.json()).toEqual({ joined: true })
+    expect(collection.countDocuments).toHaveBeenCalledWith(
+      { feature: 'animated_video', email: 'ana@example.com' },
+      { limit: 1 }
+    )
+
+    collection.countDocuments.mockResolvedValue(0)
+    expect(await (await GET(accountRequest('GET'))).json()).toEqual({
+      joined: false,
+    })
+  })
+
+  it('removes the signed-in email from the list', async () => {
+    const response = await DELETE(accountRequest('DELETE'))
+
+    expect(response.status).toBe(200)
+    expect(collection.deleteOne).toHaveBeenCalledWith({
+      feature: 'animated_video',
+      email: 'ana@example.com',
+    })
+  })
+
+  it('needs someone signed in', async () => {
+    getSession.mockResolvedValue(null)
+
+    expect((await GET(accountRequest('GET'))).status).toBe(401)
+    expect((await DELETE(accountRequest('DELETE'))).status).toBe(401)
+    expect(collection.deleteOne).not.toHaveBeenCalled()
+  })
+
+  it('returns 404 while accounts are off', async () => {
+    vi.stubEnv('ACCOUNTS_ENABLED', '')
+
+    expect((await GET(accountRequest('GET'))).status).toBe(404)
+    expect((await DELETE(accountRequest('DELETE'))).status).toBe(404)
+    expect(getSession).not.toHaveBeenCalled()
+  })
+
+  it('rejects unknown features', async () => {
+    expect((await GET(accountRequest('GET', '?feature=other'))).status).toBe(
+      400
+    )
+    expect((await DELETE(accountRequest('DELETE', ''))).status).toBe(400)
+  })
+
+  it('rejects removals from other sites', async () => {
+    const response = await DELETE(
+      accountRequest('DELETE', '?feature=animated_video', {
+        'sec-fetch-site': 'cross-site',
+      })
+    )
+
+    expect(response.status).toBe(403)
+    expect(collection.deleteOne).not.toHaveBeenCalled()
   })
 })

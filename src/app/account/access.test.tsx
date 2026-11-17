@@ -22,6 +22,10 @@ vi.mock('@/components/account/DeleteAccount', () => ({
   default: () => null,
 }))
 
+vi.mock('@/components/account/AccountReminder', () => ({
+  default: ({ year }: { year: number }) => <p>Reminder card for {year}</p>,
+}))
+
 vi.mock('@/lib/tracking', () => ({ trackEvent: vi.fn() }))
 
 vi.mock('next/headers', () => ({
@@ -79,6 +83,36 @@ describe('account pages', () => {
       render(await AccountPage())
 
       expect(screen.getByText('ana@example.com')).toBeInTheDocument()
+    })
+
+    describe('year-end reminder', () => {
+      afterEach(() => {
+        vi.useRealTimers()
+      })
+
+      it("shows this year's reminder while sign-ups are open", async () => {
+        vi.useFakeTimers({
+          toFake: ['Date'],
+          now: new Date('2026-12-01T11:59:59Z'),
+        })
+        getSession.mockResolvedValue(SESSION)
+
+        render(await AccountPage())
+
+        expect(screen.getByText('Reminder card for 2026')).toBeInTheDocument()
+      })
+
+      it('hides it once sign-ups for the year close', async () => {
+        vi.useFakeTimers({
+          toFake: ['Date'],
+          now: new Date('2026-12-01T12:00:00Z'),
+        })
+        getSession.mockResolvedValue(SESSION)
+
+        render(await AccountPage())
+
+        expect(screen.queryByText(/Reminder card/)).not.toBeInTheDocument()
+      })
     })
   })
 

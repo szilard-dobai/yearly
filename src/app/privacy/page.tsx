@@ -551,7 +551,24 @@ export default function PrivacyPage() {
                   provider&apos;s backups are gone within 7 days. Trips on your
                   device stay there until you clear them. Deleting your account
                   doesn&apos;t remove your email from the video waitlist or the
-                  year-end reminder, so ask us if you&apos;d like that too.
+                  year-end reminder, so remove it from those first, as below, or
+                  ask us.
+                </li>
+              )}
+              {accounts && (
+                <li>
+                  While you&apos;re signed in, you can remove the email you sign
+                  in with yourself. Turn off the year-end reminder on your{' '}
+                  <Link href="/account" className={linkClassName}>
+                    account page
+                  </Link>
+                  , and leave the video waitlist with{' '}
+                  <span className="font-medium">Remove me from the list</span>{' '}
+                  on the{' '}
+                  <Link href="/videos" className={linkClassName}>
+                    videos page
+                  </Link>
+                  .
                 </li>
               )}
               <li>

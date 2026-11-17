@@ -19,18 +19,42 @@ vi.mock('@/lib/tracking/device-id', () => ({
 
 const fetchMock = vi.fn()
 
+function json(body: unknown, status = 200) {
+  return Promise.resolve(new Response(JSON.stringify(body), { status }))
+}
+
+function mockWaitlistApi({ joined = false } = {}) {
+  fetchMock.mockImplementation((_url: string, init?: RequestInit) => {
+    const method = init?.method ?? 'GET'
+    if (method === 'GET') return json({ joined })
+    return json({ success: true }, method === 'POST' ? 201 : 200)
+  })
+}
+
+function requestsWith(method: string) {
+  return fetchMock.mock.calls.filter(([, init]) => init?.method === method)
+}
+
 function sentEmail() {
-  return JSON.parse(fetchMock.mock.calls[0][1].body).email
+  return JSON.parse(requestsWith('POST')[0][1].body).email
+}
+
+function renderSignedIn() {
+  getSession.mockResolvedValue({
+    data: { user: { id: 'ana', email: 'ana@example.com' } },
+  })
+  return render(
+    <AccountsEnabledProvider enabled>
+      <VideoWaitlistForm />
+    </AccountsEnabledProvider>
+  )
 }
 
 describe('VideoWaitlistForm', () => {
   beforeEach(() => {
     getSession.mockReset().mockResolvedValue({ data: null })
-    fetchMock
-      .mockReset()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ success: true }), { status: 201 })
-      )
+    fetchMock.mockReset()
+    mockWaitlistApi()
     vi.stubGlobal('fetch', fetchMock)
   })
 
@@ -57,18 +81,14 @@ describe('VideoWaitlistForm', () => {
     expect(
       screen.queryByText(/This is the email you sign in with/)
     ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Remove me from the list' })
+    ).not.toBeInTheDocument()
   })
 
   it('uses the signed-in email without asking for one', async () => {
     const user = userEvent.setup()
-    getSession.mockResolvedValue({
-      data: { user: { id: 'ana', email: 'ana@example.com' } },
-    })
-    render(
-      <AccountsEnabledProvider enabled>
-        <VideoWaitlistForm />
-      </AccountsEnabledProvider>
-    )
+    renderSignedIn()
 
     const input = screen.getByLabelText(/Join the list/)
     expect(await screen.findByDisplayValue('ana@example.com')).toBe(input)
@@ -83,6 +103,29 @@ describe('VideoWaitlistForm', () => {
 
     expect(await screen.findByRole('status')).toBeInTheDocument()
     expect(sentEmail()).toBe('ana@example.com')
+    expect(
+      screen.getByRole('button', { name: 'Remove me from the list' })
+    ).toBeVisible()
+  })
+
+  it('shows a signed-in person who is already on the list, and lets them leave', async () => {
+    const user = userEvent.setup()
+    mockWaitlistApi({ joined: true })
+    renderSignedIn()
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      "You're on the list."
+    )
+    expect(screen.queryByLabelText(/Join the list/)).not.toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Remove me from the list' })
+    )
+
+    expect(await screen.findByLabelText(/Join the list/)).toBeVisible()
+    expect(requestsWith('DELETE')).toEqual([
+      ['/api/waitlist?feature=animated_video', { method: 'DELETE' }],
+    ])
   })
 
   it('does not check for a session while accounts are off', () => {

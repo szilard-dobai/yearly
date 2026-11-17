@@ -1,4 +1,6 @@
+import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
 import { trackEvent } from '@/lib/tracking'
+import { textAcrossElements } from '@/test/test-utils'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -14,6 +16,10 @@ vi.mock('@/lib/tracking/device-id', () => ({
 }))
 
 const fetchMock = vi.fn()
+
+const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }))
+
+vi.mock('@/lib/auth/client', () => ({ authClient: { getSession } }))
 const createObjectURL = vi.fn<(blob: Blob) => string>(() => 'blob:reminder')
 const revokeObjectURL = vi.fn()
 const STORAGE_KEY = 'yearly_year_end_reminder'
@@ -39,6 +45,7 @@ describe('YearEndReminderCard', () => {
     setToday(new Date(2026, 10, 7, 12))
     localStorage.clear()
     fetchMock.mockReset().mockImplementation(() => jsonResponse({}, 201))
+    getSession.mockReset().mockResolvedValue({ data: null })
     createObjectURL.mockClear()
     vi.mocked(trackEvent).mockClear()
     vi.stubGlobal('fetch', fetchMock)
@@ -281,5 +288,145 @@ describe('YearEndReminderCard', () => {
     await user.click(screen.getByRole('button', { name: 'Apple / Outlook' }))
 
     expect(screen.getByRole('status')).toHaveTextContent('Reminder set')
+  })
+
+  describe('when signed in', () => {
+    function mockReminderApi({ set = false } = {}) {
+      fetchMock.mockImplementation((_url: string, init?: RequestInit) => {
+        const method = init?.method ?? 'GET'
+        if (method === 'GET') return jsonResponse({ set })
+        return jsonResponse({ success: true }, method === 'POST' ? 201 : 200)
+      })
+    }
+
+    function requestsWith(method: string) {
+      return fetchMock.mock.calls.filter(([, init]) => init?.method === method)
+    }
+
+    function renderSignedIn() {
+      getSession.mockResolvedValue({
+        data: { user: { id: 'ana', email: 'ana@example.com' } },
+      })
+      return render(
+        <AccountsEnabledProvider enabled>
+          <YearEndReminderCard year={2026} />
+        </AccountsEnabledProvider>
+      )
+    }
+
+    it('sets the reminder with one tap, without asking for an email', async () => {
+      const user = userEvent.setup()
+      mockReminderApi()
+      renderSignedIn()
+
+      expect(
+        await screen.findByText(
+          textAcrossElements(/We'll email ana@example\.com once, on 1 Dec\./)
+        )
+      ).toBeVisible()
+      expect(
+        screen.queryByLabelText('Email for your reminder')
+      ).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Remind me' }))
+
+      expect(await screen.findByRole('status')).toHaveTextContent(
+        "Reminder set We'll email you on 1 Dec."
+      )
+      expect(JSON.parse(requestsWith('POST')[0][1].body)).toMatchObject({
+        email: 'ana@example.com',
+        year: 2026,
+      })
+      expect(screen.getByRole('button', { name: 'Turn off' })).toBeVisible()
+    })
+
+    it('shows a reminder saved to the account from another device', async () => {
+      mockReminderApi({ set: true })
+      renderSignedIn()
+
+      expect(await screen.findByRole('status')).toHaveTextContent(
+        "Reminder set We'll email you on 1 Dec."
+      )
+      expect(fetchMock).toHaveBeenCalledWith('/api/reminders?year=2026', {
+        cache: 'no-store',
+      })
+    })
+
+    it('turns the reminder off', async () => {
+      const user = userEvent.setup()
+      mockReminderApi({ set: true })
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ 2026: 'email' }))
+      renderSignedIn()
+
+      await user.click(await screen.findByRole('button', { name: 'Turn off' }))
+
+      expect(
+        await screen.findByRole('button', { name: 'Remind me' })
+      ).toBeVisible()
+      expect(requestsWith('DELETE')).toEqual([
+        ['/api/reminders?year=2026', { method: 'DELETE' }],
+      ])
+      expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toEqual({})
+      expect(trackEvent).toHaveBeenCalledWith(
+        'year_end_reminder_email_turn_off',
+        { year: 2026 }
+      )
+    })
+
+    it('says when turning it off failed', async () => {
+      const user = userEvent.setup()
+      fetchMock.mockImplementation((_url: string, init?: RequestInit) =>
+        init?.method === 'DELETE'
+          ? jsonResponse({ error: 'Failed' }, 500)
+          : jsonResponse({ set: true })
+      )
+      renderSignedIn()
+
+      await user.click(await screen.findByRole('button', { name: 'Turn off' }))
+
+      expect(await screen.findByRole('status')).toHaveTextContent(
+        "We couldn't turn it off. Please try again."
+      )
+    })
+
+    it('offers the reminder again when it was turned off elsewhere', async () => {
+      mockReminderApi({ set: false })
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ 2026: 'email' }))
+      renderSignedIn()
+
+      expect(
+        await screen.findByRole('button', { name: 'Remind me' })
+      ).toBeVisible()
+    })
+
+    it("keeps this device's calendar reminder", async () => {
+      mockReminderApi({ set: false })
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ 2026: 'ics' }))
+      renderSignedIn()
+
+      await vi.waitFor(() =>
+        expect(fetchMock).toHaveBeenCalledWith('/api/reminders?year=2026', {
+          cache: 'no-store',
+        })
+      )
+      expect(screen.getByRole('status')).toHaveTextContent(
+        'Reminder set for 1 Dec in your calendar.'
+      )
+    })
+
+    it('does not check the account for other years', async () => {
+      mockReminderApi()
+      renderSignedIn().rerender(
+        <AccountsEnabledProvider enabled>
+          <YearEndReminderCard year={2025} />
+        </AccountsEnabledProvider>
+      )
+
+      await vi.waitFor(() => expect(getSession).toHaveBeenCalled())
+      expect(fetchMock).not.toHaveBeenCalledWith(
+        '/api/reminders?year=2025',
+        expect.anything()
+      )
+    })
   })
 })

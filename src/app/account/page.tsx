@@ -1,11 +1,13 @@
 import AccountCalendar from '@/components/account/AccountCalendar'
 import AccountDetails from '@/components/account/AccountDetails'
+import AccountReminder from '@/components/account/AccountReminder'
 import DeleteAccount from '@/components/account/DeleteAccount'
 import Header from '@/components/Header'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StandardCard } from '@/components/ui/card-variants'
 import { isAccountsEnabled } from '@/lib/auth/config'
 import { getSession } from '@/lib/auth/server'
+import { isOpenReminderYear } from '@/lib/reminders/server'
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
@@ -19,6 +21,8 @@ export default async function AccountPage() {
 
   const session = await getSession()
   if (!session) redirect('/sign-in?next=/account')
+
+  const reminderYear = new Date().getUTCFullYear()
 
   return (
     <>
@@ -39,6 +43,22 @@ export default async function AccountPage() {
               <AccountCalendar userId={session.user.id} />
             </CardContent>
           </StandardCard>
+
+          {isOpenReminderYear(reminderYear) && (
+            <StandardCard>
+              <CardHeader>
+                <CardTitle className="text-base font-medium">
+                  Year-end reminder
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AccountReminder
+                  year={reminderYear}
+                  email={session.user.email}
+                />
+              </CardContent>
+            </StandardCard>
+          )}
 
           <StandardCard>
             <CardHeader>

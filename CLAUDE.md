@@ -23,7 +23,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 
 ## Tech Stack
 
-- **Framework**: Next.js 16.0.1 with App Router
+- **Framework**: Next.js 16.4 with App Router
 - **React**: 19.2
 - **TypeScript**: v5 with strict mode enabled
 - **Styling**: Tailwind CSS v4 with PostCSS

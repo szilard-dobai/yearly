@@ -3,7 +3,11 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CalendarDays } from './days'
 import { clearSyncState, loadSyncState } from './sync'
-import { useCalendarSync } from './useCalendarSync'
+import {
+  RETRY_DELAY_MS,
+  SAVE_DELAY_MS,
+  useCalendarSync,
+} from './useCalendarSync'
 
 const { getSession } = vi.hoisted(() => ({ getSession: vi.fn() }))
 
@@ -61,6 +65,7 @@ describe('useCalendarSync', () => {
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
     vi.clearAllMocks()
   })
@@ -152,6 +157,22 @@ describe('useCalendarSync', () => {
 
     await waitFor(() => expect(result.current.status).toBe('error'))
     expect(onRemoteChange).not.toHaveBeenCalled()
+  })
+
+  it('tries again later when saving fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    failRequests = true
+    const { result } = renderSync(calendar([D1, 'FR']))
+    await waitFor(() => expect(result.current.status).toBe('error'))
+    await act(() => vi.advanceTimersByTimeAsync(SAVE_DELAY_MS))
+    expect(result.current.status).toBe('error')
+
+    failRequests = false
+    await act(() => vi.advanceTimersByTimeAsync(RETRY_DELAY_MS))
+
+    await waitFor(() => expect(result.current.status).toBe('saved'))
+    expect(server).toEqual({ days: { [D1]: ['FR'] }, version: 1 })
   })
 
   it('stops syncing when the session has ended', async () => {

@@ -165,7 +165,8 @@ People can ask on the export modal for one email on `REMINDER_DATE` (1 Dec). `/p
 
 One email to the video waitlist when videos launch, sent from the admin's Video launch email panel ("Send a test", "Run now"); details in `docs/06-paid-videos.md`.
 
-- It's a marketing email, so it needs `EMAIL_POSTAL_ADDRESS` (a PO box, not a home address) and an unsubscribe link. `lib/waitlist/launch-send.ts` refuses to send without them, outside production, with video sales off or after `FREE_VIDEO_LAST_DAY`
+- It only delivers the free video the waitlist form promised ("We'll email you once, when videos are ready"), which makes it a transactional email under CAN-SPAM, so it needs no postal address. Keep prices, other packs and anything else to buy out of its subject and body (`video-launch.test.ts` checks), or it turns into a marketing email that must show one. It still has an unsubscribe link
+- `lib/waitlist/launch-send.ts` refuses to send outside production, with video sales off, without `BETTER_AUTH_SECRET` or after `FREE_VIDEO_LAST_DAY`
 - Unsubscribe links (`/unsubscribe` and the one-click `List-Unsubscribe` header) carry the waitlist ID signed with a key derived from `BETTER_AUTH_SECRET`, never the address; `POST /api/waitlist/unsubscribe` deletes the entry and skips the same-origin check because mail apps call it
 - The send reuses the reminder's claims and idempotency keys (`video-launch/<_id>`), so nobody gets two
 

@@ -3,7 +3,6 @@ import { videoLaunchEmail } from '@/lib/email/video-launch'
 import { testReminderEmailSchema } from '@/lib/reminders/types'
 import { requireAdmin } from '@/lib/tracking/api'
 import { formatFreeVideoLastDay } from '@/lib/video-offer'
-import { getPostalAddress } from '@/lib/waitlist/launch-send'
 import {
   createUnsubscribeToken,
   getUnsubscribeUrls,
@@ -37,7 +36,6 @@ export async function POST(request: Request) {
     await sendEmail(
       videoLaunchEmail(parsed.data.email, {
         freeUntil: formatFreeVideoLastDay(),
-        postalAddress: getPostalAddress() ?? 'EMAIL_POSTAL_ADDRESS is not set',
         unsubscribe: getUnsubscribeUrls(token),
       })
     )

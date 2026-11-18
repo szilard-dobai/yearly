@@ -27,7 +27,6 @@ describe('POST /api/waitlist/launch-email/test', () => {
     requireAdmin.mockResolvedValue(null)
     sendEmail.mockResolvedValue({ id: 'email-1' })
     vi.stubEnv('BETTER_AUTH_SECRET', 'test-secret')
-    vi.stubEnv('EMAIL_POSTAL_ADDRESS', 'PO Box 12, Cluj-Napoca, Romania')
   })
 
   afterEach(() => {
@@ -53,21 +52,11 @@ describe('POST /api/waitlist/launch-email/test', () => {
     expect(response.status).toBe(200)
     const [email, options] = sendEmail.mock.calls[0]
     expect(email.to).toBe('me@example.com')
-    expect(email.text).toContain('Yearly, PO Box 12, Cluj-Napoca, Romania')
+    expect(email.text).toContain('sign in with me@example.com')
     expect(email.headers['List-Unsubscribe']).toContain(
       '/api/waitlist/unsubscribe?token='
     )
     expect(options).toBeUndefined()
-  })
-
-  it('shows where the postal address goes when it is not set yet', async () => {
-    vi.stubEnv('EMAIL_POSTAL_ADDRESS', '')
-
-    await POST(request({ email: 'me@example.com' }))
-
-    expect(sendEmail.mock.calls[0][0].text).toContain(
-      'Yearly, EMAIL_POSTAL_ADDRESS is not set'
-    )
   })
 
   it('rejects an invalid address', async () => {

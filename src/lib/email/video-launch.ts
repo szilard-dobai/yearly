@@ -18,26 +18,24 @@ export function videoLaunchEmail(
   {
     freeUntil,
     unsubscribe,
-    postalAddress,
   }: {
     freeUntil: string
     unsubscribe: { page: string; oneClick: string }
-    postalAddress: string
   }
 ): Email {
   const link = getVideoLaunchLink()
-  const subject = 'Animated videos are here, and your first one is free'
-  const preview = `Sign in with this email by ${freeUntil} and your first pack is free.`
-  const heading = 'Your year, animated'
+  const subject = 'Your free Yearly video is ready'
+  const preview = `Sign in with this email by ${freeUntil} to make it.`
+  const heading = 'Your free video is ready'
   const why =
-    "You joined the waitlist for animated videos on yearly.world. They're ready, and your first pack is free."
+    'You saved a free video when you joined the waitlist on yearly.world. Videos are ready, so you can make yours now.'
   const what =
-    'A year pack has a video of your year and one of your stats. A month pack has one month. Each video comes in dark and light.'
+    'Your free pack can be a whole year (a video of your year and one of your stats) or one month. Each video comes in dark and light.'
   const how = `Open Yearly on the phone or computer where you added your trips. Export an image, tap See it animated, then sign in with ${to}.`
-  const deadline = `Your free pack is waiting until ${freeUntil}.`
+  const deadline = `You can make it until ${freeUntil}.`
   const button = 'Make my free video'
   const footer =
-    "You're getting this because you joined the animated video waitlist on yearly.world."
+    "You're getting this one email because you joined the video waitlist on yearly.world."
   const unsubscribeLabel = 'Unsubscribe'
 
   return {
@@ -64,8 +62,6 @@ export function videoLaunchEmail(
       '',
       footer,
       `${unsubscribeLabel}: ${unsubscribe.page}`,
-      '',
-      `Yearly, ${postalAddress}`,
     ].join('\n'),
     html: `<!doctype html>
 <html lang="en">
@@ -108,8 +104,7 @@ export function videoLaunchEmail(
                     </td>
                   </tr>
                 </table>
-                <p class="muted rule" style="margin:0 0 8px;padding-top:16px;border-top:1px solid #e4e4e7;font-size:13px;line-height:1.5;color:#71717a;">${escapeHtml(footer)} <a class="muted" href="${escapeHtml(unsubscribe.page)}" style="color:#71717a;">${escapeHtml(unsubscribeLabel)}</a></p>
-                <p class="muted" style="margin:0;font-size:13px;line-height:1.5;color:#71717a;">Yearly, ${escapeHtml(postalAddress)}</p>
+                <p class="muted rule" style="margin:0;padding-top:16px;border-top:1px solid #e4e4e7;font-size:13px;line-height:1.5;color:#71717a;">${escapeHtml(footer)} <a class="muted" href="${escapeHtml(unsubscribe.page)}" style="color:#71717a;">${escapeHtml(unsubscribeLabel)}</a></p>
               </td>
             </tr>
           </table>

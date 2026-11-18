@@ -3,7 +3,6 @@ import { getVideoLaunchLink, videoLaunchEmail } from './video-launch'
 
 const OPTIONS = {
   freeUntil: '31 January 2027',
-  postalAddress: 'PO Box 12, Cluj-Napoca 400001, Romania',
   unsubscribe: {
     page: 'https://www.yearly.world/unsubscribe?token=abc.def',
     oneClick: 'https://www.yearly.world/api/waitlist/unsubscribe?token=abc.def',
@@ -21,7 +20,7 @@ describe('videoLaunchEmail', () => {
     })
   })
 
-  it('has an unsubscribe link and the postal address in both versions', () => {
+  it('has an unsubscribe link in both versions', () => {
     const email = videoLaunchEmail('ana@example.com', OPTIONS)
 
     expect(email.text).toContain(
@@ -30,11 +29,17 @@ describe('videoLaunchEmail', () => {
     expect(email.html).toContain(
       'href="https://www.yearly.world/unsubscribe?token=abc.def"'
     )
-    expect(email.text).toContain(
-      'Yearly, PO Box 12, Cluj-Napoca 400001, Romania'
+  })
+
+  it('only delivers the free video the waitlist was promised, with nothing to buy', () => {
+    const email = videoLaunchEmail('ana@example.com', OPTIONS)
+
+    expect(email.subject).toBe('Your free Yearly video is ready')
+    expect(email.text).toMatch(
+      /^Your free video is ready\n\nYou saved a free video/
     )
-    expect(email.html).toContain(
-      'Yearly, PO Box 12, Cluj-Napoca 400001, Romania'
+    expect(`${email.subject}\n${email.text}`).not.toMatch(
+      /[$€£]|price|buy|sale|discount|offer/i
     )
   })
 
@@ -48,15 +53,11 @@ describe('videoLaunchEmail', () => {
     expect(email.text).toContain(getVideoLaunchLink())
   })
 
-  it('escapes the address and postal address in the HTML', () => {
-    const email = videoLaunchEmail('a<b>@example.com', {
-      ...OPTIONS,
-      postalAddress: 'Str. "Main" <1>',
-    })
+  it('escapes the address in the HTML', () => {
+    const email = videoLaunchEmail('a<b>@example.com', OPTIONS)
 
     expect(email.html).not.toContain('<b>')
     expect(email.html).toContain('a&lt;b&gt;@example.com')
-    expect(email.html).toContain('Str. &quot;Main&quot; &lt;1&gt;')
   })
 
   it('links to the create page with campaign tags', () => {

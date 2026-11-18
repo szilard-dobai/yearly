@@ -15,7 +15,6 @@ function stubReadyEnv() {
   vi.stubEnv('VERCEL_ENV', 'production')
   vi.stubEnv('ACCOUNTS_ENABLED', 'true')
   vi.stubEnv('VIDEO_SALES_ENABLED', 'true')
-  vi.stubEnv('EMAIL_POSTAL_ADDRESS', 'PO Box 12, Cluj-Napoca, Romania')
   vi.stubEnv('BETTER_AUTH_SECRET', 'test-secret')
 }
 
@@ -43,14 +42,6 @@ describe('getLaunchSendBlock', () => {
     vi.stubEnv('VIDEO_SALES_ENABLED', '')
 
     expect(getLaunchSendBlock(LAUNCH_DAY)).toBe('Turn on video sales first')
-  })
-
-  it('needs a postal address', () => {
-    vi.stubEnv('EMAIL_POSTAL_ADDRESS', '  ')
-
-    expect(getLaunchSendBlock(LAUNCH_DAY)).toBe(
-      'Set EMAIL_POSTAL_ADDRESS first'
-    )
   })
 
   it('needs the secret that signs unsubscribe links', () => {
@@ -81,7 +72,7 @@ describe('createLaunchSender', () => {
     sendEmail.mockResolvedValue({ id: 'email-1' })
     const id = '6560f1a2b3c4d5e6f7a8b9c0'
 
-    const sent = await createLaunchSender('PO Box 12')({
+    const sent = await createLaunchSender()({
       id,
       email: 'ana@example.com',
       maybeSentBefore: false,
@@ -91,7 +82,7 @@ describe('createLaunchSender', () => {
     const [email, options] = sendEmail.mock.calls[0]
     expect(options).toEqual({ idempotencyKey: launchIdempotencyKey(id) })
     expect(email.to).toBe('ana@example.com')
-    expect(email.text).toContain('Yearly, PO Box 12')
+    expect(email.text).toContain('sign in with ana@example.com')
     expect(email.text).not.toContain(`token=ana`)
     const token = new URL(
       email.headers['List-Unsubscribe'].slice(1, -1)

@@ -31,10 +31,6 @@ export type LaunchSendStatus = {
   blocked: string | null
 }
 
-export function getPostalAddress(): string | null {
-  return process.env.EMAIL_POSTAL_ADDRESS?.trim() || null
-}
-
 function freeVideoOfferEnd(): Date {
   return new Date(
     new Date(`${FREE_VIDEO_LAST_DAY}T00:00:00Z`).getTime() + DAY_MS
@@ -46,7 +42,6 @@ export function getLaunchSendBlock(now = new Date()): string | null {
     return 'The launch email only sends from production'
   }
   if (!isVideoSalesEnabled()) return 'Turn on video sales first'
-  if (!getPostalAddress()) return 'Set EMAIL_POSTAL_ADDRESS first'
   if (!isUnsubscribeConfigured()) return 'Set BETTER_AUTH_SECRET first'
   if (now >= freeVideoOfferEnd()) {
     return `The free video offer ended on ${formatFreeVideoLastDay()}`
@@ -58,13 +53,12 @@ export function launchIdempotencyKey(waitlistId: string) {
   return `video-launch/${waitlistId}`
 }
 
-export function createLaunchSender(postalAddress: string): BulkSender {
+export function createLaunchSender(): BulkSender {
   const freeUntil = formatFreeVideoLastDay()
   return (recipient) =>
     sendEmail(
       videoLaunchEmail(recipient.email, {
         freeUntil,
-        postalAddress,
         unsubscribe: getUnsubscribeUrls(createUnsubscribeToken(recipient.id)),
       }),
       { idempotencyKey: launchIdempotencyKey(recipient.id) }
@@ -96,14 +90,11 @@ export async function runLaunchSend({
   budgetMs: number
 }): Promise<{ blocked: string } | { result: BulkSendResult }> {
   const blocked = getLaunchSendBlock()
-  const postalAddress = getPostalAddress()
-  if (blocked || !postalAddress) {
-    return { blocked: blocked ?? 'Set EMAIL_POSTAL_ADDRESS first' }
-  }
+  if (blocked) return { blocked }
 
   const result = await sendBulkEmail({
     store: await createLaunchSendStore(),
-    send: createLaunchSender(postalAddress),
+    send: createLaunchSender(),
     budgetMs,
   })
 

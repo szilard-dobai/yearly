@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 }
 
-const LAST_UPDATED = '14 November 2026'
+const LAST_UPDATED = '18 November 2026'
 const CONTACT_EMAIL = 'hello@yearly.world'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -277,6 +277,11 @@ export default function PrivacyPage() {
               notification we get about a new sign-up doesn&apos;t include your
               email. Ask us and we&apos;ll delete it.
             </p>
+            <p>
+              Resend sends that email for us. It has an unsubscribe link, which
+              deletes your email from the list. When it goes out, we record when
+              it was sent and Resend&apos;s ID for it.
+            </p>
           </Section>
 
           <Section title="Year-end reminder">
@@ -447,8 +452,8 @@ export default function PrivacyPage() {
               <li>
                 Resend sends{' '}
                 {accounts
-                  ? 'sign-in codes and the year-end reminder email'
-                  : 'the year-end reminder email'}
+                  ? 'sign-in codes, the year-end reminder email and the video launch email'
+                  : 'the year-end reminder email and the video launch email'}
                 , from servers in Ireland.
               </li>
               {accounts && (

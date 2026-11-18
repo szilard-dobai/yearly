@@ -9,7 +9,7 @@ import {
   REMINDER_DATE,
   REMINDER_SEND_DAYS,
 } from './date'
-import { IDEMPOTENCY_WINDOW_MS } from './send'
+import { IDEMPOTENCY_WINDOW_MS } from '@/lib/email/bulk-send'
 import { isOpenReminderYear } from './server'
 
 const HOUR_MS = 60 * 60 * 1000

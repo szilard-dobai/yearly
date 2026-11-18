@@ -13,6 +13,7 @@ import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
 import JourneyFunnelPanel from '@/components/admin/JourneyFunnelPanel'
 import StatTile from '@/components/admin/StatTile'
 import TrafficSourcesPanel from '@/components/admin/TrafficSourcesPanel'
+import VideoLaunchEmailPanel from '@/components/admin/VideoLaunchEmailPanel'
 import VideoOfferPanel from '@/components/admin/VideoOfferPanel'
 import YearEndReminderPanel from '@/components/admin/YearEndReminderPanel'
 import { Button } from '@/components/ui/button'
@@ -574,6 +575,8 @@ export default function AnalyticsPage() {
         />
 
         <VideoOfferPanel refreshKey={refreshKey} />
+
+        <VideoLaunchEmailPanel refreshKey={refreshKey} />
 
         <YearEndReminderPanel refreshKey={refreshKey} />
 

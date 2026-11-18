@@ -40,6 +40,9 @@ Year-in-review sharing peaks in late December and early January, so real checkou
 - A credit can't be claimed by someone else, because signing in needs the code sent to that inbox.
 - Free packs follow the same update rules as paid ones.
 - The launch email goes to the whole waitlist through Resend. The free plan allows 100 emails a day, shared with sign-in codes, so either send in batches or move to Resend Pro first.
+- **Launch email** (admin, Video launch email panel): "Send a test" emails it to a typed address; "Run now" sends it for up to 40 s per click, with the same claims and idempotency keys as the year-end reminder (`lib/email/bulk-send.ts`), so nobody gets two and a quota error just stops the run until the next click. It only sends from production, with video sales on, `EMAIL_POSTAL_ADDRESS` set and before the free offer ends. Import the credits first.
+- The email names the last free day, `FREE_VIDEO_LAST_DAY` in `lib/video-offer.ts`; pass the same date to the credits import's `--expires`.
+- It counts as a marketing email under CAN-SPAM and Romania's Law 506/2004, so it carries a postal address (`EMAIL_POSTAL_ADDRESS`, a PO box or virtual mailbox rather than a home address), an unsubscribe link to `/unsubscribe`, and `List-Unsubscribe` with one-click (RFC 8058) for mail apps. Unsubscribing deletes the waitlist entry; a free credit already imported stays. The links carry the waitlist ID signed with a key derived from `BETTER_AUTH_SECRET`, never the address.
 
 ## The journey
 

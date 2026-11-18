@@ -57,6 +57,23 @@ describe('sendEmail', () => {
     )
   })
 
+  it('passes extra headers through', async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test')
+    sendMock.mockResolvedValue({ data: { id: '1' }, error: null })
+    const { sendEmail } = await import('./send')
+    const headers = {
+      'List-Unsubscribe': '<https://www.yearly.world/api/waitlist/unsubscribe>',
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    }
+
+    await sendEmail({ ...EMAIL, headers })
+
+    expect(sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({ headers }),
+      {}
+    )
+  })
+
   it('falls back to the default sender', async () => {
     vi.stubEnv('RESEND_API_KEY', 're_test')
     vi.stubEnv('EMAIL_FROM', '')

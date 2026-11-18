@@ -1,19 +1,18 @@
 import { EmailSendError } from '@/lib/email/send'
 import { describe, expect, it, vi } from 'vitest'
 import {
-  type ClaimedReminder,
+  type BulkSender,
+  type BulkSendStore,
+  type ClaimedRecipient,
   classifySendError,
   IDEMPOTENCY_WINDOW_MS,
   MAX_CONSECUTIVE_FAILURES,
   MAX_SEND_ATTEMPTS,
   MIN_SEND_INTERVAL_MS,
-  type ReminderSender,
-  type ReminderSendStore,
   RETRY_DELAY_MS,
-  reminderIdempotencyKey,
-  sendYearEndReminders,
-} from './send'
-import { isClaimable, needsCheck } from './send-store'
+} from '@/lib/email/bulk-send'
+import { isClaimable, needsCheck } from '@/lib/email/bulk-send-store'
+import { reminderIdempotencyKey, sendYearEndReminders } from './send'
 
 type FakeDoc = {
   id: string
@@ -31,7 +30,7 @@ type FakeDoc = {
 
 function createFakeStore(docs: FakeDoc[], year = 2026) {
   const forYear = () => docs.filter((doc) => doc.year === year)
-  const store: ReminderSendStore = {
+  const store: BulkSendStore = {
     async count(now) {
       const all = forYear()
       return {
@@ -103,8 +102,8 @@ function resendError(code: string, statusCode: number | null) {
 const BUDGET_MS = 240_000
 
 async function run(
-  store: ReminderSendStore,
-  send: (reminder: ClaimedReminder) => Promise<{ id: string | null }>,
+  store: BulkSendStore,
+  send: (reminder: ClaimedRecipient) => Promise<{ id: string | null }>,
   clock = createClock(),
   budgetMs = BUDGET_MS
 ) {
@@ -121,7 +120,7 @@ async function run(
 describe('sendYearEndReminders', () => {
   it("emails every address for the year once and leaves next year's alone", async () => {
     const docs = [...reminders(3), ...reminders(2, 2027)]
-    const send = vi.fn(async (reminder: ClaimedReminder) => ({
+    const send = vi.fn(async (reminder: ClaimedRecipient) => ({
       id: `email-${reminder.id}`,
     }))
 
@@ -182,7 +181,7 @@ describe('sendYearEndReminders', () => {
     const docs = reminders(2)
     const store = createFakeStore(docs)
     const clock = createClock()
-    const send = vi.fn(async (reminder: ClaimedReminder) => {
+    const send = vi.fn(async (reminder: ClaimedRecipient) => {
       if (reminder.email === 'person0@example.com') {
         throw resendError('validation_error', 422)
       }
@@ -220,7 +219,7 @@ describe('sendYearEndReminders', () => {
     const docs = reminders(1)
     const store = createFakeStore(docs)
     const clock = createClock()
-    const send = vi.fn<ReminderSender>(async () => {
+    const send = vi.fn<BulkSender>(async () => {
       throw resendError('validation_error', 422)
     })
 
@@ -241,7 +240,7 @@ describe('sendYearEndReminders', () => {
     const docs = reminders(1)
     const store = createFakeStore(docs)
     const clock = createClock()
-    const send = vi.fn<ReminderSender>(async () => {
+    const send = vi.fn<BulkSender>(async () => {
       throw resendError('internal_server_error', 500)
     })
 
@@ -271,7 +270,7 @@ describe('sendYearEndReminders', () => {
     const docs = reminders(1)
     const store = createFakeStore(docs)
     const clock = createClock()
-    const send = vi.fn<ReminderSender>(async () => {
+    const send = vi.fn<BulkSender>(async () => {
       throw resendError('application_error', null)
     })
     await run(store, send, clock)
@@ -288,7 +287,7 @@ describe('sendYearEndReminders', () => {
     const docs = reminders(1)
     const store = createFakeStore(docs)
     const clock = createClock()
-    const send = vi.fn<ReminderSender>(async () => {
+    const send = vi.fn<BulkSender>(async () => {
       throw resendError('internal_server_error', 500)
     })
 
@@ -309,7 +308,7 @@ describe('sendYearEndReminders', () => {
     const store = createFakeStore(docs)
     const clock = createClock()
     const send = vi
-      .fn<ReminderSender>()
+      .fn<BulkSender>()
       .mockRejectedValueOnce(resendError('internal_server_error', 500))
       .mockRejectedValueOnce(resendError('daily_quota_exceeded', 429))
       .mockResolvedValue({ id: 'second-copy' })
@@ -331,7 +330,7 @@ describe('sendYearEndReminders', () => {
     const store = createFakeStore(docs)
     const clock = createClock()
     const send = vi
-      .fn<ReminderSender>()
+      .fn<BulkSender>()
       .mockRejectedValueOnce(resendError('daily_quota_exceeded', 429))
       .mockResolvedValue({ id: 'email' })
 
@@ -361,7 +360,7 @@ describe('sendYearEndReminders', () => {
   it('stops at the daily quota without using up an attempt', async () => {
     const docs = reminders(3)
     const store = createFakeStore(docs)
-    const send = vi.fn(async (reminder: ClaimedReminder) => {
+    const send = vi.fn(async (reminder: ClaimedRecipient) => {
       if (reminder.email === 'person1@example.com') {
         throw resendError('daily_quota_exceeded', 429)
       }
@@ -384,7 +383,7 @@ describe('sendYearEndReminders', () => {
   })
 
   it('stops when Resend is misconfigured', async () => {
-    const send = vi.fn<ReminderSender>(async () => {
+    const send = vi.fn<BulkSender>(async () => {
       throw resendError('missing_api_key', null)
     })
 
@@ -411,7 +410,7 @@ describe('sendYearEndReminders', () => {
   })
 
   it('stops after several failures in a row', async () => {
-    const send = vi.fn<ReminderSender>(async () => {
+    const send = vi.fn<BulkSender>(async () => {
       throw resendError('validation_error', 422)
     })
 

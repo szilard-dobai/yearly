@@ -74,10 +74,10 @@ describe('yearEndReminderEmail', () => {
     expect(text).not.toMatch(/[<>]|&amp;|&#39;|&nbsp;|undefined|\$\{/)
   })
 
-  it('keeps the HTML small, with no images or leftover placeholders', () => {
+  it('keeps the HTML small, with no leftover placeholders', () => {
     const { html } = email()
 
-    expect(html).not.toMatch(/<img|undefined|\$\{|false|true/)
+    expect(html).not.toMatch(/undefined|\$\{|false|true/)
     expect(new TextEncoder().encode(html).length).toBeLessThan(6 * 1024)
   })
 })

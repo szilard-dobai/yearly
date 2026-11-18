@@ -71,9 +71,11 @@ export default function TermsPage() {
 
           <Section title="Your account">
             <p>
-              An account is optional and free. You sign in with a code sent to
-              your email or with Google, so keep access to that email address.
-              You can delete your account at any time on your{' '}
+              An account is optional and free. If you&apos;re under 16, you need
+              a parent&apos;s or guardian&apos;s permission to create one. You
+              sign in with a code sent to your email or with Google, so keep
+              access to that email address. You can delete your account at any
+              time on your{' '}
               <Link href="/account" className={linkClassName}>
                 account page
               </Link>

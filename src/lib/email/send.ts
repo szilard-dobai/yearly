@@ -8,6 +8,7 @@ export interface Email {
   html: string
   text: string
   replyTo?: string
+  headers?: Record<string, string>
 }
 
 export interface SendEmailOptions {

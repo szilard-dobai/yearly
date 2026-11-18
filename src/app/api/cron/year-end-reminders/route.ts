@@ -1,6 +1,6 @@
 import { isCronAuthorized } from '@/lib/cron'
+import { FAILED_RUN_STOPS } from '@/lib/email/bulk-send'
 import {
-  FAILED_RUN_STOPS,
   getReminderSendBlock,
   previewReminderSend,
   runReminderSend,

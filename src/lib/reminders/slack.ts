@@ -6,7 +6,8 @@ import {
   type SlackMessage,
 } from '@/lib/slack'
 import type { DeviceType } from '@/lib/tracking/types'
-import type { ReminderSendResult, StopReason } from './send'
+import type { StopReason } from '@/lib/email/bulk-send'
+import type { ReminderSendResult } from './send'
 import type { ReminderMethod, ReminderTotals } from './types'
 
 export type ReminderSendTrigger = 'cron' | 'admin'

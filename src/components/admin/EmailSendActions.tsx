@@ -22,12 +22,22 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { ReminderSendResult } from '@/lib/reminders/send'
+import type { BulkSendResult } from '@/lib/email/bulk-send'
 import { Loader2, Mail, Send } from 'lucide-react'
 import { type FormEvent, useId, useState } from 'react'
 
 const ERROR_CLASSES =
   'rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400'
+
+export type EmailSendCopy = {
+  testUrl: string
+  testTitle: string
+  testDescription: string
+  runUrl: string
+  runLabel: string
+  runTitle: string
+  runDescription: string
+}
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
   const response = await fetch(url, {
@@ -42,7 +52,7 @@ async function postJson<T>(url: string, body?: unknown): Promise<T> {
   return data as T
 }
 
-function SendTestButton() {
+function SendTestButton({ copy }: { copy: EmailSendCopy }) {
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
@@ -61,7 +71,7 @@ function SendTestButton() {
     setStatus('sending')
     setError('')
     try {
-      await postJson('/api/reminders/test-email', { email })
+      await postJson(copy.testUrl, { email })
       setStatus('sent')
     } catch (sendError) {
       setStatus('idle')
@@ -82,11 +92,8 @@ function SendTestButton() {
       <DialogContent className="sm:max-w-md dark:border-white/8 dark:bg-[#141414]">
         <form onSubmit={handleSubmit} className="grid gap-4">
           <DialogHeader>
-            <DialogTitle>Send a test reminder</DialogTitle>
-            <DialogDescription>
-              Sends this year&apos;s reminder email to the address below. It
-              isn&apos;t saved, and no reminder is marked as sent.
-            </DialogDescription>
+            <DialogTitle>{copy.testTitle}</DialogTitle>
+            <DialogDescription>{copy.testDescription}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-2">
             <Label htmlFor={inputId}>Email address</Label>
@@ -127,9 +134,11 @@ function SendTestButton() {
 }
 
 function RunNowButton({
+  copy,
   onFinished,
 }: {
-  onFinished: (result: ReminderSendResult) => void
+  copy: EmailSendCopy
+  onFinished: (result: BulkSendResult) => void
 }) {
   const [open, setOpen] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
@@ -145,7 +154,7 @@ function RunNowButton({
     setIsRunning(true)
     setError('')
     try {
-      const result = await postJson<ReminderSendResult>('/api/reminders/send')
+      const result = await postJson<BulkSendResult>(copy.runUrl)
       setOpen(false)
       onFinished(result)
     } catch (runError) {
@@ -160,7 +169,7 @@ function RunNowButton({
       <AlertDialogTrigger asChild>
         <Button size="sm">
           <Send className="size-4" />
-          Run now
+          {copy.runLabel}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent
@@ -168,12 +177,8 @@ function RunNowButton({
         className="dark:border-white/8 dark:bg-[#141414]"
       >
         <AlertDialogHeader>
-          <AlertDialogTitle>Send the reminders now?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Emails everyone who hasn&apos;t had their reminder yet, for up to 40
-            seconds. Run it again if some are left. Nobody gets two, even if the
-            cron runs at the same time.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{copy.runTitle}</AlertDialogTitle>
+          <AlertDialogDescription>{copy.runDescription}</AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
           <p role="alert" className={ERROR_CLASSES}>
@@ -192,24 +197,26 @@ function RunNowButton({
   )
 }
 
-export function describeRun(result: ReminderSendResult): string {
+export function describeRun(result: BulkSendResult): string {
   return `Sent ${result.sentNow.toLocaleString()}, ${result.failed.toLocaleString()} failed, ${result.left.toLocaleString()} left.`
 }
 
-export default function YearEndReminderSendActions({
+export default function EmailSendActions({
+  copy,
   blocked,
   onRunFinished,
 }: {
+  copy: EmailSendCopy
   blocked: string | null
-  onRunFinished: (result: ReminderSendResult) => void
+  onRunFinished: (result: BulkSendResult) => void
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <SendTestButton />
+      <SendTestButton copy={copy} />
       {blocked ? (
         <p className="text-xs text-gray-500 dark:text-zinc-400">{blocked}</p>
       ) : (
-        <RunNowButton onFinished={onRunFinished} />
+        <RunNowButton copy={copy} onFinished={onRunFinished} />
       )}
     </div>
   )

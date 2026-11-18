@@ -1,4 +1,5 @@
 import { isAccountsEnabled } from '@/lib/auth/enabled'
+import { FAILED_RUN_STOPS } from '@/lib/email/bulk-send'
 import { getRemindersCollection } from '@/lib/mongodb'
 import { getReminderSendWindowLabel, getReminderSendYear } from './date'
 import {
@@ -46,11 +47,6 @@ export async function previewReminderSend(
     needsCheck: counts.needsCheck,
   }
 }
-
-export const FAILED_RUN_STOPS = new Set<ReminderSendResult['stopped']>([
-  'config',
-  'failures',
-])
 
 export async function runReminderSend({
   trigger,

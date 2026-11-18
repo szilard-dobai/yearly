@@ -4,6 +4,7 @@ import type {
   FeedbackSource,
   FeedbackTag,
 } from './feedback/types'
+import type { SendState } from './email/bulk-send-store'
 import type { CalendarProvider } from './reminders/types'
 import type { DeviceType } from './tracking/types'
 import type { WaitlistContext, WaitlistFeature } from './waitlist/types'
@@ -95,7 +96,7 @@ export async function getFeedbackCollection() {
   return collection
 }
 
-export interface WaitlistDocument {
+export interface WaitlistDocument extends SendState {
   _id?: ObjectId
   feature: WaitlistFeature
   email: string
@@ -131,7 +132,7 @@ export async function getWaitlistCollection() {
   return collection
 }
 
-export interface ReminderDocument {
+export interface ReminderDocument extends SendState {
   _id?: ObjectId
   email: string
   year: number
@@ -141,14 +142,6 @@ export interface ReminderDocument {
   region?: string
   createdAt: Date
   updatedAt: Date
-  sendClaimedAt?: Date
-  sendFirstClaimedAt?: Date
-  sendMaybeSent?: boolean
-  sendAttempts?: number
-  sentAt?: Date
-  sendEmailId?: string
-  sendFailedAt?: Date
-  sendError?: string
 }
 
 let reminderIndexesPromise: Promise<unknown> | null = null

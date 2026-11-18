@@ -55,7 +55,9 @@ describe('privacy, terms and footer', () => {
         screen.queryByText(/providing the account you asked for/)
       ).toBeNull()
       expect(
-        screen.getByText(/Resend sends the year-end reminder email/)
+        screen.getByText(
+          /Resend sends the year-end reminder email and the video launch email/
+        )
       ).toBeInTheDocument()
       expect(
         screen.getByText(/unless the law requires us to/)
@@ -111,7 +113,7 @@ describe('privacy, terms and footer', () => {
       ).toBeInTheDocument()
       expect(
         screen.getByText(
-          /Resend sends sign-in codes and the year-end reminder email/
+          /Resend sends sign-in codes, the year-end reminder email and the video launch email/
         )
       ).toBeInTheDocument()
       expect(

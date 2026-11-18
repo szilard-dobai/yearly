@@ -1,9 +1,11 @@
 'use client'
 
 import CopyButton from '@/components/admin/CopyButton'
-import YearEndReminderSendActions, {
+import Metric from '@/components/admin/Metric'
+import EmailSendActions, {
   describeRun,
-} from '@/components/admin/YearEndReminderSendActions'
+  type EmailSendCopy,
+} from '@/components/admin/EmailSendActions'
 import {
   getReminderSendWindowLabel,
   REMINDER_DATE_LABEL,
@@ -13,33 +15,21 @@ import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
+const SEND_COPY: EmailSendCopy = {
+  testUrl: '/api/reminders/test-email',
+  testTitle: 'Send a test reminder',
+  testDescription:
+    "Sends this year's reminder email to the address below. It isn't saved, and no reminder is marked as sent.",
+  runUrl: '/api/reminders/send',
+  runLabel: 'Run now',
+  runTitle: 'Send the reminders now?',
+  runDescription:
+    "Emails everyone who hasn't had their reminder yet, for up to 40 seconds. Run it again if some are left. Nobody gets two, even if the cron runs at the same time.",
+}
+
 type Result =
   | { key: string; stats: ReminderStats; failed: false }
   | { key: string; stats: null; failed: true }
-
-function Metric({
-  label,
-  value,
-  hint,
-}: {
-  label: string
-  value: number
-  hint?: string
-}) {
-  return (
-    <div>
-      <dt className="text-sm text-gray-500 dark:text-zinc-400">{label}</dt>
-      <dd className="mt-1 text-2xl font-semibold text-gray-900 tabular-nums dark:text-zinc-100">
-        {value.toLocaleString()}
-      </dd>
-      {hint && (
-        <dd className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">
-          {hint}
-        </dd>
-      )}
-    </div>
-  )
-}
 
 export default function YearEndReminderPanel({
   refreshKey,
@@ -143,7 +133,8 @@ export default function YearEndReminderPanel({
               <Metric label="Left" value={stats.send.left} />
             </dl>
             <div className="mt-4">
-              <YearEndReminderSendActions
+              <EmailSendActions
+                copy={SEND_COPY}
                 blocked={stats.send.blocked}
                 onRunFinished={(run) => {
                   setLastRun(describeRun(run))

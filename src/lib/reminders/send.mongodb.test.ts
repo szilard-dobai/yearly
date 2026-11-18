@@ -3,20 +3,20 @@ import type { ReminderDocument } from '@/lib/mongodb'
 import { type Collection, type Db, MongoClient, ObjectId } from 'mongodb'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import {
-  type ClaimedReminder,
+  type ClaimedRecipient,
   CLAIM_TIMEOUT_MS,
   IDEMPOTENCY_WINDOW_MS,
   MAX_SEND_ATTEMPTS,
   RETRY_DELAY_MS,
-  sendYearEndReminders,
-} from './send'
+} from '@/lib/email/bulk-send'
 import {
   claimableFilter,
-  createReminderSendStore,
   isClaimable,
   needsCheck,
   needsCheckFilter,
-} from './send-store'
+} from '@/lib/email/bulk-send-store'
+import { sendYearEndReminders } from './send'
+import { createReminderSendStore } from './send-store'
 
 const MONGO_TEST_URL = process.env.MONGO_TEST_URL
 const NOW = new Date('2026-12-01T08:05:00Z')
@@ -61,7 +61,7 @@ describe.skipIf(!MONGO_TEST_URL)(
 
     async function runs(
       count: number,
-      send: (reminder: ClaimedReminder) => Promise<{ id: string | null }>,
+      send: (reminder: ClaimedRecipient) => Promise<{ id: string | null }>,
       now = () => new Date(NOW)
     ) {
       return Promise.all(
@@ -84,7 +84,7 @@ describe.skipIf(!MONGO_TEST_URL)(
         ...Array.from({ length: 5 }, (_, index) => reminder(index, 2027)),
       ])
       const sends = new Map<string, number>()
-      const send = async ({ email }: ClaimedReminder) => {
+      const send = async ({ email }: ClaimedRecipient) => {
         sends.set(email, (sends.get(email) ?? 0) + 1)
         await jitter()
         return { id: `resend-${email.length}` }
@@ -126,7 +126,7 @@ describe.skipIf(!MONGO_TEST_URL)(
       let time = NOW.getTime()
       const now = () => new Date(time)
       const failing = docs[1].email
-      const send = async ({ email }: ClaimedReminder) => {
+      const send = async ({ email }: ClaimedRecipient) => {
         if (email === failing) {
           const { EmailSendError } = await import('@/lib/email/send')
           throw new EmailSendError('rejected', 'validation_error', 422)
@@ -319,10 +319,14 @@ describe.skipIf(!MONGO_TEST_URL)(
       await reminders.insertMany(docs)
 
       const claimable = await reminders
-        .find(claimableFilter(2026, NOW), { projection: { _id: 1 } })
+        .find(claimableFilter({ year: 2026 }, NOW), {
+          projection: { _id: 1 },
+        })
         .toArray()
       const check = await reminders
-        .find(needsCheckFilter(2026, NOW), { projection: { _id: 1 } })
+        .find(needsCheckFilter({ year: 2026 }, NOW), {
+          projection: { _id: 1 },
+        })
         .toArray()
 
       const ids = (list: { _id?: ObjectId }[]) =>

@@ -1,20 +1,12 @@
 import { getReminderLink } from '@/lib/reminders/calendar'
 import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
+import { escapeHtml } from './html'
 import type { Email } from './send'
 
 export const REMINDER_EMAIL_SITE_URL = 'https://www.yearly.world'
 export const REMINDER_REPLY_TO = 'hello@yearly.world'
 
 const dateLabel = REMINDER_DATE_LABEL.replace(/ /g, ' ')
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
 
 export function yearEndReminderEmail(
   to: string,

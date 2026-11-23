@@ -1,3 +1,4 @@
+import { Emoji } from '@/components/Emoji'
 import type { Badge } from '@/lib/badges'
 import { cn } from '@/lib/utils'
 import { Lock } from 'lucide-react'
@@ -35,12 +36,10 @@ export default function BadgeMedal({
             : 'border-dashed border-gray-300 dark:border-white/12'
         )}
       />
-      <span
-        aria-hidden="true"
-        className={cn(!earned && 'opacity-35 grayscale')}
-      >
-        {badge.emoji}
-      </span>
+      <Emoji
+        name={badge.emoji}
+        className={cn('relative', !earned && 'opacity-35 grayscale')}
+      />
       {!earned && size !== 'sm' && (
         <span className="absolute -right-0.5 -bottom-0.5 flex size-5 items-center justify-center rounded-full bg-white shadow-sm dark:bg-[#222222]">
           <Lock className="size-3 text-gray-500 dark:text-zinc-400" />

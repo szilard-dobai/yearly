@@ -5,6 +5,7 @@ import { renderWithSettings, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import BadgesCard from './BadgesCard'
+import BadgesTeaser from './BadgesTeaser'
 import BadgeUnlockedDialog from './BadgeUnlockedDialog'
 
 vi.mock('@/lib/tracking', () => ({
@@ -17,11 +18,11 @@ const dayMap: DayMap = new Map([
   ['2026-06-18', ['FR']],
 ])
 
-describe('BadgesCard', () => {
-  beforeEach(() => {
-    vi.mocked(trackEvent).mockClear()
-  })
+beforeEach(() => {
+  vi.mocked(trackEvent).mockClear()
+})
 
+describe('BadgesCard', () => {
   it('shows progress and the next badge to earn', () => {
     renderWithSettings(
       <BadgesCard badges={computeBadges(dayMap, '2026-11-12')} />
@@ -29,6 +30,17 @@ describe('BadgesCard', () => {
     expect(screen.getByText('2/17')).toBeInTheDocument()
     expect(screen.getByText('Next: Continent hopper')).toBeInTheDocument()
     expect(screen.getByText('2 of 3 continents')).toBeInTheDocument()
+  })
+
+  it('says which planned trip unlocks the next badge', () => {
+    const planned = new Map(dayMap).set('2026-12-05', ['KR'])
+    renderWithSettings(
+      <BadgesCard badges={computeBadges(planned, '2026-11-12')} />
+    )
+    expect(screen.getByText('Next: Weekend warrior')).toBeInTheDocument()
+    expect(
+      screen.getByText('Your trip on 5 Dec unlocks it')
+    ).toBeInTheDocument()
   })
 
   it('opens every badge and the details of one', async () => {
@@ -49,23 +61,56 @@ describe('BadgesCard', () => {
     renderWithSettings(
       <BadgesCard badges={computeBadges(new Map(), '2026-11-12')} />
     )
+    expect(screen.getByText('0/17')).toBeInTheDocument()
     expect(
       screen.getByText('Add your first trip to earn your first badge.')
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/^Next:/)).not.toBeInTheDocument()
+  })
+})
+
+describe('BadgesTeaser', () => {
+  it('counts the badges a signed-out calendar already earns', async () => {
+    renderWithSettings(<BadgesTeaser earned={5} total={17} />)
+    expect(
+      screen.getByText('Your trips already earn 5 of 17 badges.')
+    ).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: 'Sign in to see them' })
+    expect(link).toHaveAttribute('href', '/sign-in?next=/create')
+    await userEvent.click(link)
+    expect(trackEvent).toHaveBeenCalledWith('badges_teaser_click', {
+      earned: 5,
+    })
+  })
+
+  it('invites an empty calendar to start collecting', () => {
+    renderWithSettings(<BadgesTeaser earned={0} total={17} />)
+    expect(
+      screen.getByRole('link', { name: 'Sign in to start collecting' })
     ).toBeInTheDocument()
   })
 })
 
 describe('BadgeUnlockedDialog', () => {
   it('celebrates the newest badge and counts the rest', async () => {
-    const onClose = vi.fn()
+    const onOpenChange = vi.fn()
     const earned = computeBadges(dayMap, '2026-11-12').filter((b) => b.earnedOn)
     renderWithSettings(
-      <BadgeUnlockedDialog badges={earned} onClose={onClose} />
+      <BadgeUnlockedDialog badges={earned} open onOpenChange={onOpenChange} />
     )
     expect(screen.getByText('Badge unlocked')).toBeInTheDocument()
-    expect(screen.getByText(earned.at(-1)!.name)).toBeInTheDocument()
+    expect(
+      screen.getByRole('dialog', { name: 'Two flags' })
+    ).toBeInTheDocument()
     expect(screen.getByText('and 1 more badge')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Nice' }))
-    expect(onClose).toHaveBeenCalled()
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('stays closed without a badge', () => {
+    renderWithSettings(
+      <BadgeUnlockedDialog badges={[]} open onOpenChange={vi.fn()} />
+    )
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 })

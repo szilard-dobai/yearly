@@ -68,11 +68,60 @@ describe('computeBadges', () => {
     expect(newlyEarned(before, after).map((b) => b.id)).toEqual(['two-flags'])
   })
 
+  it('counts a short trip once it has ended', () => {
+    const shortTrips = (map: DayMap) =>
+      computeBadges(map, '2026-11-12').find((b) => b.id === 'weekend-warrior')!
+    const growing = shortTrips(
+      dayMap(
+        ['ES', '2026-01-10', 2],
+        ['FR', '2026-03-10', 2],
+        ['IT', '2026-05-10', 6]
+      )
+    )
+    expect(growing.value).toBe(2)
+    expect(growing.earnedOn).toBeNull()
+    expect(growing.unlocksOn).toBeNull()
+
+    const planned = shortTrips(
+      dayMap(
+        ['ES', '2026-01-10', 2],
+        ['FR', '2026-03-10', 2],
+        ['IT', '2026-11-11', 3]
+      )
+    )
+    expect(planned.value).toBe(2)
+    expect(planned.unlocksOn).toBe('2026-11-13')
+  })
+
+  it('works through years of back-to-back days', () => {
+    const badges = byId(
+      computeBadges(dayMap(['RO', '2024-01-01', 1000]), '2026-11-12')
+    )
+    expect(badges['century'].earnedOn).toBe('2024-04-09')
+    expect(badges['every-month'].earnedOn).toBe('2024-12-01')
+    expect(badges['regular'].value).toBe(1)
+    expect(badges['long-haul'].value).toBe(14)
+  })
+
   it('picks the closest badge as the next one', () => {
     const next = nextBadge(
       computeBadges(dayMap(['ES', '2026-01-10', 2]), '2026-11-12')
     )
     expect(next?.id).toBe('two-flags')
+  })
+
+  it('prefers a badge that a planned trip unlocks', () => {
+    const next = nextBadge(
+      computeBadges(
+        dayMap(
+          ['ES', '2026-01-10', 2],
+          ['ES', '2026-03-10', 2],
+          ['ES', '2026-12-10', 2]
+        ),
+        '2026-11-12'
+      )
+    )
+    expect(next).toMatchObject({ id: 'regular', unlocksOn: '2026-12-10' })
   })
 
   it('earns nothing for an empty calendar', () => {

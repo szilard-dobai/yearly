@@ -1,8 +1,14 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import type { Badge } from '@/lib/badges'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import BadgeMedal from './BadgeMedal'
 
 function Burst() {
@@ -29,40 +35,38 @@ function Burst() {
   )
 }
 
+function newest(badges: Badge[]): Badge | null {
+  return badges.reduce<Badge | null>(
+    (latest, badge) =>
+      !latest || badge.earnedOn! >= latest.earnedOn! ? badge : latest,
+    null
+  )
+}
+
 export default function BadgeUnlockedDialog({
   badges,
-  onClose,
+  open,
+  onOpenChange,
 }: {
   badges: Badge[]
-  onClose: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }) {
   const reduceMotion = useReducedMotion()
-  const badge = badges.at(-1)
+  const badge = newest(badges)
   return (
-    <AnimatePresence>
-      {badge && (
-        <motion.div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-6 backdrop-blur-sm"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-        >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="badge-unlocked-title"
-            className="relative w-full max-w-xs rounded-2xl bg-white p-8 text-center shadow-2xl dark:bg-[#1a1a1a]"
-            initial={{ scale: 0.8, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: 'spring', bounce: 0.4, duration: 0.5 }}
-            onClick={(e) => e.stopPropagation()}
-          >
+    <Dialog open={open && badge !== null} onOpenChange={onOpenChange}>
+      <DialogContent
+        showCloseButton={false}
+        className="gap-0 rounded-2xl p-8 text-center sm:max-w-xs dark:bg-[#1a1a1a]"
+      >
+        {badge && (
+          <>
             <div className="relative mx-auto flex size-28 items-center justify-center">
               {!reduceMotion && (
                 <motion.span
-                  className="absolute inset-[-14px] rounded-full bg-[conic-gradient(from_0deg,transparent,rgb(251_191_36/0.35),transparent_30%,rgb(251_191_36/0.35),transparent_60%,rgb(251_191_36/0.35),transparent_90%)]"
+                  aria-hidden="true"
+                  className="absolute -inset-3.5 rounded-full bg-[conic-gradient(from_0deg,transparent,rgb(251_191_36/0.35),transparent_30%,rgb(251_191_36/0.35),transparent_60%,rgb(251_191_36/0.35),transparent_90%)]"
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
                 />
@@ -76,18 +80,15 @@ export default function BadgeUnlockedDialog({
               </motion.span>
               {!reduceMotion && <Burst />}
             </div>
-            <p className="mt-8 text-xs font-medium uppercase tracking-widest text-amber-600 dark:text-amber-400">
+            <p className="mt-8 text-xs font-medium tracking-widest text-amber-600 uppercase dark:text-amber-400">
               Badge unlocked
             </p>
-            <p
-              id="badge-unlocked-title"
-              className="mt-1 font-serif text-3xl text-gray-900 dark:text-white"
-            >
+            <DialogTitle className="mt-1 font-serif text-3xl leading-tight font-normal text-gray-900 dark:text-white">
               {badge.name}
-            </p>
-            <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400">
+            </DialogTitle>
+            <DialogDescription className="mt-2 text-gray-500 dark:text-zinc-400">
               {badge.description}
-            </p>
+            </DialogDescription>
             {badges.length > 1 && (
               <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400">
                 and {badges.length - 1} more{' '}
@@ -97,13 +98,13 @@ export default function BadgeUnlockedDialog({
             <Button
               autoFocus
               className="mt-6 w-full bg-black text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
             >
               Nice
             </Button>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }

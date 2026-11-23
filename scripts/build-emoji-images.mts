@@ -25,6 +25,23 @@ export const EMOJI = {
   firstPlaceMedal: '1f947',
   secondPlaceMedal: '1f948',
   thirdPlaceMedal: '1f949',
+  sportsMedal: '1f3c5',
+  compass: '1f9ed',
+  raisedHand: '270b',
+  directHit: '1f3af',
+  globeEuropeAfrica: '1f30d',
+  worldMap: '1f5fa',
+  globeWithMeridians: '1f310',
+  train: '1f686',
+  backpack: '1f392',
+  luggage: '1f9f3',
+  desertIsland: '1f3dd',
+  hundredPoints: '1f4af',
+  automobile: '1f697',
+  clinkingGlasses: '1f942',
+  roundPushpin: '1f4cd',
+  fallenLeaf: '1f342',
+  spiralCalendar: '1f5d3',
 } as const
 
 export const FLAG_WIDTHS = { small: 64, large: 128 } as const

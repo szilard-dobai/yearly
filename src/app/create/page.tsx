@@ -4,6 +4,9 @@ import { Emoji } from '@/components/Emoji'
 import AccountPrompt from '@/components/account/AccountPrompt'
 import AccountSyncStatus from '@/components/account/AccountSyncStatus'
 import FirstSyncDialog from '@/components/account/FirstSyncDialog'
+import BadgesCard from '@/components/badges/BadgesCard'
+import BadgesTeaser from '@/components/badges/BadgesTeaser'
+import BadgeUnlockedDialog from '@/components/badges/BadgeUnlockedDialog'
 import CalendarGrid from '@/components/CalendarGrid'
 import CalendarHint from '@/components/CalendarHint'
 import CountryInput from '@/components/CountryInput'
@@ -42,6 +45,12 @@ import {
 } from '@/components/ui/select'
 import { useVideoSales } from '@/components/video/VideoSalesProvider'
 import { getTrafficSource } from '@/lib/attribution/traffic-source'
+import {
+  computeBadges,
+  earnedBadges,
+  newlyEarned,
+  type Badge,
+} from '@/lib/badges'
 import { CalendarAccountContext } from '@/lib/calendar-sync/CalendarAccountContext'
 import { useCalendarSync } from '@/lib/calendar-sync/useCalendarSync'
 import {
@@ -58,9 +67,11 @@ import {
 import { useImageExport } from '@/lib/hooks/useImageExport'
 import { useMonthlyExport } from '@/lib/hooks/useMonthlyExport'
 import { useStatisticsExport } from '@/lib/hooks/useStatisticsExport'
+import { useTodayKey } from '@/lib/hooks/useTodayKey'
 import { type DaySelection, toDayKey } from '@/lib/selection'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
+import { buildDayMap } from '@/lib/trips'
 import type { CalendarData } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import type { VideoKind, VideoTheme } from '@/lib/video'
@@ -78,7 +89,7 @@ import {
 import { CalendarDays, Loader2, Undo2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import dynamic from 'next/dynamic'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const AnimatedVideoDialog = dynamic(
   () => import('@/components/AnimatedVideoDialog'),
@@ -242,15 +253,6 @@ function Create() {
     }
   }, [videoSalesEnabled])
 
-  const handleDataChange = useCallback(
-    (newData: CalendarData) => {
-      setUndoStack((prev) => [...prev.slice(-9), calendarData])
-      setCalendarData(newData)
-      saveCalendarData(newData)
-    },
-    [calendarData]
-  )
-
   const handleRemoteChange = useCallback((newData: CalendarData) => {
     setUndoStack([])
     setCalendarData(newData)
@@ -264,6 +266,40 @@ function Create() {
     calendarData,
     onRemoteChange: handleRemoteChange,
   })
+
+  const todayKey = useTodayKey()
+  const signedIn = calendarSync.account !== null
+  const badges = useMemo(
+    () =>
+      calendarSync.sessionChecked && todayKey
+        ? computeBadges(buildDayMap(calendarData.visits), todayKey)
+        : null,
+    [calendarSync.sessionChecked, calendarData.visits, todayKey]
+  )
+  const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([])
+  const [unlockedOpen, setUnlockedOpen] = useState(false)
+
+  const handleDataChange = useCallback(
+    (newData: CalendarData) => {
+      if (signedIn && badges && todayKey) {
+        const unlocked = newlyEarned(
+          badges,
+          computeBadges(buildDayMap(newData.visits), todayKey)
+        )
+        if (unlocked.length > 0) {
+          setUnlockedBadges(unlocked)
+          setUnlockedOpen(true)
+          trackEvent('badge_unlocked', {
+            badgeIds: unlocked.map((badge) => badge.id),
+          })
+        }
+      }
+      setUndoStack((prev) => [...prev.slice(-9), calendarData])
+      setCalendarData(newData)
+      saveCalendarData(newData)
+    },
+    [calendarData, signedIn, badges, todayKey]
+  )
 
   const handleUndo = useCallback(() => {
     if (undoStack.length === 0) return
@@ -601,6 +637,16 @@ function Create() {
                 </CardContent>
               </StandardCard>
 
+              {badges &&
+                (signedIn ? (
+                  <BadgesCard badges={badges} />
+                ) : (
+                  <BadgesTeaser
+                    earned={earnedBadges(badges).length}
+                    total={badges.length}
+                  />
+                ))}
+
               {calendarData.visits.length > 0 && (
                 <FeedbackCard year={selectedYear} />
               )}
@@ -799,6 +845,12 @@ function Create() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BadgeUnlockedDialog
+        badges={unlockedBadges}
+        open={unlockedOpen}
+        onOpenChange={setUnlockedOpen}
+      />
 
       <FeedbackDialog
         open={feedbackDialog.open}

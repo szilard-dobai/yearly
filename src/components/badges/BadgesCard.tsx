@@ -1,5 +1,6 @@
 'use client'
 
+import { Emoji } from '@/components/Emoji'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StandardCard } from '@/components/ui/card-variants'
@@ -10,21 +11,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { nextBadge, type Badge } from '@/lib/badges'
+import { earnedBadges, nextBadge, type Badge } from '@/lib/badges'
 import { trackEvent } from '@/lib/tracking'
-import dayjs from 'dayjs'
+import { formatDay } from '@/lib/trips'
 import { cn } from '@/lib/utils'
+import dayjs from 'dayjs'
 import { useState } from 'react'
 import BadgeMedal from './BadgeMedal'
 
-function formatDate(dayKey: string, withYear = false) {
-  return dayjs(dayKey).format(withYear ? 'D MMM YYYY' : 'D MMM')
+const RECENT_COUNT = 5
+
+function formatEarnedOn(dayKey: string) {
+  return dayjs(dayKey).format('D MMM YYYY')
 }
 
-function progressText(badge: Badge) {
-  return badge.unlocksOn
-    ? `Your trip on ${formatDate(badge.unlocksOn)} unlocks it`
-    : `${badge.value} of ${badge.target} ${badge.unit}`
+function progressText(badge: Badge): string | null {
+  if (badge.unlocksOn) {
+    return `Your trip on ${formatDay(badge.unlocksOn)} unlocks it`
+  }
+  if (badge.target === 1) return null
+  return `${badge.value} of ${badge.target} ${badge.unit}`
+}
+
+function statusText(badge: Badge): string | null {
+  return badge.earnedOn
+    ? `Earned on ${formatEarnedOn(badge.earnedOn)}`
+    : progressText(badge)
 }
 
 function BadgeGrid({
@@ -35,49 +47,57 @@ function BadgeGrid({
   onSelect: (badge: Badge) => void
 }) {
   const sorted = [
-    ...badges.filter((b) => b.earnedOn),
-    ...badges.filter((b) => !b.earnedOn),
+    ...earnedBadges(badges),
+    ...badges.filter((badge) => !badge.earnedOn),
   ]
   return (
-    <ul className="grid grid-cols-3 gap-x-2 gap-y-6 sm:grid-cols-4 md:grid-cols-5">
-      {sorted.map((badge) => (
-        <li key={badge.id}>
-          <button
-            type="button"
-            onClick={() => onSelect(badge)}
-            className="group flex w-full cursor-pointer flex-col items-center gap-2 rounded-lg p-1 text-center"
-          >
-            <span className="transition-transform group-hover:scale-105">
-              <BadgeMedal badge={badge} />
-            </span>
-            <span
-              className={cn(
-                'text-xs font-medium leading-tight',
-                badge.earnedOn
-                  ? 'text-gray-900 dark:text-zinc-100'
-                  : 'text-gray-500 dark:text-zinc-500'
-              )}
+    <ul className="grid grid-cols-3 gap-x-2 gap-y-6 sm:grid-cols-4">
+      {sorted.map((badge) => {
+        const status = statusText(badge)
+        return (
+          <li key={badge.id}>
+            <button
+              type="button"
+              onClick={() => onSelect(badge)}
+              className="group flex w-full cursor-pointer flex-col items-center gap-2 rounded-lg p-1 text-center"
             >
-              {badge.name}
-            </span>
-            {badge.earnedOn ? (
-              <span className="text-[10px] text-gray-500 dark:text-zinc-500">
-                {formatDate(badge.earnedOn, true)}
+              <span className="transition-transform group-hover:scale-105">
+                <BadgeMedal badge={badge} />
               </span>
-            ) : (
               <span
-                className="h-1 w-12 rounded-full bg-gray-100 dark:bg-white/8"
-                aria-label={progressText(badge)}
+                className={cn(
+                  'text-xs leading-tight font-medium',
+                  badge.earnedOn
+                    ? 'text-gray-900 dark:text-zinc-100'
+                    : 'text-gray-500 dark:text-zinc-500'
+                )}
               >
-                <span
-                  className="block h-full rounded-full bg-gray-400 dark:bg-zinc-500"
-                  style={{ width: `${(badge.value / badge.target) * 100}%` }}
-                />
+                {badge.name}
               </span>
-            )}
-          </button>
-        </li>
-      ))}
+              {badge.earnedOn ? (
+                <span className="text-[10px] text-gray-500 dark:text-zinc-500">
+                  {formatEarnedOn(badge.earnedOn)}
+                </span>
+              ) : (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="h-1 w-12 rounded-full bg-gray-100 dark:bg-white/8"
+                  >
+                    <span
+                      className="block h-full rounded-full bg-gray-400 dark:bg-zinc-500"
+                      style={{
+                        width: `${(badge.value / badge.target) * 100}%`,
+                      }}
+                    />
+                  </span>
+                  {status && <span className="sr-only">{status}</span>}
+                </>
+              )}
+            </button>
+          </li>
+        )
+      })}
     </ul>
   )
 }
@@ -85,10 +105,10 @@ function BadgeGrid({
 export default function BadgesCard({ badges }: { badges: Badge[] }) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<Badge | null>(null)
-  const earned = badges
-    .filter((b) => b.earnedOn)
-    .sort((a, b) => (a.earnedOn! < b.earnedOn! ? 1 : -1))
-  const next = nextBadge(badges)
+  const earned = earnedBadges(badges)
+  const next = earned.length > 0 ? nextBadge(badges) : null
+  const nextProgress = next && progressText(next)
+  const selectedStatus = selected && statusText(selected)
 
   const openAll = () => {
     trackEvent('badges_open', { earned: earned.length })
@@ -101,10 +121,12 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-zinc-100">
-              <span className="text-2xl">🏅</span>
+              <span className="text-2xl">
+                <Emoji name="sportsMedal" />
+              </span>
               Badges
             </CardTitle>
-            <span className="text-sm tabular-nums text-gray-500 dark:text-zinc-400">
+            <span className="text-sm text-gray-500 tabular-nums dark:text-zinc-400">
               {earned.length}/{badges.length}
             </span>
           </div>
@@ -124,18 +146,19 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
             />
           </div>
           {earned.length > 0 ? (
-            <div className="flex gap-2">
-              {earned.slice(0, 5).map((badge) => (
-                <span key={badge.id} title={badge.name}>
+            <ul className="flex gap-2" aria-label="Latest badges">
+              {earned.slice(0, RECENT_COUNT).map((badge) => (
+                <li key={badge.id}>
                   <BadgeMedal badge={badge} size="sm" />
-                </span>
+                  <span className="sr-only">{badge.name}</span>
+                </li>
               ))}
-              {earned.length > 5 && (
-                <span className="flex size-10 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600 dark:bg-white/8 dark:text-zinc-300">
-                  +{earned.length - 5}
-                </span>
+              {earned.length > RECENT_COUNT && (
+                <li className="flex size-10 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600 dark:bg-white/8 dark:text-zinc-300">
+                  +{earned.length - RECENT_COUNT}
+                </li>
               )}
-            </div>
+            </ul>
           ) : (
             <p className="text-sm text-gray-500 dark:text-zinc-400">
               Add your first trip to earn your first badge.
@@ -149,7 +172,7 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
                   Next: {next.name}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-zinc-400">
-                  {progressText(next)}
+                  {nextProgress ?? next.description}
                 </p>
               </div>
             </div>
@@ -161,15 +184,17 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
       </StandardCard>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span className="text-2xl">🏅</span>
+              <span className="text-2xl">
+                <Emoji name="sportsMedal" />
+              </span>
               Badges
             </DialogTitle>
             <DialogDescription>
               {earned.length} of {badges.length} earned. Badges come from the
-              trips in your calendar; planned trips count once they happen.
+              trips in your calendar. Planned trips count once their day comes.
             </DialogDescription>
           </DialogHeader>
           <BadgeGrid badges={badges} onSelect={setSelected} />
@@ -180,7 +205,7 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
         open={selected !== null}
         onOpenChange={(isOpen) => !isOpen && setSelected(null)}
       >
-        <DialogContent className="max-w-sm text-center">
+        <DialogContent className="text-center sm:max-w-sm">
           {selected && (
             <div className="flex flex-col items-center gap-3 pt-2">
               <BadgeMedal badge={selected} size="lg" />
@@ -188,11 +213,11 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
                 {selected.name}
               </DialogTitle>
               <DialogDescription>{selected.description}</DialogDescription>
-              <p className="text-sm text-gray-500 dark:text-zinc-400">
-                {selected.earnedOn
-                  ? `Earned on ${formatDate(selected.earnedOn, true)}`
-                  : progressText(selected)}
-              </p>
+              {selectedStatus && (
+                <p className="text-sm text-gray-500 dark:text-zinc-400">
+                  {selectedStatus}
+                </p>
+              )}
             </div>
           )}
         </DialogContent>

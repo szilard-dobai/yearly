@@ -1,6 +1,6 @@
 import { CONTINENT_BY_COUNTRY, type ContinentCode } from './continents'
 import type { EmojiName } from './emoji'
-import { groupTrips, type DayMap } from './trips'
+import { groupTrips, type DayMap, type Trip } from './trips'
 
 interface BadgeContext {
   trips: number
@@ -31,6 +31,8 @@ export interface Badge extends Omit<BadgeDefinition, 'metric'> {
   value: number
   earnedOn: string | null
   unlocksOn: string | null
+  trip: Trip | null
+  dayCountries: string[]
 }
 
 const SHORT_TRIP_DAYS = 3
@@ -136,9 +138,9 @@ export const BADGES: BadgeDefinition[] = [
     metric: 'mostDaysInOneYear',
   },
   {
-    id: 'century',
+    id: 'hundred-club',
     emoji: 'hundredPoints',
-    name: 'Century',
+    name: 'Hundred club',
     description: 'Spend 100 days abroad in one year',
     target: 100,
     unit: 'days',
@@ -278,7 +280,7 @@ function createTally() {
 
 export function computeBadges(dayMap: DayMap, todayKey: string): Badge[] {
   const tally = createTally()
-  const reachedOn = new Map<string, string>()
+  const reachedOn = new Map<string, { day: string; trip: Trip }>()
   let now: BadgeContext | null = null
 
   for (const trip of groupTrips(dayMap)) {
@@ -293,7 +295,7 @@ export function computeBadges(dayMap: DayMap, todayKey: string): Badge[] {
       const context = tally.snapshot()
       for (const badge of BADGES) {
         if (!reachedOn.has(badge.id) && context[badge.metric] >= badge.target) {
-          reachedOn.set(badge.id, key)
+          reachedOn.set(badge.id, { day: key, trip })
         }
       }
     }
@@ -301,13 +303,15 @@ export function computeBadges(dayMap: DayMap, todayKey: string): Badge[] {
   now ??= tally.snapshot()
 
   return BADGES.map(({ metric, ...badge }) => {
-    const reached = reachedOn.get(badge.id) ?? null
-    const earned = reached !== null && reached <= todayKey
+    const reached = reachedOn.get(badge.id)
+    const earned = reached !== undefined && reached.day <= todayKey
     return {
       ...badge,
       value: Math.min(badge.target, now[metric]),
-      earnedOn: earned ? reached : null,
-      unlocksOn: earned ? null : reached,
+      earnedOn: earned ? reached.day : null,
+      unlocksOn: reached && !earned ? reached.day : null,
+      trip: reached?.trip ?? null,
+      dayCountries: reached ? (dayMap.get(reached.day) ?? []) : [],
     }
   })
 }

@@ -40,6 +40,15 @@ describe('computeBadges', () => {
     expect(badges['continent-hopper'].earnedOn).toBeNull()
   })
 
+  it('keeps the trip and countries of the day that earned each badge', () => {
+    expect(badges['two-flags'].trip).toMatchObject({
+      start: '2025-06-06',
+      countries: ['FR'],
+    })
+    expect(badges['border-hopper'].dayCountries).toEqual(['GR', 'IT'])
+    expect(badges['border-hopper'].trip?.countries).toEqual(['GR', 'IT'])
+  })
+
   it('counts a trip that crosses countries as one trip', () => {
     expect(badges['grand-tour'].value).toBe(2)
     expect(badges['long-haul'].value).toBe(11)
@@ -97,7 +106,7 @@ describe('computeBadges', () => {
     const badges = byId(
       computeBadges(dayMap(['RO', '2024-01-01', 1000]), '2026-11-12')
     )
-    expect(badges['century'].earnedOn).toBe('2024-04-09')
+    expect(badges['hundred-club'].earnedOn).toBe('2024-04-09')
     expect(badges['every-month'].earnedOn).toBe('2024-12-01')
     expect(badges['regular'].value).toBe(1)
     expect(badges['long-haul'].value).toBe(14)

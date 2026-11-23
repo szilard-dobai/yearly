@@ -3,7 +3,7 @@ import { trackEvent } from '@/lib/tracking'
 import type { DayMap } from '@/lib/trips'
 import { renderWithSettings, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import BadgesCard from './BadgesCard'
 import BadgesTeaser from './BadgesTeaser'
 import BadgeUnlockedDialog from './BadgeUnlockedDialog'
@@ -32,15 +32,35 @@ describe('BadgesCard', () => {
     expect(screen.getByText('2 of 3 continents')).toBeInTheDocument()
   })
 
-  it('says which planned trip unlocks the next badge', () => {
-    const planned = new Map(dayMap).set('2026-12-05', ['KR'])
-    renderWithSettings(
-      <BadgesCard badges={computeBadges(planned, '2026-11-12')} />
-    )
-    expect(screen.getByText('Next: Weekend warrior')).toBeInTheDocument()
-    expect(
-      screen.getByText('Your trip on 5 Dec unlocks it')
-    ).toBeInTheDocument()
+  describe('with a planned trip', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date(2026, 10, 12))
+    })
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('says which trip unlocks the next badge', () => {
+      const planned = new Map(dayMap).set('2026-12-05', ['KR'])
+      renderWithSettings(
+        <BadgesCard badges={computeBadges(planned, '2026-11-12')} />
+      )
+      expect(screen.getByText('Next: Weekend warrior')).toBeInTheDocument()
+      expect(
+        screen.getByText('Your trip to South Korea on 5 Dec unlocks it')
+      ).toBeInTheDocument()
+    })
+
+    it('adds the year for a trip next year', () => {
+      const planned = new Map(dayMap).set('2027-01-05', ['KR'])
+      renderWithSettings(
+        <BadgesCard badges={computeBadges(planned, '2026-11-12')} />
+      )
+      expect(
+        screen.getByText('Your trip to South Korea on 5 Jan 2027 unlocks it')
+      ).toBeInTheDocument()
+    })
   })
 
   it('opens a badge from the card', async () => {
@@ -49,7 +69,7 @@ describe('BadgesCard', () => {
     )
     await userEvent.click(screen.getByRole('button', { name: 'Two flags' }))
     expect(screen.getByRole('dialog', { name: 'Two flags' })).toHaveTextContent(
-      'Earned on 18 Jun 2026'
+      'Your trip to France on 18 Jun 2026 earned it'
     )
     await userEvent.keyboard('{Escape}')
 
@@ -88,7 +108,9 @@ describe('BadgesCard', () => {
     expect(screen.getByText('Globetrotter')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: /Two flags/ }))
-    expect(screen.getByText('Earned on 18 Jun 2026')).toBeInTheDocument()
+    expect(
+      screen.getByText('Your trip to France on 18 Jun 2026 earned it')
+    ).toBeInTheDocument()
   })
 
   it('encourages a first trip on an empty calendar', () => {

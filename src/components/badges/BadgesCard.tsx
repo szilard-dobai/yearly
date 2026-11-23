@@ -1,6 +1,6 @@
 'use client'
 
-import { Emoji } from '@/components/Emoji'
+import { DayFlags, Emoji } from '@/components/Emoji'
 import { Button } from '@/components/ui/button'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StandardCard } from '@/components/ui/card-variants'
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { earnedBadges, nextBadge, type Badge } from '@/lib/badges'
 import { trackEvent } from '@/lib/tracking'
-import { formatDay } from '@/lib/trips'
+import { tripName } from '@/lib/trips'
 import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
 import { useState } from 'react'
@@ -23,13 +23,18 @@ const RECENT_COUNT = 5
 const MEDAL_BUTTON =
   'block cursor-pointer rounded-full transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-[#141414]'
 
-function formatEarnedOn(dayKey: string) {
-  return dayjs(dayKey).format('D MMM YYYY')
+function formatDate(dayKey: string, withYear = true) {
+  return dayjs(dayKey).format(withYear ? 'D MMM YYYY' : 'D MMM')
+}
+
+function yourTrip(badge: Badge) {
+  return badge.trip ? `Your trip to ${tripName(badge.trip)}` : 'Your trip'
 }
 
 function progressText(badge: Badge): string | null {
   if (badge.unlocksOn) {
-    return `Your trip on ${formatDay(badge.unlocksOn)} unlocks it`
+    const thisYear = dayjs(badge.unlocksOn).year() === dayjs().year()
+    return `${yourTrip(badge)} on ${formatDate(badge.unlocksOn, !thisYear)} unlocks it`
   }
   if (badge.target === 1) return null
   return `${badge.value} of ${badge.target} ${badge.unit}`
@@ -37,7 +42,7 @@ function progressText(badge: Badge): string | null {
 
 function statusText(badge: Badge): string | null {
   return badge.earnedOn
-    ? `Earned on ${formatEarnedOn(badge.earnedOn)}`
+    ? `${yourTrip(badge)} on ${formatDate(badge.earnedOn)} earned it`
     : progressText(badge)
 }
 
@@ -77,8 +82,11 @@ function BadgeGrid({
                 {badge.name}
               </span>
               {badge.earnedOn ? (
-                <span className="text-[10px] text-gray-500 dark:text-zinc-500">
-                  {formatEarnedOn(badge.earnedOn)}
+                <span className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-zinc-500">
+                  {badge.dayCountries.length > 0 && (
+                    <DayFlags codes={badge.dayCountries} className="text-sm" />
+                  )}
+                  {formatDate(badge.earnedOn)}
                 </span>
               ) : (
                 <>
@@ -234,9 +242,11 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
               <DialogTitle className="font-serif text-2xl font-normal">
                 {selected.name}
               </DialogTitle>
-              <DialogDescription>{selected.description}</DialogDescription>
+              <DialogDescription className="text-balance">
+                {selected.description}
+              </DialogDescription>
               {selectedStatus && (
-                <p className="text-sm text-gray-500 dark:text-zinc-400">
+                <p className="text-sm text-balance text-gray-500 dark:text-zinc-400">
                   {selectedStatus}
                 </p>
               )}

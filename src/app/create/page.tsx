@@ -431,11 +431,6 @@ function Create() {
                 </CardContent>
               </StandardCard>
 
-              <TravelNudgeCard
-                calendarData={calendarData}
-                onPlanTrip={() => setIsMobileAddDialogOpen(true)}
-              />
-
               {visitsForSelectedYear > 0 && (
                 <DarkCard>
                   <CardHeader>
@@ -503,6 +498,11 @@ function Create() {
                   </CardContent>
                 </DarkCard>
               )}
+
+              <TravelNudgeCard
+                calendarData={calendarData}
+                onPlanTrip={() => setIsMobileAddDialogOpen(true)}
+              />
 
               <StandardCard>
                 <CardHeader>

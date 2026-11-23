@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { MONTH_NAMES } from './constants'
-import type { DayMap } from './trips'
+import { MAX_TRIP_DAYS, type DayMap, type Trip } from './trips'
 
 export interface MonthDays {
   year: number
@@ -15,6 +15,8 @@ export interface MonthNudge {
   ratio: number | null
 }
 
+const EVEN_RATIO = 1.25
+
 export function daysInMonth(dayMap: DayMap, year: number, month: number) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`
   let count = 0
@@ -22,14 +24,26 @@ export function daysInMonth(dayMap: DayMap, year: number, month: number) {
   return count
 }
 
-export function getMonthNudge(dayMap: DayMap, todayKey: string): MonthNudge {
+export function getMonthNudge(
+  { dayMap, trips }: { dayMap: DayMap; trips: Trip[] },
+  todayKey: string
+): MonthNudge | null {
   const today = dayjs(todayKey)
   const later = today.subtract(1, 'month')
   const earlier = today.subtract(2, 'month')
+  const from = earlier.startOf('month').format('YYYY-MM-DD')
+  const to = later.endOf('month').format('YYYY-MM-DD')
+  const longStay = trips.some(
+    (trip) =>
+      trip.days.length > MAX_TRIP_DAYS && trip.start <= to && trip.end >= from
+  )
+  if (longStay) return null
+
   const laterDays = daysInMonth(dayMap, later.year(), later.month())
   const earlierDays = daysInMonth(dayMap, earlier.year(), earlier.month())
   const low = Math.min(laterDays, earlierDays)
   const high = Math.max(laterDays, earlierDays)
+  const ratio = low > 0 ? high / low : null
   return {
     earlier: {
       year: earlier.year(),
@@ -38,12 +52,12 @@ export function getMonthNudge(dayMap: DayMap, todayKey: string): MonthNudge {
     },
     later: { year: later.year(), month: later.month(), days: laterDays },
     direction:
-      earlierDays > laterDays
-        ? 'down'
-        : laterDays > earlierDays
-          ? 'up'
-          : 'flat',
-    ratio: low > 0 ? high / low : null,
+      earlierDays === laterDays || (ratio !== null && ratio < EVEN_RATIO)
+        ? 'flat'
+        : earlierDays > laterDays
+          ? 'down'
+          : 'up',
+    ratio,
   }
 }
 
@@ -71,5 +85,8 @@ export function nudgeMessage(nudge: MonthNudge): string {
       : `${b} beat ${a}: ${times(nudge.ratio)} the days abroad.`
   }
   if (nudge.later.days === 0) return `No trips in ${a} or ${b}.`
-  return `${a} and ${b} were even: ${days(nudge.later.days)} abroad each.`
+  if (nudge.earlier.days === nudge.later.days) {
+    return `${a} and ${b} were even: ${days(nudge.later.days)} abroad each.`
+  }
+  return `${a} and ${b} were about even: ${nudge.earlier.days} and ${days(nudge.later.days)} abroad.`
 }

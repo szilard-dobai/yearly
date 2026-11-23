@@ -3,7 +3,7 @@
 import { Flag } from '@/components/Emoji'
 import { CardContent } from '@/components/ui/card'
 import { DarkCard, StandardCard } from '@/components/ui/card-variants'
-import { toDayKey } from '@/lib/selection'
+import { useTodayKey } from '@/lib/hooks/useTodayKey'
 import { trackEvent } from '@/lib/tracking'
 import {
   countryName,
@@ -18,22 +18,10 @@ import {
 } from '@/lib/trips'
 import type { CalendarData } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { useEffect, useMemo, useSyncExternalStore } from 'react'
+import { useEffect, useMemo } from 'react'
 
 const BIG_FLAG = 'text-5xl sm:text-6xl'
 const MAX_SEGMENTS = 31
-
-function subscribe() {
-  return () => {}
-}
-
-function useLocalTodayKey(): string | null {
-  return useSyncExternalStore(
-    subscribe,
-    () => toDayKey(new Date()),
-    () => null
-  )
-}
 
 interface TripCountdownProps {
   calendarData: CalendarData
@@ -44,8 +32,7 @@ export default function TripCountdown({
   calendarData,
   today,
 }: TripCountdownProps) {
-  const localTodayKey = useLocalTodayKey()
-  const todayKey = today ? toDayKey(today) : localTodayKey
+  const todayKey = useTodayKey(today)
   const { status, upcoming } = useMemo(() => {
     if (!todayKey) return { status: { kind: 'none' as const }, upcoming: [] }
     const { dayMap, trips } = getTrips(calendarData.visits)

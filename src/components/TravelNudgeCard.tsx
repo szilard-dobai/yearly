@@ -8,8 +8,8 @@ import {
   dismissTravelNudge,
   useNudgeDismissedMonth,
 } from '@/lib/hooks/useNudgeDismissed'
+import { useTodayKey } from '@/lib/hooks/useTodayKey'
 import { getMonthNudge, nudgeMessage, type MonthDays } from '@/lib/nudges'
-import { toDayKey } from '@/lib/selection'
 import { trackEvent } from '@/lib/tracking'
 import {
   daysBetween,
@@ -55,25 +55,29 @@ export default function TravelNudgeCard({
   onPlanTrip,
   today,
 }: TravelNudgeCardProps) {
-  const todayKey = toDayKey(today ?? new Date())
-  const monthKey = todayKey.slice(0, 7)
+  const todayKey = useTodayKey(today)
+  const monthKey = todayKey?.slice(0, 7)
   const dismissedMonth = useNudgeDismissedMonth()
   const { nudge, next } = useMemo(() => {
-    const { dayMap, trips } = getTrips(calendarData.visits)
+    if (!todayKey || calendarData.visits.length === 0) {
+      return { nudge: null, next: null }
+    }
+    const trips = getTrips(calendarData.visits)
     return {
-      nudge: getMonthNudge(dayMap, todayKey),
-      next: getUpcomingTrips(trips, todayKey)[0] ?? null,
+      nudge: getMonthNudge(trips, todayKey),
+      next: getUpcomingTrips(trips.trips, todayKey)[0] ?? null,
     }
   }, [calendarData.visits, todayKey])
 
-  const hidden = calendarData.visits.length === 0 || dismissedMonth === monthKey
+  const shownDirection =
+    nudge && monthKey !== dismissedMonth ? nudge.direction : null
 
   useEffect(() => {
-    if (hidden) return
-    trackEvent('travel_nudge_shown', { direction: nudge.direction })
-  }, [hidden, nudge.direction])
+    if (!shownDirection) return
+    trackEvent('travel_nudge_shown', { direction: shownDirection })
+  }, [shownDirection])
 
-  if (hidden) return null
+  if (!nudge || !todayKey || !monthKey || !shownDirection) return null
 
   const max = Math.max(1, nudge.earlier.days, nudge.later.days)
 

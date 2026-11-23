@@ -42,6 +42,7 @@ describe('createAuth', () => {
   let close: () => Promise<void>
   let codes: string[]
   let signUps: SignUp[]
+  let deletedUserIds: string[]
   let auth: ReturnType<typeof createAuth>
 
   beforeAll(async () => {
@@ -58,6 +59,7 @@ describe('createAuth', () => {
     await db.delete(user)
     codes = []
     signUps = []
+    deletedUserIds = []
     auth = createAuth({
       db,
       secret: SECRET,
@@ -66,6 +68,9 @@ describe('createAuth', () => {
       },
       onSignUp: (signUp) => {
         signUps.push(signUp)
+      },
+      onUserDeleted: (userId) => {
+        deletedUserIds.push(userId)
       },
     })
   })
@@ -241,6 +246,24 @@ describe('createAuth', () => {
     await signIn('ana@example.com', '000000')
 
     expect(signUps).toEqual([])
+  })
+
+  it('reports the ID of a deleted account so its activity can be unlinked', async () => {
+    const response = await signIn(
+      'ana@example.com',
+      await requestCode('ana@example.com')
+    )
+    const [account] = await db.select().from(user)
+
+    const deleted = await post(
+      '/delete-user',
+      {},
+      { ...HEADERS, cookie: sessionCookie(response) }
+    )
+
+    expect(deleted.status).toBe(200)
+    expect(await db.select().from(user)).toHaveLength(0)
+    expect(deletedUserIds).toEqual([account.id])
   })
 
   it('rejects requests for hosts that are not allowed', async () => {

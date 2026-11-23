@@ -45,6 +45,7 @@ interface CreateAuthOptions {
   db: Database
   sendSignInCode: (email: string, code: string) => Promise<void>
   onSignUp?: (signUp: SignUp) => void
+  onUserDeleted?: (userId: string) => void
   secret?: string
 }
 
@@ -52,6 +53,7 @@ export function createAuth({
   db,
   sendSignInCode,
   onSignUp,
+  onUserDeleted,
   secret,
 }: CreateAuthOptions) {
   const google = getGoogleCredentials()
@@ -75,7 +77,12 @@ export function createAuth({
       updateAge: 24 * 60 * 60,
       cookieCache: { enabled: true, maxAge: SESSION_CACHE_MINUTES * 60 },
     },
-    user: { deleteUser: { enabled: true } },
+    user: {
+      deleteUser: {
+        enabled: true,
+        afterDelete: async (user) => onUserDeleted?.(user.id),
+      },
+    },
     rateLimit: {
       customStorage: createRateLimitStorage(db),
       customRules: { '/get-session': false },

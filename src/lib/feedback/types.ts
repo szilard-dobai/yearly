@@ -116,6 +116,7 @@ export type FeedbackListQuery = z.infer<typeof feedbackListQuerySchema>
 export interface FeedbackEntry {
   _id: string
   deviceId: string
+  userId?: string
   rating: number | null
   message: string | null
   tags?: FeedbackTag[]

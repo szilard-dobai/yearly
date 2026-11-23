@@ -1,3 +1,5 @@
+import { buildEventListFilter } from '@/lib/admin/event-filters'
+import { getSessionUserId } from '@/lib/auth/session-user'
 import { getTrackingCollection } from '@/lib/mongodb'
 import { isAuthenticated, validateSameOrigin } from '@/lib/tracking/api'
 import type { Sort } from 'mongodb'
@@ -14,11 +16,6 @@ export async function GET(request: Request) {
   }
 
   const url = new URL(request.url)
-  const type = url.searchParams.get('type')
-  const deviceId = url.searchParams.get('deviceId')
-  const search = url.searchParams.get('search')
-  const country = url.searchParams.get('country')
-  const region = url.searchParams.get('region')
   const sortField = (url.searchParams.get('sortField') || 'timestamp') as
     | 'timestamp'
     | 'type'
@@ -31,20 +28,7 @@ export async function GET(request: Request) {
 
   try {
     const collection = await getTrackingCollection()
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {}
-    if (type && type !== 'all') filter.type = type
-    if (deviceId) filter.deviceId = { $regex: deviceId, $options: 'i' }
-    if (country && country !== 'all') filter.country = country
-    if (region && region !== 'all') filter.region = region
-    if (search) {
-      filter.$or = [
-        { metadata: { $regex: search, $options: 'i' } },
-        { type: { $regex: search, $options: 'i' } },
-      ]
-    }
-
+    const filter = buildEventListFilter(url.searchParams)
     const sort: Sort = { [sortField]: sortOrder === 'asc' ? 1 : -1 }
 
     const [events, total] = await Promise.all([
@@ -81,13 +65,19 @@ export async function POST(request: Request) {
     const region =
       request.headers.get('x-vercel-ip-country-region') || undefined
 
-    const collection = await getTrackingCollection()
-    await collection.insertOne({
+    const [collection, userId] = await Promise.all([
+      getTrackingCollection(),
+      getSessionUserId(request),
+    ])
+    const document = {
       ...event,
       timestamp: new Date(event.timestamp),
       country,
       region,
-    })
+    }
+    delete document.userId
+    if (userId) document.userId = userId
+    await collection.insertOne(document)
 
     return NextResponse.json({ success: true })
   } catch (error) {

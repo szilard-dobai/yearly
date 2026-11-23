@@ -34,8 +34,8 @@ export function formatDateTime(
   })
 }
 
-export function shortDeviceId(deviceId: string): string {
-  return deviceId.slice(0, 8)
+export function shortId(id: string): string {
+  return id.slice(0, 8)
 }
 
 export function getCountryName(code: string): string {

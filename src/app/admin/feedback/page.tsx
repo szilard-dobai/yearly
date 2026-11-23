@@ -24,7 +24,7 @@ import {
   formatDateTime,
   formatLocation,
   formatRelativeTime,
-  shortDeviceId,
+  shortId,
 } from '@/lib/admin/format'
 import {
   FEEDBACK_RATINGS,
@@ -186,7 +186,8 @@ function FeedbackListItem({
 
         <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-zinc-500">
           <span className="font-mono">
-            Device {shortDeviceId(entry.deviceId)}
+            Device {shortId(entry.deviceId)}
+            {entry.userId && ` · User ${shortId(entry.userId)}`}
           </span>
           <span className="flex items-center gap-0.5 font-medium text-gray-700 group-hover:text-gray-900 dark:text-zinc-300 dark:group-hover:text-zinc-100">
             View activity

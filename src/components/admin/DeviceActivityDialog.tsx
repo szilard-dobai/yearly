@@ -7,6 +7,7 @@ import DetailRow from '@/components/admin/DetailRow'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import FeedbackTagList from '@/components/admin/FeedbackTagList'
 import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
+import IdentifierRow from '@/components/admin/IdentifierRow'
 import StarRating, { RATING_LABELS } from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,7 +21,7 @@ import {
   formatDateTime,
   formatLocation,
   formatRelativeTime,
-  shortDeviceId,
+  shortId,
   summarizeMetadata,
 } from '@/lib/admin/format'
 import {
@@ -66,6 +67,21 @@ function formatContext(entry: FeedbackEntry) {
   return parts.join(' · ')
 }
 
+function OpenInAnalytics({ id }: { id: string }) {
+  return (
+    <Button variant="outline" size="sm" asChild>
+      <Link
+        href={`/admin/analytics?id=${encodeURIComponent(id)}`}
+        target="_blank"
+        rel="noopener"
+      >
+        <ExternalLink className="size-4" />
+        Open in Analytics
+      </Link>
+    </Button>
+  )
+}
+
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 rounded-lg border border-gray-200 dark:border-white/8 bg-gray-50 dark:bg-[#1a1a1a] px-3 py-2">
@@ -85,7 +101,7 @@ function describeDeviceDeletion(
     totalEvents === undefined
       ? 'Every tracking event'
       : `All ${totalEvents.toLocaleString()} tracking events`
-  return `${events} and every feedback entry from device ${shortDeviceId(deviceId)} will be permanently deleted and removed from the stats.`
+  return `${events} and every feedback entry from device ${shortId(deviceId)} will be permanently deleted and removed from the stats.`
 }
 
 function DeviceActivityContent({
@@ -251,6 +267,15 @@ function DeviceActivityContent({
             value={feedback.userAgent ?? 'Unknown'}
           />
         </dl>
+        {feedback.userId && (
+          <div className="pt-3 border-t border-gray-100 dark:border-white/8">
+            <IdentifierRow
+              label="User ID"
+              value={feedback.userId}
+              action={<OpenInAnalytics id={feedback.userId} />}
+            />
+          </div>
+        )}
       </section>
 
       <section className="space-y-4">
@@ -264,16 +289,7 @@ function DeviceActivityContent({
             </code>
             <CopyButton value={feedback.deviceId} label="Copy device id" />
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link
-              href={`/admin/analytics?deviceId=${encodeURIComponent(feedback.deviceId)}`}
-              target="_blank"
-              rel="noopener"
-            >
-              <ExternalLink className="size-4" />
-              Open in Analytics
-            </Link>
-          </Button>
+          <OpenInAnalytics id={feedback.deviceId} />
         </div>
 
         {isLoading ? (
@@ -355,6 +371,11 @@ function DeviceActivityContent({
                           <span className="text-amber-800/70 dark:text-amber-300/70">
                             {formatDateTime(item.at)}
                           </span>
+                          {item.feedback.userId && (
+                            <span className="font-mono text-amber-800/70 dark:text-amber-300/70">
+                              User {shortId(item.feedback.userId)}
+                            </span>
+                          )}
                         </div>
                         {item.feedback.message && (
                           <p className="mt-1 text-sm text-amber-950 dark:text-amber-100 line-clamp-2">
@@ -374,6 +395,11 @@ function DeviceActivityContent({
                           {formatDateTime(item.at)}
                         </span>
                         <EventTypeBadge type={item.event.type} />
+                        {item.event.userId && (
+                          <span className="font-mono text-xs text-gray-500 dark:text-zinc-500">
+                            User {shortId(item.event.userId)}
+                          </span>
+                        )}
                       </div>
                       {summarizeMetadata(item.event.metadata) && (
                         <p className="mt-0.5 break-words text-xs text-gray-500 dark:text-zinc-500">

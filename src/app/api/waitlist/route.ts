@@ -1,5 +1,5 @@
 import { isAccountsEnabled } from '@/lib/auth/enabled'
-import { getSessionEmail } from '@/lib/auth/session-email'
+import { getSessionEmail } from '@/lib/auth/session-user'
 import { getWaitlistCollection, type WaitlistDocument } from '@/lib/mongodb'
 import { validateSameOrigin } from '@/lib/tracking/api'
 import { notifyWaitlistToSlack } from '@/lib/waitlist/slack'

@@ -2,6 +2,7 @@ import {
   buildFeedbackFilter,
   buildFeedbackListPipeline,
 } from '@/lib/feedback/query'
+import { getSessionUserId } from '@/lib/auth/session-user'
 import { notifyFeedbackToSlack } from '@/lib/feedback/slack'
 import {
   createFeedbackSchema,
@@ -50,7 +51,10 @@ export async function POST(request: Request) {
     parsed.data
 
   try {
-    const collection = await getFeedbackCollection()
+    const [collection, userId] = await Promise.all([
+      getFeedbackCollection(),
+      getSessionUserId(request),
+    ])
 
     const recentSubmissions = await collection.countDocuments({
       deviceId,
@@ -77,6 +81,7 @@ export async function POST(request: Request) {
     const country = request.headers.get('x-vercel-ip-country')
     const region = request.headers.get('x-vercel-ip-country-region')
 
+    if (userId) document.userId = userId
     if (tags?.length) document.tags = tags
     if (context && Object.keys(context).length > 0) document.context = context
     if (deviceType) document.deviceType = deviceType

@@ -12,6 +12,7 @@ const MIN_DELETE_AGE_MS = 4 * 365 * DAY_MS
 
 export const EVENT_FIELDS_REMOVED = [
   'deviceId',
+  'userId',
   'region',
   'metadata.referrer',
   'metadata.utm',
@@ -20,7 +21,12 @@ export const EVENT_FIELDS_REMOVED = [
   'metadata.otherText',
 ]
 
-export const FEEDBACK_FIELDS_REMOVED = ['deviceId', 'userAgent', 'region']
+export const FEEDBACK_FIELDS_REMOVED = [
+  'deviceId',
+  'userId',
+  'userAgent',
+  'region',
+]
 
 export const CALENDAR_ADD_FIELDS_REMOVED = ['deviceId', 'region']
 

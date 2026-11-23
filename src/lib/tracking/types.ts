@@ -135,6 +135,7 @@ export interface MonthlyExportClickMetadata {
 
 export interface StoredTrackingEvent extends TrackingEvent {
   _id: string
+  userId?: string
 }
 
 export interface DeviceSummary {

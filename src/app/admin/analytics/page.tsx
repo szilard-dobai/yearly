@@ -32,7 +32,7 @@ import {
   formatLocation,
   getCountryName,
   getEventLabel,
-  shortDeviceId,
+  shortId,
   summarizeMetadata,
 } from '@/lib/admin/format'
 import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
@@ -93,10 +93,10 @@ export default function AnalyticsPage() {
   const [offset, setOffset] = useState(0)
 
   const [typeFilter, setTypeFilter] = useState<string>('all')
-  const [deviceIdFilter, setDeviceIdFilter] = useState(() =>
+  const [idFilter, setIdFilter] = useState(() =>
     typeof window === 'undefined'
       ? ''
-      : (new URLSearchParams(window.location.search).get('deviceId') ?? '')
+      : (new URLSearchParams(window.location.search).get('id') ?? '')
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [countryFilter, setCountryFilter] = useState<string>('all')
@@ -121,12 +121,12 @@ export default function AnalyticsPage() {
   const buildFilterParams = useCallback(() => {
     const params = new URLSearchParams()
     if (typeFilter !== 'all') params.set('type', typeFilter)
-    if (deviceIdFilter) params.set('deviceId', deviceIdFilter)
+    if (idFilter) params.set('id', idFilter)
     if (searchQuery) params.set('search', searchQuery)
     if (countryFilter !== 'all') params.set('country', countryFilter)
     if (regionFilter !== 'all') params.set('region', regionFilter)
     return params
-  }, [typeFilter, deviceIdFilter, searchQuery, countryFilter, regionFilter])
+  }, [typeFilter, idFilter, searchQuery, countryFilter, regionFilter])
 
   const buildQueryParams = useCallback(
     (extraParams?: Record<string, string>) => {
@@ -241,7 +241,7 @@ export default function AnalyticsPage() {
   }, [
     isAuthenticated,
     typeFilter,
-    deviceIdFilter,
+    idFilter,
     searchQuery,
     countryFilter,
     regionFilter,
@@ -331,8 +331,8 @@ export default function AnalyticsPage() {
     setIsEventOpen(true)
   }
 
-  const handleShowDeviceEvents = (deviceId: string) => {
-    setDeviceIdFilter(deviceId)
+  const handleFilterById = (id: string) => {
+    setIdFilter(id)
     setIsEventOpen(false)
   }
 
@@ -468,13 +468,13 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="analytics-device-id">Device ID</Label>
+            <Label htmlFor="analytics-id">Device or user ID</Label>
             <Input
-              id="analytics-device-id"
+              id="analytics-id"
               className="w-full"
-              placeholder="Filter by device ID..."
-              value={deviceIdFilter}
-              onChange={(e) => setDeviceIdFilter(e.target.value)}
+              placeholder="Filter by device or user ID..."
+              value={idFilter}
+              onChange={(e) => setIdFilter(e.target.value)}
             />
           </div>
 
@@ -595,6 +595,7 @@ export default function AnalyticsPage() {
                   <th className="text-left p-3 font-medium">Event</th>
                   <th className="text-left p-3 font-medium">Device</th>
                   <th className="text-left p-3 font-medium">Device ID</th>
+                  <th className="text-left p-3 font-medium">User ID</th>
                   <th className="text-left p-3 font-medium">Location</th>
                   <th className="text-left p-3 font-medium">Details</th>
                 </tr>
@@ -602,7 +603,7 @@ export default function AnalyticsPage() {
               <tbody className="divide-y divide-gray-100 dark:divide-white/8">
                 {isLoadingEvents ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center">
+                    <td colSpan={7} className="p-8 text-center">
                       <Loader2 className="size-6 animate-spin mx-auto text-gray-400" />
                     </td>
                   </tr>
@@ -640,7 +641,10 @@ export default function AnalyticsPage() {
                             </span>
                           </td>
                           <td className="p-3 font-mono text-xs text-gray-500 dark:text-zinc-500">
-                            {shortDeviceId(event.deviceId)}
+                            {shortId(event.deviceId)}
+                          </td>
+                          <td className="p-3 font-mono text-xs text-gray-500 dark:text-zinc-500">
+                            {event.userId ? shortId(event.userId) : '—'}
                           </td>
                           <td className="p-3 whitespace-nowrap text-xs text-gray-600 dark:text-zinc-400">
                             <span className="flex items-center gap-1.5">
@@ -664,7 +668,7 @@ export default function AnalyticsPage() {
                     {events.length === 0 && (
                       <tr>
                         <td
-                          colSpan={6}
+                          colSpan={7}
                           className="p-8 text-center text-gray-500 dark:text-zinc-400"
                         >
                           No events found
@@ -698,8 +702,8 @@ export default function AnalyticsPage() {
         event={selectedEvent}
         open={isEventOpen}
         onOpenChange={setIsEventOpen}
-        isDeviceFiltered={deviceIdFilter === selectedEvent?.deviceId}
-        onShowDeviceEvents={handleShowDeviceEvents}
+        idFilter={idFilter}
+        onFilterById={handleFilterById}
         onDeleteEvent={handleDeleteEvent}
         onDeleteDevice={handleDeleteDevice}
       />

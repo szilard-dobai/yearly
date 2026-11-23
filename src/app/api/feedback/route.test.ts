@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { POST } from './route'
 
 const collection = {
@@ -8,6 +8,11 @@ const collection = {
 }
 
 const notifyFeedbackToSlack = vi.fn()
+const getSession = vi.fn()
+
+vi.mock('@/lib/auth/server', () => ({
+  auth: { api: { getSession: (...args: unknown[]) => getSession(...args) } },
+}))
 
 vi.mock('@/lib/mongodb', () => ({
   getFeedbackCollection: () => Promise.resolve(collection),
@@ -44,6 +49,8 @@ const validBody = {
 
 describe('POST /api/feedback', () => {
   beforeEach(() => {
+    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
+    getSession.mockReset().mockResolvedValue(null)
     notifyFeedbackToSlack.mockReset()
     collection.countDocuments.mockReset().mockResolvedValue(0)
     collection.insertOne.mockReset().mockResolvedValue({
@@ -78,6 +85,38 @@ describe('POST /api/feedback', () => {
         updatedAt: expect.any(Date),
       })
     )
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('stores the account ID of a signed-in person', async () => {
+    getSession.mockResolvedValue({ user: { id: 'user-1', email: 'a@b.co' } })
+
+    await POST(postRequest(validBody))
+
+    expect(collection.insertOne).toHaveBeenCalledWith(
+      expect.objectContaining({ deviceId: 'device-123', userId: 'user-1' })
+    )
+  })
+
+  it('stores no account ID when signed out or when accounts are off', async () => {
+    await POST(postRequest(validBody))
+    vi.stubEnv('ACCOUNTS_ENABLED', '')
+    getSession.mockResolvedValue({ user: { id: 'user-1', email: 'a@b.co' } })
+    await POST(postRequest(validBody))
+
+    for (const [document] of collection.insertOne.mock.calls) {
+      expect(document).not.toHaveProperty('userId')
+    }
+    expect(getSession).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores an account ID sent by the browser', async () => {
+    await POST(postRequest({ ...validBody, userId: 'someone-else' }))
+
+    expect(collection.insertOne.mock.calls[0][0]).not.toHaveProperty('userId')
   })
 
   it('sends new feedback to Slack', async () => {

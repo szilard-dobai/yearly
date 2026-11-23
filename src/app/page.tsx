@@ -61,9 +61,10 @@ export default function Home() {
         <TrackingLink
           href="/create"
           linkType="header"
-          className="px-6 py-2 bg-black dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
+          className="inline-flex h-9 items-center px-4 sm:px-6 whitespace-nowrap bg-black dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-gray-800 dark:hover:bg-zinc-200 transition-colors"
         >
-          Make your calendar
+          <span className="sm:hidden">Create</span>
+          <span className="hidden sm:inline">Make your calendar</span>
         </TrackingLink>
       </Header>
 

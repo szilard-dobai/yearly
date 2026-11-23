@@ -79,6 +79,8 @@ function getInitialData(): CalendarData {
   return loadCalendarData() || { visits: [] }
 }
 
+const YEAR_OFFSETS = [-1, 0, 1, 2, 3]
+
 function pluralDays(count: number) {
   return `${count} ${count === 1 ? 'day' : 'days'}`
 }
@@ -362,15 +364,14 @@ function Create() {
             <SelectValue placeholder="Select year" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={(new Date().getFullYear() - 1).toString()}>
-              {new Date().getFullYear() - 1}
-            </SelectItem>
-            <SelectItem value={new Date().getFullYear().toString()}>
-              {new Date().getFullYear()}
-            </SelectItem>
-            <SelectItem value={(new Date().getFullYear() + 1).toString()}>
-              {new Date().getFullYear() + 1}
-            </SelectItem>
+            {YEAR_OFFSETS.map((offset) => {
+              const year = new Date().getFullYear() + offset
+              return (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              )
+            })}
           </SelectContent>
         </Select>
       </Header>

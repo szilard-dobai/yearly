@@ -135,6 +135,11 @@ export default function PrivacyPage() {
                 write to us. We don&apos;t send newsletters or marketing to it.
               </p>
               <p>
+                Each new account is posted to a private Slack channel with
+                whether you signed up by email or with Google, and your country.
+                It never includes your email address or name.
+              </p>
+              <p>
                 You stay signed in on a device until you sign out, or until you
                 haven&apos;t opened <ProductName /> there for 60 days. Signing
                 out removes your trips from that device. They stay saved in your
@@ -245,7 +250,7 @@ export default function PrivacyPage() {
               topics you picked, with the random ID, your browser&apos;s user
               agent, your device type and approximate location. We get a Slack
               notification with your rating, message, topics, device type and
-              approximate location.
+              country.
             </p>
             <p>
               We may show star ratings and short quotes from feedback on
@@ -318,10 +323,10 @@ export default function PrivacyPage() {
             </p>
             <p>
               Each new reminder, by email or calendar, is posted to a private
-              Slack channel with your approximate location, your device type and
-              how you set it. Our usage events record when you open the reminder
-              options or add the reminder to a calendar, and which calendar.
-              Neither ever includes your email address.
+              Slack channel with your country, your device type and how you set
+              it. Our usage events record when you open the reminder options or
+              add the reminder to a calendar, and which calendar. Neither ever
+              includes your email address.
             </p>
           </Section>
 
@@ -467,7 +472,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 Slack receives our notifications about feedback, waitlist
-                sign-ups and year-end reminders.
+                sign-ups{accounts ? ', new accounts' : ''} and year-end
+                reminders.
               </li>
               <li>
                 ImprovMX forwards emails sent to {CONTACT_EMAIL} to our Yahoo

@@ -16,7 +16,6 @@ export type NotifiedReminder = {
   method: ReminderMethod
   deviceType?: DeviceType
   country?: string
-  region?: string
 }
 
 const METHOD_LABELS: Record<ReminderMethod, string> = {
@@ -35,7 +34,7 @@ export function buildReminderSlackMessage(
   siteUrl?: string
 ): SlackMessage {
   const who = reminder.country
-    ? `Someone from ${formatSlackLocation(reminder.country, reminder.region)}`
+    ? `Someone from ${formatSlackLocation(reminder.country)}`
     : 'Someone'
   const title = escapeSlackText(
     `${who} set a reminder ${METHOD_LABELS[reminder.method]}`

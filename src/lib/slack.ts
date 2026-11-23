@@ -12,10 +12,9 @@ export function escapeSlackText(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
-export function formatSlackLocation(country?: string, region?: string): string {
+export function formatSlackLocation(country?: string): string {
   if (!country) return 'Unknown location'
-  const name = `${getFlagEmoji(country)} ${getCountryName(country)}`
-  return region ? `${name} (${region})` : name
+  return `${getFlagEmoji(country)} ${getCountryName(country)}`
 }
 
 export function slackAdminLink(path: string, siteUrl?: string): string {

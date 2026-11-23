@@ -15,8 +15,7 @@ describe('escapeSlackText', () => {
 })
 
 describe('formatSlackLocation', () => {
-  it('shows the flag, country name and region', () => {
-    expect(formatSlackLocation('DE', 'BY')).toBe('🇩🇪 Germany (BY)')
+  it('shows the flag and country name', () => {
     expect(formatSlackLocation('DE')).toBe('🇩🇪 Germany')
     expect(formatSlackLocation()).toBe('Unknown location')
   })

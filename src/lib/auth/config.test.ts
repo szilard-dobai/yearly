@@ -20,6 +20,7 @@ import {
   getGoogleCredentials,
   isAccountsEnabled,
 } from './config'
+import type { SignUp } from './slack'
 
 const SECRET = 'test-secret-that-is-at-least-32-characters'
 const HEADERS = {
@@ -40,6 +41,7 @@ describe('createAuth', () => {
   let db: Database
   let close: () => Promise<void>
   let codes: string[]
+  let signUps: SignUp[]
   let auth: ReturnType<typeof createAuth>
 
   beforeAll(async () => {
@@ -55,11 +57,15 @@ describe('createAuth', () => {
     await db.delete(verification)
     await db.delete(user)
     codes = []
+    signUps = []
     auth = createAuth({
       db,
       secret: SECRET,
       sendSignInCode: async (_email, code) => {
         codes.push(code)
+      },
+      onSignUp: (signUp) => {
+        signUps.push(signUp)
       },
     })
   })
@@ -213,6 +219,28 @@ describe('createAuth', () => {
 
     expect(await db.select().from(user)).toHaveLength(1)
     expect(await db.select().from(session)).toHaveLength(2)
+  })
+
+  it('reports a sign-up only the first time someone signs in', async () => {
+    await signIn('ana@example.com', await requestCode('ana@example.com'))
+    await signIn('ana@example.com', await requestCode('ana@example.com'))
+    await post(
+      '/sign-in/email-otp',
+      { email: 'ben@example.com', otp: await requestCode('ben@example.com') },
+      { ...HEADERS, 'x-vercel-ip-country': 'RO' }
+    )
+
+    expect(signUps).toEqual([
+      { method: 'email', country: undefined },
+      { method: 'email', country: 'RO' },
+    ])
+  })
+
+  it('does not report a sign-up when the code is wrong', async () => {
+    await requestCode('ana@example.com')
+    await signIn('ana@example.com', '000000')
+
+    expect(signUps).toEqual([])
   })
 
   it('rejects requests for hosts that are not allowed', async () => {

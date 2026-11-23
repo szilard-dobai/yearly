@@ -6,6 +6,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 import { emailOTP } from 'better-auth/plugins/email-otp'
 import { createRateLimitStorage } from './rate-limit'
+import { getSignUpMethod, type SignUp } from './slack'
 
 export const SIGN_IN_CODE_RATE_LIMIT = { window: 10 * 60, max: 5 }
 export const SIGN_IN_CODE_ATTEMPTS = 3
@@ -43,10 +44,16 @@ export function getGoogleCredentials() {
 interface CreateAuthOptions {
   db: Database
   sendSignInCode: (email: string, code: string) => Promise<void>
+  onSignUp?: (signUp: SignUp) => void
   secret?: string
 }
 
-export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
+export function createAuth({
+  db,
+  sendSignInCode,
+  onSignUp,
+  secret,
+}: CreateAuthOptions) {
   const google = getGoogleCredentials()
 
   return betterAuth({
@@ -74,6 +81,17 @@ export function createAuth({ db, sendSignInCode, secret }: CreateAuthOptions) {
       customRules: { '/get-session': false },
     },
     databaseHooks: {
+      user: {
+        create: {
+          after: async (_user, context) => {
+            onSignUp?.({
+              method: getSignUpMethod(context?.path),
+              country:
+                context?.headers?.get('x-vercel-ip-country') ?? undefined,
+            })
+          },
+        },
+      },
       account: {
         create: {
           before: async (account) => ({

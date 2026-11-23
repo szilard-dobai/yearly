@@ -18,7 +18,6 @@ type NotifiedFeedback = Pick<
   | 'context'
   | 'deviceType'
   | 'country'
-  | 'region'
 >
 
 const TITLES: Record<FeedbackNotificationKind, string> = {
@@ -51,7 +50,7 @@ export function buildFeedbackSlackMessage(
   const title = TITLES[kind]
   const rating = formatRating(feedback.rating)
   const details = [
-    formatSlackLocation(feedback.country, feedback.region),
+    formatSlackLocation(feedback.country),
     feedback.deviceType,
     formatSource(feedback),
   ]

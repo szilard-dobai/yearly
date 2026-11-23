@@ -23,7 +23,7 @@ describe('buildWaitlistSlackMessage', () => {
 
     expect(message.text).toBe('New video waitlist sign-up (12 total)')
     expect(JSON.stringify(message.blocks)).toContain(
-      'Saw $2.99 · on the year video · 🇷🇴 Romania (CJ) · mobile · <https://yearly.world/admin/analytics|Open in admin>'
+      'Saw $2.99 · on the year video · 🇷🇴 Romania · mobile · <https://yearly.world/admin/analytics|Open in admin>'
     )
   })
 

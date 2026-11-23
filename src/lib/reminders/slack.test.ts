@@ -45,13 +45,10 @@ describe('buildReminderSlackMessage', () => {
     ['ics', 'in their Apple or Outlook calendar'],
     ['google', 'in Google Calendar'],
   ] as const)('describes a %s calendar add', (method, label) => {
-    const message = buildReminderSlackMessage(
-      { ...reminder, method, region: '01' },
-      totals
-    )
+    const message = buildReminderSlackMessage({ ...reminder, method }, totals)
 
     expect(message.text).toBe(
-      `Someone from 🇸🇬 Singapore (01) set a reminder ${label}`
+      `Someone from 🇸🇬 Singapore set a reminder ${label}`
     )
   })
 
@@ -67,11 +64,11 @@ describe('buildReminderSlackMessage', () => {
 
   it('escapes Slack markup from request headers', () => {
     const message = buildReminderSlackMessage(
-      { ...reminder, region: '<!here>' },
+      { ...reminder, country: '<!here>' },
       totals
     )
 
-    expect(message.text).toContain('(&lt;!here&gt;)')
+    expect(message.text).toContain('&lt;!here&gt;')
   })
 })
 

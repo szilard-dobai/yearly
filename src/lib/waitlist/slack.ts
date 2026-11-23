@@ -10,7 +10,7 @@ import { formatPrice } from '@/lib/video-offer'
 
 type NotifiedSignup = Pick<
   WaitlistDocument,
-  'context' | 'deviceType' | 'country' | 'region'
+  'context' | 'deviceType' | 'country'
 >
 
 const VIDEO_KIND_LABELS = {
@@ -31,7 +31,7 @@ export function buildWaitlistSlackMessage(
     context?.videoKind
       ? `on the ${VIDEO_KIND_LABELS[context.videoKind]}`
       : null,
-    formatSlackLocation(signup.country, signup.region),
+    formatSlackLocation(signup.country),
     signup.deviceType,
   ]
     .filter(Boolean)

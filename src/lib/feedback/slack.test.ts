@@ -37,7 +37,7 @@ describe('buildFeedbackSlackMessage', () => {
         elements: [
           {
             type: 'mrkdwn',
-            text: '🇩🇪 Germany (BY) · mobile · After export (calendar 2026) · <https://yearly.example/admin/feedback|Open in admin>',
+            text: '🇩🇪 Germany · mobile · After export (calendar 2026) · <https://yearly.example/admin/feedback|Open in admin>',
           },
         ],
       },

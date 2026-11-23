@@ -1,6 +1,6 @@
 'use client'
 
-import { countCalendarDays } from '@/lib/calendar-sync/days'
+import { type CalendarDays, countCalendarDays } from '@/lib/calendar-sync/days'
 import { readStoredDays, writeStoredDays } from '@/lib/calendar-sync/local'
 import {
   type FirstSyncRequest,
@@ -10,18 +10,29 @@ import { trackEvent } from '@/lib/tracking'
 import Link from 'next/link'
 import { useReportAccountCalendarStatus } from './AccountCalendarStatus'
 import FirstSyncDialog from './FirstSyncDialog'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type State =
   | { status: 'loading' }
   | { status: 'saved'; days: number }
   | { status: 'error' }
 
-export default function AccountCalendar({ userId }: { userId: string }) {
+export default function AccountCalendar({
+  userId,
+  onSaved,
+}: {
+  userId: string
+  onSaved?: (days: CalendarDays) => void
+}) {
   const [state, setState] = useState<State>({ status: 'loading' })
   const [firstSyncRequest, setFirstSyncRequest] =
     useState<FirstSyncRequest | null>(null)
   const reportStatus = useReportAccountCalendarStatus()
+  const onSavedRef = useRef(onSaved)
+
+  useEffect(() => {
+    onSavedRef.current = onSaved
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -49,11 +60,10 @@ export default function AccountCalendar({ userId }: { userId: string }) {
           })
         }
         if (!cancelled) {
-          setState({
-            status: 'saved',
-            days: countCalendarDays(readStoredDays()),
-          })
+          const days = readStoredDays()
+          setState({ status: 'saved', days: countCalendarDays(days) })
           reportStatus?.('saved')
+          onSavedRef.current?.(days)
         }
       })
       .catch((error: unknown) => {

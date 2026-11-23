@@ -41,7 +41,11 @@ export function buildDayMap(visits: CountryVisit[]): DayMap {
     if (!codes.includes(visit.countryCode)) codes.push(visit.countryCode)
     map.set(key, codes)
   }
-  return new Map([...map.entries()].sort(([a], [b]) => (a < b ? -1 : 1)))
+  return toDayMap(map)
+}
+
+export function toDayMap(days: Iterable<[string, string[]]>): DayMap {
+  return new Map([...days].sort(([a], [b]) => (a < b ? -1 : 1)))
 }
 
 export function groupTrips(dayMap: DayMap): Trip[] {

@@ -41,15 +41,15 @@ We chose codes over emailed links. Trips live only in the browser that made them
 
 ## Pages and access
 
-| URL                  | What it is                                                                                    | Signed out                           | Signed in                                           | Google  |
-| -------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- | ------- |
-| `/`                  | Homepage                                                                                      | Open                                 | Open                                                | Index   |
-| `/create`            | The app. Never asks for an account                                                            | Open                                 | Open                                                | Index   |
-| `/videos` (to build) | What the animated video is, examples and price                                                | Open                                 | Open                                                | Index   |
-| `/privacy`, `/terms` | Policies. `/terms` returns 404 until accounts are on; refunds are added before the first sale | Open                                 | Open                                                | Index   |
-| `/sign-in`           | Email code or Google. `?next=/path` returns you afterwards                                    | Form                                 | Redirect to `next`, or `/account`                   | Noindex |
-| `/account`           | Your videos (download again), year-end reminder on or off, email, sign out, delete account    | Redirect to `/sign-in?next=/account` | Open                                                | Noindex |
-| `/admin/*`           | Analytics and feedback                                                                        | Password for now                     | 404 for everyone but the owner, once on Better Auth | Noindex |
+| URL                  | What it is                                                                                         | Signed out                           | Signed in                                           | Google  |
+| -------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- | ------- |
+| `/`                  | Homepage                                                                                           | Open                                 | Open                                                | Index   |
+| `/create`            | The app. Never asks for an account                                                                 | Open                                 | Open                                                | Index   |
+| `/videos` (to build) | What the animated video is, examples and price                                                     | Open                                 | Open                                                | Index   |
+| `/privacy`, `/terms` | Policies. `/terms` returns 404 until accounts are on; refunds are added before the first sale      | Open                                 | Open                                                | Index   |
+| `/sign-in`           | Email code or Google. `?next=/path` returns you afterwards                                         | Form                                 | Redirect to `next`, or `/account`                   | Noindex |
+| `/account`           | Your videos (download again), badges, year-end reminder on or off, email, sign out, delete account | Redirect to `/sign-in?next=/account` | Open                                                | Noindex |
+| `/admin/*`           | Analytics and feedback                                                                             | Password for now                     | 404 for everyone but the owner, once on Better Auth | Noindex |
 
 Rules:
 

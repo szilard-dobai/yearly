@@ -1,7 +1,7 @@
-import AccountCalendar from '@/components/account/AccountCalendar'
 import { AccountCalendarStatusProvider } from '@/components/account/AccountCalendarStatus'
 import AccountDetails from '@/components/account/AccountDetails'
 import AccountReminder from '@/components/account/AccountReminder'
+import AccountTrips from '@/components/account/AccountTrips'
 import AccountVideos from '@/components/account/AccountVideos'
 import DeleteAccount from '@/components/account/DeleteAccount'
 import Header from '@/components/Header'
@@ -36,16 +36,7 @@ export default async function AccountPage() {
 
             {isVideoSalesEnabled() && <AccountVideos />}
 
-            <StandardCard>
-              <CardHeader>
-                <CardTitle className="text-base font-medium">
-                  Your calendar
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AccountCalendar userId={session.user.id} />
-              </CardContent>
-            </StandardCard>
+            <AccountTrips userId={session.user.id} />
 
             {isOpenReminderYear(reminderYear) && (
               <StandardCard>

@@ -167,9 +167,10 @@ export default function VideosPage() {
       <Header>
         <Link
           href="/create"
-          className="rounded-full bg-black px-6 py-2 text-white transition-colors hover:bg-gray-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="inline-flex h-9 items-center rounded-full bg-black px-4 whitespace-nowrap sm:px-6 text-white transition-colors hover:bg-gray-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
-          Make your calendar
+          <span className="sm:hidden">Create</span>
+          <span className="hidden sm:inline">Make your calendar</span>
         </Link>
       </Header>
 

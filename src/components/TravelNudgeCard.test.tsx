@@ -71,7 +71,7 @@ describe('TravelNudgeCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('stays hidden for the rest of the month once dismissed', async () => {
+  it('cannot be hidden and moves on with the month', () => {
     const { rerender } = renderWithSettings(
       <TravelNudgeCard
         calendarData={{ visits }}
@@ -79,10 +79,7 @@ describe('TravelNudgeCard', () => {
         today={today}
       />
     )
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Hide until next month' })
-    )
-    expect(screen.queryByText(/In September/)).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button')).toHaveLength(1)
 
     rerender(
       <TravelNudgeCard
@@ -91,7 +88,9 @@ describe('TravelNudgeCard', () => {
         today={new Date(2026, 11, 2)}
       />
     )
-    expect(screen.getByText(/October/)).toBeInTheDocument()
+    expect(
+      screen.getByText('2 days abroad in October, none in November.')
+    ).toBeInTheDocument()
   })
 
   it('shows nothing for an empty calendar', () => {

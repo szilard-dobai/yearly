@@ -104,6 +104,17 @@ describe('getTripStatus', () => {
     ).toMatchObject({ kind: 'during', country: 'IT' })
   })
 
+  it('does not treat months of back-to-back days as a trip in progress', () => {
+    const home = getTrips([
+      ...range('RO', '2026-01-01', '2026-11-12'),
+      ...range('TH', '2026-12-05', '2026-12-07'),
+    ])
+    expect(getTripStatus(home.trips, home.dayMap, '2026-11-12')).toMatchObject({
+      kind: 'upcoming',
+      trip: { countries: ['TH'] },
+    })
+  })
+
   it('returns none once every trip is over', () => {
     expect(getTripStatus(trips, dayMap, '2026-12-30')).toEqual({
       kind: 'none',

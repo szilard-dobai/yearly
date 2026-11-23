@@ -23,6 +23,8 @@ export type TripStatus =
   | { kind: 'upcoming'; trip: Trip; daysUntil: number }
   | { kind: 'none' }
 
+export const MAX_TRIP_DAYS = 90
+
 export function addDays(dayKey: string, days: number): string {
   return dayjs(dayKey).add(days, 'day').format('YYYY-MM-DD')
 }
@@ -78,7 +80,10 @@ export function getTripStatus(
   todayKey: string
 ): TripStatus {
   const current = trips.find(
-    (trip) => trip.start <= todayKey && trip.end >= todayKey
+    (trip) =>
+      trip.start <= todayKey &&
+      trip.end >= todayKey &&
+      trip.days.length <= MAX_TRIP_DAYS
   )
   if (current) {
     const codes = dayMap.get(todayKey) ?? current.countries

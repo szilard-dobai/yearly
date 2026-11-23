@@ -66,6 +66,15 @@ describe('TripCountdown', () => {
     expect(screen.getByText('Pack your bags')).toBeInTheDocument()
   })
 
+  it("uses the browser's date when no date is given", () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    renderWithSettings(
+      <TripCountdown calendarData={{ visits: days('TH', tomorrow, 3) }} />
+    )
+    expect(screen.getByText('Tomorrow')).toBeInTheDocument()
+  })
+
   it('wishes a good trip while you are away', () => {
     renderWithSettings(
       <TripCountdown

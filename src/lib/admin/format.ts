@@ -145,6 +145,8 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   sign_out: 'Signed out',
   account_deleted: 'Account deleted',
   trip_countdown_shown: 'Trip countdown shown',
+  travel_nudge_shown: 'Travel nudge shown',
+  travel_nudge_plan_click: 'Travel nudge: plan a trip',
 }
 
 export function getEventLabel(type: string): string {

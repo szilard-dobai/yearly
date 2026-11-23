@@ -58,6 +58,7 @@ src/
 ├── components/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
+│   ├── TravelNudgeCard.tsx   - Compares the last two months and nudges towards planning a trip
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
@@ -82,6 +83,7 @@ src/
 │   ├── constants.ts          - Month names, flag sizes
 │   ├── calendar.ts           - Calendar grid calculations
 │   ├── trips.ts              - Day map and trip grouping (back-to-back days = one trip), trip status
+│   ├── nudges.ts             - Month-on-month comparison behind the travel nudge
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── emoji.ts              - Flag and emoji image paths, sizes and medal names
@@ -95,7 +97,8 @@ src/
 │   │   ├── useMonthlyExport.ts     - Monthly calendar export
 │   │   ├── useStatisticsExport.ts  - Statistics image export
 │   │   ├── useAccountPrompt.ts     - When the /create account prompt shows (3+ days of trips, 30-day snooze)
-│   │   └── useStatusFeedback.ts    - Loading/error state management
+│   │   ├── useStatusFeedback.ts    - Loading/error state management
+│   │   └── useTodayKey.ts          - Today's local date key, null on the server and during hydration, so date-based cards render only in the browser
 │   ├── video-render/         - Paid video rendering: `renderVideoPack` workflow (one step per video: sandbox from the deployment's snapshot, render, upload to the private videos store), packs, signed download links, the deployment's snapshot ID (written by `scripts/video-render.mts prepare`)
 │   ├── retention.ts          - Retention rules (26 months in full, then identifiers removed; 5 years max), run daily by `api/cron/retention` (`vercel.json`, `CRON_SECRET`)
 │   ├── contexts/

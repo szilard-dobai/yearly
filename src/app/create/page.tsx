@@ -22,6 +22,7 @@ import ImagePreviewModal from '@/components/ImagePreviewModal'
 import MobileFab from '@/components/MobileFab'
 import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
+import TravelNudgeCard from '@/components/TravelNudgeCard'
 import TripCountdown from '@/components/TripCountdown'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
 import UndoToast from '@/components/UndoToast'
@@ -498,6 +499,11 @@ function Create() {
                 </DarkCard>
               )}
 
+              <TravelNudgeCard
+                calendarData={calendarData}
+                onPlanTrip={() => setIsMobileAddDialogOpen(true)}
+              />
+
               <StandardCard>
                 <CardHeader>
                   <CardTitle className="text-lg font-medium flex items-center gap-2 text-gray-900 dark:text-zinc-100">
@@ -658,7 +664,7 @@ function Create() {
         open={isMobileAddDialogOpen}
         onOpenChange={setIsMobileAddDialogOpen}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-2xl">

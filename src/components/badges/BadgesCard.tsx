@@ -20,6 +20,8 @@ import { useState } from 'react'
 import BadgeMedal from './BadgeMedal'
 
 const RECENT_COUNT = 5
+const MEDAL_BUTTON =
+  'block cursor-pointer rounded-full transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-[#141414]'
 
 function formatEarnedOn(dayKey: string) {
   return dayjs(dayKey).format('D MMM YYYY')
@@ -149,13 +151,29 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
             <ul className="flex gap-2" aria-label="Latest badges">
               {earned.slice(0, RECENT_COUNT).map((badge) => (
                 <li key={badge.id}>
-                  <BadgeMedal badge={badge} size="sm" />
-                  <span className="sr-only">{badge.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(badge)}
+                    className={MEDAL_BUTTON}
+                  >
+                    <BadgeMedal badge={badge} size="sm" />
+                    <span className="sr-only">{badge.name}</span>
+                  </button>
                 </li>
               ))}
               {earned.length > RECENT_COUNT && (
-                <li className="flex size-10 items-center justify-center rounded-full bg-gray-100 text-xs font-medium text-gray-600 dark:bg-white/8 dark:text-zinc-300">
-                  +{earned.length - RECENT_COUNT}
+                <li>
+                  <button
+                    type="button"
+                    onClick={openAll}
+                    className={cn(
+                      MEDAL_BUTTON,
+                      'flex size-10 items-center justify-center bg-gray-100 text-xs font-medium text-gray-600 hover:bg-gray-200 dark:bg-white/8 dark:text-zinc-300 dark:hover:bg-white/12'
+                    )}
+                  >
+                    +{earned.length - RECENT_COUNT}
+                    <span className="sr-only"> more badges</span>
+                  </button>
                 </li>
               )}
             </ul>
@@ -165,17 +183,21 @@ export default function BadgesCard({ badges }: { badges: Badge[] }) {
             </p>
           )}
           {next && (
-            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-white/4">
+            <button
+              type="button"
+              onClick={() => setSelected(next)}
+              className="flex w-full cursor-pointer items-center gap-3 rounded-lg bg-gray-50 p-3 text-left transition-colors hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:outline-none dark:bg-white/4 dark:hover:bg-white/8"
+            >
               <BadgeMedal badge={next} size="sm" />
-              <div className="min-w-0 text-sm">
-                <p className="font-medium text-gray-900 dark:text-zinc-100">
+              <span className="min-w-0 text-sm">
+                <span className="block font-medium text-gray-900 dark:text-zinc-100">
                   Next: {next.name}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-zinc-400">
+                </span>
+                <span className="block text-xs text-gray-500 dark:text-zinc-400">
                   {nextProgress ?? next.description}
-                </p>
-              </div>
-            </div>
+                </span>
+              </span>
+            </button>
           )}
           <Button variant="outline" className="w-full" onClick={openAll}>
             See all badges

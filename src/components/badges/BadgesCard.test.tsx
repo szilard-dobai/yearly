@@ -43,6 +43,40 @@ describe('BadgesCard', () => {
     ).toBeInTheDocument()
   })
 
+  it('opens a badge from the card', async () => {
+    renderWithSettings(
+      <BadgesCard badges={computeBadges(dayMap, '2026-11-12')} />
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Two flags' }))
+    expect(screen.getByRole('dialog', { name: 'Two flags' })).toHaveTextContent(
+      'Earned on 18 Jun 2026'
+    )
+    await userEvent.keyboard('{Escape}')
+
+    await userEvent.click(
+      screen.getByRole('button', { name: /Next: Continent hopper/ })
+    )
+    expect(
+      screen.getByRole('dialog', { name: 'Continent hopper' })
+    ).toHaveTextContent('2 of 3 continents')
+  })
+
+  it('opens every badge from the extra count', async () => {
+    const busy = new Map([
+      ['2026-01-01', ['ES', 'FR']],
+      ['2026-03-10', ['ES']],
+      ['2026-05-10', ['ES']],
+      ['2026-06-10', ['JP']],
+      ['2026-09-10', ['MA']],
+    ])
+    renderWithSettings(
+      <BadgesCard badges={computeBadges(busy, '2026-11-12')} />
+    )
+    await userEvent.click(screen.getByRole('button', { name: /more badges/ }))
+    expect(trackEvent).toHaveBeenCalledWith('badges_open', { earned: 8 })
+    expect(screen.getByRole('dialog', { name: 'Badges' })).toBeInTheDocument()
+  })
+
   it('opens every badge and the details of one', async () => {
     renderWithSettings(
       <BadgesCard badges={computeBadges(dayMap, '2026-11-12')} />

@@ -664,7 +664,7 @@ function Create() {
         open={isMobileAddDialogOpen}
         onOpenChange={setIsMobileAddDialogOpen}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-2xl">

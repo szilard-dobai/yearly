@@ -1,11 +1,11 @@
 'use client'
 
 import ConfirmDeleteButton from '@/components/admin/ConfirmDeleteButton'
-import CopyButton from '@/components/admin/CopyButton'
 import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import { EventToneDot } from '@/components/admin/EventTypeBadge'
+import IdentifierRow from '@/components/admin/IdentifierRow'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,7 +18,7 @@ import {
   formatDateTime,
   formatLocation,
   getEventLabel,
-  shortDeviceId,
+  shortId,
 } from '@/lib/admin/format'
 import type { StoredTrackingEvent } from '@/lib/tracking/types'
 import { Filter } from 'lucide-react'
@@ -27,8 +27,8 @@ interface EventDetailsDialogProps {
   event: StoredTrackingEvent | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  isDeviceFiltered: boolean
-  onShowDeviceEvents: (deviceId: string) => void
+  idFilter: string
+  onFilterById: (id: string) => void
   onDeleteEvent: (event: StoredTrackingEvent) => Promise<void>
   onDeleteDevice: (deviceId: string) => Promise<void>
 }
@@ -37,12 +37,13 @@ export default function EventDetailsDialog({
   event,
   open,
   onOpenChange,
-  isDeviceFiltered,
-  onShowDeviceEvents,
+  idFilter,
+  onFilterById,
   onDeleteEvent,
   onDeleteDevice,
 }: EventDetailsDialogProps) {
   const metadata = event?.metadata
+  const userId = event?.userId
   const hasMetadata = !!metadata && Object.keys(metadata).length > 0
 
   return (
@@ -79,22 +80,40 @@ export default function EventDetailsDialog({
                   icon={event.country && <CountryFlag code={event.country} />}
                 />
               </dl>
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100 dark:border-white/8">
-                <div className="flex min-w-0 items-center gap-1">
-                  <code className="truncate rounded bg-gray-100 dark:bg-white/8 px-1.5 py-0.5 text-xs text-gray-600 dark:text-zinc-400">
-                    {event.deviceId}
-                  </code>
-                  <CopyButton value={event.deviceId} label="Copy device id" />
-                </div>
-                {!isDeviceFiltered && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onShowDeviceEvents(event.deviceId)}
-                  >
-                    <Filter className="size-4" />
-                    Show this device only
-                  </Button>
+              <div className="space-y-2 pt-3 border-t border-gray-100 dark:border-white/8">
+                <IdentifierRow
+                  label="Device ID"
+                  value={event.deviceId}
+                  action={
+                    idFilter !== event.deviceId && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onFilterById(event.deviceId)}
+                      >
+                        <Filter className="size-4" />
+                        Show this device only
+                      </Button>
+                    )
+                  }
+                />
+                {userId && (
+                  <IdentifierRow
+                    label="User ID"
+                    value={userId}
+                    action={
+                      idFilter !== userId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onFilterById(userId)}
+                        >
+                          <Filter className="size-4" />
+                          Show this user only
+                        </Button>
+                      )
+                    }
+                  />
                 )}
               </div>
             </section>
@@ -118,7 +137,7 @@ export default function EventDetailsDialog({
               <ConfirmDeleteButton
                 label="Delete all from this device"
                 title="Delete all activity from this device?"
-                description={`Every tracking event and feedback entry from device ${shortDeviceId(event.deviceId)} will be permanently deleted and removed from the stats.`}
+                description={`Every tracking event and feedback entry from device ${shortId(event.deviceId)} will be permanently deleted and removed from the stats.`}
                 confirmLabel="Delete device activity"
                 onConfirm={() => onDeleteDevice(event.deviceId)}
               />

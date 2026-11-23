@@ -156,8 +156,9 @@ export default function PrivacyPage() {
             </p>
             <List>
               <li>
-                a random ID created in your browser, which isn&apos;t linked to
-                your name
+                {accounts
+                  ? 'a random ID created in your browser'
+                  : "a random ID created in your browser, which isn't linked to your name"}
               </li>
               <li>
                 what happened and when, with details such as the year or how
@@ -214,11 +215,13 @@ export default function PrivacyPage() {
             </p>
             {accounts && (
               <p>
-                When you sign in, sign out or delete your account, the event
-                records that it happened and how, such as by email code or
-                Google. The first time a device syncs with your account, it
-                records whether you added that device&apos;s trips to your
-                account. These events never include your email address.
+                While you&apos;re signed in, each event also includes your
+                account ID, which links it to your account. When you sign in,
+                sign out or delete your account, the event records that it
+                happened and how, such as by email code or Google. The first
+                time a device syncs with your account, it records whether you
+                added that device&apos;s trips to your account. These events
+                never include your email address.
               </p>
             )}
           </Section>
@@ -247,10 +250,11 @@ export default function PrivacyPage() {
           <Section title="Feedback">
             <p>
               If you send feedback, we store your rating, your message and any
-              topics you picked, with the random ID, your browser&apos;s user
-              agent, your device type and approximate location. We get a Slack
-              notification with your rating, message, topics, device type and
-              country.
+              topics you picked, with the random ID
+              {accounts && ", your account ID if you're signed in"}, your
+              browser&apos;s user agent, your device type and approximate
+              location. We get a Slack notification with your rating, message,
+              topics, device type and country.
             </p>
             <p>
               We may show star ratings and short quotes from feedback on
@@ -390,18 +394,20 @@ export default function PrivacyPage() {
             <List>
               <li>
                 Usage events: in full for 26 months. After that we remove the
-                random ID, your region, the user agent, the app you opened{' '}
-                <ProductName /> in, the site that sent you, campaign tags and
-                any note you typed, and keep only the day each event happened.
-                We delete what&apos;s left after 5 years.
+                random ID{accounts && ', your account ID'}, your region, the
+                user agent, the app you opened <ProductName /> in, the site that
+                sent you, campaign tags and any note you typed, and keep only
+                the day each event happened. We delete what&apos;s left after 5
+                years.
               </li>
               <li>
                 Reminders added to a calendar: in full for 26 months, then
                 without the random ID and region. We delete them after 5 years.
               </li>
               <li>
-                Feedback: in full for 26 months, then without the random ID,
-                user agent and region. We delete it after 5 years.
+                Feedback: in full for 26 months, then without the random ID
+                {accounts && ', account ID'}, user agent and region. We delete
+                it after 5 years.
               </li>
               <li>
                 Year-end reminder emails: until the end of the year the reminder
@@ -559,11 +565,12 @@ export default function PrivacyPage() {
                     account page
                   </Link>
                   . It takes effect right away, and copies in our database
-                  provider&apos;s backups are gone within 7 days. Trips on your
-                  device stay there until you clear them. Deleting your account
-                  doesn&apos;t remove your email from the video waitlist or the
-                  year-end reminder, so remove it from those first, as below, or
-                  ask us.
+                  provider&apos;s backups are gone within 7 days. It also
+                  removes your account ID from your usage events and feedback.
+                  Trips on your device stay there until you clear them. Deleting
+                  your account doesn&apos;t remove your email from the video
+                  waitlist or the year-end reminder, so remove it from those
+                  first, as below, or ask us.
                 </li>
               )}
               {accounts && (

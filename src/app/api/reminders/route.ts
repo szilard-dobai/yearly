@@ -1,5 +1,5 @@
 import { isAccountsEnabled } from '@/lib/auth/enabled'
-import { getSessionEmail } from '@/lib/auth/session-email'
+import { getSessionEmail } from '@/lib/auth/session-user'
 import { getRemindersCollection, type ReminderDocument } from '@/lib/mongodb'
 import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
 import { getReminderTotals, isOpenReminderYear } from '@/lib/reminders/server'

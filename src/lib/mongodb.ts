@@ -59,6 +59,7 @@ export async function getTrackingCollection() {
 export interface FeedbackDocument {
   _id?: ObjectId
   deviceId: string
+  userId?: string
   rating: number | null
   message: string | null
   tags?: FeedbackTag[]

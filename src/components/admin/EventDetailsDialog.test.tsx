@@ -20,7 +20,7 @@ function renderDialog(
 ) {
   const handlers = {
     onOpenChange: vi.fn(),
-    onShowDeviceEvents: vi.fn(),
+    onFilterById: vi.fn(),
     onDeleteEvent: vi.fn().mockResolvedValue(undefined),
     onDeleteDevice: vi.fn().mockResolvedValue(undefined),
   }
@@ -28,7 +28,7 @@ function renderDialog(
     <EventDetailsDialog
       event={event}
       open
-      isDeviceFiltered={false}
+      idFilter=""
       {...handlers}
       {...props}
     />
@@ -56,20 +56,51 @@ describe('EventDetailsDialog', () => {
 
   it('filters the table to the event device', async () => {
     const user = userEvent.setup()
-    const { onShowDeviceEvents } = renderDialog()
+    const { onFilterById } = renderDialog()
 
     await user.click(
       screen.getByRole('button', { name: 'Show this device only' })
     )
 
-    expect(onShowDeviceEvents).toHaveBeenCalledWith(event.deviceId)
+    expect(onFilterById).toHaveBeenCalledWith(event.deviceId)
   })
 
   it('hides the device filter when it is already applied', () => {
-    renderDialog({ isDeviceFiltered: true })
+    renderDialog({ idFilter: event.deviceId })
 
     expect(
       screen.queryByRole('button', { name: 'Show this device only' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows the account ID of a signed-in event and filters to it', async () => {
+    const user = userEvent.setup()
+    const { onFilterById } = renderDialog({
+      event: { ...event, userId: 'q7Xr2mVb9LpK4sTn8WcY3hJd6FgA1zEu' },
+    })
+
+    expect(
+      screen.getByText('q7Xr2mVb9LpK4sTn8WcY3hJd6FgA1zEu')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Copy user id' })
+    ).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Show this user only' })
+    )
+
+    expect(onFilterById).toHaveBeenCalledWith(
+      'q7Xr2mVb9LpK4sTn8WcY3hJd6FgA1zEu'
+    )
+  })
+
+  it('shows no account row for a signed-out event', () => {
+    renderDialog()
+
+    expect(screen.queryByText('User ID')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Show this user only' })
     ).not.toBeInTheDocument()
   })
 

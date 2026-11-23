@@ -1,3 +1,4 @@
+import { buildEventListFilter } from '@/lib/admin/event-filters'
 import { getTrackingCollection } from '@/lib/mongodb'
 import { isAuthenticated, validateSameOrigin } from '@/lib/tracking/api'
 import { NextResponse } from 'next/server'
@@ -12,28 +13,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const url = new URL(request.url)
-  const type = url.searchParams.get('type')
-  const deviceId = url.searchParams.get('deviceId')
-  const search = url.searchParams.get('search')
-  const country = url.searchParams.get('country')
-  const region = url.searchParams.get('region')
+  const filter = buildEventListFilter(new URL(request.url).searchParams)
 
   try {
     const collection = await getTrackingCollection()
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {}
-    if (type && type !== 'all') filter.type = type
-    if (deviceId) filter.deviceId = { $regex: deviceId, $options: 'i' }
-    if (country && country !== 'all') filter.country = country
-    if (region && region !== 'all') filter.region = region
-    if (search) {
-      filter.$or = [
-        { metadata: { $regex: search, $options: 'i' } },
-        { type: { $regex: search, $options: 'i' } },
-      ]
-    }
 
     const [
       total,

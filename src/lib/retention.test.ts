@@ -1,6 +1,13 @@
 // @vitest-environment node
 import type { Database } from '@/lib/db'
-import { rateLimits, session, user, verification } from '@/lib/db/schema'
+import {
+  rateLimits,
+  session,
+  user,
+  verification,
+  videoCredits,
+  videoOrders,
+} from '@/lib/db/schema'
 import { createTestDb } from '@/test/db'
 import type { Db } from 'mongodb'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -156,6 +163,35 @@ describe('applyPostgresRetention', () => {
       { key: 'old', count: 1, windowStart: new Date('2026-11-01T00:00:00Z') },
       { key: 'new', count: 1, windowStart: NOW },
     ])
+    const order = { userId: 'ana', pack: 'year' as const, year: 2026 }
+    const twoDaysAgo = new Date(NOW.getTime() - 2 * 86_400_000)
+    await db.insert(videoOrders).values([
+      {
+        ...order,
+        id: 'old-draft',
+        source: 'polar',
+        status: 'draft',
+        createdAt: twoDaysAgo,
+      },
+      {
+        ...order,
+        id: 'new-draft',
+        source: 'polar',
+        status: 'draft',
+        createdAt: NOW,
+      },
+      {
+        ...order,
+        id: 'old-paid',
+        source: 'polar',
+        status: 'paid',
+        createdAt: twoDaysAgo,
+      },
+    ])
+    await db.insert(videoCredits).values([
+      { email: 'gone@example.com', source: 'waitlist', expiresAt: past },
+      { email: 'kept@example.com', source: 'waitlist', expiresAt: future },
+    ])
   })
 
   afterAll(async () => {
@@ -167,15 +203,19 @@ describe('applyPostgresRetention', () => {
       expiredSessionsDeleted: 1,
       expiredCodesDeleted: 1,
       rateLimitsDeleted: 1,
+      unpaidVideoDraftsDeleted: 1,
+      expiredVideoCreditsDeleted: 1,
     })
     expect(await db.select().from(session)).toHaveLength(2)
   })
 
-  it('deletes expired sessions, sign-in codes and old rate limits, and nothing else', async () => {
+  it('deletes expired sessions, sign-in codes, old rate limits, unpaid video drafts and expired credits, and nothing else', async () => {
     expect(await applyPostgresRetention(db, NOW)).toEqual({
       expiredSessionsDeleted: 1,
       expiredCodesDeleted: 1,
       rateLimitsDeleted: 1,
+      unpaidVideoDraftsDeleted: 1,
+      expiredVideoCreditsDeleted: 1,
     })
     expect((await db.select().from(session)).map((row) => row.id)).toEqual([
       's2',
@@ -187,5 +227,11 @@ describe('applyPostgresRetention', () => {
       'new',
     ])
     expect(await db.select().from(user)).toHaveLength(1)
+    expect(
+      (await db.select().from(videoOrders)).map((row) => row.id).sort()
+    ).toEqual(['new-draft', 'old-paid'])
+    expect(
+      (await db.select().from(videoCredits)).map((row) => row.email)
+    ).toEqual(['kept@example.com'])
   })
 })

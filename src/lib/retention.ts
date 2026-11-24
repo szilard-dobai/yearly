@@ -1,6 +1,12 @@
 import type { Database } from '@/lib/db'
-import { rateLimits, session, verification } from '@/lib/db/schema'
-import { count, lt } from 'drizzle-orm'
+import {
+  rateLimits,
+  session,
+  verification,
+  videoCredits,
+  videoOrders,
+} from '@/lib/db/schema'
+import { and, count, eq, lt } from 'drizzle-orm'
 import type { Db, Document, Filter } from 'mongodb'
 
 export const FULL_RETENTION_MONTHS = 26
@@ -171,6 +177,11 @@ export async function applyPostgresRetention(
   const expiredSessions = lt(session.expiresAt, now)
   const expiredCodes = lt(verification.expiresAt, now)
   const oldLimits = lt(rateLimits.windowStart, dayAgo)
+  const unpaidDrafts = and(
+    eq(videoOrders.status, 'draft'),
+    lt(videoOrders.createdAt, dayAgo)
+  )
+  const expiredCredits = lt(videoCredits.expiresAt, now)
 
   if (dryRun) {
     const [[sessions], [codes], [limits]] = await Promise.all([
@@ -178,10 +189,16 @@ export async function applyPostgresRetention(
       db.select({ n: count() }).from(verification).where(expiredCodes),
       db.select({ n: count() }).from(rateLimits).where(oldLimits),
     ])
+    const [[drafts], [credits]] = await Promise.all([
+      db.select({ n: count() }).from(videoOrders).where(unpaidDrafts),
+      db.select({ n: count() }).from(videoCredits).where(expiredCredits),
+    ])
     return {
       expiredSessionsDeleted: sessions.n,
       expiredCodesDeleted: codes.n,
       rateLimitsDeleted: limits.n,
+      unpaidVideoDraftsDeleted: drafts.n,
+      expiredVideoCreditsDeleted: credits.n,
     }
   }
 
@@ -193,9 +210,21 @@ export async function applyPostgresRetention(
       .returning({ id: verification.id }),
     db.delete(rateLimits).where(oldLimits).returning({ key: rateLimits.key }),
   ])
+  const [drafts, credits] = await Promise.all([
+    db
+      .delete(videoOrders)
+      .where(unpaidDrafts)
+      .returning({ id: videoOrders.id }),
+    db
+      .delete(videoCredits)
+      .where(expiredCredits)
+      .returning({ email: videoCredits.email }),
+  ])
   return {
     expiredSessionsDeleted: sessions.length,
     expiredCodesDeleted: codes.length,
     rateLimitsDeleted: limits.length,
+    unpaidVideoDraftsDeleted: drafts.length,
+    expiredVideoCreditsDeleted: credits.length,
   }
 }

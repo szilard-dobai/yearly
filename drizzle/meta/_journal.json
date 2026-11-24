@@ -15,6 +15,13 @@
       "when": 1794609883252,
       "tag": "0001_calendars",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794744963540,
+      "tag": "0002_video_orders",
+      "breakpoints": true
     }
   ]
 }

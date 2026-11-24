@@ -1,7 +1,17 @@
-import { renderMediaOnVercel } from '@remotion/vercel'
+import { stillFrame } from '@/components/video/still-frame'
+import { renderMediaOnVercel, renderStillOnVercel } from '@remotion/vercel'
 import { APIError, Sandbox } from '@vercel/sandbox'
 import { FatalError, getStepMetadata, RetryableError } from 'workflow'
-import { blobEnvironment, uploadVideo } from './blob'
+import { db } from '@/lib/db'
+import { sendEmail } from '@/lib/email/send'
+import { videosReadyEmail } from '@/lib/email/videos-ready'
+import {
+  getRenderJob,
+  markRenderFailed,
+  markRenderReady,
+  markRenderRendering,
+} from '@/lib/videos/orders'
+import { blobEnvironment, deleteVideoFiles, uploadFile } from './blob'
 import {
   renderPathname,
   type RenderedVideo,
@@ -9,7 +19,7 @@ import {
   type VideoPack,
   videosInPack,
 } from './packs'
-import { loadVideoProps } from './props'
+import { isExampleRender, loadVideoProps, type VideoInputProps } from './props'
 import { getDeploymentSnapshotId } from './snapshot'
 
 const VCPUS = 4
@@ -26,9 +36,55 @@ export async function renderVideoPack({
 }: RenderPackInput): Promise<RenderedVideo[]> {
   'use workflow'
 
-  return Promise.all(
-    videosInPack(pack).map((job) => renderVideo({ renderId, ...job }))
+  await beginRender(renderId)
+  try {
+    const videos = await Promise.all(
+      videosInPack(pack).map((job) => renderVideo({ renderId, ...job }))
+    )
+    await finishRender(renderId, videos)
+    return videos
+  } catch (error) {
+    await failRender(renderId, String(error))
+    throw error
+  }
+}
+
+export async function beginRender(renderId: string) {
+  'use step'
+
+  if (isExampleRender(renderId)) return
+  await markRenderRendering(db, renderId)
+}
+
+export async function finishRender(renderId: string, videos: RenderedVideo[]) {
+  'use step'
+
+  if (isExampleRender(renderId)) return
+  const replaced = await markRenderReady(db, renderId, videos)
+  await deleteVideoFiles(replaced).catch((error: unknown) =>
+    console.error('Could not delete old video files', error)
   )
+
+  const job = await getRenderJob(db, renderId)
+  if (!job) return
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.yearly.world'
+  await sendEmail(
+    videosReadyEmail(job.email, {
+      accountUrl: `${siteUrl}/account`,
+      updated: job.render.version > 0,
+      confirmConsent: job.order.source === 'polar' && job.render.version === 0,
+    })
+  ).catch((error: unknown) =>
+    console.error('Could not send the videos ready email', error)
+  )
+}
+
+export async function failRender(renderId: string, error: string) {
+  'use step'
+
+  console.error(`Video render ${renderId} failed: ${error}`)
+  if (isExampleRender(renderId)) return
+  await markRenderFailed(db, renderId, error.slice(0, 1000))
 }
 
 export function retryDelayMs(attempt: number): number {
@@ -37,6 +93,32 @@ export function retryDelayMs(attempt: number): number {
 
 function isRateLimited(error: unknown): boolean {
   return error instanceof APIError && error.response.status === 429
+}
+
+async function renderPoster(
+  sandbox: Sandbox,
+  renderId: string,
+  job: VideoJob,
+  inputProps: VideoInputProps
+): Promise<string | undefined> {
+  try {
+    const { sandboxFilePath, contentType } = await renderStillOnVercel({
+      sandbox,
+      compositionId: job.kind,
+      inputProps,
+      frame: stillFrame(job.kind, inputProps.data.days.length),
+      imageFormat: 'jpeg',
+      jpegQuality: 85,
+    })
+    const poster = await sandbox.readFileToBuffer({ path: sandboxFilePath })
+    if (!poster) return undefined
+    const pathname = renderPathname(blobEnvironment(), renderId, job, 'jpg')
+    await uploadFile(pathname, poster, contentType)
+    return pathname
+  } catch (error) {
+    console.error(`Could not make the ${job.kind}-${job.theme} poster`, error)
+    return undefined
+  }
 }
 
 export async function renderVideo({
@@ -49,7 +131,7 @@ export async function renderVideo({
   if (!snapshotId) {
     throw new FatalError('This deployment has no render snapshot')
   }
-  const inputProps = loadVideoProps(renderId, job)
+  const inputProps = await loadVideoProps(renderId, job)
   if (!inputProps) throw new FatalError(`Nothing to render for ${renderId}`)
 
   let sandbox: Sandbox | undefined
@@ -69,8 +151,14 @@ export async function renderVideo({
     if (!file) throw new Error(`The ${job.kind} render left no file`)
 
     const pathname = renderPathname(blobEnvironment(), renderId, job)
-    await uploadVideo(pathname, file, contentType)
-    return { ...job, pathname, bytes: file.length }
+    await uploadFile(pathname, file, contentType)
+    const posterPathname = await renderPoster(
+      sandbox,
+      renderId,
+      job,
+      inputProps
+    )
+    return { ...job, pathname, bytes: file.length, posterPathname }
   } catch (error) {
     if (error instanceof FatalError) throw error
     const { attempt } = getStepMetadata()

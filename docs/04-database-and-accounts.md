@@ -107,7 +107,7 @@ Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to t
 
 1. **Make a calendar:** unchanged. Most people never see sign-in.
 2. **Create an account:** from the header's "Sign in" link (after launch) or `/sign-in`, by email code or Google. Later, this saves the calendars to the account.
-3. **Buy a video:** in the export dialog, "Get the video", then sign in inside the dialog, then pay in the provider's overlay without leaving the page, then the video renders and downloads. The receipt email links to `/account`.
+3. **Buy a video:** in the export dialog, "Get my videos", then sign in inside the dialog, then pay on Polar's checkout page, which brings the tab back to the dialog, then the video renders and downloads. The receipt email links to `/account`.
 4. **Claim the free first video:** the launch email links to `/create`. In the same dialog, people sign in with the waitlist email, and the payment step is skipped.
 5. **Download again:** from the receipt email or the header's "Your videos" link, to `/account`.
 6. **Delete account:** from `/account`. Required by UK GDPR from the day accounts are visible.

@@ -2,6 +2,9 @@ import Footer from '@/components/Footer'
 import { JsonLd } from '@/components/JsonLd'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import SiteAnalytics from '@/components/SiteAnalytics'
+import { VideoSalesProvider } from '@/components/video/VideoSalesProvider'
+import { isGoogleSignInConfigured } from '@/lib/auth/enabled'
+import { isVideoSalesEnabled } from '@/lib/videos/enabled'
 import type { Metadata } from 'next'
 import { Geist, Newsreader, Roboto } from 'next/font/google'
 import './globals.css'
@@ -90,8 +93,15 @@ export default function RootLayout({
           className={`flex min-h-dvh flex-col bg-linear-to-br from-gray-50 to-stone-50 dark:from-[#0a0a0a] dark:to-[#0a0a0a] ${geistSans.variable} ${roboto.variable} ${newsreader.variable} antialiased`}
         >
           <SiteAnalytics />
-          <div className="flex-1">{children}</div>
-          <Footer />
+          <VideoSalesProvider
+            value={{
+              enabled: isVideoSalesEnabled(),
+              googleSignIn: isGoogleSignInConfigured(),
+            }}
+          >
+            <div className="flex-1">{children}</div>
+            <Footer />
+          </VideoSalesProvider>
         </body>
       </SettingsProvider>
     </html>

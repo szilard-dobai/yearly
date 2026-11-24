@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { authClient } from '@/lib/auth/client'
+import { DEFAULT_NEXT_PATH } from '@/lib/auth/next-path'
 import { SIGN_IN_CODE_MINUTES } from '@/lib/email/sign-in-code'
 import { trackEvent } from '@/lib/tracking'
 import { Loader2 } from 'lucide-react'
@@ -12,6 +13,8 @@ import { useState } from 'react'
 interface SignInFormProps {
   googleEnabled: boolean
   next: string
+  source?: 'video'
+  onSignedIn?: () => void
 }
 
 interface AuthError {
@@ -41,8 +44,14 @@ function verifyErrorMessage(error: AuthError) {
   }
 }
 
-export default function SignInForm({ googleEnabled, next }: SignInFormProps) {
+export default function SignInForm({
+  googleEnabled,
+  next,
+  source,
+  onSignedIn,
+}: SignInFormProps) {
   const router = useRouter()
+  const sourceMetadata = source && { source }
   const [email, setEmail] = useState('')
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [code, setCode] = useState('')
@@ -62,7 +71,7 @@ export default function SignInForm({ googleEnabled, next }: SignInFormProps) {
       setError(sendErrorMessage(sendError))
       return
     }
-    trackEvent('sign_in_code_sent')
+    trackEvent('sign_in_code_sent', sourceMetadata)
     setCode('')
     setSentTo(address)
   }
@@ -86,19 +95,27 @@ export default function SignInForm({ googleEnabled, next }: SignInFormProps) {
       setError(verifyErrorMessage(verifyError))
       return
     }
-    trackEvent('sign_in_completed', { method: 'email' })
+    trackEvent('sign_in_completed', { method: 'email', ...sourceMetadata })
+    if (onSignedIn) {
+      setIsBusy(false)
+      onSignedIn()
+      return
+    }
     router.replace(next)
     router.refresh()
   }
 
   const handleGoogle = async () => {
     setError('')
-    trackEvent('sign_in_google_click')
+    trackEvent('sign_in_google_click', sourceMetadata)
     setIsRedirecting(true)
     const { error: googleError } = await authClient.signIn.social({
       provider: 'google',
       callbackURL: next,
-      errorCallbackURL: '/sign-in',
+      errorCallbackURL:
+        next === DEFAULT_NEXT_PATH
+          ? '/sign-in'
+          : `/sign-in?next=${encodeURIComponent(next)}`,
     })
     if (googleError) {
       setIsRedirecting(false)

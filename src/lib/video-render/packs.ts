@@ -9,7 +9,11 @@ export type VideoPack = keyof typeof VIDEO_PACKS
 
 export type VideoJob = { kind: VideoKind; theme: VideoTheme }
 
-export type RenderedVideo = VideoJob & { pathname: string; bytes: number }
+export type RenderedVideo = VideoJob & {
+  pathname: string
+  bytes: number
+  posterPathname?: string
+}
 
 export function isVideoPack(value: unknown): value is VideoPack {
   return typeof value === 'string' && Object.hasOwn(VIDEO_PACKS, value)
@@ -24,7 +28,8 @@ export function videosInPack(pack: VideoPack): VideoJob[] {
 export function renderPathname(
   environment: string,
   renderId: string,
-  { kind, theme }: VideoJob
+  { kind, theme }: VideoJob,
+  extension: 'mp4' | 'jpg' = 'mp4'
 ): string {
-  return `${environment}/renders/${renderId}/${kind}-${theme}.mp4`
+  return `${environment}/renders/${renderId}/${kind}-${theme}.${extension}`
 }

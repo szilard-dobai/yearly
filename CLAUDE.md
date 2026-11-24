@@ -18,6 +18,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Full check**: `npm run check:full` - Runs lint + type-check + tests + build
 - **Emoji images**: `npm run emoji:build` downloads the Noto Emoji SVGs at the commit pinned in `scripts/build-emoji-images.mts`, adjusts their colours, crops the flags to one shared box and writes two WebP sizes to `public/emoji/` plus the manifest `src/lib/emoji-images.ts`. Commit its output; the raw SVGs stay in `node_modules/.cache`. Adding a country to `src/lib/countries.ts` needs a rebuild, or the country drops out of `COUNTRIES`
 - **Paid video renders**: `npm run video:bundle` bundles `src/video-render` with the fonts and `public/emoji` into `.video-render/bundle`; `node scripts/video-render.mts snapshot | sample --snapshot <id> | delete-snapshot <id>` makes a Vercel Sandbox snapshot from it and renders the example videos into `.video-render/out`. `prepare` runs in `vercel-build` and gives each deployment its snapshot. Sandbox calls need `VERCEL_OIDC_TOKEN` from `vercel env pull`, kept outside the repo and passed with `node --env-file`. Delete test snapshots afterwards. See Rendering in `docs/06-paid-videos.md`
+- **Free video credits**: `node --env-file=<file> scripts/import-video-credits.mts --expires 2027-01-31 [--commit]` copies the MongoDB video waitlist's emails (trimmed, lowercased, deduplicated, invalid ones skipped) into Postgres `video_credit`, once on launch day. A dry run without `--commit`; safe to run again; prints the database hosts and counts, never emails. It never reads `.env.local`: pass the variables with `node --env-file`, so a missing one stops it instead of using a development database. See Launch day in `docs/06-paid-videos.md`
 - **Database migration**: `npm run db:generate -- --name <name>` writes a SQL migration in `drizzle/` from `src/lib/db/schema.ts`; `npm run db:migrate` applies it. Vercel runs `vercel-build`, which migrates before building, so every migration must work with the code already deployed (add first, remove later)
 - **Install**: `.npmrc` sets `legacy-peer-deps=true`, because Better Auth's optional framework peers (SvelteKit, TanStack Start) want Vite 8 and the tests use Vite 7. That also leaves peers unresolved, so `ajv` 8 is a direct dev dependency for webpack's `ajv-keywords` (ESLint keeps its own `ajv` 6)
 
@@ -51,10 +52,11 @@ src/
 │   ├── create/page.tsx       - Main app page (calendar, exports, settings)
 │   ├── admin/analytics/      - Admin analytics dashboard
 │   ├── admin/feedback/       - Admin feedback review (device activity drill-down)
+│   ├── admin/videos/         - Admin video orders: totals, orders with buyer email and render errors, render a failed video again, Polar order links; 404 (and out of the admin nav) unless video sales are on
 │   ├── sign-in/page.tsx      - Email code or Google; `?next=` returns you afterwards; signed-in visitors are sent on (noindex)
 │   ├── account/page.tsx      - Signed-in account page; signed-out visitors go to `/sign-in?next=/account` (noindex)
 │   ├── terms/page.tsx        - Terms; 404 until accounts are on
-│   └── api/                  - API routes (tracking, feedback, Better Auth at api/auth/[...all], the signed-in calendar at api/calendar, admin auth/devices, admin example video renders at api/admin/video-renders; admin-only DELETE on events, feedback and whole devices; the year-end reminder cron at api/cron/year-end-reminders and its admin actions at api/reminders/send and api/reminders/test-email; the video launch email at api/waitlist/launch-email and its one-click unsubscribe at api/waitlist/unsubscribe)
+│   └── api/                  - API routes (tracking, feedback, Better Auth at api/auth/[...all], the signed-in calendar at api/calendar, admin auth/devices, admin example video renders at api/admin/video-renders, admin video orders and render again at api/admin/video-orders, video orders and updates at api/videos/orders, the Polar webhook at api/webhooks/polar (`POLAR_WEBHOOK_SECRET`); admin-only DELETE on events, feedback and whole devices; the year-end reminder cron at api/cron/year-end-reminders and its admin actions at api/reminders/send and api/reminders/test-email; the video launch email at api/waitlist/launch-email and its one-click unsubscribe at api/waitlist/unsubscribe)
 ├── components/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
@@ -65,7 +67,7 @@ src/
 │   ├── export/               - Shared export frame (padding, title, watermark), stat tiles and ranking rows
 │   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
-│   ├── video/                - Remotion compositions for the animated video preview (year, month, stats)
+│   ├── video/                - Remotion compositions for the animated video preview (year, month, stats); the paid video flow in the export dialog (`useVideoPurchase`, `SaveVideoButton`, `PackVideoPlayer`, `PackUpdate`, shared with `/account`) and `VideoSalesProvider` (root layout)
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports
 │   ├── HomepageExampleImage.tsx - Shows the light or dark example once the colour scheme is known, so only one image loads; tapping it opens the original full size
 │   ├── Emoji.tsx             - The one image component for flags (`Flag`, `DayFlags` for one or two countries) and named emoji (`Emoji`); `size` works like a font size, or leave it out to follow the text; `resolution="large"` in exports and video, Remotion's `Img` via `as` in compositions
@@ -75,8 +77,8 @@ src/
 │   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
 │   ├── FeedbackCard.tsx      - Rating card on the create page, hidden once the user rates or dismisses
-│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (calendar, sign out, delete), first-sync dialog
-│   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles; the year-end reminder panel with "Send a test" and "Run now")
+│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (your videos with updates, calendar, sign out, delete), first-sync dialog
+│   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles, video orders and render again; the year-end reminder panel with "Send a test" and "Run now"; the nav shows Videos when `useVideoSales()` says sales are on)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/
 │   ├── types.ts              - Core types (Country, CountryVisit, CalendarData)
@@ -99,13 +101,14 @@ src/
 │   │   ├── useAccountPrompt.ts     - When the /create account prompt shows (3+ days of trips, 30-day snooze)
 │   │   ├── useStatusFeedback.ts    - Loading/error state management
 │   │   └── useTodayKey.ts          - Today's local date key, null on the server and during hydration, so date-based cards render only in the browser
+│   ├── videos/               - Paid video packs: orders, renders and free credits in Postgres, Polar checkout and product IDs (`POLAR_ACCESS_TOKEN`, `POLAR_ENVIRONMENT`), the 80% update rule, starting renders, order summaries with signed links, admin totals and order list (never trips or file links); everything is off unless `VIDEO_SALES_ENABLED=true`. Browser side: `client.ts` (API calls), `useVideoOrder` (polling), `save.ts` (share sheet or download), `checkout-return.ts` (Polar's `customer_session_token` is stripped in `instrumentation-client.ts` before anything else runs)
 │   ├── video-render/         - Paid video rendering: `renderVideoPack` workflow (one step per video: sandbox from the deployment's snapshot, render, upload to the private videos store), packs, signed download links, the deployment's snapshot ID (written by `scripts/video-render.mts prepare`)
 │   ├── retention.ts          - Retention rules (26 months in full, then identifiers removed; 5 years max), run daily by `api/cron/retention` (`vercel.json`, `CRON_SECRET`)
 │   ├── contexts/
 │   │   └── SettingsContext.tsx      - User preferences (theme, week start, export format)
 │   ├── db/                   - Drizzle client (`DATABASE_URL`) and schema; `auth-schema.ts` is generated by `npx auth@<better-auth version> generate`
 │   ├── calendar-sync/        - Syncs the local calendar with the signed-in account: day-map format, three-way merge, versioned saves to `/api/calendar`, `useCalendarSync` for /create
-│   ├── auth/                 - Better Auth config (`BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`), client, `safeNextPath`, hashed-key rate limiter; sessions never store IP addresses, and Google's photo and tokens aren't kept (the name is, for avatar initials); each new account posts the sign-up method, country and account count to `SLACK_FEEDBACK_WEBHOOK_URL` (`slack.ts`), never the email or name; every Slack message shows country, never region
+│   ├── auth/                 - Better Auth config (`BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`), `enabled.ts` (`isGoogleSignInConfigured`, safe to import in the root layout), client, `safeNextPath`, hashed-key rate limiter; sessions never store IP addresses, and Google's photo and tokens aren't kept (the name is, for avatar initials); each new account posts the sign-up method, country and account count to `SLACK_FEEDBACK_WEBHOOK_URL` (`slack.ts`), never the email or name; every Slack message shows country, never region
 │   ├── email/                - Resend sender (`sendEmail` takes an idempotency key and extra headers, and throws `EmailSendError` with Resend's error code), the bulk send shared by the year-end reminder and the video launch email (`bulk-send.ts` loop, `bulk-send-store.ts` MongoDB claims), and email templates (sign-in code, year-end reminder, video launch) on the shared `layout.ts`
 │   ├── reminders/            - Year-end reminder: sign-up card helpers, dates (`date.ts`: the reminder date, when sign-ups close, the send window), and the send (`send.ts` and `send-store.ts` wrap the shared bulk send in `lib/email`, `send-run.ts` production and date checks); see Year-end reminder email below
 │   ├── feedback/             - Feedback schemas, client API, prompt cooldowns, Slack notifications (`SLACK_FEEDBACK_WEBHOOK_URL`)

@@ -61,7 +61,7 @@ Polar sends the receipt. We send the "ready" email, which links to `/account`. F
 
 ## Export dialog
 
-`AnimatedVideoDialog` keeps the waitlist exactly as it was unless `VIDEO_SALES_ENABLED=true`; the root layout passes the flag (and whether Google sign-in is set up) to the client through `VideoSalesProvider`, the way `AccountsEnabledProvider` does for accounts. With sales on:
+`AnimatedVideoDialog` keeps the waitlist exactly as it was unless `VIDEO_SALES_ENABLED=true`; the root layout passes the flag (and whether Google sign-in is set up) to the client through `VideoSalesProvider`. With sales on:
 
 - **Pack and price.** A year or stats preview sells the year pack, a month preview the month pack, at `VIDEO_PACK_PRICE`. Signed-in people see whether a free video is waiting (`GET /api/videos/orders`).
 - **A pack they already have.** When the previewed period matches a paid order (a year or stats preview matches that year's pack, a month preview that month's pack), the dialog shows the pack instead of the offer: its videos with their posters, **Save video**, and **Update with my latest trips (N left)**, which posts the `/create` calendar for that period after a confirmation and follows the new version while the old one stays playable. `unchanged` reads "Your videos already include all your trips", `too-different` and running out of updates offer **Get a new pack**, which shows the offer again (buying the same period again is allowed) with a way back to the pack. Signed-out visitors see the offer, and the check runs again once they've signed in and their calendar is saved. The update controls are `PackUpdate`, shared with `/account`.
@@ -102,7 +102,7 @@ Polar sends the receipt. We send the "ready" email, which links to `/account`. F
 
 ### Setup
 
-Everything under `/api/videos` and the webhook returns 404 unless `VIDEO_SALES_ENABLED=true` (and accounts are on). `/privacy` and `/terms` show the purchase sections only then too.
+Everything under `/api/videos` and the webhook returns 404 unless `VIDEO_SALES_ENABLED=true`. `/privacy` and `/terms` show the purchase sections only then too.
 
 | Variable               | Production                  | Preview and Development  |
 | ---------------------- | --------------------------- | ------------------------ |

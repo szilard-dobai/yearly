@@ -50,8 +50,6 @@ describe('POST /api/reminders/test-email', () => {
   })
 
   it("sends this year's reminder to the typed address without an idempotency key", async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
-
     const response = await POST(request({ email: ' Me@Example.com ' }))
 
     expect(response.status).toBe(200)

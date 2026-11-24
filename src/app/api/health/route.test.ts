@@ -4,8 +4,9 @@ import { GET } from './route'
 
 describe('/api/health', () => {
   beforeEach(() => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'false')
     vi.stubEnv('MONGODB_URI', 'mongodb://example')
+    vi.stubEnv('DATABASE_URL', 'postgres://example')
+    vi.stubEnv('BETTER_AUTH_SECRET', 'secret')
   })
 
   afterEach(() => {
@@ -24,10 +25,8 @@ describe('/api/health', () => {
   })
 
   it('answers 503 and reports which settings are missing to the logs', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('DATABASE_URL', '')
-    vi.stubEnv('BETTER_AUTH_SECRET', 'secret')
     vi.stubEnv('RESEND_API_KEY', '')
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 

@@ -4,7 +4,6 @@ import { Emoji } from '@/components/Emoji'
 import AccountPrompt from '@/components/account/AccountPrompt'
 import AccountSyncStatus from '@/components/account/AccountSyncStatus'
 import FirstSyncDialog from '@/components/account/FirstSyncDialog'
-import { useAccountsEnabled } from '@/components/account/AccountsEnabledProvider'
 import CalendarGrid from '@/components/CalendarGrid'
 import CalendarHint from '@/components/CalendarHint'
 import CountryInput from '@/components/CountryInput'
@@ -171,13 +170,10 @@ function Create() {
     saveCalendarData(newData)
   }, [])
 
-  const accountsEnabled = useAccountsEnabled()
-
   const accountPromptDismissed = useAccountPromptDismissed()
   const [accountPromptDone, setAccountPromptDone] = useState(false)
   const accountPromptSeenRef = useRef(false)
   const calendarSync = useCalendarSync({
-    enabled: accountsEnabled,
     calendarData,
     onRemoteChange: handleRemoteChange,
   })
@@ -340,7 +336,6 @@ function Create() {
     calendarData.visits.map((visit) => toDayKey(visit.date))
   ).size
   const showAccountPrompt =
-    accountsEnabled &&
     calendarSync.sessionChecked &&
     !calendarSync.account &&
     !accountPromptDismissed &&

@@ -1,13 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { faqs, getFaqs } from './faq'
+import { faqs } from './faq'
 
-describe('getFaqs', () => {
-  it('keeps today’s answers while accounts are switched off', () => {
-    expect(getFaqs(false)).toBe(faqs)
-  })
-
-  it('answers the account questions once accounts are on', () => {
-    const questions = getFaqs(true).map((faq) => faq.question)
+describe('faqs', () => {
+  it('answers the account questions right after the price', () => {
+    const questions = faqs.map((faq) => faq.question)
 
     expect(questions.slice(0, 4)).toEqual([
       'Is Yearly free?',
@@ -19,7 +15,7 @@ describe('getFaqs', () => {
   })
 
   it('says an account is optional and that Yearly works without one', () => {
-    const answer = getFaqs(true).find(
+    const answer = faqs.find(
       (faq) => faq.question === 'Do I need an account?'
     )?.answer
 
@@ -28,7 +24,7 @@ describe('getFaqs', () => {
   })
 
   it('says what is stored with and without an account', () => {
-    const answer = getFaqs(true).find(
+    const answer = faqs.find(
       (faq) => faq.question === 'Where are my trips stored?'
     )?.answer
 

@@ -5,11 +5,10 @@ import DeleteAccount from '@/components/account/DeleteAccount'
 import Header from '@/components/Header'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StandardCard } from '@/components/ui/card-variants'
-import { isAccountsEnabled } from '@/lib/auth/config'
 import { getSession } from '@/lib/auth/server'
 import { isOpenReminderYear } from '@/lib/reminders/server'
 import type { Metadata } from 'next'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
   title: 'Your account',
@@ -17,8 +16,6 @@ export const metadata: Metadata = {
 }
 
 export default async function AccountPage() {
-  if (!isAccountsEnabled()) notFound()
-
   const session = await getSession()
   if (!session) redirect('/sign-in?next=/account')
 

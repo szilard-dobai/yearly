@@ -13,7 +13,6 @@ const LAUNCH_DAY = new Date('2026-12-03T09:00:00Z')
 
 function stubReadyEnv() {
   vi.stubEnv('VERCEL_ENV', 'production')
-  vi.stubEnv('ACCOUNTS_ENABLED', 'true')
   vi.stubEnv('VIDEO_SALES_ENABLED', 'true')
   vi.stubEnv('BETTER_AUTH_SECRET', 'test-secret')
 }

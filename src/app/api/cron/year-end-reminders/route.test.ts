@@ -61,7 +61,6 @@ describe('/api/cron/year-end-reminders', () => {
     })
     vi.stubEnv('CRON_SECRET', 'cron-secret')
     vi.stubEnv('VERCEL_ENV', 'production')
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     vi.spyOn(console, 'info').mockImplementation(() => {})
     setCounts({ total: 2, sent: 0, ready: 2 })
     collection.findOneAndUpdate

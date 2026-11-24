@@ -13,12 +13,9 @@ export function reminderIdempotencyKey(year: number, id: string) {
   return `year-end-reminder/${year}/${id}`
 }
 
-export function createReminderSender(
-  year: number,
-  { accountsEnabled }: { accountsEnabled: boolean }
-): BulkSender {
+export function createReminderSender(year: number): BulkSender {
   return (reminder) =>
-    sendEmail(yearEndReminderEmail(reminder.email, year, { accountsEnabled }), {
+    sendEmail(yearEndReminderEmail(reminder.email, year), {
       idempotencyKey: reminderIdempotencyKey(year, reminder.id),
     })
 }

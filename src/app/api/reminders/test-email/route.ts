@@ -1,4 +1,3 @@
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import { EmailSendError, sendEmail } from '@/lib/email/send'
 import { yearEndReminderEmail } from '@/lib/email/year-end-reminder'
 import { getReminderSendYear } from '@/lib/reminders/date'
@@ -26,11 +25,7 @@ export async function POST(request: Request) {
   const year = getReminderSendYear(now) ?? now.getUTCFullYear()
 
   try {
-    await sendEmail(
-      yearEndReminderEmail(parsed.data.email, year, {
-        accountsEnabled: isAccountsEnabled(),
-      })
-    )
+    await sendEmail(yearEndReminderEmail(parsed.data.email, year))
     return NextResponse.json({ success: true })
   } catch (error) {
     const code =

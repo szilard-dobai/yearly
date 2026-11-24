@@ -1,4 +1,3 @@
-import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -43,11 +42,7 @@ function renderSignedIn() {
   getSession.mockResolvedValue({
     data: { user: { id: 'ana', email: 'ana@example.com' } },
   })
-  return render(
-    <AccountsEnabledProvider enabled>
-      <VideoWaitlistForm />
-    </AccountsEnabledProvider>
-  )
+  return render(<VideoWaitlistForm />)
 }
 
 describe('VideoWaitlistForm', () => {
@@ -64,11 +59,7 @@ describe('VideoWaitlistForm', () => {
 
   it('asks for an email when nobody is signed in', async () => {
     const user = userEvent.setup()
-    render(
-      <AccountsEnabledProvider enabled>
-        <VideoWaitlistForm />
-      </AccountsEnabledProvider>
-    )
+    render(<VideoWaitlistForm />)
 
     const input = screen.getByLabelText(/Join the list/)
     await user.type(input, 'me@example.com')
@@ -126,14 +117,5 @@ describe('VideoWaitlistForm', () => {
     expect(requestsWith('DELETE')).toEqual([
       ['/api/waitlist?feature=animated_video', { method: 'DELETE' }],
     ])
-  })
-
-  it('does not check for a session while accounts are off', () => {
-    render(<VideoWaitlistForm />)
-
-    expect(getSession).not.toHaveBeenCalled()
-    expect(screen.getByLabelText(/Join the list/)).not.toHaveAttribute(
-      'readonly'
-    )
   })
 })

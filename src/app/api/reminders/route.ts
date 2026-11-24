@@ -1,4 +1,3 @@
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import { getSessionEmail } from '@/lib/auth/session-user'
 import { getRemindersCollection, type ReminderDocument } from '@/lib/mongodb'
 import { REMINDER_DATE_LABEL } from '@/lib/reminders/date'
@@ -20,9 +19,6 @@ const NO_STORE = { 'Cache-Control': 'no-store' }
 const yearSchema = z.coerce.number().int().min(2000).max(2200)
 
 async function getAccountReminder(request: Request) {
-  if (!isAccountsEnabled()) {
-    return { error: new NextResponse(null, { status: 404 }) }
-  }
   const year = yearSchema.safeParse(
     new URL(request.url).searchParams.get('year')
   )

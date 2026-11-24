@@ -5,9 +5,8 @@ import { authClient } from '@/lib/auth/client'
 import { getInitials } from '@/lib/auth/initials'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useAccountsEnabled } from './AccountsEnabledProvider'
 
-function AccountLink() {
+export default function AccountMenu() {
   const pathname = usePathname()
   const { data, isPending } = authClient.useSession()
 
@@ -37,8 +36,4 @@ function AccountLink() {
       {initials}
     </Link>
   )
-}
-
-export default function AccountMenu() {
-  return useAccountsEnabled() ? <AccountLink /> : null
 }

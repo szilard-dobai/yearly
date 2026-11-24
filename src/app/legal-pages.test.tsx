@@ -1,34 +1,15 @@
 import Footer from '@/components/Footer'
 import { render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import PrivacyPage from './privacy/page'
 import TermsPage from './terms/page'
 
 vi.mock('@/components/Header', () => ({ default: () => null }))
 vi.mock('@/components/ThemeToggle', () => ({ default: () => null }))
-vi.mock('next/navigation', () => ({
-  notFound: () => {
-    throw new Error('NOT_FOUND')
-  },
-}))
 
 describe('privacy, terms and footer', () => {
-  afterEach(() => {
-    vi.unstubAllEnvs()
-  })
-
-  describe('while accounts are switched off', () => {
-    it('keeps the privacy page saying there are no accounts', () => {
-      render(<PrivacyPage />)
-
-      expect(
-        screen.getByText(/There are no accounts and no ads/)
-      ).toBeInTheDocument()
-      expect(screen.queryByText('Your account')).not.toBeInTheDocument()
-      expect(screen.queryByText(/Neon stores/)).not.toBeInTheDocument()
-    })
-
-    it('covers the GDPR basics, which apply with or without accounts', () => {
+  describe('privacy page', () => {
+    it('covers the GDPR basics', () => {
       render(<PrivacyPage />)
 
       expect(
@@ -36,7 +17,9 @@ describe('privacy, terms and footer', () => {
       ).toBeInTheDocument()
       expect(screen.getByText('Why we use your data')).toBeInTheDocument()
       expect(screen.getAllByText(/in full for 26 months/)).toHaveLength(3)
-      expect(screen.getByText(/Frankfurt, Germany/)).toBeInTheDocument()
+      expect(
+        screen.getByText(/Our servers and databases are in Frankfurt/)
+      ).toBeInTheDocument()
       expect(screen.getByText(/ANSPDCP/)).toBeInTheDocument()
       expect(screen.getByText('Error reports')).toBeInTheDocument()
       expect(
@@ -52,14 +35,6 @@ describe('privacy, terms and footer', () => {
         screen.getAllByText(/Share usage stats/, { selector: 'span' })
       ).toHaveLength(2)
       expect(
-        screen.queryByText(/providing the account you asked for/)
-      ).toBeNull()
-      expect(
-        screen.getByText(
-          /Resend sends the year-end reminder email and the video launch email/
-        )
-      ).toBeInTheDocument()
-      expect(
         screen.getByText(/unless the law requires us to/)
       ).toBeInTheDocument()
       expect(screen.getByText('If you write to us')).toBeInTheDocument()
@@ -69,17 +44,9 @@ describe('privacy, terms and footer', () => {
       expect(
         screen.getByText(/2 years after the last message/)
       ).toBeInTheDocument()
-      expect(screen.queryByText(/scrambled copy of the address/)).toBeNull()
       expect(
         screen.getByText(/leave out anything that could identify you/)
       ).toBeInTheDocument()
-    })
-
-    it('hides the terms page and its footer link', () => {
-      expect(() => TermsPage()).toThrow('NOT_FOUND')
-
-      render(<Footer />)
-      expect(screen.queryByRole('link', { name: 'Terms' })).toBeNull()
     })
 
     it('credits the flag and emoji images on the privacy page', () => {
@@ -93,11 +60,8 @@ describe('privacy, terms and footer', () => {
         'https://github.com/googlefonts/noto-emoji'
       )
     })
-  })
 
-  describe('once accounts are on', () => {
     it('describes accounts, who handles the data and how to delete it', () => {
-      vi.stubEnv('ACCOUNTS_ENABLED', 'true')
       render(<PrivacyPage />)
 
       expect(screen.getByText(/Accounts are optional/)).toBeInTheDocument()
@@ -129,9 +93,10 @@ describe('privacy, terms and footer', () => {
         screen.getByText(/If you don't use your account for 5 years/)
       ).toBeInTheDocument()
     })
+  })
 
+  describe('terms', () => {
     it('shows the terms and links them from the footer', () => {
-      vi.stubEnv('ACCOUNTS_ENABLED', 'true')
       render(TermsPage())
 
       expect(screen.getByRole('heading', { name: 'Terms' })).toBeInTheDocument()

@@ -30,31 +30,14 @@ describe('GET /llms.txt', () => {
     }
   })
 
+  it('says an account is optional', () => {
+    expect(text).toContain('An account is optional.')
+  })
+
   it('links the public pages with absolute URLs', () => {
     expect(text).toContain('(https://www.yearly.world/)')
     expect(text).toContain('(https://www.yearly.world/create)')
     expect(text).toContain('(https://www.yearly.world/videos)')
     expect(text).toContain('(https://www.yearly.world/privacy)')
-  })
-})
-
-describe('GET /llms.txt once accounts are on', () => {
-  afterAll(() => {
-    vi.unstubAllEnvs()
-  })
-
-  it('says an account is optional and uses the account FAQs', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.yearly.world')
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
-    vi.resetModules()
-    const { GET } = await import('./route')
-    const { getFaqs } = await import('@/lib/faq')
-    const text = await GET().text()
-
-    expect(text).toContain('An account is optional.')
-    expect(text).not.toContain('with no account and nothing to install')
-    for (const { question } of getFaqs(true)) {
-      expect(text).toContain(`### ${question}`)
-    }
   })
 })

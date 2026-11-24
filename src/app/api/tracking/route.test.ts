@@ -37,7 +37,6 @@ function storedEvent() {
 
 describe('POST /api/tracking', () => {
   beforeEach(() => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     collection.insertOne.mockReset().mockResolvedValue({})
     getSession.mockReset().mockResolvedValue(null)
   })
@@ -73,15 +72,6 @@ describe('POST /api/tracking', () => {
   it('ignores an account ID sent by the browser', async () => {
     await POST(postRequest({ ...event, userId: 'someone-else' }))
 
-    expect(storedEvent()).not.toHaveProperty('userId')
-  })
-
-  it('does not check the session when accounts are off', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', '')
-
-    await POST(postRequest(event))
-
-    expect(getSession).not.toHaveBeenCalled()
     expect(storedEvent()).not.toHaveProperty('userId')
   })
 

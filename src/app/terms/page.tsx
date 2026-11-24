@@ -1,9 +1,7 @@
 import { ProductName, withProductName } from '@/components/ProductName'
 import Header from '@/components/Header'
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
@@ -38,8 +36,6 @@ const email = (
 )
 
 export default function TermsPage() {
-  if (!isAccountsEnabled()) notFound()
-
   return (
     <>
       <Header />

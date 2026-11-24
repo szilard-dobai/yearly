@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AccountMenu from './AccountMenu'
-import { AccountsEnabledProvider } from './AccountsEnabledProvider'
 
 const { useSession, pathname } = vi.hoisted(() => ({
   useSession: vi.fn(),
@@ -11,12 +10,8 @@ const { useSession, pathname } = vi.hoisted(() => ({
 vi.mock('@/lib/auth/client', () => ({ authClient: { useSession } }))
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.value }))
 
-function renderMenu(enabled = true) {
-  return render(
-    <AccountsEnabledProvider enabled={enabled}>
-      <AccountMenu />
-    </AccountsEnabledProvider>
-  )
+function renderMenu() {
+  return render(<AccountMenu />)
 }
 
 describe('AccountMenu', () => {
@@ -24,13 +19,6 @@ describe('AccountMenu', () => {
     vi.clearAllMocks()
     pathname.value = '/create'
     useSession.mockReturnValue({ data: null, isPending: false })
-  })
-
-  it('shows nothing and checks no session while accounts are switched off', () => {
-    const { container } = renderMenu(false)
-
-    expect(container).toBeEmptyDOMElement()
-    expect(useSession).not.toHaveBeenCalled()
   })
 
   it('links signed-out visitors to sign in and back to this page', () => {

@@ -18,7 +18,6 @@ import {
   createAuth,
   getAllowedHosts,
   getGoogleCredentials,
-  isAccountsEnabled,
 } from './config'
 import type { SignUp } from './slack'
 
@@ -275,20 +274,6 @@ describe('createAuth', () => {
       )
     ).rejects.toThrow('not in the allowed hosts')
     expect(codes).toHaveLength(0)
-  })
-})
-
-describe('isAccountsEnabled', () => {
-  it('is on only when ACCOUNTS_ENABLED is "true"', () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
-    expect(isAccountsEnabled()).toBe(true)
-
-    vi.stubEnv('ACCOUNTS_ENABLED', '1')
-    expect(isAccountsEnabled()).toBe(false)
-
-    vi.stubEnv('ACCOUNTS_ENABLED', '')
-    expect(isAccountsEnabled()).toBe(false)
-    vi.unstubAllEnvs()
   })
 })
 

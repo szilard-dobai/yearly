@@ -49,7 +49,6 @@ const validBody = {
 
 describe('POST /api/feedback', () => {
   beforeEach(() => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     getSession.mockReset().mockResolvedValue(null)
     notifyFeedbackToSlack.mockReset()
     collection.countDocuments.mockReset().mockResolvedValue(0)
@@ -101,16 +100,10 @@ describe('POST /api/feedback', () => {
     )
   })
 
-  it('stores no account ID when signed out or when accounts are off', async () => {
-    await POST(postRequest(validBody))
-    vi.stubEnv('ACCOUNTS_ENABLED', '')
-    getSession.mockResolvedValue({ user: { id: 'user-1', email: 'a@b.co' } })
+  it('stores no account ID when signed out', async () => {
     await POST(postRequest(validBody))
 
-    for (const [document] of collection.insertOne.mock.calls) {
-      expect(document).not.toHaveProperty('userId')
-    }
-    expect(getSession).toHaveBeenCalledTimes(1)
+    expect(collection.insertOne.mock.calls[0][0]).not.toHaveProperty('userId')
   })
 
   it('ignores an account ID sent by the browser', async () => {

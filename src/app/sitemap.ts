@@ -1,5 +1,4 @@
 import { HERO_IMAGE, HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { MetadataRoute } from 'next'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL!
@@ -34,15 +33,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'yearly',
       priority: 0.3,
     },
-    ...(isAccountsEnabled()
-      ? [
-          {
-            url: `${siteUrl}/terms`,
-            lastModified: new Date(),
-            changeFrequency: 'yearly' as const,
-            priority: 0.3,
-          },
-        ]
-      : []),
+    {
+      url: `${siteUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
   ]
 }

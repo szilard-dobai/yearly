@@ -29,21 +29,12 @@ function put(body: unknown, site = 'same-origin') {
 
 describe('/api/calendar', () => {
   beforeEach(() => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     getSession.mockResolvedValue({ user: { id: 'ana' } })
   })
 
   afterEach(() => {
     vi.unstubAllEnvs()
     vi.clearAllMocks()
-  })
-
-  it('returns 404 while accounts are switched off', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', '')
-
-    expect((await get()).status).toBe(404)
-    expect((await put({ days: DAYS, baseVersion: 0 })).status).toBe(404)
-    expect(getSession).not.toHaveBeenCalled()
   })
 
   it('requires a signed-in person', async () => {

@@ -9,9 +9,7 @@ import { yearEndReminderEmail } from './year-end-reminder'
 
 const emails = {
   'sign-in code': signInCodeEmail('ana@example.com', '482913'),
-  'year-end reminder': yearEndReminderEmail('ana@example.com', 2026, {
-    accountsEnabled: true,
-  }),
+  'year-end reminder': yearEndReminderEmail('ana@example.com', 2026),
   'video launch': videoLaunchEmail('ana@example.com', {
     freeUntil: '31 January 2027',
     unsubscribe: {

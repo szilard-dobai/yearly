@@ -67,7 +67,6 @@ describe('POST /api/reminders', () => {
   })
 
   it('uses the signed-in email instead of the one sent', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     getSession.mockResolvedValue({ user: { email: 'Ana@Example.com' } })
 
     const response = await POST(postRequest(validBody))
@@ -79,12 +78,10 @@ describe('POST /api/reminders', () => {
     })
   })
 
-  it('does not look for a session while accounts are off', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'false')
-
+  it('uses the email sent when nobody is signed in', async () => {
     await POST(postRequest(validBody))
 
-    expect(getSession).not.toHaveBeenCalled()
+    expect(getSession).toHaveBeenCalledTimes(1)
     expect(collection.updateOne.mock.calls[0][0].email).toBe(
       'traveller@example.com'
     )
@@ -275,7 +272,6 @@ function accountRequest(
 
 describe('the signed-in reminder', () => {
   beforeEach(() => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     collection.countDocuments.mockReset().mockResolvedValue(1)
     collection.deleteOne.mockReset().mockResolvedValue({ deletedCount: 1 })
     getSession.mockReset().mockResolvedValue({
@@ -320,14 +316,6 @@ describe('the signed-in reminder', () => {
     expect((await GET(accountRequest('GET'))).status).toBe(401)
     expect((await DELETE(accountRequest('DELETE'))).status).toBe(401)
     expect(collection.deleteOne).not.toHaveBeenCalled()
-  })
-
-  it('returns 404 while accounts are off', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', '')
-
-    expect((await GET(accountRequest('GET'))).status).toBe(404)
-    expect((await DELETE(accountRequest('DELETE'))).status).toBe(404)
-    expect(getSession).not.toHaveBeenCalled()
   })
 
   it('rejects a missing or invalid year', async () => {

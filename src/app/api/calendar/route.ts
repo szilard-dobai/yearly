@@ -1,4 +1,3 @@
-import { isAccountsEnabled } from '@/lib/auth/config'
 import { auth } from '@/lib/auth/server'
 import { calendarDaysSchema } from '@/lib/calendar-sync/days'
 import { getCalendar, saveCalendar } from '@/lib/calendar-sync/store'
@@ -30,8 +29,6 @@ async function getUserId(request: Request) {
 }
 
 export async function GET(request: Request) {
-  if (!isAccountsEnabled()) return new NextResponse(null, { status: 404 })
-
   const userId = await getUserId(request)
   if (!userId) return json({ error: 'Unauthorized' }, 401)
 
@@ -39,8 +36,6 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  if (!isAccountsEnabled()) return new NextResponse(null, { status: 404 })
-
   const forbidden = validateSameOrigin(request)
   if (forbidden) return forbidden
 

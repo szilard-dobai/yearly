@@ -1,6 +1,5 @@
 import { ProductName, withProductName } from '@/components/ProductName'
 import Header from '@/components/Header'
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
@@ -40,8 +39,6 @@ const email = (
 )
 
 export default function PrivacyPage() {
-  const accounts = isAccountsEnabled()
-
   return (
     <>
       <Header />
@@ -57,10 +54,8 @@ export default function PrivacyPage() {
             <p>
               <ProductName /> is a small, independent project. This page
               explains what <ProductName /> stores, what it sends to our
-              servers, and how to get your data deleted.{' '}
-              {accounts
-                ? "Accounts are optional, there are no ads, and we don't sell your data."
-                : "There are no accounts and no ads, and we don't sell your data."}
+              servers, and how to get your data deleted. Accounts are optional,
+              there are no ads, and we don&apos;t sell your data.
             </p>
           </header>
 
@@ -73,80 +68,67 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="Your trips">
-            {accounts ? (
-              <>
-                <p>
-                  If you don&apos;t sign in, the trips and settings you add are
-                  saved only in your browser&apos;s local storage, on your
-                  device. We never receive the dates of your trips.
-                </p>
-                <p>
-                  If you sign in, we also save your trips to your account: the
-                  countries and the days you were in each. That&apos;s how your
-                  calendar shows up on your other devices. Your settings stay on
-                  each device.
-                </p>
-                <p>
-                  Images you export are always created in your browser rather
-                  than uploaded to us.
-                </p>
-              </>
-            ) : (
-              <p>
-                The trips and settings you add are saved in your browser&apos;s
-                local storage, on your device. We never receive the dates of
-                your trips, and images you export are created in your browser
-                rather than uploaded to us.
-              </p>
-            )}
+            <p>
+              If you don&apos;t sign in, the trips and settings you add are
+              saved only in your browser&apos;s local storage, on your device.
+              We never receive the dates of your trips.
+            </p>
+            <p>
+              If you sign in, we also save your trips to your account: the
+              countries and the days you were in each. That&apos;s how your
+              calendar shows up on your other devices. Your settings stay on
+              each device.
+            </p>
+            <p>
+              Images you export are always created in your browser rather than
+              uploaded to us.
+            </p>
           </Section>
 
-          {accounts && (
-            <Section title="Your account">
-              <p>An account is optional. If you create one, we store:</p>
-              <List>
-                <li>your email address, which you sign in with</li>
-                <li>your saved trips, as described above</li>
-                <li>
-                  for each device you&apos;re signed in on, when you signed in,
-                  when that session ends and your browser&apos;s user agent. We
-                  don&apos;t store your IP address with your sessions.
-                </li>
-                <li>
-                  if you sign in with Google, the name on your Google account,
-                  which we use only for the initials on your account icon, and a
-                  link between your <ProductName /> account and your Google
-                  account. We don&apos;t keep your Google profile photo or any
-                  access to your Google account.
-                </li>
-              </List>
-              <p>
-                When you sign in by email, we send you a 6-digit code. We store
-                only a scrambled copy of it, and it expires after 10 minutes.
-              </p>
-              <p>
-                When you sign in, sign out or delete your account, we count
-                these requests from your IP address so we can block repeated
-                sign-in attempts. We store only a scrambled copy of the address,
-                and delete it within 2 days.
-              </p>
-              <p>
-                We use your email address to sign you in and to reply if you
-                write to us. We don&apos;t send newsletters or marketing to it.
-              </p>
-              <p>
-                Each new account is posted to a private Slack channel with
-                whether you signed up by email or with Google, and your country.
-                It never includes your email address or name.
-              </p>
-              <p>
-                You stay signed in on a device until you sign out, or until you
-                haven&apos;t opened <ProductName /> there for 60 days. Signing
-                out removes your trips from that device. They stay saved in your
-                account.
-              </p>
-            </Section>
-          )}
+          <Section title="Your account">
+            <p>An account is optional. If you create one, we store:</p>
+            <List>
+              <li>your email address, which you sign in with</li>
+              <li>your saved trips, as described above</li>
+              <li>
+                for each device you&apos;re signed in on, when you signed in,
+                when that session ends and your browser&apos;s user agent. We
+                don&apos;t store your IP address with your sessions.
+              </li>
+              <li>
+                if you sign in with Google, the name on your Google account,
+                which we use only for the initials on your account icon, and a
+                link between your <ProductName /> account and your Google
+                account. We don&apos;t keep your Google profile photo or any
+                access to your Google account.
+              </li>
+            </List>
+            <p>
+              When you sign in by email, we send you a 6-digit code. We store
+              only a scrambled copy of it, and it expires after 10 minutes.
+            </p>
+            <p>
+              When you sign in, sign out or delete your account, we count these
+              requests from your IP address so we can block repeated sign-in
+              attempts. We store only a scrambled copy of the address, and
+              delete it within 2 days.
+            </p>
+            <p>
+              We use your email address to sign you in and to reply if you write
+              to us. We don&apos;t send newsletters or marketing to it.
+            </p>
+            <p>
+              Each new account is posted to a private Slack channel with whether
+              you signed up by email or with Google, and your country. It never
+              includes your email address or name.
+            </p>
+            <p>
+              You stay signed in on a device until you sign out, or until you
+              haven&apos;t opened <ProductName /> there for 60 days. Signing out
+              removes your trips from that device. They stay saved in your
+              account.
+            </p>
+          </Section>
 
           <Section title="Usage events">
             <p>
@@ -155,11 +137,7 @@ export default function PrivacyPage() {
               event includes:
             </p>
             <List>
-              <li>
-                {accounts
-                  ? 'a random ID created in your browser'
-                  : "a random ID created in your browser, which isn't linked to your name"}
-              </li>
+              <li>a random ID created in your browser</li>
               <li>
                 what happened and when, with details such as the year or how
                 many days you added
@@ -213,17 +191,15 @@ export default function PrivacyPage() {
               app&apos;s settings. That also stops Vercel Web Analytics and
               Speed Insights.
             </p>
-            {accounts && (
-              <p>
-                While you&apos;re signed in, each event also includes your
-                account ID, which links it to your account. When you sign in,
-                sign out or delete your account, the event records that it
-                happened and how, such as by email code or Google. The first
-                time a device syncs with your account, it records whether you
-                added that device&apos;s trips to your account. These events
-                never include your email address.
-              </p>
-            )}
+            <p>
+              While you&apos;re signed in, each event also includes your account
+              ID, which links it to your account. When you sign in, sign out or
+              delete your account, the event records that it happened and how,
+              such as by email code or Google. The first time a device syncs
+              with your account, it records whether you added that device&apos;s
+              trips to your account. These events never include your email
+              address.
+            </p>
           </Section>
 
           <Section title="Error reports">
@@ -250,11 +226,10 @@ export default function PrivacyPage() {
           <Section title="Feedback">
             <p>
               If you send feedback, we store your rating, your message and any
-              topics you picked, with the random ID
-              {accounts && ", your account ID if you're signed in"}, your
-              browser&apos;s user agent, your device type and approximate
-              location. We get a Slack notification with your rating, message,
-              topics, device type and country.
+              topics you picked, with the random ID, your account ID if
+              you&apos;re signed in, your browser&apos;s user agent, your device
+              type and approximate location. We get a Slack notification with
+              your rating, message, topics, device type and country.
             </p>
             <p>
               We may show star ratings and short quotes from feedback on
@@ -362,19 +337,14 @@ export default function PrivacyPage() {
                 The video waitlist and the year-end reminder email: your
                 consent. You can withdraw it at any time.
               </li>
-              {accounts && (
-                <>
-                  <li>
-                    Your account and saved trips: providing the account you
-                    asked for.
-                  </li>
-                  <li>
-                    Sign-in sessions, sign-in codes and limits on sign-in
-                    attempts: our legitimate interest in keeping accounts
-                    secure.
-                  </li>
-                </>
-              )}
+              <li>
+                Your account and saved trips: providing the account you asked
+                for.
+              </li>
+              <li>
+                Sign-in sessions, sign-in codes and limits on sign-in attempts:
+                our legitimate interest in keeping accounts secure.
+              </li>
               <li>
                 Error reports and page timings: our legitimate interest in
                 keeping <ProductName /> working.
@@ -394,20 +364,18 @@ export default function PrivacyPage() {
             <List>
               <li>
                 Usage events: in full for 26 months. After that we remove the
-                random ID{accounts && ', your account ID'}, your region, the
-                user agent, the app you opened <ProductName /> in, the site that
-                sent you, campaign tags and any note you typed, and keep only
-                the day each event happened. We delete what&apos;s left after 5
-                years.
+                random ID, your account ID, your region, the user agent, the app
+                you opened <ProductName /> in, the site that sent you, campaign
+                tags and any note you typed, and keep only the day each event
+                happened. We delete what&apos;s left after 5 years.
               </li>
               <li>
                 Reminders added to a calendar: in full for 26 months, then
                 without the random ID and region. We delete them after 5 years.
               </li>
               <li>
-                Feedback: in full for 26 months, then without the random ID
-                {accounts && ', account ID'}, user agent and region. We delete
-                it after 5 years.
+                Feedback: in full for 26 months, then without the random ID,
+                account ID, user agent and region. We delete it after 5 years.
               </li>
               <li>
                 Year-end reminder emails: until the end of the year the reminder
@@ -422,26 +390,20 @@ export default function PrivacyPage() {
               <li>
                 Emails and messages you send us: 2 years after the last message.
               </li>
-              {accounts && (
-                <>
-                  <li>
-                    Your account and saved trips: until you delete your account.
-                    If you don&apos;t use your account for 5 years, we&apos;ll
-                    email you, then delete the account 30 days later.
-                  </li>
-                  <li>
-                    Sign-in sessions: until you sign out, or 60 days after you
-                    last opened <ProductName /> on that device.
-                  </li>
-                  <li>
-                    Sign-in codes: deleted once used, or within a day if not.
-                  </li>
-                  <li>
-                    Scrambled IP addresses used to limit sign-in attempts: up to
-                    2 days.
-                  </li>
-                </>
-              )}
+              <li>
+                Your account and saved trips: until you delete your account. If
+                you don&apos;t use your account for 5 years, we&apos;ll email
+                you, then delete the account 30 days later.
+              </li>
+              <li>
+                Sign-in sessions: until you sign out, or 60 days after you last
+                opened <ProductName /> on that device.
+              </li>
+              <li>Sign-in codes: deleted once used, or within a day if not.</li>
+              <li>
+                Scrambled IP addresses used to limit sign-in attempts: up to 2
+                days.
+              </li>
             </List>
           </Section>
 
@@ -454,32 +416,24 @@ export default function PrivacyPage() {
                 MongoDB stores usage events, feedback, the waitlist and year-end
                 reminders.
               </li>
-              {accounts && (
-                <li>
-                  Neon stores accounts and saved trips, on servers in Frankfurt,
-                  Germany.
-                </li>
-              )}
               <li>
-                Resend sends{' '}
-                {accounts
-                  ? 'sign-in codes, the year-end reminder email and the video launch email'
-                  : 'the year-end reminder email and the video launch email'}
-                , from servers in Ireland.
+                Neon stores accounts and saved trips, on servers in Frankfurt,
+                Germany.
               </li>
-              {accounts && (
-                <li>
-                  Google handles sign-in if you choose Continue with Google.
-                </li>
-              )}
+              <li>
+                Resend sends sign-in codes, the year-end reminder email and the
+                video launch email, from servers in Ireland.
+              </li>
+              <li>
+                Google handles sign-in if you choose Continue with Google.
+              </li>
               <li>
                 Sentry receives error reports and page timings, and stores them
                 in Germany.
               </li>
               <li>
                 Slack receives our notifications about feedback, waitlist
-                sign-ups{accounts ? ', new accounts' : ''} and year-end
-                reminders.
+                sign-ups, new accounts and year-end reminders.
               </li>
               <li>
                 ImprovMX forwards emails sent to {CONTACT_EMAIL} to our Yahoo
@@ -496,15 +450,14 @@ export default function PrivacyPage() {
             <p>
               Our servers and databases are in Frankfurt, Germany. Some of the
               companies we use are based in the US: Vercel, MongoDB, Resend,
-              Sentry, Slack, ImprovMX and Yahoo
-              {accounts ? ', and for accounts, Neon and Google' : ''}. Slack
-              keeps our notifications in the US, and the others may access your
-              data from outside the European Economic Area. These transfers are
-              covered by the EU–US Data Privacy Framework or the European
-              Commission&apos;s standard contractual clauses, except for
-              ImprovMX, which we use on its free plan without such terms. Email
-              us and we&apos;ll tell you which one covers each company and send
-              you a copy.
+              Sentry, Slack, ImprovMX and Yahoo, and for accounts, Neon and
+              Google. Slack keeps our notifications in the US, and the others
+              may access your data from outside the European Economic Area.
+              These transfers are covered by the EU–US Data Privacy Framework or
+              the European Commission&apos;s standard contractual clauses,
+              except for ImprovMX, which we use on its free plan without such
+              terms. Email us and we&apos;ll tell you which one covers each
+              company and send you a copy.
             </p>
           </Section>
 
@@ -515,9 +468,7 @@ export default function PrivacyPage() {
               such as whether you&apos;ve seen a tip, answered a question, set a
               year-end reminder or turned off usage stats.{' '}
               {withProductName(
-                accounts
-                  ? "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets cookies only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
-                  : "It doesn't set cookies for visitors. The only cookie is the sign-in cookie for Yearly's admin pages."
+                "If you sign in, it also keeps a copy of the calendar it last saved to your account, so it can combine changes from your other devices. Yearly sets cookies only when you sign in, to keep you signed in. Yearly's admin pages have their own sign-in cookie."
               )}
             </p>
           </Section>
@@ -557,38 +508,34 @@ export default function PrivacyPage() {
 
           <Section title="Deleting your data">
             <List>
-              {accounts && (
-                <li>
-                  To delete your account and the trips saved to it, use{' '}
-                  <span className="font-medium">Delete account</span> on your{' '}
-                  <Link href="/account" className={linkClassName}>
-                    account page
-                  </Link>
-                  . It takes effect right away, and copies in our database
-                  provider&apos;s backups are gone within 7 days. It also
-                  removes your account ID from your usage events and feedback.
-                  Trips on your device stay there until you clear them. Deleting
-                  your account doesn&apos;t remove your email from the video
-                  waitlist or the year-end reminder, so remove it from those
-                  first, as below, or ask us.
-                </li>
-              )}
-              {accounts && (
-                <li>
-                  While you&apos;re signed in, you can remove the email you sign
-                  in with yourself. Turn off the year-end reminder on your{' '}
-                  <Link href="/account" className={linkClassName}>
-                    account page
-                  </Link>
-                  , and leave the video waitlist with{' '}
-                  <span className="font-medium">Remove me from the list</span>{' '}
-                  on the{' '}
-                  <Link href="/videos" className={linkClassName}>
-                    videos page
-                  </Link>
-                  .
-                </li>
-              )}
+              <li>
+                To delete your account and the trips saved to it, use{' '}
+                <span className="font-medium">Delete account</span> on your{' '}
+                <Link href="/account" className={linkClassName}>
+                  account page
+                </Link>
+                . It takes effect right away, and copies in our database
+                provider&apos;s backups are gone within 7 days. It also removes
+                your account ID from your usage events and feedback. Trips on
+                your device stay there until you clear them. Deleting your
+                account doesn&apos;t remove your email from the video waitlist
+                or the year-end reminder, so remove it from those first, as
+                below, or ask us.
+              </li>
+              <li>
+                While you&apos;re signed in, you can remove the email you sign
+                in with yourself. Turn off the year-end reminder on your{' '}
+                <Link href="/account" className={linkClassName}>
+                  account page
+                </Link>
+                , and leave the video waitlist with{' '}
+                <span className="font-medium">Remove me from the list</span> on
+                the{' '}
+                <Link href="/videos" className={linkClassName}>
+                  videos page
+                </Link>
+                .
+              </li>
               <li>
                 To delete your trips and settings, clear your browser&apos;s
                 data for this site. You can also clear one year at a time with{' '}
@@ -620,8 +567,7 @@ export default function PrivacyPage() {
           <Section title="Children">
             <p>
               If you&apos;re under 16, ask a parent or guardian before you give
-              us your email address for the waitlist, a reminder
-              {accounts ? ' or an account' : ''}.
+              us your email address for the waitlist, a reminder or an account.
             </p>
           </Section>
 

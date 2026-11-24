@@ -4,8 +4,7 @@ import { yearEndReminderEmail } from './year-end-reminder'
 const LINK =
   'https://www.yearly.world/create?utm_source=reminder&utm_medium=email&utm_campaign=year_end_2026'
 
-const email = (accountsEnabled = true) =>
-  yearEndReminderEmail('ana@example.com', 2026, { accountsEnabled })
+const email = () => yearEndReminderEmail('ana@example.com', 2026)
 
 function visibleText(html: string) {
   return html
@@ -28,10 +27,9 @@ describe('yearEndReminderEmail', () => {
     expect(email().subject).toBe(
       'Your 1 Dec reminder to share your 2026 Yearly'
     )
-    expect(
-      yearEndReminderEmail('ana@example.com', 2027, { accountsEnabled: true })
-        .subject
-    ).toBe('Your 1 Dec reminder to share your 2027 Yearly')
+    expect(yearEndReminderEmail('ana@example.com', 2027).subject).toBe(
+      'Your 1 Dec reminder to share your 2027 Yearly'
+    )
   })
 
   it('links to the create page with the email campaign in both parts', () => {
@@ -54,11 +52,9 @@ describe('yearEndReminderEmail', () => {
     }
   })
 
-  it('mentions signing in only when accounts are on', () => {
-    expect(email(true).text).toContain('If you sign in there')
-    expect(email(true).html).toContain('If you sign in there')
-    expect(email(false).text).not.toContain('sign in')
-    expect(email(false).html).not.toContain('sign in')
+  it('says signing in shows the trips on other devices', () => {
+    expect(email().text).toContain('If you sign in there')
+    expect(email().html).toContain('If you sign in there')
   })
 
   it('never puts the address in the body', () => {

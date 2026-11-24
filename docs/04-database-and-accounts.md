@@ -37,7 +37,7 @@ We chose codes over emailed links. Trips live only in the browser that made them
 2. **Signing in saves your calendars to your account** and keeps every signed-in device in sync (see Calendar sync). The privacy page must describe this before accounts go live.
 3. **Sign in before paying.** Claiming the waitlist's free first video needs a checked email, and downloading again needs an account.
 4. **No IP addresses at rest.** Better Auth's session IP is dropped before saving, and rate-limit keys are hashed. The signed-in check (`/get-session`) isn't rate limited, so visitors who never sign in leave nothing in Postgres and page views don't wake Neon. For signed-in people, the check is answered from a signed cookie for 5 minutes at a time, so browsing and switching tabs don't wake it either. The privacy page discloses the hashed rate-limit keys and their 2-day lifetime.
-5. **Accounts stay switched off in production until launch.** `ACCOUNTS_ENABLED=true` turns on `/sign-in`, `/account` and `/api/auth`; otherwise all three return 404. It is on for Preview and local development. The privacy page changes in the PR that turns it on in production.
+5. **Accounts are always on.** Until the 23 November 2026 launch, an `ACCOUNTS_ENABLED` switch kept `/sign-in`, `/account` and `/api/auth` returning 404 in production. It was removed after launch, so every environment needs `DATABASE_URL` and `BETTER_AUTH_SECRET`.
 
 ## Pages and access
 
@@ -64,7 +64,7 @@ Rules:
 - **Header:** "Sign in" for signed-out visitors (returns them to the page they were on), and a round avatar with initials once signed in, linking to `/account`. Initials come from the name, which Google provides and email sign-ups don't have, falling back to the first letter of the email. We don't use the Google profile photo: email users would have none, it would load from Google on every page, and people would then want to upload their own. Google's photo and access tokens aren't stored.
 - **Prompt on `/create`:** once a calendar has trips on 3 days, a signed-out visitor gets a toast at the bottom of the screen: "Your trips are only in this browser" with **Save my calendar** and **Not now**. It waits until the undo toast and the day-selection panel are gone, shows once per visit, and goes away for that visit once the person starts selecting days again. "Not now" or × hides it for 30 days. (It was first a sidebar card, about 6 screens down on a phone, so nobody saw it.)
 - **Sign-in page:** says what an account is for, that signing in creates one, and links **Continue without an account**.
-- **FAQ, `llms.txt` and the privacy page** switch to account-aware answers when `ACCOUNTS_ENABLED` is on, and stay as they are when it's off.
+- **FAQ, `llms.txt` and the privacy page** say an account is optional and what signing in saves.
 - **Copy:** written with the `copywriting` and `cro` skills against `.agents/product-marketing.md` (v2). Every account prompt says Yearly works without an account.
 - **Sessions** last 60 days, refreshed daily while in use. Deleting an account needs a session under a day old; otherwise people are asked to sign in again.
 
@@ -96,9 +96,9 @@ Before launch day:
 
 On launch day:
 
-4. Set `ACCOUNTS_ENABLED=true` in Production.
+4. Set `ACCOUNTS_ENABLED=true` in Production. (Removed after launch; accounts are now always on.)
 5. Merge the launch PR. It dates `/privacy` and `/terms` 23 November 2026 and turns on the session cookie cache, and the production deploy it starts picks up the new settings.
-6. Check that `https://www.yearly.world/api/health` answers `{"status":"ok"}`. With accounts on, it answers 503 if the database URL, auth secret or Resend key is missing, and the error in Sentry and the Vercel logs names it.
+6. Check that `https://www.yearly.world/api/health` answers `{"status":"ok"}`. It answers 503 if the database URL, auth secret or Resend key is missing, and the error in Sentry and the Vercel logs names it.
 7. Check sign-in by code and Google on yearly.world.
 
 Done: the Terms are governed by Romanian law, `hello@yearly.world` forwards to the owner, and the owner confirmed the 30-day notice promise in the Terms.

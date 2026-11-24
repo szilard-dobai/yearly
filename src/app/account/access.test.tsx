@@ -50,7 +50,6 @@ function signInPage(params: Record<string, string> = {}) {
 
 describe('account pages', () => {
   beforeEach(() => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     vi.stubEnv('GOOGLE_CLIENT_ID', 'id')
     vi.stubEnv('GOOGLE_CLIENT_SECRET', 'secret')
     getSession.mockResolvedValue(null)
@@ -59,15 +58,6 @@ describe('account pages', () => {
 
   afterEach(() => {
     vi.unstubAllEnvs()
-  })
-
-  describe('while accounts are switched off', () => {
-    it('returns 404 for both pages', async () => {
-      vi.stubEnv('ACCOUNTS_ENABLED', '')
-
-      await expect(signInPage()).rejects.toThrow('NOT_FOUND')
-      await expect(AccountPage()).rejects.toThrow('NOT_FOUND')
-    })
   })
 
   describe('/account', () => {

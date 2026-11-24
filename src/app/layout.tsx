@@ -1,9 +1,7 @@
 import Footer from '@/components/Footer'
 import { JsonLd } from '@/components/JsonLd'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
-import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
 import SiteAnalytics from '@/components/SiteAnalytics'
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import type { Metadata } from 'next'
 import { Geist, Newsreader, Roboto } from 'next/font/google'
 import './globals.css'
@@ -92,10 +90,8 @@ export default function RootLayout({
           className={`flex min-h-dvh flex-col bg-linear-to-br from-gray-50 to-stone-50 dark:from-[#0a0a0a] dark:to-[#0a0a0a] ${geistSans.variable} ${roboto.variable} ${newsreader.variable} antialiased`}
         >
           <SiteAnalytics />
-          <AccountsEnabledProvider enabled={isAccountsEnabled()}>
-            <div className="flex-1">{children}</div>
-            <Footer />
-          </AccountsEnabledProvider>
+          <div className="flex-1">{children}</div>
+          <Footer />
         </body>
       </SettingsProvider>
     </html>

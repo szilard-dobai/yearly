@@ -1,4 +1,3 @@
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import { FAILED_RUN_STOPS } from '@/lib/email/bulk-send'
 import { getRemindersCollection } from '@/lib/mongodb'
 import { getReminderSendWindowLabel, getReminderSendYear } from './date'
@@ -63,7 +62,7 @@ export async function runReminderSend({
   const result = await sendYearEndReminders({
     year,
     store: createReminderSendStore(await getRemindersCollection(), year),
-    send: createReminderSender(year, { accountsEnabled: isAccountsEnabled() }),
+    send: createReminderSender(year),
     budgetMs,
   })
 

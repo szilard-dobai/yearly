@@ -1,15 +1,12 @@
 'use client'
 
-import { useAccountsEnabled } from '@/components/account/AccountsEnabledProvider'
 import { authClient } from '@/lib/auth/client'
 import { useEffect, useState } from 'react'
 
 export function useAccountEmail(): string | null {
-  const enabled = useAccountsEnabled()
   const [email, setEmail] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!enabled) return
     let cancelled = false
     authClient
       .getSession()
@@ -20,7 +17,7 @@ export function useAccountEmail(): string | null {
     return () => {
       cancelled = true
     }
-  }, [enabled])
+  }, [])
 
   return email
 }

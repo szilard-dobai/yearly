@@ -13,8 +13,6 @@ export const SIGN_IN_CODE_ATTEMPTS = 3
 export const SESSION_DAYS = 60
 export const SESSION_CACHE_MINUTES = 5
 
-export { isAccountsEnabled } from './enabled'
-
 function getSiteHost() {
   try {
     return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? '').host

@@ -1,4 +1,3 @@
-import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
 import { trackEvent } from '@/lib/tracking'
 import { textAcrossElements } from '@/test/test-utils'
 import { render, screen, within } from '@testing-library/react'
@@ -307,11 +306,7 @@ describe('YearEndReminderCard', () => {
       getSession.mockResolvedValue({
         data: { user: { id: 'ana', email: 'ana@example.com' } },
       })
-      return render(
-        <AccountsEnabledProvider enabled>
-          <YearEndReminderCard year={2026} />
-        </AccountsEnabledProvider>
-      )
+      return render(<YearEndReminderCard year={2026} />)
     }
 
     it('sets the reminder with one tap, without asking for an email', async () => {
@@ -416,11 +411,7 @@ describe('YearEndReminderCard', () => {
 
     it('does not check the account for other years', async () => {
       mockReminderApi()
-      renderSignedIn().rerender(
-        <AccountsEnabledProvider enabled>
-          <YearEndReminderCard year={2025} />
-        </AccountsEnabledProvider>
-      )
+      renderSignedIn().rerender(<YearEndReminderCard year={2025} />)
 
       await vi.waitFor(() => expect(getSession).toHaveBeenCalled())
       expect(fetchMock).not.toHaveBeenCalledWith(

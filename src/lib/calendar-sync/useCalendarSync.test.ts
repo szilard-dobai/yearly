@@ -43,11 +43,10 @@ function calendar(...days: [string, string][]): CalendarData {
   }
 }
 
-function renderSync(initial: CalendarData, enabled = true) {
+function renderSync(initial: CalendarData) {
   const onRemoteChange = vi.fn()
   const hook = renderHook(
-    ({ data }) =>
-      useCalendarSync({ enabled, calendarData: data, onRemoteChange }),
+    ({ data }) => useCalendarSync({ calendarData: data, onRemoteChange }),
     { initialProps: { data: initial } }
   )
   return { ...hook, onRemoteChange }
@@ -68,15 +67,6 @@ describe('useCalendarSync', () => {
     vi.useRealTimers()
     vi.unstubAllGlobals()
     vi.clearAllMocks()
-  })
-
-  it('does nothing while accounts are switched off', async () => {
-    const { result } = renderSync(calendar([D1, 'FR']), false)
-
-    await new Promise((resolve) => setTimeout(resolve, 20))
-    expect(getSession).not.toHaveBeenCalled()
-    expect(fetchMock).not.toHaveBeenCalled()
-    expect(result.current.account).toBeNull()
   })
 
   it('does nothing for signed-out visitors', async () => {

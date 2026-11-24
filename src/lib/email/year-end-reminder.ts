@@ -9,11 +9,7 @@ export const REMINDER_REPLY_TO = 'hello@yearly.world'
 
 const dateLabel = REMINDER_DATE_LABEL.replace(/ /g, ' ')
 
-export function yearEndReminderEmail(
-  to: string,
-  year: number,
-  { accountsEnabled }: { accountsEnabled: boolean }
-): Email {
+export function yearEndReminderEmail(to: string, year: number): Email {
   const link = getReminderLink(year, REMINDER_EMAIL_SITE_URL, 'email')
   const subject = `Your ${dateLabel} reminder to share your ${year} Yearly`
   const preview = `Add your latest trips on the phone or computer where you made it, then download your images.`
@@ -21,13 +17,8 @@ export function yearEndReminderEmail(
   const why = `You asked us on yearly.world to remind you on ${REMINDER_DATE_LABEL}, when year-in-review season starts. Here's your reminder.`
   const action = `Add any trips you've taken since, then download your images and share your ${year}.`
   const button = 'Open my Yearly'
-  const device = [
-    'Your trips are saved in the browser where you added them, so open the link on that phone or computer.',
-    accountsEnabled &&
-      "If you sign in there, they'll also show up anywhere else you sign in.",
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const device =
+    "Your trips are saved in the browser where you added them, so open the link on that phone or computer. If you sign in there, they'll also show up anywhere else you sign in."
   const onlyEmail = "This is the only reminder email we'll send."
   const deletion = `We'll delete your address at the end of ${year}. To have it deleted sooner, reply to this email or write to`
 

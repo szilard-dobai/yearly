@@ -1,8 +1,6 @@
-import { isAccountsEnabled } from './enabled'
 import { auth } from './server'
 
 async function getSessionUser(request: Request) {
-  if (!isAccountsEnabled()) return null
   try {
     const session = await auth.api.getSession({ headers: request.headers })
     return session?.user ?? null

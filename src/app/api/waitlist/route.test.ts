@@ -69,18 +69,7 @@ describe('POST /api/waitlist', () => {
     return collection.updateOne.mock.calls[0][0].email
   }
 
-  it('does not look for a session while accounts are off', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'false')
-
-    const response = await POST(postRequest(validBody))
-
-    expect(response.status).toBe(201)
-    expect(getSession).not.toHaveBeenCalled()
-    expect(upsertedEmail()).toBe('traveller@example.com')
-  })
-
   it('uses the signed-in email instead of the one sent', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     getSession.mockResolvedValue({ user: { email: 'Ana@Example.com' } })
 
     const response = await POST(postRequest(validBody))
@@ -90,8 +79,6 @@ describe('POST /api/waitlist', () => {
   })
 
   it('uses the email sent when nobody is signed in', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
-
     await POST(postRequest(validBody))
 
     expect(getSession).toHaveBeenCalledTimes(1)
@@ -99,7 +86,6 @@ describe('POST /api/waitlist', () => {
   })
 
   it('falls back to the email sent when the session check fails', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     vi.spyOn(console, 'error').mockImplementation(() => {})
     getSession.mockRejectedValue(new Error('database down'))
 
@@ -230,7 +216,6 @@ function accountRequest(
 
 describe('the signed-in waitlist entry', () => {
   beforeEach(() => {
-    vi.stubEnv('ACCOUNTS_ENABLED', 'true')
     collection.countDocuments.mockReset().mockResolvedValue(1)
     collection.deleteOne.mockReset().mockResolvedValue({ deletedCount: 1 })
     getSession.mockReset().mockResolvedValue({
@@ -275,14 +260,6 @@ describe('the signed-in waitlist entry', () => {
     expect((await GET(accountRequest('GET'))).status).toBe(401)
     expect((await DELETE(accountRequest('DELETE'))).status).toBe(401)
     expect(collection.deleteOne).not.toHaveBeenCalled()
-  })
-
-  it('returns 404 while accounts are off', async () => {
-    vi.stubEnv('ACCOUNTS_ENABLED', '')
-
-    expect((await GET(accountRequest('GET'))).status).toBe(404)
-    expect((await DELETE(accountRequest('DELETE'))).status).toBe(404)
-    expect(getSession).not.toHaveBeenCalled()
   })
 
   it('rejects unknown features', async () => {

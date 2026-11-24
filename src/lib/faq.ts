@@ -12,12 +12,17 @@ export const faqs: Faq[] = [
   {
     question: 'Do I need an account?',
     answer:
-      "No. Open yearly.world in your phone or computer browser and start adding trips. There's nothing to sign up for or install.",
+      'No. Open yearly.world in your phone or computer browser and start adding trips. An account is optional and free. Sign in with your email or Google if you want to keep your calendar on more than one device.',
+  },
+  {
+    question: 'Why create an account?',
+    answer:
+      'To keep your calendar if you clear your browser data or get a new phone, and to see the same trips on every phone or computer where you sign in. It’s free, and you can delete your account and the trips saved to it at any time on your account page.',
   },
   {
     question: 'Where are my trips stored?',
     answer:
-      'In your browser, on your device. We never receive your travel dates, and your images are made in your browser instead of being uploaded. Our usage stats record which countries you add and how many days, never the dates. If you clear your browser data, your trips are deleted too.',
+      'In your browser, on your device. If you sign in, we also save them to your account so they show up on your other devices. If you don’t, we never receive your travel dates, and clearing your browser data deletes your trips. Your images are always made in your browser. Our usage stats record which countries you add and how many days, never the dates.',
   },
   {
     question: 'Can I post my calendar on Instagram or TikTok?',
@@ -35,28 +40,3 @@ export const faqs: Faq[] = [
       'Add both. The day shows the two flags split diagonally. Each day holds up to two countries.',
   },
 ]
-
-const accountFaqs: Faq[] = [
-  {
-    question: 'Do I need an account?',
-    answer:
-      'No. Open yearly.world in your phone or computer browser and start adding trips. An account is optional and free. Sign in with your email or Google if you want to keep your calendar on more than one device.',
-  },
-  {
-    question: 'Why create an account?',
-    answer:
-      'To keep your calendar if you clear your browser data or get a new phone, and to see the same trips on every phone or computer where you sign in. It’s free, and you can delete your account and the trips saved to it at any time on your account page.',
-  },
-  {
-    question: 'Where are my trips stored?',
-    answer:
-      'In your browser, on your device. If you sign in, we also save them to your account so they show up on your other devices. If you don’t, we never receive your travel dates, and clearing your browser data deletes your trips. Your images are always made in your browser. Our usage stats record which countries you add and how many days, never the dates.',
-  },
-]
-
-export function getFaqs(accountsEnabled: boolean): Faq[] {
-  if (!accountsEnabled) return faqs
-  const replaced = new Set(accountFaqs.map((faq) => faq.question))
-  const [first, ...rest] = faqs.filter((faq) => !replaced.has(faq.question))
-  return [first, ...accountFaqs, ...rest]
-}

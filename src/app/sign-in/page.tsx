@@ -4,13 +4,13 @@ import Header from '@/components/Header'
 import { CardContent } from '@/components/ui/card'
 import { StandardCard } from '@/components/ui/card-variants'
 import { detectInAppBrowser } from '@/lib/attribution/in-app-browser'
-import { getGoogleCredentials, isAccountsEnabled } from '@/lib/auth/config'
+import { getGoogleCredentials } from '@/lib/auth/config'
 import { safeNextPath } from '@/lib/auth/next-path'
 import { getSession } from '@/lib/auth/server'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
   title: 'Sign in',
@@ -28,8 +28,6 @@ const linkClassName =
   'underline underline-offset-2 hover:text-gray-900 dark:hover:text-zinc-100'
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  if (!isAccountsEnabled()) notFound()
-
   const [session, params, requestHeaders] = await Promise.all([
     getSession(),
     searchParams,

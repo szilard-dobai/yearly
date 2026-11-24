@@ -1,4 +1,3 @@
-import { isAccountsEnabled } from '@/lib/auth/enabled'
 import { getSessionEmail } from '@/lib/auth/session-user'
 import { getWaitlistCollection, type WaitlistDocument } from '@/lib/mongodb'
 import { validateSameOrigin } from '@/lib/tracking/api'
@@ -19,9 +18,6 @@ const NO_STORE = { 'Cache-Control': 'no-store' }
 const featureSchema = z.enum(WAITLIST_FEATURES)
 
 async function getAccountEntry(request: Request) {
-  if (!isAccountsEnabled()) {
-    return { error: new NextResponse(null, { status: 404 }) }
-  }
   const feature = featureSchema.safeParse(
     new URL(request.url).searchParams.get('feature')
   )

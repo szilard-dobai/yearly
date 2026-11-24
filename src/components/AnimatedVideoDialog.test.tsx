@@ -1,4 +1,3 @@
-import { AccountsEnabledProvider } from '@/components/account/AccountsEnabledProvider'
 import { monthTimeline } from '@/components/video/MonthVideo'
 import { SettingsProvider } from '@/lib/contexts/SettingsContext'
 import type { ExportType } from '@/lib/feedback/types'
@@ -236,18 +235,16 @@ describe('AnimatedVideoDialog', () => {
       data: { user: { id: 'ana', email: 'ana@example.com' } },
     })
     return render(
-      <AccountsEnabledProvider enabled>
-        <SettingsProvider>
-          <AnimatedVideoDialog
-            open
-            onOpenChange={vi.fn()}
-            calendarData={calendarData}
-            year={2026}
-            exportType="calendar"
-            price={2.99}
-          />
-        </SettingsProvider>
-      </AccountsEnabledProvider>
+      <SettingsProvider>
+        <AnimatedVideoDialog
+          open
+          onOpenChange={vi.fn()}
+          calendarData={calendarData}
+          year={2026}
+          exportType="calendar"
+          price={2.99}
+        />
+      </SettingsProvider>
     )
   }
 
@@ -353,18 +350,6 @@ describe('AnimatedVideoDialog', () => {
     expect(
       screen.queryByRole('button', { name: 'Remove me from the list' })
     ).not.toBeInTheDocument()
-  })
-
-  it('does not check for a session while accounts are off', async () => {
-    const user = userEvent.setup()
-    renderDialog()
-
-    await user.click(screen.getByRole('button', { name: /Get the videos/ }))
-
-    expect(getSession).not.toHaveBeenCalled()
-    expect(
-      screen.getByLabelText(/Join the list to get your first video free/)
-    ).not.toHaveAttribute('readonly')
   })
 
   it('shows why a sign-up failed', async () => {

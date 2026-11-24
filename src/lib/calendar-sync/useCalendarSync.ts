@@ -25,13 +25,11 @@ export const SAVE_DELAY_MS = 1000
 export const RETRY_DELAY_MS = 15_000
 
 interface CalendarSyncOptions {
-  enabled: boolean
   calendarData: CalendarData
   onRemoteChange: (data: CalendarData) => void
 }
 
 export function useCalendarSync({
-  enabled,
   calendarData,
   onRemoteChange,
 }: CalendarSyncOptions) {
@@ -132,7 +130,6 @@ export function useCalendarSync({
   )
 
   useEffect(() => {
-    if (!enabled) return
     let cancelled = false
     authClient
       .getSession()
@@ -152,7 +149,7 @@ export function useCalendarSync({
       cancelled = true
       clearTimeout(retryRef.current)
     }
-  }, [enabled, run])
+  }, [run])
 
   useEffect(() => {
     if (!account) return

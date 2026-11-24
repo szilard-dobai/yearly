@@ -22,7 +22,6 @@ export const EMOJI = {
   raisingHands: '1f64c',
   speechBalloon: '1f4ac',
   warning: '26a0',
-  wrench: '1f527',
   firstPlaceMedal: '1f947',
   secondPlaceMedal: '1f948',
   thirdPlaceMedal: '1f949',

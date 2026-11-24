@@ -43,8 +43,6 @@ export interface HighLevelStats {
     imageDownloadClicks: number
   }
   dataManagement: {
-    jsonImports: number
-    jsonExports: number
     calendarResets: number
   }
   pageViews: {

@@ -226,7 +226,6 @@ export const EMOJI_FILES = {
   raisingHands: 'raising-hands.2b161b4d',
   speechBalloon: 'speech-balloon.5067931b',
   warning: 'warning.28679806',
-  wrench: 'wrench.54afff42',
   firstPlaceMedal: 'first-place-medal.abc83391',
   secondPlaceMedal: 'second-place-medal.28dae8d3',
   thirdPlaceMedal: 'third-place-medal.f062fe84',

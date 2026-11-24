@@ -30,8 +30,6 @@ export async function GET(request: Request) {
       statisticsExportClicks,
       imageDownloadClicks,
       visitAddAttempts,
-      jsonImports,
-      jsonExports,
       calendarResets,
       pageViews,
       eventTypeBreakdown,
@@ -51,8 +49,6 @@ export async function GET(request: Request) {
       collection.countDocuments({ type: 'statistics_export_click' }),
       collection.countDocuments({ type: 'image_download_click' }),
       collection.find({ type: 'visit_add_attempt' }).toArray(),
-      collection.countDocuments({ type: 'json_import' }),
-      collection.countDocuments({ type: 'json_export' }),
       collection.countDocuments({ type: 'calendar_reset' }),
       collection
         .aggregate([
@@ -207,8 +203,6 @@ export async function GET(request: Request) {
         imageDownloadClicks,
       },
       dataManagement: {
-        jsonImports,
-        jsonExports,
         calendarResets,
       },
       pageViews: {

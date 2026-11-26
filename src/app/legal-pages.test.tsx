@@ -113,4 +113,20 @@ describe('privacy, terms and footer', () => {
       )
     })
   })
+
+  it('shows the same last updated date as the sitemap', () => {
+    render(<PrivacyPage />)
+    render(TermsPage())
+
+    expect(screen.getAllByText('Last updated 23 November 2026')).toHaveLength(2)
+  })
+
+  it('links the videos page from the footer', () => {
+    render(<Footer />)
+
+    expect(screen.getByRole('link', { name: 'Videos' })).toHaveAttribute(
+      'href',
+      '/videos'
+    )
+  })
 })

@@ -1,5 +1,6 @@
 import { ProductName, withProductName } from '@/components/ProductName'
 import Header from '@/components/Header'
+import { formatPageUpdated, PAGE_UPDATED } from '@/lib/page-updated'
 import { VIDEO_PACK_PRICE, formatPrice } from '@/lib/video-offer'
 import { isVideoSalesEnabled } from '@/lib/videos/enabled'
 import type { Metadata } from 'next'
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/terms' },
 }
 
-const LAST_UPDATED = '23 November 2026'
+const LAST_UPDATED = formatPageUpdated(PAGE_UPDATED.terms)
 const GOVERNING_LAW = 'Romania'
 const CONTACT_EMAIL = 'hello@yearly.world'
 

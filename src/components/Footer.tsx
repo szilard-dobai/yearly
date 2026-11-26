@@ -15,6 +15,13 @@ export default function Footer() {
           </a>
           {' · '}
           <Link
+            href="/videos"
+            className="hover:opacity-80 transition-opacity underline"
+          >
+            Videos
+          </Link>
+          {' · '}
+          <Link
             href="/privacy"
             className="hover:opacity-80 transition-opacity underline"
           >

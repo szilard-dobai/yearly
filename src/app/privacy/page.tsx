@@ -1,5 +1,6 @@
 import { ProductName, withProductName } from '@/components/ProductName'
 import Header from '@/components/Header'
+import { formatPageUpdated, PAGE_UPDATED } from '@/lib/page-updated'
 import { isVideoSalesEnabled } from '@/lib/videos/enabled'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 }
 
-const LAST_UPDATED = '23 November 2026'
+const LAST_UPDATED = formatPageUpdated(PAGE_UPDATED.privacy)
 const CONTACT_EMAIL = 'hello@yearly.world'
 
 function Section({ title, children }: { title: string; children: ReactNode }) {

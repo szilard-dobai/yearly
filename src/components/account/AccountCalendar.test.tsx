@@ -52,6 +52,18 @@ describe('AccountCalendar', () => {
     ).toBeInTheDocument()
   })
 
+  it('hands the saved days to the page', async () => {
+    runCalendarSync.mockResolvedValue({ pending: false, firstSync: null })
+    loadCalendarData.mockReturnValue({
+      visits: [{ id: '1', countryCode: 'FR', date: new Date(2026, 2, 10) }],
+    })
+    const onSaved = vi.fn()
+    render(<AccountCalendar userId="ana" onSaved={onSaved} />)
+
+    await screen.findByText(/saved to your account/)
+    expect(onSaved).toHaveBeenCalledWith({ '2026-03-10': ['FR'] })
+  })
+
   it('uses the singular for one day', async () => {
     runCalendarSync.mockResolvedValue({ pending: false, firstSync: null })
     loadCalendarData.mockReturnValue({

@@ -61,6 +61,7 @@ src/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
 │   ├── TravelNudgeCard.tsx   - Compares the last two months and nudges towards planning a trip
+│   ├── badges/               - Badges card, badge medal, the shared grid and details (`BadgeCollection`, also on `/account`) and the unlock pop-up shown when an edit earns a badge, all for signed-in people; signed-out visitors get `BadgesTeaser`, which counts their badges and links to sign-in. Badges are never stored: they're worked out in the browser from the calendar each time
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
@@ -77,7 +78,7 @@ src/
 │   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
 │   ├── FeedbackCard.tsx      - Rating card on the create page, hidden once the user rates or dismisses
-│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (your videos with updates, calendar, sign out, delete), first-sync dialog
+│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (your videos with updates, calendar, badges, sign out, delete), first-sync dialog
 │   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles, video orders and render again; the year-end reminder panel with "Send a test" and "Run now"; the nav shows Videos when `useVideoSales()` says sales are on)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/
@@ -86,6 +87,8 @@ src/
 │   ├── calendar.ts           - Calendar grid calculations
 │   ├── trips.ts              - Day map and trip grouping (back-to-back days = one trip), trip status
 │   ├── nudges.ts             - Month-on-month comparison behind the travel nudge
+│   ├── badges.ts             - Badge definitions and when each was earned, worked out from the calendar in one pass (planned trips count once their day comes)
+│   ├── continents.ts         - Continent of each country
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── emoji.ts              - Flag and emoji image paths, sizes and medal names

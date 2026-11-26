@@ -164,6 +164,9 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   trip_countdown_shown: 'Trip countdown shown',
   travel_nudge_shown: 'Travel nudge shown',
   travel_nudge_plan_click: 'Travel nudge: plan a trip',
+  badges_open: 'Badges opened',
+  badge_unlocked: 'Badge unlocked',
+  badges_teaser_click: 'Badges teaser: sign in',
 }
 
 export function getEventLabel(type: string): string {

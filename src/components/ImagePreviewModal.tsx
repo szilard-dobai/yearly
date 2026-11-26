@@ -32,6 +32,7 @@ import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
 import { VIDEO_PACK_PRICE } from '@/lib/video-offer'
 import {
+  Check,
   ChevronRight,
   Download,
   Loader2,
@@ -42,7 +43,7 @@ import {
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 import YearEndReminderCard from './YearEndReminderCard'
@@ -94,6 +95,8 @@ function canShareImages() {
     typeof navigator.share === 'function'
   )
 }
+
+const DONE_MS = 2500
 
 function isIOS() {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -183,6 +186,7 @@ function ImagePreviewContent({
   const [prompt, setPrompt] = useState<PostDownloadPrompt | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
   const [videoMounted, setVideoMounted] = useState(false)
+  const [done, setDone] = useState<ImageDownloadMethod | null>(null)
   const canShareImage = useSyncExternalStore(
     subscribeToNothing,
     canShareImages,
@@ -251,6 +255,12 @@ function ImagePreviewContent({
     document.body.removeChild(link)
   }
 
+  useEffect(() => {
+    if (!done) return
+    const timer = setTimeout(() => setDone(null), DONE_MS)
+    return () => clearTimeout(timer)
+  }, [done])
+
   const shareImage = async (dataUrl: string, withLink: boolean) => {
     const blob = await fetch(dataUrl).then((r) => r.blob())
     const file = new File([blob], filename, { type: blob.type })
@@ -266,10 +276,13 @@ function ImagePreviewContent({
             }
           : { files: [file] }
       )
+      return true
     } catch (error) {
       const cancelled =
         error instanceof DOMException && error.name === 'AbortError'
-      if (!cancelled) saveImage(dataUrl)
+      if (cancelled) return false
+      saveImage(dataUrl)
+      return true
     }
   }
 
@@ -277,17 +290,28 @@ function ImagePreviewContent({
     if (!imageDataUrl) return
     trackDownload('save')
     // On iOS only the share sheet's Save Image puts the photo in Photos; a download goes to Files
-    if (canShareImage && isIOS()) await shareImage(imageDataUrl, false)
-    else saveImage(imageDataUrl)
+    if (canShareImage && isIOS()) {
+      if (await shareImage(imageDataUrl, false)) setDone('save')
+    } else {
+      saveImage(imageDataUrl)
+      setDone('save')
+    }
     maybeShowPrompt()
   }
 
   const handleShare = async () => {
     if (!imageDataUrl) return
     trackDownload('share')
-    await shareImage(imageDataUrl, true)
+    if (await shareImage(imageDataUrl, true)) setDone('share')
     maybeShowPrompt()
   }
+
+  const doneLabel = (
+    <>
+      <Check className="w-5 h-5" />
+      Done
+    </>
+  )
 
   return (
     <div className="grid md:grid-cols-2 gap-0">
@@ -369,8 +393,14 @@ function ImagePreviewContent({
                 onClick={handleSave}
                 disabled={isRendering}
               >
-                <Download className="w-5 h-5" />
-                Save Image
+                {done === 'save' ? (
+                  doneLabel
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" />
+                    Save Image
+                  </>
+                )}
               </Button>
               <Button
                 whileTap={{ scale: 0.98 }}
@@ -379,8 +409,14 @@ function ImagePreviewContent({
                 onClick={handleShare}
                 disabled={isRendering}
               >
-                <Share className="w-5 h-5" />
-                Share
+                {done === 'share' ? (
+                  doneLabel
+                ) : (
+                  <>
+                    <Share className="w-5 h-5" />
+                    Share
+                  </>
+                )}
               </Button>
             </div>
           ) : (
@@ -391,10 +427,19 @@ function ImagePreviewContent({
               onClick={handleSave}
               disabled={isRendering}
             >
-              <Download className="w-5 h-5" />
-              Download Image
+              {done === 'save' ? (
+                doneLabel
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  Download Image
+                </>
+              )}
             </Button>
           )}
+          <p className="sr-only" aria-live="polite">
+            {done ? 'Done' : ''}
+          </p>
 
           {prompt === 'survey' && (
             <div className="mb-4">

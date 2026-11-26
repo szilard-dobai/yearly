@@ -3,7 +3,14 @@ import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { VIDEO_PACK_PRICE } from '@/lib/video-offer'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ImagePreviewModal from './ImagePreviewModal'
@@ -122,6 +129,26 @@ describe('ImagePreviewModal video offer', () => {
     expect(
       screen.queryByRole('button', { name: /Share/ })
     ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument()
+  })
+
+  it('goes back to Download Image a moment after the download', async () => {
+    vi.useFakeTimers()
+    try {
+      renderModal('calendar')
+      fireEvent.click(screen.getByRole('button', { name: /Download Image/ }))
+      await act(async () => {})
+
+      expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument()
+
+      act(() => vi.advanceTimersByTime(2500))
+
+      expect(
+        screen.getByRole('button', { name: /Download Image/ })
+      ).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   const IPHONE_CHROME =
@@ -175,6 +202,12 @@ describe('ImagePreviewModal video offer', () => {
         'image_download_click',
         expect.objectContaining({ method: 'share' })
       )
+      expect(
+        await screen.findByRole('button', { name: 'Done' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /Save Image/ })
+      ).toBeInTheDocument()
     } finally {
       restorePhone()
     }
@@ -197,6 +230,10 @@ describe('ImagePreviewModal video offer', () => {
         'image_download_click',
         expect.objectContaining({ method: 'save' })
       )
+      expect(
+        await screen.findByRole('button', { name: 'Done' })
+      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Share/ })).toBeInTheDocument()
     } finally {
       restorePhone()
     }
@@ -250,6 +287,9 @@ describe('ImagePreviewModal video offer', () => {
       await new Promise((resolve) => setTimeout(resolve, 0))
       expect(click).toHaveBeenCalledTimes(downloads)
       expect(unhandled).not.toHaveBeenCalled()
+      expect(screen.queryAllByRole('button', { name: 'Done' })).toHaveLength(
+        downloads
+      )
     } finally {
       process.off('unhandledRejection', unhandled)
       vi.restoreAllMocks()

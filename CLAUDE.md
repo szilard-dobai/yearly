@@ -67,7 +67,7 @@ src/
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── StatisticsExportLayout.tsx - Statistics export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── export/               - Shared export frame (padding, title, watermark), stat tiles and ranking rows
-│   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal
+│   ├── ImagePreviewModal.tsx - Export preview, Story/Feed format picker and download modal. Phones get Save Image (on iPhone the share sheet with the image alone, so Save Image and Save to Files get one photo; on Android a direct download) and Share (the image with the tagged "Made with Yearly" link); computers get Download Image
 │   ├── ExportWatermark.tsx   - "made with yearly.world" signature drawn by the export frame
 │   ├── video/                - Remotion compositions for the animated video preview (year, month, stats); the paid video flow in the export dialog (`useVideoPurchase`, `SaveVideoButton`, `PackVideoPlayer`, `PackUpdate`, shared with `/account`) and `VideoSalesProvider` (root layout)
 │   ├── HomepageExamples.tsx  - Homepage section with real example exports

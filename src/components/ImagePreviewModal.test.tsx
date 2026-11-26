@@ -117,24 +117,22 @@ describe('ImagePreviewModal video offer', () => {
       countryCount: 1,
       countries: [{ code: 'JP', days: 1 }],
       format: 'feed',
+      method: 'save',
     })
+    expect(
+      screen.queryByRole('button', { name: /Share/ })
+    ).not.toBeInTheDocument()
   })
 
-  it.each([
-    [
-      'with a tagged link on Android',
-      'Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile',
-      {
-        title: 'My trips this year',
-        text: 'Made with Yearly: https://www.yearly.world/?utm_source=share',
-      },
-    ],
-    [
-      'on its own on iPhone, so Save Image gets the photo',
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) CriOS/131.0',
-      {},
-    ],
-  ])('shares the image %s', async (_, userAgent, extra) => {
+  const IPHONE_CHROME =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) CriOS/131.0'
+  const ANDROID = 'Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile'
+  const TAGGED_LINK = {
+    title: 'My trips this year',
+    text: 'Made with Yearly: https://www.yearly.world/?utm_source=share',
+  }
+
+  function mockPhone(userAgent: string) {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.yearly.world')
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(userAgent)
     const share = vi.fn().mockResolvedValue(undefined)
@@ -145,24 +143,77 @@ describe('ImagePreviewModal video offer', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       new Response(new Blob(['image'], { type: 'image/jpeg' }))
     )
+    const download = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+    return { share, download }
+  }
+
+  function restorePhone() {
+    vi.unstubAllEnvs()
+    vi.restoreAllMocks()
+    Reflect.deleteProperty(navigator, 'share')
+  }
+
+  it.each([
+    ['iPhone', IPHONE_CHROME],
+    ['Android', ANDROID],
+  ])('shares the image with a tagged link from Share on %s', async (_, ua) => {
+    const { share, download } = mockPhone(ua)
     const user = userEvent.setup()
     renderModal('calendar')
 
     try {
-      await user.click(screen.getByRole('button', { name: /Download Image/ }))
+      await user.click(screen.getByRole('button', { name: /Share/ }))
 
       await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
       const shared = share.mock.calls[0][0]
-      expect(Object.keys(shared).sort()).toEqual(
-        ['files', ...Object.keys(extra)].sort()
+      expect(shared).toMatchObject(TAGGED_LINK)
+      expect(shared.files.map((f: File) => f.name)).toEqual(['yearly.jpg'])
+      expect(download).not.toHaveBeenCalled()
+      expect(trackEvent).toHaveBeenCalledWith(
+        'image_download_click',
+        expect.objectContaining({ method: 'share' })
       )
-      expect(shared).toMatchObject(extra)
-      expect(shared.files).toHaveLength(1)
-      expect(shared.files[0].name).toBe('yearly.jpg')
     } finally {
-      vi.unstubAllEnvs()
-      vi.restoreAllMocks()
-      Reflect.deleteProperty(navigator, 'share')
+      restorePhone()
+    }
+  })
+
+  it('saves through the share sheet with the image alone on iPhone, so Save Image gets the photo', async () => {
+    const { share, download } = mockPhone(IPHONE_CHROME)
+    const user = userEvent.setup()
+    renderModal('calendar')
+
+    try {
+      await user.click(screen.getByRole('button', { name: /Save Image/ }))
+
+      await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
+      const shared = share.mock.calls[0][0]
+      expect(Object.keys(shared)).toEqual(['files'])
+      expect(shared.files).toHaveLength(1)
+      expect(download).not.toHaveBeenCalled()
+      expect(trackEvent).toHaveBeenCalledWith(
+        'image_download_click',
+        expect.objectContaining({ method: 'save' })
+      )
+    } finally {
+      restorePhone()
+    }
+  })
+
+  it('downloads the image straight away from Save Image on Android', async () => {
+    const { share, download } = mockPhone(ANDROID)
+    const user = userEvent.setup()
+    renderModal('calendar')
+
+    try {
+      await user.click(screen.getByRole('button', { name: /Save Image/ }))
+
+      expect(download).toHaveBeenCalledTimes(1)
+      expect(share).not.toHaveBeenCalled()
+    } finally {
+      restorePhone()
     }
   })
 
@@ -193,7 +244,7 @@ describe('ImagePreviewModal video offer', () => {
     renderModal('calendar')
 
     try {
-      await user.click(screen.getByRole('button', { name: /Download Image/ }))
+      await user.click(screen.getByRole('button', { name: /Share/ }))
 
       await waitFor(() => expect(shareCalls).toBe(1))
       await new Promise((resolve) => setTimeout(resolve, 0))

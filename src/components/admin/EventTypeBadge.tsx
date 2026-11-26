@@ -1,25 +1,43 @@
-import { type EventTone, getEventLabel, getEventTone } from '@/lib/admin/format'
+import {
+  type EventGroup,
+  getEventGroup,
+  getEventLabel,
+} from '@/lib/admin/format'
 import { cn } from '@/lib/utils'
 
-const TONE_BADGE_CLASSES: Record<EventTone, string> = {
-  view: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
-  export:
+const GROUP_BADGE_CLASSES: Record<EventGroup, string> = {
+  pages: 'bg-sky-100 text-sky-800 dark:bg-sky-500/15 dark:text-sky-300',
+  calendar:
+    'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  exports:
     'bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300',
+  videos:
+    'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-500/15 dark:text-fuchsia-300',
   feedback:
     'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300',
-  edit: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
+  reminder: 'bg-rose-100 text-rose-800 dark:bg-rose-500/15 dark:text-rose-300',
+  accounts:
+    'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/15 dark:text-indigo-300',
+  trips: 'bg-lime-100 text-lime-800 dark:bg-lime-500/15 dark:text-lime-300',
+  badges:
+    'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
   other: 'bg-gray-100 text-gray-700 dark:bg-white/8 dark:text-zinc-300',
 }
 
-const TONE_DOT_CLASSES: Record<EventTone, string> = {
-  view: 'bg-sky-500',
-  export: 'bg-violet-500',
+const GROUP_DOT_CLASSES: Record<EventGroup, string> = {
+  pages: 'bg-sky-500',
+  calendar: 'bg-emerald-500',
+  exports: 'bg-violet-500',
+  videos: 'bg-fuchsia-500',
   feedback: 'bg-amber-500',
-  edit: 'bg-emerald-500',
+  reminder: 'bg-rose-500',
+  accounts: 'bg-indigo-500',
+  trips: 'bg-lime-500',
+  badges: 'bg-orange-500',
   other: 'bg-gray-400 dark:bg-zinc-500',
 }
 
-export function EventToneDot({
+export function EventGroupDot({
   type,
   className,
 }: {
@@ -31,7 +49,7 @@ export function EventToneDot({
       aria-hidden="true"
       className={cn(
         'inline-block size-2 shrink-0 rounded-full',
-        TONE_DOT_CLASSES[getEventTone(type)],
+        GROUP_DOT_CLASSES[getEventGroup(type)],
         className
       )}
     />
@@ -52,7 +70,7 @@ export default function EventTypeBadge({
       title={type}
       className={cn(
         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
-        TONE_BADGE_CLASSES[getEventTone(type)],
+        GROUP_BADGE_CLASSES[getEventGroup(type)],
         className
       )}
     >

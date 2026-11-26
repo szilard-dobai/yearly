@@ -1,6 +1,9 @@
 import { MONTH_NAMES } from '@/lib/constants'
 import { getCountryByCode } from '@/lib/countries'
-import type { TrackingEventType } from '@/lib/tracking/types'
+import {
+  TRACKING_EVENT_TYPES,
+  type TrackingEventType,
+} from '@/lib/tracking/types'
 
 const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ['year', 365 * 24 * 60 * 60 * 1000],
@@ -95,21 +98,106 @@ export function summarizeMetadata(
     .join(' · ')
 }
 
-export type EventTone = 'view' | 'export' | 'feedback' | 'edit' | 'other'
+export const EVENT_GROUPS = [
+  'pages',
+  'calendar',
+  'exports',
+  'videos',
+  'feedback',
+  'reminder',
+  'accounts',
+  'trips',
+  'badges',
+] as const
 
-export function getEventTone(type: string): EventTone {
-  if (type.startsWith('feedback_')) return 'feedback'
-  if (type.endsWith('_view')) return 'view'
-  if (
-    type.includes('export') ||
-    type.includes('download') ||
-    type.startsWith('animated_video_')
-  ) {
-    return 'export'
-  }
-  if (type.startsWith('visit_') || type === 'calendar_reset') return 'edit'
-  return 'other'
+export type EventGroup = (typeof EVENT_GROUPS)[number] | 'other'
+
+export const EVENT_GROUP_LABELS: Record<EventGroup, string> = {
+  pages: 'Pages',
+  calendar: 'Calendar',
+  exports: 'Image exports',
+  videos: 'Videos',
+  feedback: 'Feedback and survey',
+  reminder: 'Year-end reminder',
+  accounts: 'Accounts',
+  trips: 'Trips',
+  badges: 'Badges',
+  other: 'Other',
 }
+
+const EVENT_GROUP_BY_TYPE: Record<
+  TrackingEventType,
+  (typeof EVENT_GROUPS)[number]
+> = {
+  homepage_view: 'pages',
+  create_page_view: 'pages',
+  not_found_page_view: 'pages',
+  homepage_cta_click: 'pages',
+  not_found_home_click: 'pages',
+  mobile_fab_click: 'pages',
+  year_changed: 'calendar',
+  visit_add_attempt: 'calendar',
+  visit_deleted: 'calendar',
+  visit_reordered: 'calendar',
+  visit_undo: 'calendar',
+  calendar_reset: 'calendar',
+  image_export_click: 'exports',
+  image_download_click: 'exports',
+  statistics_export_click: 'exports',
+  monthly_export_click: 'exports',
+  animated_video_preview_open: 'videos',
+  animated_video_buy_click: 'videos',
+  animated_video_waitlist_join: 'videos',
+  animated_video_waitlist_leave: 'videos',
+  animated_video_sign_in_shown: 'videos',
+  animated_video_checkout_opened: 'videos',
+  animated_video_free_claimed: 'videos',
+  animated_video_ready: 'videos',
+  animated_video_saved: 'videos',
+  animated_video_failed: 'videos',
+  animated_video_checkout_back: 'videos',
+  animated_video_update_requested: 'videos',
+  feedback_prompt_shown: 'feedback',
+  feedback_prompt_dismissed: 'feedback',
+  feedback_dialog_open: 'feedback',
+  feedback_submitted: 'feedback',
+  acquisition_survey_shown: 'feedback',
+  acquisition_survey_answered: 'feedback',
+  acquisition_survey_dismissed: 'feedback',
+  year_end_reminder_open: 'reminder',
+  year_end_reminder_shown: 'reminder',
+  year_end_reminder_calendar_add: 'reminder',
+  year_end_reminder_email_submit: 'reminder',
+  year_end_reminder_email_turn_off: 'reminder',
+  account_prompt_shown: 'accounts',
+  account_prompt_click: 'accounts',
+  account_prompt_dismissed: 'accounts',
+  sign_in_code_sent: 'accounts',
+  sign_in_google_click: 'accounts',
+  sign_in_completed: 'accounts',
+  account_calendar_linked: 'accounts',
+  sign_out: 'accounts',
+  account_deleted: 'accounts',
+  trip_countdown_shown: 'trips',
+  travel_nudge_shown: 'trips',
+  travel_nudge_plan_click: 'trips',
+  badges_open: 'badges',
+  badge_unlocked: 'badges',
+  badges_teaser_click: 'badges',
+}
+
+export function getEventGroup(type: string): EventGroup {
+  return Object.hasOwn(EVENT_GROUP_BY_TYPE, type)
+    ? EVENT_GROUP_BY_TYPE[type as TrackingEventType]
+    : 'other'
+}
+
+export const EVENT_TYPES_BY_GROUP = EVENT_GROUPS.map((group) => ({
+  group,
+  types: TRACKING_EVENT_TYPES.filter(
+    (type) => EVENT_GROUP_BY_TYPE[type] === group
+  ),
+}))
 
 export const EVENT_LABELS: Record<TrackingEventType, string> = {
   homepage_view: 'Homepage viewed',

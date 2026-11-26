@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { TRACKING_EVENT_TYPES } from '@/lib/tracking/types'
 import {
   EVENT_LABELS,
+  EVENT_TYPES_BY_GROUP,
   formatLocation,
   formatMoney,
   formatRelativeTime,
   formatVideoPack,
   getCountryName,
   getEventLabel,
-  getEventTone,
+  getEventGroup,
   summarizeMetadata,
 } from './format'
 
@@ -52,17 +53,28 @@ describe('summarizeMetadata', () => {
   })
 })
 
-describe('getEventTone', () => {
+describe('getEventGroup', () => {
   it.each([
-    ['create_page_view', 'view'],
-    ['image_download_click', 'export'],
-    ['monthly_export_click', 'export'],
-    ['animated_video_buy_click', 'export'],
-    ['feedback_submitted', 'feedback'],
-    ['visit_add_attempt', 'edit'],
-    ['year_changed', 'other'],
-  ])('classifies %s as %s', (type, tone) => {
-    expect(getEventTone(type)).toBe(tone)
+    ['create_page_view', 'pages'],
+    ['visit_add_attempt', 'calendar'],
+    ['monthly_export_click', 'exports'],
+    ['animated_video_buy_click', 'videos'],
+    ['acquisition_survey_answered', 'feedback'],
+    ['year_end_reminder_email_submit', 'reminder'],
+    ['sign_in_completed', 'accounts'],
+    ['travel_nudge_plan_click', 'trips'],
+    ['badge_unlocked', 'badges'],
+    ['retired_event', 'other'],
+  ])('puts %s in %s', (type, group) => {
+    expect(getEventGroup(type)).toBe(group)
+  })
+
+  it('lists every tracked event under exactly one group', () => {
+    const listed = EVENT_TYPES_BY_GROUP.flatMap(({ types }) => types)
+    expect([...listed].sort()).toEqual([...TRACKING_EVENT_TYPES].sort())
+    expect(EVENT_TYPES_BY_GROUP.every(({ types }) => types.length > 0)).toBe(
+      true
+    )
   })
 })
 

@@ -4,6 +4,7 @@ import { getFlatFlagImageSrc } from '@/lib/emoji'
 import { countryName, pluralDays } from '@/lib/trips'
 import { cn } from '@/lib/utils'
 import {
+  FADED_OPACITY,
   getMapScene,
   shadeIndex,
   STRIPED_FLAGS,
@@ -165,6 +166,11 @@ export default function WorldMap({
                 'stroke-white dark:stroke-[#141414]',
                 visited && 'transition-opacity hover:opacity-80'
               )}
+              fillOpacity={
+                visited && scene.faded.has(shape.code!)
+                  ? FADED_OPACITY
+                  : undefined
+              }
               style={{
                 fill: visited ? fill(shape.code!, 'area') : colours.empty,
               }}
@@ -181,6 +187,9 @@ export default function WorldMap({
                 d={shape.d}
                 fill="none"
                 stroke={colours.outline}
+                strokeOpacity={
+                  scene.faded.has(shape.code) ? FADED_OPACITY : undefined
+                }
                 strokeWidth={0.75}
                 vectorEffect="non-scaling-stroke"
                 pointerEvents="none"
@@ -193,6 +202,7 @@ export default function WorldMap({
             cx={shape.centroid[0]}
             cy={shape.centroid[1]}
             r={scene.dotRadius}
+            opacity={scene.faded.has(shape.code!) ? FADED_OPACITY : undefined}
             strokeWidth={1.5}
             vectorEffect="non-scaling-stroke"
             className={cn(

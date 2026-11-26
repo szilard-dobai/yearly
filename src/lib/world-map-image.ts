@@ -1,5 +1,6 @@
 import { getFlatFlagImageSrc } from './emoji'
 import {
+  FADED_OPACITY,
   getMapScene,
   shadeIndex,
   STRIPED_FLAGS,
@@ -172,11 +173,15 @@ export async function renderMapImage({
   const outlines = world.shapes
     .filter((shape) => shape.d)
     .map((shape) => ({ shape, path: new Path2D(shape.d) }))
+  const alpha = (code: string | null) =>
+    code && scene.faded.has(code) ? FADED_OPACITY : 1
   for (const { shape, path } of outlines) {
     const visited = shape.code !== null && scene.daysByCode.has(shape.code)
     context.fillStyle = visited ? fill(shape.code!) : colours.empty
+    context.globalAlpha = alpha(shape.code)
     context.fill(path)
   }
+  context.globalAlpha = 1
   context.lineWidth = (COUNTRY_STROKE * pixelRatio) / pixelsPerUnit
   for (const { path } of outlines) context.stroke(path)
 
@@ -184,8 +189,11 @@ export async function renderMapImage({
     context.strokeStyle = colours.outline
     context.lineWidth = (OUTLINE_STROKE * pixelRatio) / pixelsPerUnit
     for (const { shape, path } of outlines) {
-      if (shape.code && scene.daysByCode.has(shape.code)) context.stroke(path)
+      if (!shape.code || !scene.daysByCode.has(shape.code)) continue
+      context.globalAlpha = alpha(shape.code)
+      context.stroke(path)
     }
+    context.globalAlpha = 1
   }
 
   context.lineWidth = (DOT_STROKE * pixelRatio) / pixelsPerUnit
@@ -195,6 +203,7 @@ export async function renderMapImage({
     const circle = new Path2D()
     circle.arc(cx, cy, r, 0, Math.PI * 2)
     const image = mode === 'flags' ? flags.get(dot.code!) : undefined
+    context.globalAlpha = alpha(dot.code)
     if (image) {
       context.save()
       context.clip(circle)
@@ -213,6 +222,7 @@ export async function renderMapImage({
     }
     context.stroke(circle)
   }
+  context.globalAlpha = 1
 
   const src = canvas.toDataURL('image/png')
   for (const released of [canvas, ...tiles]) {

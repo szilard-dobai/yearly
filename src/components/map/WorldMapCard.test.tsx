@@ -1,7 +1,7 @@
 import { trackEvent } from '@/lib/tracking'
 import type { CountryVisit } from '@/lib/types'
 import { FLAT_FLAG_FILES } from '@/lib/emoji-images'
-import { countriesOnContinent, loadWorld } from '@/lib/world-map'
+import { countriesOnContinent, FADED_OPACITY, loadWorld } from '@/lib/world-map'
 import {
   fireEvent,
   renderWithSettings,
@@ -108,7 +108,7 @@ describe('WorldMapCard', () => {
 
     expect(map).toHaveAccessibleName('World map with 4 countries filled in')
     expect(statValue('Countries')).toBe('4')
-    expect(statValue('Continents')).toBe('2of 7')
+    expect(statValue('Continents')).toBe('2of 6')
 
     await userEvent.click(screen.getByRole('radio', { name: 'All time' }))
 
@@ -148,11 +148,14 @@ describe('WorldMapCard', () => {
   })
 
   it('zooms to a visited continent and disables the others', async () => {
-    const { map } = await renderLoadedCard()
+    const { map, container } = await renderLoadedCard()
     const svg = map as unknown as SVGSVGElement
     const worldBox = svg.getAttribute('viewBox')
 
     expect(screen.getByRole('button', { name: /Africa/ })).toBeDisabled()
+    expect(
+      screen.queryByRole('button', { name: /Antarctica/ })
+    ).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'World' })).toHaveAttribute(
       'aria-pressed',
       'true'
@@ -161,6 +164,9 @@ describe('WorldMapCard', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Europe 2' }))
 
     expect(svg.getAttribute('viewBox')).not.toBe(worldBox)
+    expect(container.querySelector('circle')?.getAttribute('opacity')).toBe(
+      String(FADED_OPACITY)
+    )
     expect(statValue('Countries')).toBe(`2of ${countriesOnContinent('EU')}`)
     expect(statValue('Days')).toBe('3')
     expect(statValue('Trips')).toBe('1')
@@ -175,6 +181,9 @@ describe('WorldMapCard', () => {
 
     expect(svg.getAttribute('viewBox')).toBe(worldBox)
     expect(statValue('Countries')).toBe('4')
+    expect(container.querySelector('circle')?.hasAttribute('opacity')).toBe(
+      false
+    )
   })
 
   it('names a country and its days when tapped', async () => {

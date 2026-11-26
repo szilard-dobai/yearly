@@ -14,8 +14,10 @@ export const CONTINENT_ORDER: ContinentCode[] = [
   'SA',
   'AF',
   'OC',
-  'AN',
 ]
+
+const ZOOM_PADDING = 1.15
+const SCREEN_ZOOM_ASPECT = 1.6
 
 export interface MapView {
   x: number
@@ -138,7 +140,7 @@ export function summariseMap(
         {
           label: 'Continents',
           value: String(continentsOf(countries).size),
-          unit: 'of 7',
+          unit: `of ${CONTINENT_ORDER.length}`,
         },
       ],
     }
@@ -190,8 +192,8 @@ export function fitView(
   if (shapes.length === 0) return null
   const full = world.view
   const { x0, y0, x1, y1 } = extent(shapes)
-  let width = Math.max((x1 - x0) * 1.3, 180)
-  let height = Math.max((y1 - y0) * 1.3, 180 / aspect)
+  let width = Math.max((x1 - x0) * ZOOM_PADDING, 180)
+  let height = Math.max((y1 - y0) * ZOOM_PADDING, 180 / aspect)
   if (width / height > aspect) height = width / aspect
   else width = height * aspect
   height = Math.min(height, full.height)
@@ -227,9 +229,12 @@ export function cropWorld(
   }
 }
 
+export const FADED_OPACITY = 0.3
+
 export interface MapScene {
   view: MapView
   daysByCode: Map<string, number>
+  faded: ReadonlySet<string>
   tileByCode: Map<string, MapShape['bounds']>
   dots: MapShape[]
   dotRadius: number
@@ -253,7 +258,7 @@ export function getMapScene(
     ? fitView(
         world,
         visited.filter((shape) => focusCodes.includes(shape.code!)),
-        frameAspect
+        frameAspect ?? SCREEN_ZOOM_ASPECT
       )
     : null
   const view =
@@ -263,6 +268,11 @@ export function getMapScene(
   return {
     view,
     daysByCode,
+    faded: new Set(
+      focusCodes
+        ? [...daysByCode.keys()].filter((code) => !focusCodes.includes(code))
+        : []
+    ),
     tileByCode: new Map(visited.map((shape) => [shape.code!, shape.bounds])),
     dots: visited.filter((shape) => shape.area < TINY_AREA * scale * scale),
     dotRadius: DOT_RADIUS * scale,

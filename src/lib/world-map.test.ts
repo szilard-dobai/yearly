@@ -185,10 +185,18 @@ describe('fitView', () => {
     }
   })
 
-  it('zooms in on Asia even with Russia in it', () => {
-    const view = fitView(world, ['RU', 'CN', 'TR'].map(shapeOf))!
+  it('zooms in on Asia, with Russia, without most of Europe and Africa', () => {
+    const asia = ['RU', 'CN', 'TR', 'SA', 'JP', 'BN']
+    const { view } = getMapScene(
+      world,
+      asia.map((code) => ({ code, days: 1 })),
+      asia
+    )
 
-    expect(view.width).toBeLessThan(world.view.width * 0.75)
+    expect(view.width).toBeLessThan(world.view.width / 2)
+    for (const code of ['PT', 'MA']) {
+      expect(shapeOf(code).bounds[1][0]).toBeLessThan(view.x)
+    }
   })
 
   it('fits a taller frame when given one', () => {
@@ -198,7 +206,7 @@ describe('fitView', () => {
   })
 
   it('shows the whole world when the countries span it', () => {
-    expect(fitView(world, ['US', 'AU', 'FJ'].map(shapeOf))).toBeNull()
+    expect(fitView(world, ['US', 'KI', 'FJ'].map(shapeOf))).toBeNull()
   })
 })
 
@@ -243,7 +251,7 @@ describe('summariseMap', () => {
     expect(summary.stats).toEqual([
       { label: 'Countries', value: '5' },
       { label: 'Of the world', value: `${shareOfWorld(5)}%` },
-      { label: 'Continents', value: '2', unit: 'of 7' },
+      { label: 'Continents', value: '2', unit: 'of 6' },
     ])
   })
 
@@ -295,6 +303,13 @@ describe('getMapScene', () => {
     expect(europe.view.width).toBeLessThan(world.view.width)
     expect(europe.dotRadius).toBeLessThan(world_.dotRadius)
     expect(europe.dots.map((dot) => dot.code)).not.toContain('FR')
+  })
+
+  it('fades the visited countries outside the zoomed continent', () => {
+    expect([...getMapScene(world, countries, null).faded]).toEqual([])
+    expect([...getMapScene(world, countries, ['FR', 'MT']).faded]).toEqual([
+      'SG',
+    ])
   })
 
   it('frames the map taller for an export', () => {

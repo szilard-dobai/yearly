@@ -120,33 +120,78 @@ export default function WorldMapPanel({
 
   return (
     <div ref={ref} className="space-y-5">
-      <div className="flex flex-wrap items-center gap-2">
-        {year !== null && (
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {year !== null && (
+            <Segmented
+              label="Which trips"
+              value={scope}
+              onChange={(next) => {
+                setScope(next)
+                track('scope', next)
+              }}
+              options={[
+                { value: 'year', label: String(year) },
+                { value: 'all', label: 'All time' },
+              ]}
+            />
+          )}
           <Segmented
-            label="Which trips"
-            value={scope}
+            label="Fill countries with"
+            value={mode}
             onChange={(next) => {
-              setScope(next)
-              track('scope', next)
+              setMode(next)
+              track('mode', next)
             }}
             options={[
-              { value: 'year', label: String(year) },
-              { value: 'all', label: 'All time' },
+              { value: 'flags', label: 'Flags' },
+              { value: 'shade', label: 'By days' },
             ]}
           />
-        )}
-        <Segmented
-          label="Fill countries with"
-          value={mode}
-          onChange={(next) => {
-            setMode(next)
-            track('mode', next)
-          }}
-          options={[
-            { value: 'flags', label: 'Flags' },
-            { value: 'shade', label: 'By days' },
-          ]}
-        />
+        </div>
+
+        <div
+          role="group"
+          aria-label="Zoom to a continent"
+          className="flex flex-wrap gap-2"
+        >
+          <ChoiceChip
+            selected={activeFocus === null}
+            aria-pressed={activeFocus === null}
+            onClick={() => {
+              if (activeFocus === null) return
+              setFocus(null)
+              track('zoom', 'world')
+            }}
+          >
+            World
+          </ChoiceChip>
+          {CONTINENT_ORDER.map((code) => {
+            const count = codesInContinent(countries, code).length
+            return (
+              <ChoiceChip
+                key={code}
+                selected={activeFocus === code}
+                aria-pressed={activeFocus === code}
+                disabled={count === 0}
+                className="disabled:cursor-default disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-[#141414]"
+                onClick={() => {
+                  if (activeFocus === code) return
+                  setFocus(code)
+                  track('zoom', code)
+                }}
+              >
+                {CONTINENT_NAMES[code]}
+                {count > 0 && (
+                  <>
+                    {' '}
+                    <span className="opacity-60">{count}</span>
+                  </>
+                )}
+              </ChoiceChip>
+            )
+          })}
+        </div>
       </div>
 
       {countries.length === 0 ? (
@@ -208,49 +253,6 @@ export default function WorldMapPanel({
             </div>
           </div>
         ))}
-      </div>
-
-      <div
-        role="group"
-        aria-label="Zoom to a continent"
-        className="flex flex-wrap gap-2"
-      >
-        <ChoiceChip
-          selected={activeFocus === null}
-          aria-pressed={activeFocus === null}
-          onClick={() => {
-            if (activeFocus === null) return
-            setFocus(null)
-            track('zoom', 'world')
-          }}
-        >
-          World
-        </ChoiceChip>
-        {CONTINENT_ORDER.map((code) => {
-          const count = codesInContinent(countries, code).length
-          return (
-            <ChoiceChip
-              key={code}
-              selected={activeFocus === code}
-              aria-pressed={activeFocus === code}
-              disabled={count === 0}
-              className="disabled:cursor-default disabled:opacity-40 disabled:hover:bg-white dark:disabled:hover:bg-[#141414]"
-              onClick={() => {
-                if (activeFocus === code) return
-                setFocus(code)
-                track('zoom', code)
-              }}
-            >
-              {CONTINENT_NAMES[code]}
-              {count > 0 && (
-                <>
-                  {' '}
-                  <span className="opacity-60">{count}</span>
-                </>
-              )}
-            </ChoiceChip>
-          )
-        })}
       </div>
 
       {actions?.(view)}

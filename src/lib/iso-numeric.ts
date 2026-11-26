@@ -4,6 +4,7 @@ export const ISO_NUMERIC: Record<string, string> = {
   DZ: '012',
   AD: '020',
   AO: '024',
+  AQ: '010',
   AG: '028',
   AR: '032',
   AM: '051',

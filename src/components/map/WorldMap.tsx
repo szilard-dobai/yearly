@@ -7,6 +7,7 @@ import {
   FADED_OPACITY,
   getMapScene,
   shadeIndex,
+  SOLID_FLAG_FILLS,
   STRIPED_FLAGS,
   viewBox,
   type CountryDays,
@@ -68,6 +69,8 @@ export default function WorldMap({
   const dotCodes = new Set(scene.dots.map((dot) => dot.code))
 
   const fill = (code: string, kind: 'area' | 'dot') => {
+    const solid = mode === 'flags' ? SOLID_FLAG_FILLS.get(code) : undefined
+    if (solid) return solid
     if (flags.get(code)) return `url(#${uid}-${kind}-${code})`
     return colours.shade[shadeIndex(scene.daysByCode.get(code) ?? 0)]
   }
@@ -152,7 +155,7 @@ export default function WorldMap({
             )
           })}
         </defs>
-        {world.shapes.map((shape, i) => {
+        {scene.shapes.map((shape, i) => {
           if (!shape.d) return null
           const visited =
             shape.code !== null && scene.daysByCode.has(shape.code)
@@ -180,7 +183,7 @@ export default function WorldMap({
           )
         })}
         {mode === 'flags' &&
-          world.shapes.map((shape, i) =>
+          scene.shapes.map((shape, i) =>
             shape.d && shape.code && scene.daysByCode.has(shape.code) ? (
               <path
                 key={`outline-${shape.code}-${i}`}

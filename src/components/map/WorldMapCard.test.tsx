@@ -108,7 +108,7 @@ describe('WorldMapCard', () => {
 
     expect(map).toHaveAccessibleName('World map with 4 countries filled in')
     expect(statValue('Countries')).toBe('4')
-    expect(statValue('Continents')).toBe('2of 6')
+    expect(statValue('Continents')).toBe('2of 7')
 
     await userEvent.click(screen.getByRole('radio', { name: 'All time' }))
 
@@ -153,9 +153,7 @@ describe('WorldMapCard', () => {
     const worldBox = svg.getAttribute('viewBox')
 
     expect(screen.getByRole('button', { name: /Africa/ })).toBeDisabled()
-    expect(
-      screen.queryByRole('button', { name: /Antarctica/ })
-    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Antarctica/ })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'World' })).toHaveAttribute(
       'aria-pressed',
       'true'

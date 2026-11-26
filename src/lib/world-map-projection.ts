@@ -63,7 +63,7 @@ export function countryFeatures(topology: unknown): CountryFeature[] {
     : []
 
   const others = geometries
-    .filter((g) => g.id !== ANTARCTICA && !(crimea.length && g === ukraine))
+    .filter((g) => !(crimea.length && g === ukraine))
     .map((g) =>
       crimea.length && g === russia
         ? {
@@ -130,12 +130,24 @@ function largestPiece(projection: GeoProjection, f: CountryFeature) {
   }
 }
 
+function frame(top: number, bottom: number) {
+  const y = Math.floor(top)
+  return { x: 0, y, width: MAP_WIDTH, height: Math.ceil(bottom) - y }
+}
+
 export function projectWorld(topology: unknown): World {
   const features = countryFeatures(topology)
-  const land = { type: 'FeatureCollection' as const, features }
+  const land = {
+    type: 'FeatureCollection' as const,
+    features: features.filter((f) => f.id !== ANTARCTICA),
+  }
   const projection = geoEqualEarth().fitWidth(MAP_WIDTH, land)
   const path = geoPath(projection)
   const [[, y0], [, y1]] = path.bounds(land)
+  const [, [, bottom]] = path.bounds({
+    type: 'FeatureCollection',
+    features,
+  })
 
   const shapes = features.map((f: CountryFeature): MapShape => {
     const piece = largestPiece(projection, f)
@@ -155,6 +167,7 @@ export function projectWorld(topology: unknown): World {
           ]
         : path.centroid(f),
       bounds: piece.bounds,
+      onlyWhenVisited: f.id === ANTARCTICA,
     }
   })
 
@@ -169,16 +182,9 @@ export function projectWorld(topology: unknown): World {
       area: 0,
       centroid: projected,
       bounds: [projected, projected],
+      onlyWhenVisited: false,
     })
   }
 
-  return {
-    shapes,
-    view: {
-      x: 0,
-      y: Math.floor(y0),
-      width: MAP_WIDTH,
-      height: Math.ceil(y1) - Math.floor(y0),
-    },
-  }
+  return { shapes, view: frame(y0, y1), fullView: frame(y0, bottom) }
 }

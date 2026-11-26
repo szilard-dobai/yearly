@@ -3,6 +3,7 @@ import {
   FADED_OPACITY,
   getMapScene,
   shadeIndex,
+  SOLID_FLAG_FILLS,
   STRIPED_FLAGS,
   type CountryDays,
   type MapColours,
@@ -155,7 +156,8 @@ export async function renderMapImage({
   const fill = (code: string) => {
     const days = scene.daysByCode.get(code) ?? 0
     const shade = colours.shade[shadeIndex(days)]
-    return mode === 'flags' ? (flagPattern(code) ?? shade) : shade
+    if (mode !== 'flags') return shade
+    return SOLID_FLAG_FILLS.get(code) ?? flagPattern(code) ?? shade
   }
 
   context.setTransform(
@@ -170,7 +172,7 @@ export async function renderMapImage({
   context.lineJoin = 'round'
   context.strokeStyle = stroke
 
-  const outlines = world.shapes
+  const outlines = scene.shapes
     .filter((shape) => shape.d)
     .map((shape) => ({ shape, path: new Path2D(shape.d) }))
   const alpha = (code: string | null) =>

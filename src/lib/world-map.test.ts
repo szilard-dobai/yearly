@@ -45,11 +45,20 @@ describe('projectWorld', () => {
     expect(missing).toEqual([])
   })
 
-  it('leaves out Antarctica and finds Kosovo by name', () => {
-    expect(world.shapes.some((shape) => shape.name === 'Antarctica')).toBe(
-      false
-    )
+  it('finds Kosovo by name', () => {
     expect(shapeOf('XK').name).toBe('Kosovo')
+  })
+
+  it('keeps Antarctica below the usual frame, to show only when visited', () => {
+    const antarctica = shapeOf('AQ')
+
+    expect(antarctica.onlyWhenVisited).toBe(true)
+    expect(antarctica.bounds[0][1]).toBeGreaterThan(
+      world.view.y + world.view.height - 10
+    )
+    expect(world.fullView.y + world.fullView.height).toBeGreaterThanOrEqual(
+      antarctica.bounds[1][1]
+    )
   })
 
   it('places Tuvalu as a point, since the outlines have no shape for it', () => {
@@ -169,7 +178,7 @@ describe('shadeIndex', () => {
 
 describe('fitView', () => {
   it('zooms in on a group of countries and keeps the map shape', () => {
-    const view = fitView(world, ['ES', 'FR', 'IT'].map(shapeOf))!
+    const view = fitView(world.view, ['ES', 'FR', 'IT'].map(shapeOf))!
 
     expect(view.width).toBeLessThan(world.view.width / 3)
     expect(view.width / view.height).toBeCloseTo(
@@ -200,19 +209,19 @@ describe('fitView', () => {
   })
 
   it('fits a taller frame when given one', () => {
-    const view = fitView(world, ['ES', 'FR', 'IT'].map(shapeOf), 1.5)!
+    const view = fitView(world.view, ['ES', 'FR', 'IT'].map(shapeOf), 1.5)!
 
     expect(view.width / view.height).toBeCloseTo(1.5)
   })
 
   it('shows the whole world when the countries span it', () => {
-    expect(fitView(world, ['US', 'KI', 'FJ'].map(shapeOf))).toBeNull()
+    expect(fitView(world.view, ['US', 'KI', 'FJ'].map(shapeOf))).toBeNull()
   })
 })
 
 describe('cropWorld', () => {
   it('keeps the whole height and trims the sides around the countries', () => {
-    const view = cropWorld(world, ['FR', 'JP'].map(shapeOf), 1.5)
+    const view = cropWorld(world.view, ['FR', 'JP'].map(shapeOf), 1.5)
 
     expect(view.y).toBe(world.view.y)
     expect(view.height).toBe(world.view.height)
@@ -228,7 +237,9 @@ describe('cropWorld', () => {
   })
 
   it('keeps the whole width when the countries span it', () => {
-    expect(cropWorld(world, ['KI', 'FJ'].map(shapeOf), 1.5)).toEqual(world.view)
+    expect(cropWorld(world.view, ['KI', 'FJ'].map(shapeOf), 1.5)).toEqual(
+      world.view
+    )
   })
 })
 
@@ -251,7 +262,7 @@ describe('summariseMap', () => {
     expect(summary.stats).toEqual([
       { label: 'Countries', value: '5' },
       { label: 'Of the world', value: `${shareOfWorld(5)}%` },
-      { label: 'Continents', value: '2', unit: 'of 6' },
+      { label: 'Continents', value: '2', unit: 'of 7' },
     ])
   })
 
@@ -303,6 +314,30 @@ describe('getMapScene', () => {
     expect(europe.view.width).toBeLessThan(world.view.width)
     expect(europe.dotRadius).toBeLessThan(world_.dotRadius)
     expect(europe.dots.map((dot) => dot.code)).not.toContain('FR')
+  })
+
+  it('draws Antarctica and makes room for it only when it was visited', () => {
+    const without = getMapScene(world, countries, null)
+    const withIt = getMapScene(
+      world,
+      [...countries, { code: 'AQ', days: 4 }],
+      null
+    )
+
+    expect(without.shapes.some((shape) => shape.code === 'AQ')).toBe(false)
+    expect(without.view).toEqual(world.view)
+    expect(withIt.shapes.some((shape) => shape.code === 'AQ')).toBe(true)
+    expect(withIt.view).toEqual(world.fullView)
+  })
+
+  it('zooms to Antarctica as a wide band along the bottom', () => {
+    const { view } = getMapScene(world, [{ code: 'AQ', days: 4 }], ['AQ'])
+
+    expect(view.width / view.height).toBeCloseTo(3)
+    expect(view.y + view.height).toBeCloseTo(
+      world.fullView.y + world.fullView.height
+    )
+    expect(view.width).toBeLessThan(world.view.width)
   })
 
   it('fades the visited countries outside the zoomed continent', () => {

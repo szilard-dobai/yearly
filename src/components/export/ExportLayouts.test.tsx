@@ -47,7 +47,7 @@ const mapCountries = [
 const mapStats = [
   { label: 'Countries', value: '4' },
   { label: 'Of the world', value: '2%' },
-  { label: 'Continents', value: '3', unit: 'of 6' },
+  { label: 'Continents', value: '3', unit: 'of 7' },
 ]
 
 function manyCountries(count: number) {
@@ -275,7 +275,7 @@ describe('MapExportLayout', () => {
       '4'
     )
     expect(screen.getByText('Continents').nextElementSibling).toHaveTextContent(
-      '3of 6'
+      '3of 7'
     )
     expect(screen.queryByText('Days spent')).not.toBeInTheDocument()
   })

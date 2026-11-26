@@ -14,10 +14,12 @@ export const CONTINENT_ORDER: ContinentCode[] = [
   'SA',
   'AF',
   'OC',
+  'AN',
 ]
 
 const ZOOM_PADDING = 1.15
 const SCREEN_ZOOM_ASPECT = 1.6
+const MAX_ZOOM_ASPECT = 3
 
 export interface MapView {
   x: number
@@ -33,11 +35,13 @@ export interface MapShape {
   area: number
   centroid: [number, number]
   bounds: [[number, number], [number, number]]
+  onlyWhenVisited: boolean
 }
 
 export interface World {
   shapes: MapShape[]
   view: MapView
+  fullView: MapView
 }
 
 export interface CountryDays {
@@ -185,17 +189,17 @@ const clamp = (v: number, min: number, max: number) =>
   Math.min(Math.max(v, min), max)
 
 export function fitView(
-  world: World,
+  full: MapView,
   shapes: MapShape[],
-  aspect = world.view.width / world.view.height
+  aspect = full.width / full.height
 ): MapView | null {
   if (shapes.length === 0) return null
-  const full = world.view
   const { x0, y0, x1, y1 } = extent(shapes)
   let width = Math.max((x1 - x0) * ZOOM_PADDING, 180)
   let height = Math.max((y1 - y0) * ZOOM_PADDING, 180 / aspect)
-  if (width / height > aspect) height = width / aspect
-  else width = height * aspect
+  const frame = clamp(width / height, aspect, Math.max(aspect, MAX_ZOOM_ASPECT))
+  if (width / height > frame) height = width / frame
+  else width = height * frame
   height = Math.min(height, full.height)
   if (width >= full.width) return null
   return {
@@ -209,11 +213,10 @@ export function fitView(
 const WORLD_CROP_MARGIN = 0.04
 
 export function cropWorld(
-  world: World,
+  full: MapView,
   shapes: MapShape[],
   aspect: number
 ): MapView {
-  const full = world.view
   if (shapes.length === 0) return full
   const { x0, x1 } = extent(shapes)
   const margin = full.width * WORLD_CROP_MARGIN
@@ -232,6 +235,7 @@ export function cropWorld(
 export const FADED_OPACITY = 0.3
 
 export interface MapScene {
+  shapes: MapShape[]
   view: MapView
   daysByCode: Map<string, number>
   faded: ReadonlySet<string>
@@ -247,25 +251,33 @@ export function getMapScene(
   frameAspect?: number
 ): MapScene {
   const daysByCode = new Map(countries.map((c) => [c.code, c.days]))
+  const isVisited = (shape: MapShape) =>
+    shape.code !== null && daysByCode.has(shape.code)
+  const shapes = world.shapes.filter(
+    (shape) => !shape.onlyWhenVisited || isVisited(shape)
+  )
+  const full = shapes.some((shape) => shape.onlyWhenVisited)
+    ? world.fullView
+    : world.view
   const largest = new Map<string, MapShape>()
-  for (const shape of world.shapes) {
-    if (!shape.code || !daysByCode.has(shape.code)) continue
-    const current = largest.get(shape.code)
-    if (!current || shape.area > current.area) largest.set(shape.code, shape)
+  for (const shape of shapes) {
+    if (!isVisited(shape)) continue
+    const current = largest.get(shape.code!)
+    if (!current || shape.area > current.area) largest.set(shape.code!, shape)
   }
   const visited = [...largest.values()]
   const focused = focusCodes
     ? fitView(
-        world,
+        full,
         visited.filter((shape) => focusCodes.includes(shape.code!)),
         frameAspect ?? SCREEN_ZOOM_ASPECT
       )
     : null
   const view =
-    focused ??
-    (frameAspect ? cropWorld(world, visited, frameAspect) : world.view)
+    focused ?? (frameAspect ? cropWorld(full, visited, frameAspect) : full)
   const scale = view.width / world.view.width
   return {
+    shapes,
     view,
     daysByCode,
     faded: new Set(
@@ -278,6 +290,10 @@ export function getMapScene(
     dotRadius: DOT_RADIUS * scale,
   }
 }
+
+export const SOLID_FLAG_FILLS: ReadonlyMap<string, string> = new Map([
+  ['AQ', '#4b7ebd'],
+])
 
 export const STRIPED_FLAGS: ReadonlySet<string> = new Set(
   'AE AM AT BE BG BJ BO BW CI CO DE EE FR GA GN HU ID IE IT LT LU LV MC MG ML MU NG NL PE PL RO RU SL TD TH UA YE'.split(

@@ -11,6 +11,7 @@ export const COUNTRY_LIST: Country[] = [
   { code: 'DZ', name: 'Algeria' },
   { code: 'AD', name: 'Andorra' },
   { code: 'AO', name: 'Angola' },
+  { code: 'AQ', name: 'Antarctica' },
   { code: 'AG', name: 'Antigua and Barbuda' },
   { code: 'AR', name: 'Argentina' },
   { code: 'AM', name: 'Armenia' },

@@ -16,6 +16,7 @@ export const CONTINENT_BY_COUNTRY: Record<string, ContinentCode> = {
   DZ: 'AF',
   AD: 'EU',
   AO: 'AF',
+  AQ: 'AN',
   AG: 'NA',
   AR: 'SA',
   AM: 'AS',

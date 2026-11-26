@@ -25,7 +25,6 @@ import {
   type ExportFormat,
 } from '@/lib/export-canvas'
 import type { ExportType } from '@/lib/feedback/types'
-import type { ImageDownloadMethod } from '@/lib/tracking/types'
 import { buildShareText } from '@/lib/share'
 import { trackEvent } from '@/lib/tracking'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
@@ -37,13 +36,12 @@ import {
   Download,
   Loader2,
   Play,
-  Share,
   Sparkles,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 import YearEndReminderCard from './YearEndReminderCard'
@@ -85,22 +83,7 @@ type PostDownloadPrompt =
   | 'feedback_after_survey'
   | 'closed'
 
-function subscribeToNothing() {
-  return () => {}
-}
-
-function canShareImages() {
-  return (
-    /Mobi|Android|iPad|iPhone|iPod/i.test(navigator.userAgent) &&
-    typeof navigator.share === 'function'
-  )
-}
-
 const DONE_MS = 2500
-
-function isIOS() {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent)
-}
 
 const FORMAT_HINTS: Record<ExportFormat, string> = {
   story: 'Stories & TikTok',
@@ -186,12 +169,13 @@ function ImagePreviewContent({
   const [prompt, setPrompt] = useState<PostDownloadPrompt | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
   const [videoMounted, setVideoMounted] = useState(false)
-  const [done, setDone] = useState<ImageDownloadMethod | null>(null)
-  const canShareImage = useSyncExternalStore(
-    subscribeToNothing,
-    canShareImages,
-    () => false
-  )
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (!done) return
+    const timer = setTimeout(() => setDone(false), DONE_MS)
+    return () => clearTimeout(timer)
+  }, [done])
 
   const isMonthly = exportType === 'monthly'
   const showVideoOffer = calendarData.visits.some(
@@ -238,80 +222,63 @@ function ImagePreviewContent({
     if (shouldShowFeedbackPrompt()) showFeedbackPrompt(true)
   }
 
-  const trackDownload = (method: ImageDownloadMethod) =>
+  const handleDownload = async () => {
+    if (!imageDataUrl) return
+
+    const isMobileOrTablet = /Mobi|Android|iPad|iPhone|iPod/i.test(
+      navigator.userAgent
+    )
+
     trackEvent('image_download_click', {
       exportType,
       ...summarizeCalendar(calendarData, year),
       format,
-      method,
     })
 
-  const saveImage = (dataUrl: string) => {
-    const link = document.createElement('a')
-    link.download = filename
-    link.href = dataUrl
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
-  useEffect(() => {
-    if (!done) return
-    const timer = setTimeout(() => setDone(null), DONE_MS)
-    return () => clearTimeout(timer)
-  }, [done])
-
-  const shareImage = async (dataUrl: string, withLink: boolean) => {
-    const blob = await fetch(dataUrl).then((r) => r.blob())
-    const file = new File([blob], filename, { type: blob.type })
-    try {
-      await navigator.share(
-        withLink
-          ? {
-              files: [file],
-              title: 'My trips this year',
-              text: buildShareText(
-                process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-              ),
-            }
-          : { files: [file] }
-      )
-      return true
-    } catch (error) {
-      const cancelled =
-        error instanceof DOMException && error.name === 'AbortError'
-      if (cancelled) return false
-      saveImage(dataUrl)
-      return true
+    const saveImage = () => {
+      const link = document.createElement('a')
+      link.download = filename
+      link.href = imageDataUrl
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
-  }
 
-  const handleSave = async () => {
-    if (!imageDataUrl) return
-    trackDownload('save')
-    // On iOS only the share sheet's Save Image puts the photo in Photos; a download goes to Files
-    if (canShareImage && isIOS()) {
-      if (await shareImage(imageDataUrl, false)) setDone('save')
+    if (isMobileOrTablet && !!navigator.share) {
+      const blob = await fetch(imageDataUrl).then((r) => r.blob())
+      const file = new File([blob], filename, { type: blob.type })
+
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+      try {
+        await navigator.share(
+          // iOS shares the text as a second item, so Save to Files would save two files
+          isIOS
+            ? { files: [file] }
+            : {
+                files: [file],
+                title: 'My trips this year',
+                text: buildShareText(
+                  process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+                ),
+              }
+        )
+        setDone(true)
+      } catch (error) {
+        const cancelled =
+          error instanceof DOMException && error.name === 'AbortError'
+        if (!cancelled) {
+          saveImage()
+          setDone(true)
+        }
+      }
     } else {
-      saveImage(imageDataUrl)
-      setDone('save')
+      saveImage()
+      setDone(true)
     }
+
     maybeShowPrompt()
   }
-
-  const handleShare = async () => {
-    if (!imageDataUrl) return
-    trackDownload('share')
-    if (await shareImage(imageDataUrl, true)) setDone('share')
-    maybeShowPrompt()
-  }
-
-  const doneLabel = (
-    <>
-      <Check className="w-5 h-5" />
-      Done
-    </>
-  )
 
   return (
     <div className="grid md:grid-cols-2 gap-0">
@@ -385,58 +352,25 @@ function ImagePreviewContent({
             onChange={onFormatChange}
           />
 
-          {canShareImage ? (
-            <div className="mb-4 grid grid-cols-2 gap-2">
-              <Button
-                whileTap={{ scale: 0.98 }}
-                className="w-full"
-                onClick={handleSave}
-                disabled={isRendering}
-              >
-                {done === 'save' ? (
-                  doneLabel
-                ) : (
-                  <>
-                    <Download className="w-5 h-5" />
-                    Save Image
-                  </>
-                )}
-              </Button>
-              <Button
-                whileTap={{ scale: 0.98 }}
-                variant="outline"
-                className="w-full"
-                onClick={handleShare}
-                disabled={isRendering}
-              >
-                {done === 'share' ? (
-                  doneLabel
-                ) : (
-                  <>
-                    <Share className="w-5 h-5" />
-                    Share
-                  </>
-                )}
-              </Button>
-            </div>
-          ) : (
-            <Button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full mb-4"
-              onClick={handleSave}
-              disabled={isRendering}
-            >
-              {done === 'save' ? (
-                doneLabel
-              ) : (
-                <>
-                  <Download className="w-5 h-5" />
-                  Download Image
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full mb-4"
+            onClick={handleDownload}
+            disabled={isRendering}
+          >
+            {done ? (
+              <>
+                <Check className="w-5 h-5" />
+                Done
+              </>
+            ) : (
+              <>
+                <Download className="w-5 h-5" />
+                Download Image
+              </>
+            )}
+          </Button>
           <p className="sr-only" aria-live="polite">
             {done ? 'Done' : ''}
           </p>

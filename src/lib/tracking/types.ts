@@ -118,11 +118,8 @@ export interface VisitDeletedMetadata {
 
 export type ImageExportClickMetadata = TripSummary
 
-export type ImageDownloadMethod = 'save' | 'share'
-
 export type ImageDownloadClickMetadata = TripSummary & {
   exportType: ExportType
-  method: ImageDownloadMethod
 }
 
 export interface MonthlyExportClickMetadata {

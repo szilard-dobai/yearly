@@ -62,6 +62,7 @@ export const TRACKING_EVENT_TYPES = [
   'badges_open',
   'badge_unlocked',
   'badges_teaser_click',
+  'year_compare_open',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]

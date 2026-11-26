@@ -61,6 +61,7 @@ src/
 │   ├── CalendarGrid.tsx      - 12-month calendar display
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
 │   ├── TravelNudgeCard.tsx   - Compares the last two months and nudges towards planning a trip
+│   ├── YearCompareDialog.tsx - "vs <last year>" button in the Statistics card and the year-on-year comparison dialog; shown only when both years have trips
 │   ├── badges/               - Badges card, badge medal, the shared grid and details (`BadgeCollection`, also on `/account`) and the unlock pop-up shown when an edit earns a badge, all for signed-in people; signed-out visitors get `BadgesTeaser`, which counts their badges and links to sign-in. Badges are never stored: they're worked out in the browser from the calendar each time
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
@@ -89,6 +90,7 @@ src/
 │   ├── nudges.ts             - Month-on-month comparison behind the travel nudge
 │   ├── badges.ts             - Badge definitions and when each was earned, worked out from the calendar in one pass (planned trips count once their day comes)
 │   ├── continents.ts         - Continent of each country
+│   ├── year-summary.ts       - One year's days, countries, trips, months, first-time countries and the comparison headline ("is already" while the year isn't over)
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── emoji.ts              - Flag and emoji image paths, sizes and medal names

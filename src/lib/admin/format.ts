@@ -181,6 +181,7 @@ const EVENT_GROUP_BY_TYPE: Record<
   trip_countdown_shown: 'trips',
   travel_nudge_shown: 'trips',
   travel_nudge_plan_click: 'trips',
+  year_compare_open: 'trips',
   badges_open: 'badges',
   badge_unlocked: 'badges',
   badges_teaser_click: 'badges',
@@ -255,6 +256,7 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   badges_open: 'Badges opened',
   badge_unlocked: 'Badge unlocked',
   badges_teaser_click: 'Badges teaser: sign in',
+  year_compare_open: 'Year comparison opened',
 }
 
 export function getEventLabel(type: string): string {

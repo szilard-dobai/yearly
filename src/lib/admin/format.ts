@@ -108,6 +108,7 @@ export const EVENT_GROUPS = [
   'accounts',
   'trips',
   'badges',
+  'map',
 ] as const
 
 export type EventGroup = (typeof EVENT_GROUPS)[number] | 'other'
@@ -122,6 +123,7 @@ export const EVENT_GROUP_LABELS: Record<EventGroup, string> = {
   accounts: 'Accounts',
   trips: 'Trips',
   badges: 'Badges',
+  map: 'World map',
   other: 'Other',
 }
 
@@ -145,6 +147,7 @@ const EVENT_GROUP_BY_TYPE: Record<
   image_download_click: 'exports',
   statistics_export_click: 'exports',
   monthly_export_click: 'exports',
+  map_export_click: 'exports',
   animated_video_preview_open: 'videos',
   animated_video_buy_click: 'videos',
   animated_video_waitlist_join: 'videos',
@@ -185,6 +188,8 @@ const EVENT_GROUP_BY_TYPE: Record<
   badges_open: 'badges',
   badge_unlocked: 'badges',
   badges_teaser_click: 'badges',
+  map_view_change: 'map',
+  map_teaser_click: 'map',
 }
 
 export function getEventGroup(type: string): EventGroup {
@@ -257,6 +262,9 @@ export const EVENT_LABELS: Record<TrackingEventType, string> = {
   badge_unlocked: 'Badge unlocked',
   badges_teaser_click: 'Badges teaser: sign in',
   year_compare_open: 'Year comparison opened',
+  map_view_change: 'World map view changed',
+  map_export_click: 'Map export clicked',
+  map_teaser_click: 'World map teaser: sign in',
 }
 
 export function getEventLabel(type: string): string {

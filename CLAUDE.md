@@ -16,7 +16,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Type check**: `npm run type-check` - Runs TypeScript type checking
 - **Test**: `npm run test` - Runs Vitest tests
 - **Full check**: `npm run check:full` - Runs lint + type-check + tests + build
-- **Emoji images**: `npm run emoji:build` downloads the Noto Emoji SVGs at the commit pinned in `scripts/build-emoji-images.mts`, adjusts their colours, crops the flags to one shared box and writes two WebP sizes to `public/emoji/` plus the manifest `src/lib/emoji-images.ts`. Commit its output; the raw SVGs stay in `node_modules/.cache`. Adding a country to `src/lib/countries.ts` needs a rebuild, or the country drops out of `COUNTRIES`
+- **Emoji images**: `npm run emoji:build` downloads the Noto Emoji SVGs at the commit pinned in `scripts/build-emoji-images.mts`, adjusts their colours, crops the flags to one shared box and writes two WebP sizes to `public/emoji/`, plus one 960-wide size of the flat flags (`third_party/region-flags/svg/`) that fill countries on the world map, and the manifest `src/lib/emoji-images.ts`. Commit its output; the raw SVGs stay in `node_modules/.cache`. Adding a country to `src/lib/countries.ts` needs a rebuild, or the country drops out of `COUNTRIES`
 - **Paid video renders**: `npm run video:bundle` bundles `src/video-render` with the fonts and `public/emoji` into `.video-render/bundle`; `node scripts/video-render.mts snapshot | sample --snapshot <id> | delete-snapshot <id>` makes a Vercel Sandbox snapshot from it and renders the example videos into `.video-render/out`. `prepare` runs in `vercel-build` and gives each deployment its snapshot. Sandbox calls need `VERCEL_OIDC_TOKEN` from `vercel env pull`, kept outside the repo and passed with `node --env-file`. Delete test snapshots afterwards. See Rendering in `docs/06-paid-videos.md`
 - **Free video credits**: `node --env-file=<file> scripts/import-video-credits.mts --expires 2027-01-31 [--commit]` copies the MongoDB video waitlist's emails (trimmed, lowercased, deduplicated, invalid ones skipped) into Postgres `video_credit`, once on launch day. A dry run without `--commit`; safe to run again; prints the database hosts and counts, never emails. It never reads `.env.local`: pass the variables with `node --env-file`, so a missing one stops it instead of using a development database. See Launch day in `docs/06-paid-videos.md`
 - **Database migration**: `npm run db:generate -- --name <name>` writes a SQL migration in `drizzle/` from `src/lib/db/schema.ts`; `npm run db:migrate` applies it. Vercel runs `vercel-build`, which migrates before building, so every migration must work with the code already deployed (add first, remove later)
@@ -30,6 +30,7 @@ This is a Next.js 16 application using the App Router architecture, React 19, Ty
 - **Styling**: Tailwind CSS v4 with PostCSS
 - **UI**: Radix UI primitives + shadcn/ui components
 - **Animations**: Motion (Framer Motion)
+- **World map**: `d3-geo` (Equal Earth) and `topojson-client` project the `world-atlas` 50m country outlines in the browser. Both the outlines (~750 KB) and the projection code load only when a map card nears the screen or a map export starts
 - **Image export**: html-to-image (toSvg), drawn to a canvas
 - **Emoji**: every flag and emoji is an image from Google's Noto Emoji (waved flags), never an emoji font, so they look the same on every platform. Images live in `public/emoji/` with their LICENSE (Apache 2.0) and README; their names carry a content hash, so `next.config.ts` caches them for a year. The credit is at the bottom of `/privacy`; Apache 2.0 needs the licence copy and the note about changed colours, not a credit on every page
 - **Validation**: Zod
@@ -62,6 +63,7 @@ src/
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
 │   ├── TravelNudgeCard.tsx   - Compares the last two months and nudges towards planning a trip
 │   ├── YearCompareDialog.tsx - "vs <last year>" button in the Statistics card and the year-on-year comparison dialog; shown only when both years have trips
+│   ├── map/                  - World map for signed-in people: `WorldMapPanel` (year or all time, flags or shaded by days, continent chips that zoom, numbers) in `WorldMapCard` under the calendar on /create and in `AccountMap` on /account (all time, no download); the map export layout and button; `MapTeaser` for signed-out visitors, which counts their countries and links to sign-in
 │   ├── badges/               - Badges card, badge medal, the shared grid and details (`BadgeCollection`, also on `/account`) and the unlock pop-up shown when an edit earns a badge, all for signed-in people; signed-out visitors get `BadgesTeaser`, which counts their badges and links to sign-in. Badges are never stored: they're worked out in the browser from the calendar each time
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
@@ -79,7 +81,7 @@ src/
 │   ├── FeedbackDialog.tsx    - Feedback form (star rating + message)
 │   ├── FeedbackPrompt.tsx    - Inline post-download rating prompt
 │   ├── FeedbackCard.tsx      - Rating card on the create page, hidden once the user rates or dismisses
-│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (your videos with updates, calendar, badges, sign out, delete), first-sync dialog
+│   ├── account/              - Sign-in form (email, then code; or Google), header avatar (`AccountMenu`), `/create` prompt, account page cards (your videos with updates, calendar, world map, badges, sign out, delete), first-sync dialog
 │   ├── admin/                - Admin-only components (login, nav, dialogs, delete confirmation, shared event badges and tiles, video orders and render again; the year-end reminder panel with "Send a test" and "Run now"; the nav shows Videos when `useVideoSales()` says sales are on)
 │   └── ui/                   - Reusable UI primitives (shadcn/ui)
 ├── lib/
@@ -93,6 +95,10 @@ src/
 │   ├── year-summary.ts       - One year's days, countries, trips, months, first-time countries and the comparison headline ("is already" while the year isn't over)
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
+│   ├── world-map.ts          - Countries and days per year or all time, continents, share of the world, zoom box, dots for tiny countries, map colours; `loadWorld` lazy-loads the outlines
+│   ├── world-map-projection.ts - Projects the world-atlas outlines (no Antarctica, Kosovo by name, Tuvalu as a point); loaded with the outlines
+│   ├── world-map-image.ts    - Draws the map with flat flag fills onto a canvas for the map export
+│   ├── iso-numeric.ts        - ISO 3166 numeric code of each country, to match the world-atlas outlines
 │   ├── emoji.ts              - Flag and emoji image paths, sizes and medal names
 │   ├── emoji-images.ts       - Generated manifest of the images in `public/emoji/` (don't edit; run `npm run emoji:build`)
 │   ├── statistics.ts         - 30+ statistics calculation functions
@@ -103,6 +109,7 @@ src/
 │   │   ├── useImageExport.ts       - Full-year calendar export
 │   │   ├── useMonthlyExport.ts     - Monthly calendar export
 │   │   ├── useStatisticsExport.ts  - Statistics image export
+│   │   ├── useMapExport.ts         - World map image export (draws the map image first, in the export's theme)
 │   │   ├── useAccountPrompt.ts     - When the /create account prompt shows (3+ days of trips, 30-day snooze)
 │   │   ├── useStatusFeedback.ts    - Loading/error state management
 │   │   └── useTodayKey.ts          - Today's local date key, null on the server and during hydration, so date-based cards render only in the browser
@@ -126,7 +133,7 @@ src/
 
 ### Image Export
 
-All three exports (calendar, monthly, statistics) come in two fixed canvas sizes, saved at `pixelRatio: 2`:
+All four exports (calendar, monthly, statistics, map) come in two fixed canvas sizes, saved at `pixelRatio: 2`:
 
 | Format                | Canvas    | JPEG      |
 | --------------------- | --------- | --------- |
@@ -137,6 +144,8 @@ All three exports (calendar, monthly, statistics) come in two fixed canvas sizes
 2. `renderExportImage` mounts it off-screen in its own React root at the exact canvas size
 3. Turn it into an SVG with `html-to-image` (`toSvg`, `skipFonts: true` avoids CORS errors with Google Fonts), draw that to a canvas, then draw the flag and emoji images on top at their measured positions and clip paths, and save as JPEG. WebKit leaves images inside such an SVG blank on the first draw, so the images are hidden in the SVG and drawn separately
 4. Present in ImagePreviewModal, where the Story/Feed picker re-renders the image in the other format
+
+A layout function may be async and gets the export's `theme`. The map export uses that to draw the map itself onto a canvas first (`lib/world-map-image.ts`, flat flags clipped to each country) and places it in the layout as a plain `<img>`, so the step above draws it straight onto the JPEG; flags as SVG pattern fills would come out blank in WebKit. The flags under the map are the usual waved `Flag` images.
 
 Every layout sits in `ExportFrame`, which owns the outer padding, the title and divider, and the watermark at a fixed canvas pixel size. All sizes and the fill-the-canvas maths live in `lib/export-canvas.ts`; layouts take explicit pixel sizes from there, never responsive Tailwind sizes, so exports look the same from any screen width.
 

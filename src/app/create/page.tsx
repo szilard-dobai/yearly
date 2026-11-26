@@ -25,6 +25,9 @@ import Settings from '@/components/Settings'
 import Statistics from '@/components/Statistics'
 import TravelNudgeCard from '@/components/TravelNudgeCard'
 import TripCountdown from '@/components/TripCountdown'
+import MapExportButton from '@/components/map/MapExportButton'
+import MapTeaser from '@/components/map/MapTeaser'
+import WorldMapCard from '@/components/map/WorldMapCard'
 import StatisticsExportButton from '@/components/StatisticsExportButton'
 import UndoToast from '@/components/UndoToast'
 import YearCompareDialog from '@/components/YearCompareDialog'
@@ -73,6 +76,7 @@ import { type DaySelection, toDayKey } from '@/lib/selection'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import { buildDayMap } from '@/lib/trips'
+import { countriesInScope } from '@/lib/world-map'
 import type { CalendarData } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import type { VideoKind, VideoTheme } from '@/lib/video'
@@ -278,6 +282,17 @@ function Create() {
     [calendarSync.sessionChecked, calendarData.visits, todayKey]
   )
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([])
+  const yearCountries = useMemo(
+    () =>
+      signedIn
+        ? countriesInScope(buildDayMap(calendarData.visits), selectedYear)
+        : [],
+    [signedIn, calendarData.visits, selectedYear]
+  )
+  const allTimeCountryCount = useMemo(
+    () => new Set(calendarData.visits.map((v) => v.countryCode)).size,
+    [calendarData.visits]
+  )
   const [unlockedOpen, setUnlockedOpen] = useState(false)
 
   const handleDataChange = useCallback(
@@ -517,6 +532,16 @@ function Create() {
                   />
                 </CardContent>
               </StandardCard>
+              {calendarSync.sessionChecked &&
+                calendarData.visits.length > 0 &&
+                (signedIn ? (
+                  <WorldMapCard
+                    calendarData={calendarData}
+                    year={selectedYear}
+                  />
+                ) : (
+                  <MapTeaser countryCount={allTimeCountryCount} />
+                ))}
             </div>
 
             <aside className="space-y-4">
@@ -574,6 +599,17 @@ function Create() {
                         calendarData={calendarData}
                         year={selectedYear}
                       />
+                      {signedIn && (
+                        <MapExportButton
+                          calendarData={calendarData}
+                          previewYear={selectedYear}
+                          source="export_card"
+                          countries={yearCountries}
+                          year={selectedYear}
+                          mode="flags"
+                          focusCodes={null}
+                        />
+                      )}
                       <div className="border-t border-white/20 dark:border-white/8 pt-3">
                         <div className="flex items-center gap-2">
                           <Select

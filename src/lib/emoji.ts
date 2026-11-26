@@ -4,6 +4,7 @@ import {
   FLAG_ASPECT_RATIO,
   FLAG_FILES,
   FLAG_IMAGE_SIZES,
+  FLAT_FLAG_FILES,
 } from './emoji-images'
 
 export type EmojiName = keyof typeof EMOJI_FILES
@@ -29,6 +30,12 @@ export function getFlagImageSrc(
   const key = code.toUpperCase()
   if (!Object.hasOwn(FLAG_FILES, key)) return null
   return `${EMOJI_IMAGE_ROOT}/flags/${resolution}/${FLAG_FILES[key]}.webp`
+}
+
+export function getFlatFlagImageSrc(code: string): string | null {
+  const key = code.toUpperCase()
+  if (!Object.hasOwn(FLAT_FLAG_FILES, key)) return null
+  return `${EMOJI_IMAGE_ROOT}/flags/flat/${FLAT_FLAG_FILES[key]}.webp`
 }
 
 export function getEmojiImageSrc(

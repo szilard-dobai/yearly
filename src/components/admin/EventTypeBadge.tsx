@@ -21,6 +21,7 @@ const GROUP_BADGE_CLASSES: Record<EventGroup, string> = {
   trips: 'bg-lime-100 text-lime-800 dark:bg-lime-500/15 dark:text-lime-300',
   badges:
     'bg-orange-100 text-orange-800 dark:bg-orange-500/15 dark:text-orange-300',
+  map: 'bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300',
   other: 'bg-gray-100 text-gray-700 dark:bg-white/8 dark:text-zinc-300',
 }
 
@@ -34,6 +35,7 @@ const GROUP_DOT_CLASSES: Record<EventGroup, string> = {
   accounts: 'bg-indigo-500',
   trips: 'bg-lime-500',
   badges: 'bg-orange-500',
+  map: 'bg-teal-500',
   other: 'bg-gray-400 dark:bg-zinc-500',
 }
 

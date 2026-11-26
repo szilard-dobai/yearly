@@ -5,9 +5,11 @@ import {
   type ExportFormat,
 } from '@/lib/export-canvas'
 import type { CalendarData } from '@/lib/types'
+import { MAP_COLOURS } from '@/lib/world-map'
 import { render, screen } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { describe, expect, it } from 'vitest'
+import MapExportLayout from '../map/MapExportLayout'
 import MonthlyExportLayout from '../MonthlyExportLayout'
 import StatisticsExportLayout from '../StatisticsExportLayout'
 import YearExportLayout from '../YearExportLayout'
@@ -32,6 +34,42 @@ const calendarData: CalendarData = {
 }
 
 const settings = { weekStartsOn: 1 } as const
+
+const mapImage = { src: 'data:image/png;base64,map', width: 952, height: 426 }
+
+const mapCountries = [
+  { code: 'FR', days: 7 },
+  { code: 'IT', days: 7 },
+  { code: 'AU', days: 10 },
+  { code: 'JP', days: 8 },
+]
+
+function manyCountries(count: number) {
+  return [
+    'FR',
+    'IT',
+    'ES',
+    'PT',
+    'DE',
+    'NL',
+    'BE',
+    'AT',
+    'CH',
+    'GR',
+    'TR',
+    'JP',
+    'KR',
+    'TH',
+    'VN',
+    'SG',
+    'MY',
+    'ID',
+    'AU',
+    'NZ',
+  ]
+    .slice(0, count)
+    .map((code) => ({ code, days: 2 }))
+}
 
 function flagImages(container: HTMLElement, code: string) {
   return container.querySelectorAll<HTMLImageElement>(
@@ -69,6 +107,18 @@ function layouts(format: ExportFormat): [string, ReactElement][] {
         calendarData={calendarData}
         year={2026}
         format={format}
+      />,
+    ],
+    [
+      'map',
+      <MapExportLayout
+        key="map"
+        map={mapImage}
+        countries={mapCountries}
+        title="2026"
+        mode="flags"
+        format={format}
+        colours={MAP_COLOURS.light}
       />,
     ],
   ]
@@ -186,5 +236,72 @@ describe('StatisticsExportLayout', () => {
     expect(medals).toEqual(['large', 'large', 'large'])
     expect(flagImages(container, 'AU')).toHaveLength(1)
     expect(screen.queryByText('🥇')).not.toBeInTheDocument()
+  })
+})
+
+describe('MapExportLayout', () => {
+  it('draws the map image, a ranked list for a few countries and the totals', () => {
+    const { container } = render(
+      <MapExportLayout
+        map={mapImage}
+        countries={mapCountries}
+        title="All time"
+        mode="flags"
+        format="story"
+        colours={MAP_COLOURS.light}
+      />
+    )
+
+    const map = container.querySelector<HTMLImageElement>(
+      'img[data-export-map]'
+    )
+    expect(map?.getAttribute('src')).toBe(mapImage.src)
+    expect(map?.style.width).toBe('952px')
+    expect(
+      screen.getByRole('heading', { name: 'All time' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('Australia')).toBeInTheDocument()
+    expect(screen.getByText('10 days')).toBeInTheDocument()
+    expect(screen.getByText('Countries').nextElementSibling).toHaveTextContent(
+      '4'
+    )
+    expect(screen.getByText('Continents').nextElementSibling).toHaveTextContent(
+      '3of 7'
+    )
+    expect(screen.queryByText('Days spent')).not.toBeInTheDocument()
+  })
+
+  it('shows many countries as a grid of large flags with their names', () => {
+    const { container } = render(
+      <MapExportLayout
+        map={mapImage}
+        countries={manyCountries(20)}
+        title="2026"
+        mode="flags"
+        format="feed"
+        colours={MAP_COLOURS.dark}
+      />
+    )
+
+    expect(screen.getByText('France')).toBeInTheDocument()
+    expect(screen.queryByText('2 days')).not.toBeInTheDocument()
+    expect(flagImages(container, 'FR')).toHaveLength(1)
+    expect(flagImages(container, 'NZ')).toHaveLength(1)
+  })
+
+  it('adds a legend for the days shading', () => {
+    render(
+      <MapExportLayout
+        map={mapImage}
+        countries={mapCountries}
+        title="2026"
+        mode="shade"
+        format="story"
+        colours={MAP_COLOURS.light}
+      />
+    )
+
+    expect(screen.getByText('1–3 days')).toBeInTheDocument()
+    expect(screen.getByText('15+')).toBeInTheDocument()
   })
 })

@@ -77,6 +77,7 @@ export const CONTINENT_BY_COUNTRY: Record<string, ContinentCode> = {
   DE: 'EU',
   GH: 'AF',
   GR: 'EU',
+  GL: 'NA',
   GD: 'NA',
   GT: 'NA',
   GN: 'AF',

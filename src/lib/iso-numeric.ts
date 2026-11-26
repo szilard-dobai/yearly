@@ -65,6 +65,7 @@ export const ISO_NUMERIC: Record<string, string> = {
   DE: '276',
   GH: '288',
   GR: '300',
+  GL: '304',
   GD: '308',
   GT: '320',
   GN: '324',

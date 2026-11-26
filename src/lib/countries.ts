@@ -72,6 +72,7 @@ export const COUNTRY_LIST: Country[] = [
   { code: 'DE', name: 'Germany' },
   { code: 'GH', name: 'Ghana' },
   { code: 'GR', name: 'Greece' },
+  { code: 'GL', name: 'Greenland' },
   { code: 'GD', name: 'Grenada' },
   { code: 'GT', name: 'Guatemala' },
   { code: 'GN', name: 'Guinea' },

@@ -204,4 +204,5 @@ One email to the video waitlist when videos launch, sent from the admin's Video 
 - **Metadata**: Export `metadata` object from layout.tsx for SEO
 - **Fonts**: Loaded and configured in root layout as CSS variables
 - **Card variants**: Use StandardCard, DarkCard, GradientCard from `ui/card-variants.tsx`
+- **Sitemap dates**: `PAGE_UPDATED` in `lib/page-updated.ts` is each public page's `lastmod` in the sitemap and the Last updated date on `/privacy` and `/terms`. Bump a page's date when its content changes, and never use `new Date()`, or Google stops trusting the sitemap's dates
 - **Emoji**: never type emoji characters into the interface, exports or video. Add the emoji to `EMOJI` in `scripts/build-emoji-images.mts`, run `npm run emoji:build` and use `<Emoji name="…" />`. Slack messages keep plain-text emoji

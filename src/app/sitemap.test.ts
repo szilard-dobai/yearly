@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HOMEPAGE_EXAMPLES } from '@/lib/homepage-examples'
+import { PAGE_UPDATED } from '@/lib/page-updated'
 
 async function loadSitemap(siteUrl: string) {
   vi.stubEnv('NEXT_PUBLIC_SITE_URL', siteUrl)
@@ -38,6 +39,27 @@ describe('sitemap', () => {
     expect(entries.map((entry) => entry.url)).toContain(
       'https://www.yearly.world/videos'
     )
+  })
+
+  it('gives every page a fixed date from PAGE_UPDATED, not the time of the request', async () => {
+    const entries = await loadSitemap('https://www.yearly.world')
+
+    expect(entries.map((entry) => entry.lastModified)).toEqual([
+      PAGE_UPDATED.home,
+      PAGE_UPDATED.create,
+      PAGE_UPDATED.videos,
+      PAGE_UPDATED.privacy,
+      PAGE_UPDATED.terms,
+    ])
+  })
+
+  it('never dates a page in the future', () => {
+    const today = new Date().toISOString().slice(0, 10)
+
+    Object.values(PAGE_UPDATED).forEach((day) => {
+      expect(day).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      expect(day <= today).toBe(true)
+    })
   })
 
   it('keeps image entries off the other pages', async () => {

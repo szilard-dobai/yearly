@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithSettings } from '@/test/test-utils'
 import DateCell from './DateCell'
-import type { CountryVisit } from '@/lib/types'
 
 function flagImages(container: HTMLElement) {
   return [...container.querySelectorAll<HTMLImageElement>('[data-day] img')]
@@ -18,9 +17,7 @@ function flagCodes(container: HTMLElement) {
 describe('DateCell', () => {
   describe('Empty date cell', () => {
     it('should render empty cell when date is null', () => {
-      const { container } = renderWithSettings(
-        <DateCell date={null} visits={[]} />
-      )
+      const { container } = renderWithSettings(<DateCell date={null} />)
 
       const cell = container.querySelector('[role="gridcell"]')
       expect(cell).toBeInTheDocument()
@@ -29,14 +26,14 @@ describe('DateCell', () => {
 
     it('should render date number when no visits', () => {
       const date = new Date(2025, 1, 15) // Feb 15, 2025
-      renderWithSettings(<DateCell date={date} visits={[]} />)
+      renderWithSettings(<DateCell date={date} />)
 
       expect(screen.getByText('15')).toBeInTheDocument()
     })
 
     it('should highlight today date in red', () => {
       const today = new Date()
-      renderWithSettings(<DateCell date={today} visits={[]} />)
+      renderWithSettings(<DateCell date={today} />)
 
       const dayNumber = screen.getByText(today.getDate().toString())
       expect(dayNumber).toHaveClass('text-red-500')
@@ -45,17 +42,9 @@ describe('DateCell', () => {
   })
 
   describe('Single country visit', () => {
-    const singleVisit: CountryVisit[] = [
-      {
-        id: 'visit-1',
-        countryCode: 'US',
-        date: new Date(2025, 1, 15),
-      },
-    ]
-
     it('shows the flag image in place of the day number', () => {
       const { container } = renderWithSettings(
-        <DateCell date={new Date(2025, 1, 15)} visits={singleVisit} />
+        <DateCell date={new Date(2025, 1, 15)} countries="US" />
       )
 
       expect(flagCodes(container)).toEqual(['us'])
@@ -64,7 +53,7 @@ describe('DateCell', () => {
 
     it('leaves the flag out of the accessible name, which the button already gives', () => {
       const { container } = renderWithSettings(
-        <DateCell date={new Date(2025, 1, 15)} visits={singleVisit} />
+        <DateCell date={new Date(2025, 1, 15)} countries="US" />
       )
 
       expect(flagImages(container)[0]).toHaveAttribute('alt', '')
@@ -77,7 +66,7 @@ describe('DateCell', () => {
 
     it('does not render a remove button that a tap could trigger by accident', () => {
       renderWithSettings(
-        <DateCell date={new Date(2025, 1, 15)} visits={singleVisit} />
+        <DateCell date={new Date(2025, 1, 15)} countries="US" />
       )
 
       expect(
@@ -88,7 +77,7 @@ describe('DateCell', () => {
 
   describe('Selection', () => {
     it('renders the day as a button keyed by its date', () => {
-      renderWithSettings(<DateCell date={new Date(2025, 1, 5)} visits={[]} />)
+      renderWithSettings(<DateCell date={new Date(2025, 1, 5)} />)
 
       const button = screen.getByRole('button', {
         name: 'February 5, no visits',
@@ -98,7 +87,7 @@ describe('DateCell', () => {
 
     it('is not marked as selected by default', () => {
       const { container } = renderWithSettings(
-        <DateCell date={new Date(2025, 1, 5)} visits={[]} />
+        <DateCell date={new Date(2025, 1, 5)} />
       )
 
       const cell = container.querySelector('[role="gridcell"]')
@@ -111,7 +100,6 @@ describe('DateCell', () => {
       const { container } = renderWithSettings(
         <DateCell
           date={new Date(2025, 1, 5)}
-          visits={[]}
           selected
           selectionEdge
           roundStart
@@ -128,7 +116,7 @@ describe('DateCell', () => {
 
     it('ignores rounding flags when the cell is not selected', () => {
       const { container } = renderWithSettings(
-        <DateCell date={new Date(2025, 1, 5)} visits={[]} roundStart roundEnd />
+        <DateCell date={new Date(2025, 1, 5)} roundStart roundEnd />
       )
 
       const cell = container.querySelector('[role="gridcell"]')
@@ -138,22 +126,9 @@ describe('DateCell', () => {
   })
 
   describe('Two countries on one day', () => {
-    const twoVisits: CountryVisit[] = [
-      {
-        id: 'visit-1',
-        countryCode: 'LV',
-        date: new Date(2025, 1, 2),
-      },
-      {
-        id: 'visit-2',
-        countryCode: 'VA',
-        date: new Date(2025, 1, 2),
-      },
-    ]
-
     it('splits the two flags diagonally, in the order they were added', () => {
       const { container } = renderWithSettings(
-        <DateCell date={new Date(2025, 1, 2)} visits={twoVisits} />
+        <DateCell date={new Date(2025, 1, 2)} countries="LV,VA" />
       )
 
       const [first, second] = flagImages(container)
@@ -166,7 +141,7 @@ describe('DateCell', () => {
 
     it('names both countries in the button label', () => {
       const { container } = renderWithSettings(
-        <DateCell date={new Date(2025, 1, 2)} visits={twoVisits} />
+        <DateCell date={new Date(2025, 1, 2)} countries="LV,VA" />
       )
 
       expect(container.querySelector('[data-day]')).toHaveAttribute(
@@ -177,34 +152,9 @@ describe('DateCell', () => {
   })
 
   describe('Edge cases', () => {
-    it('should handle visits for different dates gracefully', () => {
-      const date = new Date(2025, 1, 15)
-      const visits: CountryVisit[] = [
-        {
-          id: 'visit-1',
-          countryCode: 'US',
-          date: new Date(2025, 1, 10), // Different date
-        },
-      ]
-
-      renderWithSettings(<DateCell date={date} visits={visits} />)
-
-      // Should show date number since no visits match this date
-      expect(screen.getByText('15')).toBeInTheDocument()
-    })
-
     it('shows the code for a country without a flag image', () => {
-      const date = new Date(2025, 1, 15)
-      const visits: CountryVisit[] = [
-        {
-          id: 'visit-1',
-          countryCode: 'XX',
-          date: new Date(2025, 1, 15),
-        },
-      ]
-
       const { container } = renderWithSettings(
-        <DateCell date={date} visits={visits} />
+        <DateCell date={new Date(2025, 1, 15)} countries="XX" />
       )
 
       expect(container.querySelector('[data-day] img')).toBeNull()

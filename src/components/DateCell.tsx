@@ -1,16 +1,15 @@
 'use client'
 
 import { memo } from 'react'
-import { getVisitsForDate, isToday } from '../lib/calendar'
+import { isToday } from '../lib/calendar'
 import { getCountryByCode } from '../lib/countries'
 import { useSettings } from '@/lib/contexts/SettingsContext'
 import { toDayKey } from '@/lib/selection'
-import type { CountryVisit } from '../lib/types'
 import { DayFlags } from './Emoji'
 
 interface DateCellProps {
   date: Date | null
-  visits: CountryVisit[]
+  countries?: string
   selected?: boolean
   selectionEdge?: boolean
   roundStart?: boolean
@@ -20,7 +19,7 @@ interface DateCellProps {
 
 function DateCell({
   date,
-  visits,
+  countries,
   selected = false,
   selectionEdge = false,
   roundStart = false,
@@ -34,9 +33,9 @@ function DateCell({
     )
   }
 
-  const cellVisits = getVisitsForDate(date, visits)
+  const codes = countries ? countries.split(',') : []
   const dayNumber = date.getDate()
-  const hasVisits = cellVisits.length > 0
+  const hasVisits = codes.length > 0
 
   const dateLabel = date.toLocaleDateString('en-US', {
     month: 'long',
@@ -45,8 +44,8 @@ function DateCell({
 
   const showTodayHighlight = settings.highlightToday && isToday(date)
 
-  const allCountries = cellVisits
-    .map((v) => getCountryByCode(v.countryCode)?.name || v.countryCode)
+  const allCountries = codes
+    .map((code) => getCountryByCode(code)?.name || code)
     .join(', ')
 
   const label = hasVisits
@@ -71,10 +70,7 @@ function DateCell({
         className="relative flex flex-col items-center justify-center w-full h-full rounded-md cursor-pointer outline-none transition-colors hover:bg-black/5 dark:hover:bg-white/8 focus-visible:ring-2 focus-visible:ring-red-500/60 data-edge:ring-2 data-edge:ring-red-500 data-edge:bg-white dark:data-edge:bg-black"
       >
         {hasVisits ? (
-          <DayFlags
-            codes={cellVisits.map((visit) => visit.countryCode)}
-            className="text-lg sm:text-2xl"
-          />
+          <DayFlags codes={codes} className="text-lg sm:text-2xl" />
         ) : (
           <span
             className={`text-[10px] sm:text-sm font-medium ${showTodayHighlight ? 'text-red-500 font-bold' : 'text-gray-900 dark:text-white'}`}

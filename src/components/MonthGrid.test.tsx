@@ -9,13 +9,14 @@ import MonthGrid from './MonthGrid'
 vi.mock('./DateCell', () => ({
   default: ({
     date,
+    countries,
     selected,
     selectionEdge,
     roundStart,
     roundEnd,
   }: {
     date: Date | null
-    visits: CountryVisit[]
+    countries?: string
     selected?: boolean
     selectionEdge?: boolean
     roundStart?: boolean
@@ -24,6 +25,7 @@ vi.mock('./DateCell', () => ({
     <div
       data-testid={date ? `date-cell-${date.getDate()}` : 'date-cell-null'}
       data-date={date?.toISOString()}
+      data-countries={countries ?? ''}
       data-selected={String(Boolean(selected))}
       data-edge={String(Boolean(selectionEdge))}
       data-round-start={String(Boolean(roundStart))}
@@ -60,7 +62,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       expect(screen.getByText('Jan')).toBeInTheDocument()
@@ -86,7 +92,11 @@ describe('MonthGrid', () => {
         vi.mocked(calendar.getMonthData).mockReturnValue([])
 
         const { unmount } = renderWithSettings(
-          <MonthGrid year={2024} month={index} visits={[]} />
+          <MonthGrid
+            year={2024}
+            month={index}
+            countriesByDay={calendar.countriesByDay([])}
+          />
         )
 
         expect(screen.getByText(monthName)).toBeInTheDocument()
@@ -133,7 +143,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       const { container } = renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const weekRows = container.querySelectorAll('[role="row"]')
@@ -155,7 +169,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       expect(screen.getByTestId('date-cell-null')).toBeInTheDocument()
@@ -169,15 +187,26 @@ describe('MonthGrid', () => {
   })
 
   describe('prop passing', () => {
-    it('passes visits prop to DateCell components', () => {
-      const mockWeeks = [[new Date(2024, 0, 1)]]
+    it("passes each DateCell only its own day's countries", () => {
+      const mockWeeks = [[new Date(2024, 0, 15), new Date(2024, 0, 16)]]
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
-      expect(screen.getByTestId('date-cell-1')).toBeInTheDocument()
+      expect(screen.getByTestId('date-cell-15')).toHaveAttribute(
+        'data-countries',
+        'US'
+      )
+      expect(screen.getByTestId('date-cell-16')).toHaveAttribute(
+        'data-countries',
+        ''
+      )
     })
 
     it('marks days inside the selection and rounds the band ends', () => {
@@ -188,7 +217,7 @@ describe('MonthGrid', () => {
         <MonthGrid
           year={2024}
           month={0}
-          visits={mockVisits}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
           selectionStartKey="2024-01-02"
           selectionEndKey="2024-01-04"
         />
@@ -216,7 +245,7 @@ describe('MonthGrid', () => {
         <MonthGrid
           year={2024}
           month={0}
-          visits={mockVisits}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
           selectionStartKey="2023-12-20"
           selectionEndKey="2024-02-10"
         />
@@ -245,7 +274,7 @@ describe('MonthGrid', () => {
         <MonthGrid
           year={2024}
           month={2}
-          visits={mockVisits}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
           onSelectMonth={onSelectMonth}
         />
       )
@@ -260,7 +289,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
-        <MonthGrid year={2024} month={5} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={5}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 1)
@@ -272,7 +305,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       const { container } = renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const section = container.querySelector('section')
@@ -283,7 +320,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
-        <MonthGrid year={2024} month={3} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={3}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const heading = screen.getByText('Apr')
@@ -294,7 +335,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       const { container } = renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const grid = container.querySelector('[role="grid"]')
@@ -305,7 +350,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const grid = screen.getByRole('grid', { name: /jan 2024 calendar/i })
@@ -325,7 +374,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       const { container } = renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const rows = container.querySelectorAll('[role="row"]')
@@ -341,7 +394,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       const { container } = renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       // Week rows have grid-cols-7 class
@@ -356,7 +413,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       const { container } = renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const weekRow = container.querySelectorAll('.grid-cols-7')[0]
@@ -369,7 +430,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
-        <MonthGrid year={2024} month={5} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={5}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       // Default value is 1 (Monday)
@@ -380,7 +445,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
-        <MonthGrid year={2024} month={5} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={5}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       expect(calendar.getMonthData).toHaveBeenCalledWith(2024, 5, 1)
@@ -393,7 +462,13 @@ describe('MonthGrid', () => {
         [new Date(2024, 0, 1), null, null, null, null, null, null],
       ])
 
-      renderWithSettings(<MonthGrid year={2024} month={0} visits={[]} />)
+      renderWithSettings(
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay([])}
+        />
+      )
 
       expect(screen.getByText('Jan')).toBeInTheDocument()
     })
@@ -411,7 +486,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       const { container } = renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       const rows = container.querySelectorAll('[role="row"]')
@@ -422,7 +501,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue([])
 
       renderWithSettings(
-        <MonthGrid year={2025} month={11} visits={mockVisits} />
+        <MonthGrid
+          year={2025}
+          month={11}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       expect(screen.getByText('Dec')).toBeInTheDocument()
@@ -436,7 +519,11 @@ describe('MonthGrid', () => {
       vi.mocked(calendar.getMonthData).mockReturnValue(mockWeeks)
 
       renderWithSettings(
-        <MonthGrid year={2024} month={0} visits={mockVisits} />
+        <MonthGrid
+          year={2024}
+          month={0}
+          countriesByDay={calendar.countriesByDay(mockVisits)}
+        />
       )
 
       // Verify the component renders without crashing

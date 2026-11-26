@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   getDaysInYear,
   expandDateRange,
+  countriesByDay,
   getVisitsForDate,
   canAddVisitToDate,
   hasVisitForCountryOnDate,
@@ -84,6 +85,25 @@ describe('calendar utilities', () => {
       expect(dates).toHaveLength(4)
       expect(dates[0].getFullYear()).toBe(2023)
       expect(dates[3].getFullYear()).toBe(2024)
+    })
+  })
+
+  describe('countriesByDay', () => {
+    it("lists each day's countries in the order they were added, whatever the time", () => {
+      const days = countriesByDay([
+        { id: '1', countryCode: 'LV', date: new Date(2025, 1, 2, 9) },
+        { id: '2', countryCode: 'JP', date: new Date(2025, 1, 3) },
+        { id: '3', countryCode: 'VA', date: new Date(2025, 1, 2, 22) },
+      ])
+
+      expect([...days]).toEqual([
+        ['2025-02-02', 'LV,VA'],
+        ['2025-02-03', 'JP'],
+      ])
+    })
+
+    it('is empty without visits', () => {
+      expect(countriesByDay([]).size).toBe(0)
     })
   })
 

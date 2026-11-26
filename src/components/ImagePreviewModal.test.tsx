@@ -3,7 +3,14 @@ import type { ExportType } from '@/lib/feedback/types'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
 import { VIDEO_PACK_PRICE } from '@/lib/video-offer'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ImagePreviewModal from './ImagePreviewModal'
@@ -120,6 +127,25 @@ describe('ImagePreviewModal video offer', () => {
     })
   })
 
+  it('shows Done for a moment after the download, then the button again', async () => {
+    vi.useFakeTimers()
+    try {
+      renderModal('calendar')
+      fireEvent.click(screen.getByRole('button', { name: /Download Image/ }))
+      await act(async () => {})
+
+      expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument()
+
+      act(() => vi.advanceTimersByTime(2500))
+
+      expect(
+        screen.getByRole('button', { name: /Download Image/ })
+      ).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('shares the image with a tagged link on mobile', async () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.yearly.world')
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
@@ -143,6 +169,9 @@ describe('ImagePreviewModal video offer', () => {
       expect(share.mock.calls[0][0]).toMatchObject({
         text: 'Made with Yearly: https://www.yearly.world/?utm_source=share',
       })
+      expect(
+        await screen.findByRole('button', { name: 'Done' })
+      ).toBeInTheDocument()
     } finally {
       vi.unstubAllEnvs()
       vi.restoreAllMocks()
@@ -183,6 +212,9 @@ describe('ImagePreviewModal video offer', () => {
       await new Promise((resolve) => setTimeout(resolve, 0))
       expect(click).toHaveBeenCalledTimes(downloads)
       expect(unhandled).not.toHaveBeenCalled()
+      expect(screen.queryAllByRole('button', { name: 'Done' })).toHaveLength(
+        downloads
+      )
     } finally {
       process.off('unhandledRejection', unhandled)
       vi.restoreAllMocks()

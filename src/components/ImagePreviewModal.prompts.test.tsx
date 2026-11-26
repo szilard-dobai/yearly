@@ -84,7 +84,7 @@ describe('ImagePreviewModal post-download prompts', () => {
     renderModal()
     const user = await download()
     await user.click(screen.getByRole('button', { name: 'Dismiss question' }))
-    await user.click(screen.getByRole('button', { name: /Download Image/ }))
+    await user.click(screen.getByRole('button', { name: 'Done' }))
 
     expect(screen.queryByText(SURVEY)).not.toBeInTheDocument()
     expect(screen.queryByText(FEEDBACK)).not.toBeInTheDocument()

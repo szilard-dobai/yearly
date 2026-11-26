@@ -30,11 +30,18 @@ import { trackEvent } from '@/lib/tracking'
 import { summarizeCalendar } from '@/lib/tracking/trip-summary'
 import type { CalendarData } from '@/lib/types'
 import { VIDEO_PACK_PRICE } from '@/lib/video-offer'
-import { ChevronRight, Download, Loader2, Play, Sparkles } from 'lucide-react'
+import {
+  Check,
+  ChevronRight,
+  Download,
+  Loader2,
+  Play,
+  Sparkles,
+} from 'lucide-react'
 import { motion } from 'motion/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from './ui/button'
 import YearEndReminderCard from './YearEndReminderCard'
@@ -75,6 +82,8 @@ type PostDownloadPrompt =
   | 'feedback'
   | 'feedback_after_survey'
   | 'closed'
+
+const DONE_MS = 2500
 
 const FORMAT_HINTS: Record<ExportFormat, string> = {
   story: 'Stories & TikTok',
@@ -160,6 +169,13 @@ function ImagePreviewContent({
   const [prompt, setPrompt] = useState<PostDownloadPrompt | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
   const [videoMounted, setVideoMounted] = useState(false)
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    if (!done) return
+    const timer = setTimeout(() => setDone(false), DONE_MS)
+    return () => clearTimeout(timer)
+  }, [done])
 
   const isMonthly = exportType === 'monthly'
   const showVideoOffer = calendarData.visits.some(
@@ -240,13 +256,18 @@ function ImagePreviewContent({
             process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
           ),
         })
+        setDone(true)
       } catch (error) {
         const cancelled =
           error instanceof DOMException && error.name === 'AbortError'
-        if (!cancelled) saveImage()
+        if (!cancelled) {
+          saveImage()
+          setDone(true)
+        }
       }
     } else {
       saveImage()
+      setDone(true)
     }
 
     maybeShowPrompt()
@@ -331,9 +352,21 @@ function ImagePreviewContent({
             onClick={handleDownload}
             disabled={isRendering}
           >
-            <Download className="w-5 h-5" />
-            Download Image
+            {done ? (
+              <>
+                <Check className="w-5 h-5" />
+                Done
+              </>
+            ) : (
+              <>
+                <Download className="w-5 h-5" />
+                Download Image
+              </>
+            )}
           </Button>
+          <p className="sr-only" aria-live="polite">
+            {done ? 'Done' : ''}
+          </p>
 
           {prompt === 'survey' && (
             <div className="mb-4">

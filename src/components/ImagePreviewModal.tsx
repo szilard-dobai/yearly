@@ -248,21 +248,14 @@ function ImagePreviewContent({
       const blob = await fetch(imageDataUrl).then((r) => r.blob())
       const file = new File([blob], filename, { type: blob.type })
 
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-
       try {
-        await navigator.share(
-          // iOS shares the text as a second item, so Save to Files would save two files
-          isIOS
-            ? { files: [file] }
-            : {
-                files: [file],
-                title: 'My trips this year',
-                text: buildShareText(
-                  process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-                ),
-              }
-        )
+        await navigator.share({
+          files: [file],
+          title: 'My trips this year',
+          text: buildShareText(
+            process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+          ),
+        })
         setDone(true)
       } catch (error) {
         const cancelled =

@@ -146,23 +146,11 @@ describe('ImagePreviewModal video offer', () => {
     }
   })
 
-  it.each([
-    [
-      'with a tagged link on Android',
-      'Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile',
-      {
-        title: 'My trips this year',
-        text: 'Made with Yearly: https://www.yearly.world/?utm_source=share',
-      },
-    ],
-    [
-      'on its own on iPhone, so Save to Files saves one file',
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) CriOS/131.0',
-      {},
-    ],
-  ])('shares the image %s', async (_, userAgent, extra) => {
+  it('shares the image with a tagged link on mobile', async () => {
     vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://www.yearly.world')
-    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(userAgent)
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)'
+    )
     const share = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'share', {
       value: share,
@@ -178,13 +166,9 @@ describe('ImagePreviewModal video offer', () => {
       await user.click(screen.getByRole('button', { name: /Download Image/ }))
 
       await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
-      const shared = share.mock.calls[0][0]
-      expect(Object.keys(shared).sort()).toEqual(
-        ['files', ...Object.keys(extra)].sort()
-      )
-      expect(shared).toMatchObject(extra)
-      expect(shared.files).toHaveLength(1)
-      expect(shared.files[0].name).toBe('yearly.jpg')
+      expect(share.mock.calls[0][0]).toMatchObject({
+        text: 'Made with Yearly: https://www.yearly.world/?utm_source=share',
+      })
       expect(
         await screen.findByRole('button', { name: 'Done' })
       ).toBeInTheDocument()

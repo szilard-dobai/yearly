@@ -30,13 +30,14 @@ export default function MapExportButton({
     filename,
     format,
     changeFormat,
+    countryCount,
   } = useMapExport({ ...view, source })
 
   return (
     <>
       <Button
         onClick={exportMap}
-        disabled={status === 'loading' || view.countries.length === 0}
+        disabled={status === 'loading' || countryCount === 0}
         className="w-full"
         variant={status === 'error' ? 'destructive' : variant}
         size="lg"

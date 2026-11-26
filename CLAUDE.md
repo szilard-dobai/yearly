@@ -63,7 +63,7 @@ src/
 │   ├── TripCountdown.tsx     - Countdown to the next trip, "Have fun in…" while one is on
 │   ├── TravelNudgeCard.tsx   - Compares the last two months and nudges towards planning a trip
 │   ├── YearCompareDialog.tsx - "vs <last year>" button in the Statistics card and the year-on-year comparison dialog; shown only when both years have trips
-│   ├── map/                  - World map for signed-in people: `WorldMapPanel` (year or all time, flags or shaded by days, continent chips that zoom, numbers) in `WorldMapCard` under the calendar on /create and in `AccountMap` on /account (all time, no download); the map export layout and button; `MapTeaser` for signed-out visitors, which counts their countries and links to sign-in
+│   ├── map/                  - World map for signed-in people: `WorldMapPanel` (year or all time, flags or shaded by days, numbers, continent chips that zoom and switch the numbers and the exported flags to that continent: its countries out of how many it has, days and trips) in `WorldMapCard` under the calendar on /create and in `AccountMap` on /account (all time, no download); the map export layout and button; `MapTeaser` for signed-out visitors, which counts their countries and links to sign-in
 │   ├── badges/               - Badges card, badge medal, the shared grid and details (`BadgeCollection`, also on `/account`) and the unlock pop-up shown when an edit earns a badge, all for signed-in people; signed-out visitors get `BadgesTeaser`, which counts their badges and links to sign-in. Badges are never stored: they're worked out in the browser from the calendar each time
 │   ├── YearExportLayout.tsx  - Full-year export layout (Story 1080×1920 or Feed 1080×1440)
 │   ├── MonthlyExportLayout.tsx - Monthly export layout (Story 1080×1920 or Feed 1080×1440)
@@ -95,8 +95,8 @@ src/
 │   ├── year-summary.ts       - One year's days, countries, trips, months, first-time countries and the comparison headline ("is already" while the year isn't over)
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
-│   ├── world-map.ts          - Countries and days per year or all time, continents, share of the world, zoom box, dots for tiny countries, map colours; `loadWorld` lazy-loads the outlines
-│   ├── world-map-projection.ts - Projects the world-atlas outlines (no Antarctica, Crimea moved from Russia's outline into Ukraine's, Kosovo by name, Tuvalu as a point); loaded with the outlines
+│   ├── world-map.ts          - Countries and days per year or all time, the numbers for the world or one continent (`summariseMap`), zoom box, the export's taller frame (`cropWorld`), dots for tiny countries, flags made only of stripes that stretch to fill their country (`STRIPED_FLAGS`; others keep their shape and are cropped), map colours; `loadWorld` lazy-loads the outlines
+│   ├── world-map-projection.ts - Projects the world-atlas outlines (no Antarctica, Crimea moved from Russia's outline into Ukraine's, Kosovo by name, Tuvalu as a point); each country's flag box and zoom use its largest piece as drawn, so countries cut by the 180° line (Russia, Fiji, Kiribati) don't stretch across the map; loaded with the outlines
 │   ├── world-map-image.ts    - Draws the map with flat flag fills onto a canvas for the map export
 │   ├── iso-numeric.ts        - ISO 3166 numeric code of each country, to match the world-atlas outlines
 │   ├── emoji.ts              - Flag and emoji image paths, sizes and medal names
@@ -145,7 +145,7 @@ All four exports (calendar, monthly, statistics, map) come in two fixed canvas s
 3. Turn it into an SVG with `html-to-image` (`toSvg`, `skipFonts: true` avoids CORS errors with Google Fonts), draw that to a canvas, then draw the flag and emoji images on top at their measured positions and clip paths, and save as JPEG. WebKit leaves images inside such an SVG blank on the first draw, so the images are hidden in the SVG and drawn separately
 4. Present in ImagePreviewModal, where the Story/Feed picker re-renders the image in the other format
 
-A layout function may be async and gets the export's `theme`. The map export uses that to draw the map itself onto a canvas first (`lib/world-map-image.ts`, flat flags clipped to each country) and places it in the layout as a plain `<img>`, so the step above draws it straight onto the JPEG; flags as SVG pattern fills would come out blank in WebKit. The flags under the map are the usual waved `Flag` images.
+A layout function may be async and gets the export's `theme`. The map export uses that to draw the map itself onto a canvas first (`lib/world-map-image.ts`, flat flags clipped to each country) and places it in the layout as a plain `<img>`, so the step above draws it straight onto the JPEG; flags as SVG pattern fills would come out blank in WebKit. The flags under the map are the usual waved `Flag` images. The export map runs edge to edge and gets a taller frame than the screen map (`maxMapHeight` per format in `MAP_SPEC`): a continent zoom fits that frame, and the world view keeps its full height but trims the sides to the countries visited, so the map takes the space and the flags shrink to fit under it.
 
 Every layout sits in `ExportFrame`, which owns the outer padding, the title and divider, and the watermark at a fixed canvas pixel size. All sizes and the fill-the-canvas maths live in `lib/export-canvas.ts`; layouts take explicit pixel sizes from there, never responsive Tailwind sizes, so exports look the same from any screen width.
 

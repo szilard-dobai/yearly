@@ -2,6 +2,7 @@ import { getFlatFlagImageSrc } from './emoji'
 import {
   getMapScene,
   shadeIndex,
+  STRIPED_FLAGS,
   type CountryDays,
   type MapColours,
   type MapMode,
@@ -19,6 +20,7 @@ interface MapImageOptions {
   countries: CountryDays[]
   mode: MapMode
   focusCodes: string[] | null
+  frameAspect?: number
   colours: MapColours
   stroke: string
   width: number
@@ -66,7 +68,8 @@ function coverRect(image: HTMLImageElement, width: number, height: number) {
 function flagTile(
   image: HTMLImageElement,
   bounds: MapShape['bounds'],
-  pixelsPerUnit: number
+  pixelsPerUnit: number,
+  stretch: boolean
 ) {
   const [[x0, y0], [x1, y1]] = bounds
   const units = {
@@ -82,7 +85,9 @@ function flagTile(
   tile.height = Math.max(1, Math.round(units.height * pixelsPerUnit * fit))
   const context = tile.getContext('2d')!
   context.imageSmoothingQuality = 'high'
-  const rect = coverRect(image, tile.width, tile.height)
+  const rect = stretch
+    ? { x: 0, y: 0, width: tile.width, height: tile.height }
+    : coverRect(image, tile.width, tile.height)
   context.drawImage(image, rect.x, rect.y, rect.width, rect.height)
   return {
     tile,
@@ -102,12 +107,13 @@ export async function renderMapImage({
   countries,
   mode,
   focusCodes,
+  frameAspect,
   colours,
   stroke,
   width,
   pixelRatio,
 }: MapImageOptions): Promise<MapImage> {
-  const scene = getMapScene(world, countries, focusCodes)
+  const scene = getMapScene(world, countries, focusCodes, frameAspect)
   const { view } = scene
   const height = Math.round((width * view.height) / view.width)
   const flags =
@@ -130,7 +136,12 @@ export async function renderMapImage({
       const bounds = scene.tileByCode.get(code)
       let pattern: CanvasPattern | null = null
       if (image && bounds) {
-        const { tile, transform } = flagTile(image, bounds, pixelsPerUnit)
+        const { tile, transform } = flagTile(
+          image,
+          bounds,
+          pixelsPerUnit,
+          STRIPED_FLAGS.has(code)
+        )
         tiles.push(tile)
         pattern = context.createPattern(tile, 'repeat')
         pattern?.setTransform(transform)

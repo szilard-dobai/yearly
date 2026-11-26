@@ -11,12 +11,10 @@ import { cn } from '@/lib/utils'
 import {
   codesInContinent,
   CONTINENT_ORDER,
-  continentsOf,
-  countriesInScope,
   loadWorld,
   MAP_COLOURS,
   SHADE_STEPS,
-  shareOfWorld,
+  summariseMap,
   type MapMode,
   type World,
 } from '@/lib/world-map'
@@ -101,19 +99,18 @@ export default function WorldMapPanel({
   const [focus, setFocus] = useState<ContinentCode | null>(null)
 
   const scopeYear = year !== null && scope === 'year' ? year : null
-  const countries = useMemo(
-    () => countriesInScope(dayMap, scopeYear),
-    [dayMap, scopeYear]
-  )
-  const continents = useMemo(() => continentsOf(countries), [countries])
-  const activeFocus = focus && continents.has(focus) ? focus : null
-  const focusCodes = useMemo(
-    () => (activeFocus ? codesInContinent(countries, activeFocus) : null),
-    [countries, activeFocus]
+  const {
+    countries,
+    continent: activeFocus,
+    focusCodes,
+    stats,
+  } = useMemo(
+    () => summariseMap(dayMap, scopeYear, focus),
+    [dayMap, scopeYear, focus]
   )
   const view = useMemo(
-    () => ({ countries, year: scopeYear, mode, focusCodes }),
-    [countries, scopeYear, mode, focusCodes]
+    () => ({ dayMap, year: scopeYear, mode, continent: activeFocus }),
+    [dayMap, scopeYear, mode, activeFocus]
   )
 
   const track = (change: 'scope' | 'mode' | 'zoom', value: string) =>
@@ -193,14 +190,7 @@ export default function WorldMapPanel({
       )}
 
       <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: 'Countries', value: String(countries.length) },
-          {
-            label: 'Of the world',
-            value: `${shareOfWorld(countries.length)}%`,
-          },
-          { label: 'Continents', value: `${continents.size}/7` },
-        ].map((stat) => (
+        {stats.map((stat) => (
           <div
             key={stat.label}
             className="rounded-lg border border-gray-200 bg-linear-to-br from-gray-50 to-stone-50 p-3 dark:border-white/10 dark:from-gray-950 dark:to-stone-950"
@@ -210,6 +200,11 @@ export default function WorldMapPanel({
             </div>
             <div className="mt-1 text-2xl font-semibold text-gray-900 tabular-nums sm:text-3xl dark:text-white">
               {stat.value}
+              {stat.unit && (
+                <span className="ml-1 text-sm font-normal text-gray-500 sm:text-base dark:text-zinc-400">
+                  {stat.unit}
+                </span>
+              )}
             </div>
           </div>
         ))}

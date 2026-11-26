@@ -1,7 +1,7 @@
 import { trackEvent } from '@/lib/tracking'
 import type { CountryVisit } from '@/lib/types'
 import { FLAT_FLAG_FILES } from '@/lib/emoji-images'
-import { loadWorld } from '@/lib/world-map'
+import { countriesOnContinent, loadWorld } from '@/lib/world-map'
 import {
   fireEvent,
   renderWithSettings,
@@ -108,7 +108,7 @@ describe('WorldMapCard', () => {
 
     expect(map).toHaveAccessibleName('World map with 4 countries filled in')
     expect(statValue('Countries')).toBe('4')
-    expect(statValue('Continents')).toBe('2/7')
+    expect(statValue('Continents')).toBe('2of 7')
 
     await userEvent.click(screen.getByRole('radio', { name: 'All time' }))
 
@@ -132,6 +132,12 @@ describe('WorldMapCard', () => {
     expect(flagSources).toContain(
       `/emoji/flags/flat/${FLAT_FLAG_FILES.FR}.webp`
     )
+    const fit = (code: string) =>
+      container
+        .querySelector(`pattern image[href*="/${code.toLowerCase()}."]`)
+        ?.getAttribute('preserveAspectRatio')
+    expect(fit('FR')).toBe('none')
+    expect(fit('JP')).toBe('xMidYMid slice')
     expect(container.querySelector('circle')).not.toBeNull()
 
     await userEvent.click(screen.getByRole('radio', { name: 'By days' }))
@@ -155,6 +161,10 @@ describe('WorldMapCard', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Europe 2' }))
 
     expect(svg.getAttribute('viewBox')).not.toBe(worldBox)
+    expect(statValue('Countries')).toBe(`2of ${countriesOnContinent('EU')}`)
+    expect(statValue('Days')).toBe('3')
+    expect(statValue('Trips')).toBe('1')
+    expect(screen.queryByText('Of the world')).not.toBeInTheDocument()
     expect(trackEvent).toHaveBeenCalledWith('map_view_change', {
       change: 'zoom',
       value: 'EU',
@@ -164,6 +174,7 @@ describe('WorldMapCard', () => {
     await userEvent.click(screen.getByRole('button', { name: 'World' }))
 
     expect(svg.getAttribute('viewBox')).toBe(worldBox)
+    expect(statValue('Countries')).toBe('4')
   })
 
   it('names a country and its days when tapped', async () => {

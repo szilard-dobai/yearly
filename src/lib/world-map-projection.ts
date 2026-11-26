@@ -1,4 +1,4 @@
-import { geoEqualEarth, geoPath } from 'd3-geo'
+import { geoEqualEarth, geoPath, type GeoProjection } from 'd3-geo'
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { feature, merge } from 'topojson-client'
 import type {
@@ -96,6 +96,40 @@ export function countryFeatures(topology: unknown): CountryFeature[] {
   ]
 }
 
+type Point = [number, number]
+
+function largestPiece(projection: GeoProjection, f: CountryFeature) {
+  const rings: Point[][] = []
+  geoPath(projection, {
+    beginPath: () => {},
+    moveTo: (x, y) => void rings.push([[x, y]]),
+    lineTo: (x, y) => void rings.at(-1)?.push([x, y]),
+    closePath: () => {},
+    arc: () => {},
+  })(f)
+
+  let largest = { area: 0, ring: rings[0] ?? [] }
+  for (const ring of rings) {
+    let twiceArea = 0
+    for (let i = 0; i < ring.length; i++) {
+      const [x0, y0] = ring[i]
+      const [x1, y1] = ring[(i + 1) % ring.length]
+      twiceArea += x0 * y1 - x1 * y0
+    }
+    const area = Math.abs(twiceArea) / 2
+    if (area > largest.area) largest = { area, ring }
+  }
+  const xs = largest.ring.map(([x]) => x)
+  const ys = largest.ring.map(([, y]) => y)
+  return {
+    area: largest.area,
+    bounds: [
+      [Math.min(...xs), Math.min(...ys)],
+      [Math.max(...xs), Math.max(...ys)],
+    ] as [Point, Point],
+  }
+}
+
 export function projectWorld(topology: unknown): World {
   const features = countryFeatures(topology)
   const land = { type: 'FeatureCollection' as const, features }
@@ -104,25 +138,23 @@ export function projectWorld(topology: unknown): World {
   const [[, y0], [, y1]] = path.bounds(land)
 
   const shapes = features.map((f: CountryFeature): MapShape => {
-    let bounds = path.bounds(f)
-    if (f.geometry.type === 'MultiPolygon') {
-      let largest = 0
-      for (const coordinates of f.geometry.coordinates) {
-        const polygon: Polygon = { type: 'Polygon', coordinates }
-        const area = path.area(polygon)
-        if (area > largest) {
-          largest = area
-          bounds = path.bounds(polygon)
-        }
-      }
-    }
+    const piece = largestPiece(projection, f)
+    const [[x0], [x1]] = path.bounds(f)
+    const wrapsAround =
+      x1 - x0 > MAP_WIDTH / 2 &&
+      piece.bounds[1][0] - piece.bounds[0][0] < MAP_WIDTH / 2
     return {
       code: shapeCode(f),
       name: f.properties.name,
       d: path(f) ?? '',
       area: path.area(f),
-      centroid: path.centroid(f),
-      bounds,
+      centroid: wrapsAround
+        ? [
+            (piece.bounds[0][0] + piece.bounds[1][0]) / 2,
+            (piece.bounds[0][1] + piece.bounds[1][1]) / 2,
+          ]
+        : path.centroid(f),
+      bounds: piece.bounds,
     }
   })
 

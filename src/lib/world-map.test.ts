@@ -10,10 +10,13 @@ import {
   codesInContinent,
   continentsOf,
   countriesInScope,
+  countriesOnContinent,
+  cropWorld,
   fitView,
   getMapScene,
   shadeIndex,
   shareOfWorld,
+  summariseMap,
   type MapShape,
 } from './world-map'
 
@@ -79,6 +82,16 @@ describe('projectWorld', () => {
     expect(world.view.width).toBe(960)
     expect(world.view.height).toBeGreaterThan(400)
     expect(world.view.height).toBeLessThan(460)
+  })
+
+  it('measures a country cut by the 180° line by its main piece', () => {
+    const russia = shapeOf('RU')
+
+    expect(russia.bounds[0][0]).toBeGreaterThan(world.view.width / 2)
+    for (const code of ['FJ', 'KI']) {
+      const { centroid, bounds } = shapeOf(code)
+      expect(within([centroid, centroid], bounds)).toBe(true)
+    }
   })
 
   it('places a flag on the mainland of a country with far-off islands', () => {
@@ -172,8 +185,91 @@ describe('fitView', () => {
     }
   })
 
+  it('zooms in on Asia even with Russia in it', () => {
+    const view = fitView(world, ['RU', 'CN', 'TR'].map(shapeOf))!
+
+    expect(view.width).toBeLessThan(world.view.width * 0.75)
+  })
+
+  it('fits a taller frame when given one', () => {
+    const view = fitView(world, ['ES', 'FR', 'IT'].map(shapeOf), 1.5)!
+
+    expect(view.width / view.height).toBeCloseTo(1.5)
+  })
+
   it('shows the whole world when the countries span it', () => {
-    expect(fitView(world, ['US', 'AU', 'RU'].map(shapeOf))).toBeNull()
+    expect(fitView(world, ['US', 'AU', 'FJ'].map(shapeOf))).toBeNull()
+  })
+})
+
+describe('cropWorld', () => {
+  it('keeps the whole height and trims the sides around the countries', () => {
+    const view = cropWorld(world, ['FR', 'JP'].map(shapeOf), 1.5)
+
+    expect(view.y).toBe(world.view.y)
+    expect(view.height).toBe(world.view.height)
+    expect(view.width).toBeCloseTo(world.view.height * 1.5)
+    for (const code of ['FR', 'JP']) {
+      expect(
+        within(shapeOf(code).bounds, [
+          [view.x, view.y],
+          [view.x + view.width, view.y + view.height],
+        ])
+      ).toBe(true)
+    }
+  })
+
+  it('keeps the whole width when the countries span it', () => {
+    expect(cropWorld(world, ['KI', 'FJ'].map(shapeOf), 1.5)).toEqual(world.view)
+  })
+})
+
+describe('summariseMap', () => {
+  const dayMap = new Map([
+    ['2025-08-10', ['GR']],
+    ['2026-06-20', ['FR']],
+    ['2026-06-21', ['FR', 'IT']],
+    ['2026-06-22', ['IT']],
+    ['2026-07-01', ['JP']],
+    ['2026-09-01', ['ES']],
+  ])
+
+  it('counts the countries, share of the world and continents', () => {
+    const summary = summariseMap(dayMap, null, null)
+
+    expect(summary.continent).toBeNull()
+    expect(summary.focusCodes).toBeNull()
+    expect(summary.listed).toEqual(summary.countries)
+    expect(summary.stats).toEqual([
+      { label: 'Countries', value: '5' },
+      { label: 'Of the world', value: `${shareOfWorld(5)}%` },
+      { label: 'Continents', value: '2', unit: 'of 7' },
+    ])
+  })
+
+  it("lists one continent's countries with its own days and trips", () => {
+    const summary = summariseMap(dayMap, 2026, 'EU')
+
+    expect(summary.continent).toBe('EU')
+    expect(summary.countries).toHaveLength(4)
+    expect(summary.listed.map((c) => c.code)).toEqual(['FR', 'IT', 'ES'])
+    expect(summary.focusCodes).toEqual(['FR', 'IT', 'ES'])
+    expect(summary.stats).toEqual([
+      {
+        label: 'Countries',
+        value: '3',
+        unit: `of ${countriesOnContinent('EU')}`,
+      },
+      { label: 'Days', value: '4' },
+      { label: 'Trips', value: '2' },
+    ])
+  })
+
+  it('falls back to the world when the continent has no trips', () => {
+    const summary = summariseMap(dayMap, 2026, 'AF')
+
+    expect(summary.continent).toBeNull()
+    expect(summary.listed).toHaveLength(4)
   })
 })
 
@@ -199,5 +295,14 @@ describe('getMapScene', () => {
     expect(europe.view.width).toBeLessThan(world.view.width)
     expect(europe.dotRadius).toBeLessThan(world_.dotRadius)
     expect(europe.dots.map((dot) => dot.code)).not.toContain('FR')
+  })
+
+  it('frames the map taller for an export', () => {
+    const scene = getMapScene(world, countries, null, 1.5)
+    const europe = getMapScene(world, countries, ['FR', 'MT'], 1.5)
+
+    expect(scene.view.height).toBe(world.view.height)
+    expect(scene.view.width).toBeLessThan(world.view.width)
+    expect(europe.view.width / europe.view.height).toBeCloseTo(1.5)
   })
 })

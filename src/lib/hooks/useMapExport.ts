@@ -1,14 +1,20 @@
-import { createElement, useCallback } from 'react'
+import { createElement, useCallback, useMemo } from 'react'
 import MapExportLayout from '@/components/map/MapExportLayout'
 import { EXPORT_BACKGROUND } from '@/lib/constants'
-import { EXPORT_PIXEL_RATIO, getExportContentBox } from '@/lib/export-canvas'
+import { CONTINENT_NAMES, type ContinentCode } from '@/lib/continents'
+import {
+  EXPORT_CANVAS,
+  EXPORT_PIXEL_RATIO,
+  getMapFrameAspect,
+} from '@/lib/export-canvas'
 import { trackEvent } from '@/lib/tracking'
 import type { MapExportSource } from '@/lib/tracking/types'
+import type { DayMap } from '@/lib/trips'
 import { renderMapImage } from '@/lib/world-map-image'
 import {
   loadWorld,
   MAP_COLOURS,
-  type CountryDays,
+  summariseMap,
   type MapMode,
 } from '@/lib/world-map'
 import {
@@ -18,10 +24,10 @@ import {
 } from './useExportImage'
 
 export interface MapExportView {
-  countries: CountryDays[]
+  dayMap: DayMap
   year: number | null
   mode: MapMode
-  focusCodes: string[] | null
+  continent: ContinentCode | null
 }
 
 interface UseMapExportOptions extends MapExportView {
@@ -31,38 +37,52 @@ interface UseMapExportOptions extends MapExportView {
 interface UseMapExportReturn extends Omit<UseExportImageReturn, 'start'> {
   exportMap: () => Promise<void>
   filename: string
+  countryCount: number
+}
+
+function mapTitle(year: number | null, continent: ContinentCode | null) {
+  if (!continent) return year === null ? 'All time' : String(year)
+  return year === null
+    ? CONTINENT_NAMES[continent]
+    : `${CONTINENT_NAMES[continent]} ${year}`
 }
 
 export function useMapExport({
-  countries,
+  dayMap,
   year,
   mode,
-  focusCodes,
+  continent,
   source,
 }: UseMapExportOptions): UseMapExportReturn {
+  const summary = useMemo(
+    () => summariseMap(dayMap, year, continent),
+    [dayMap, year, continent]
+  )
   const layout = useCallback(
     async ({ format, theme }: ExportLayoutOptions) => {
       const colours = MAP_COLOURS[theme]
       const map = await renderMapImage({
         world: await loadWorld(),
-        countries,
+        countries: summary.countries,
         mode,
-        focusCodes,
+        focusCodes: summary.focusCodes,
+        frameAspect: getMapFrameAspect(format),
         colours,
         stroke: EXPORT_BACKGROUND[theme],
-        width: getExportContentBox(format).width,
+        width: EXPORT_CANVAS[format].width,
         pixelRatio: EXPORT_PIXEL_RATIO,
       })
       return createElement(MapExportLayout, {
         map,
-        countries,
-        title: year === null ? 'All time' : String(year),
+        countries: summary.listed,
+        stats: summary.stats,
+        title: mapTitle(year, summary.continent),
         mode,
         format,
         colours,
       })
     },
-    [countries, year, mode, focusCodes]
+    [summary, year, mode]
   )
   const { start, ...exportState } = useExportImage({ layout, label: 'Map' })
 
@@ -73,18 +93,22 @@ export function useMapExport({
           scope: year === null ? 'all' : 'year',
           year,
           mode,
-          zoomed: focusCodes !== null,
-          countryCount: countries.length,
+          continent: summary.continent,
+          countryCount: summary.listed.length,
           format,
           source,
         })
       ),
-    [start, year, mode, focusCodes, countries.length, source]
+    [start, year, mode, summary, source]
   )
 
+  const slug = summary.continent
+    ? `${CONTINENT_NAMES[summary.continent].toLowerCase().replace(/ /g, '-')}-`
+    : ''
   return {
     ...exportState,
     exportMap,
-    filename: `my-map-${year ?? 'all-time'}.jpg`,
+    filename: `my-map-${slug}${year ?? 'all-time'}.jpg`,
+    countryCount: summary.listed.length,
   }
 }

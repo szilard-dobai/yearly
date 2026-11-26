@@ -1,6 +1,6 @@
 import { CONTINENT_BY_COUNTRY, type ContinentCode } from './continents'
 import { COUNTRIES } from './countries'
-import type { DayMap } from './trips'
+import { groupTrips, type DayMap } from './trips'
 
 export const MAP_WIDTH = 960
 
@@ -98,10 +98,77 @@ export function shareOfWorld(countryCount: number) {
   return Math.round((countryCount / COUNTRIES.length) * 100)
 }
 
-export function fitView(world: World, shapes: MapShape[]): MapView | null {
-  if (shapes.length === 0) return null
-  const full = world.view
-  const aspect = full.width / full.height
+export function countriesOnContinent(continent: ContinentCode) {
+  return COUNTRIES.filter((c) => CONTINENT_BY_COUNTRY[c.code] === continent)
+    .length
+}
+
+export interface MapStat {
+  label: string
+  value: string
+  unit?: string
+}
+
+export interface MapSummary {
+  countries: CountryDays[]
+  continent: ContinentCode | null
+  listed: CountryDays[]
+  focusCodes: string[] | null
+  stats: MapStat[]
+}
+
+export function summariseMap(
+  dayMap: DayMap,
+  year: number | null,
+  continent: ContinentCode | null
+): MapSummary {
+  const countries = countriesInScope(dayMap, year)
+  const listed = continent
+    ? countries.filter((c) => CONTINENT_BY_COUNTRY[c.code] === continent)
+    : []
+  if (!continent || listed.length === 0) {
+    return {
+      countries,
+      continent: null,
+      listed: countries,
+      focusCodes: null,
+      stats: [
+        { label: 'Countries', value: String(countries.length) },
+        { label: 'Of the world', value: `${shareOfWorld(countries.length)}%` },
+        {
+          label: 'Continents',
+          value: String(continentsOf(countries).size),
+          unit: 'of 7',
+        },
+      ],
+    }
+  }
+
+  const days = new Map(
+    [...dayMap].filter(
+      ([key, codes]) =>
+        (year === null || key.startsWith(`${year}-`)) &&
+        codes.some((code) => CONTINENT_BY_COUNTRY[code] === continent)
+    )
+  )
+  return {
+    countries,
+    continent,
+    listed,
+    focusCodes: listed.map((c) => c.code),
+    stats: [
+      {
+        label: 'Countries',
+        value: String(listed.length),
+        unit: `of ${countriesOnContinent(continent)}`,
+      },
+      { label: 'Days', value: String(days.size) },
+      { label: 'Trips', value: String(groupTrips(days).length) },
+    ],
+  }
+}
+
+function extent(shapes: MapShape[]) {
   let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity]
   for (const { bounds } of shapes) {
     x0 = Math.min(x0, bounds[0][0])
@@ -109,18 +176,54 @@ export function fitView(world: World, shapes: MapShape[]): MapView | null {
     x1 = Math.max(x1, bounds[1][0])
     y1 = Math.max(y1, bounds[1][1])
   }
+  return { x0, y0, x1, y1 }
+}
+
+const clamp = (v: number, min: number, max: number) =>
+  Math.min(Math.max(v, min), max)
+
+export function fitView(
+  world: World,
+  shapes: MapShape[],
+  aspect = world.view.width / world.view.height
+): MapView | null {
+  if (shapes.length === 0) return null
+  const full = world.view
+  const { x0, y0, x1, y1 } = extent(shapes)
   let width = Math.max((x1 - x0) * 1.3, 180)
   let height = Math.max((y1 - y0) * 1.3, 180 / aspect)
   if (width / height > aspect) height = width / aspect
   else width = height * aspect
+  height = Math.min(height, full.height)
   if (width >= full.width) return null
-  const clamp = (v: number, min: number, max: number) =>
-    Math.min(Math.max(v, min), max)
   return {
     x: clamp((x0 + x1) / 2 - width / 2, full.x, full.x + full.width - width),
     y: clamp((y0 + y1) / 2 - height / 2, full.y, full.y + full.height - height),
     width,
     height,
+  }
+}
+
+const WORLD_CROP_MARGIN = 0.04
+
+export function cropWorld(
+  world: World,
+  shapes: MapShape[],
+  aspect: number
+): MapView {
+  const full = world.view
+  if (shapes.length === 0) return full
+  const { x0, x1 } = extent(shapes)
+  const margin = full.width * WORLD_CROP_MARGIN
+  const width = Math.min(
+    Math.max(x1 - x0 + margin * 2, full.height * aspect),
+    full.width
+  )
+  return {
+    x: clamp((x0 + x1) / 2 - width / 2, full.x, full.x + full.width - width),
+    y: full.y,
+    width,
+    height: full.height,
   }
 }
 
@@ -135,7 +238,8 @@ export interface MapScene {
 export function getMapScene(
   world: World,
   countries: CountryDays[],
-  focusCodes: string[] | null
+  focusCodes: string[] | null,
+  frameAspect?: number
 ): MapScene {
   const daysByCode = new Map(countries.map((c) => [c.code, c.days]))
   const largest = new Map<string, MapShape>()
@@ -148,10 +252,13 @@ export function getMapScene(
   const focused = focusCodes
     ? fitView(
         world,
-        visited.filter((shape) => focusCodes.includes(shape.code!))
+        visited.filter((shape) => focusCodes.includes(shape.code!)),
+        frameAspect
       )
     : null
-  const view = focused ?? world.view
+  const view =
+    focused ??
+    (frameAspect ? cropWorld(world, visited, frameAspect) : world.view)
   const scale = view.width / world.view.width
   return {
     view,
@@ -161,6 +268,12 @@ export function getMapScene(
     dotRadius: DOT_RADIUS * scale,
   }
 }
+
+export const STRIPED_FLAGS: ReadonlySet<string> = new Set(
+  'AE AM AT BE BG BJ BO BW CI CO DE EE FR GA GN HU ID IE IT LT LU LV MC MG ML MU NG NL PE PL RO RU SL TD TH UA YE'.split(
+    ' '
+  )
+)
 
 export function viewBox({ x, y, width, height }: MapView) {
   return `${x} ${y} ${width} ${height}`

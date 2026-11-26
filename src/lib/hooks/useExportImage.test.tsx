@@ -1,3 +1,4 @@
+import { getMapFrameAspect } from '@/lib/export-canvas'
 import { renderExportImage } from '@/lib/export-render'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
@@ -151,10 +152,13 @@ describe('export hooks', () => {
     const { result } = renderHook(
       () =>
         useMapExport({
-          countries: [{ code: 'JP', days: 1 }],
+          dayMap: new Map([
+            ['2025-11-02', ['FR']],
+            ['2026-02-14', ['JP']],
+          ]),
           year: null,
           mode: 'shade',
-          focusCodes: ['JP'],
+          continent: 'AS',
           source: 'map_card',
         }),
       { wrapper: TestWrapper }
@@ -165,11 +169,16 @@ describe('export hooks', () => {
 
     expect(renderMapImage).toHaveBeenCalledWith(
       expect.objectContaining({
+        countries: [
+          { code: 'FR', days: 1 },
+          { code: 'JP', days: 1 },
+        ],
         mode: 'shade',
         focusCodes: ['JP'],
+        frameAspect: getMapFrameAspect('feed'),
         colours: MAP_COLOURS.dark,
         stroke: '#000000',
-        width: 952,
+        width: 1080,
         pixelRatio: 2,
       })
     )
@@ -181,11 +190,11 @@ describe('export hooks', () => {
       scope: 'all',
       year: null,
       mode: 'shade',
-      zoomed: true,
+      continent: 'AS',
       countryCount: 1,
       format: 'feed',
       source: 'map_card',
     })
-    expect(result.current.filename).toBe('my-map-all-time.jpg')
+    expect(result.current.filename).toBe('my-map-asia-all-time.jpg')
   })
 })

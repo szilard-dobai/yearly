@@ -13,17 +13,17 @@ import {
 } from '@/lib/export-canvas'
 import type { MapImage } from '@/lib/world-map-image'
 import {
-  continentsOf,
   SHADE_STEPS,
-  shareOfWorld,
   type CountryDays,
   type MapColours,
   type MapMode,
+  type MapStat,
 } from '@/lib/world-map'
 
 interface MapExportLayoutProps {
   map: MapImage
   countries: CountryDays[]
+  stats: MapStat[]
   title: string
   mode: MapMode
   format: ExportFormat
@@ -33,6 +33,7 @@ interface MapExportLayoutProps {
 export default function MapExportLayout({
   map,
   countries,
+  stats,
   title,
   mode,
   format,
@@ -44,17 +45,11 @@ export default function MapExportLayout({
     map.width / map.height,
     mode === 'shade'
   )
-  const continents = continentsOf(countries).size
-  const tiles = [
-    { label: 'Countries', value: { value: String(countries.length) } },
-    {
-      label: 'Of the world',
-      value: { value: `${shareOfWorld(countries.length)}%` },
-    },
-    { label: 'Continents', value: { value: String(continents), unit: 'of 7' } },
-  ]
   const valueSize = fitStatValueSize(
-    tiles.map(({ value }) => ({ value, width: layout.tileContentWidth })),
+    stats.map(({ value, unit }) => ({
+      value: { value, unit },
+      width: layout.tileContentWidth,
+    })),
     layout.tileValueSize
   )
   const nameSize = fitRankNameSize(
@@ -70,12 +65,14 @@ export default function MapExportLayout({
         src={map.src}
         alt=""
         data-export-map
-        width={layout.rowWidth}
+        width={layout.mapWidth}
         height={layout.mapHeight}
         style={{
           display: 'block',
-          width: layout.rowWidth,
+          maxWidth: 'none',
+          width: layout.mapWidth,
           height: layout.mapHeight,
+          marginInline: (layout.rowWidth - layout.mapWidth) / 2,
         }}
       />
 
@@ -165,11 +162,11 @@ export default function MapExportLayout({
       </div>
 
       <div className="grid grid-cols-3" style={{ gap: layout.tileGap }}>
-        {tiles.map((tile) => (
+        {stats.map(({ label, value, unit }) => (
           <ExportStatTile
-            key={tile.label}
-            label={tile.label}
-            value={tile.value}
+            key={label}
+            label={label}
+            value={{ value, unit }}
             labelSize={layout.tileLabelSize}
             valueSize={valueSize}
             height={layout.tileHeight}

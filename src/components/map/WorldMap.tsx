@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   getMapScene,
   shadeIndex,
+  STRIPED_FLAGS,
   viewBox,
   type CountryDays,
   type MapColours,
@@ -126,7 +127,9 @@ export default function WorldMap({
                     href={src}
                     width={width}
                     height={height}
-                    preserveAspectRatio="xMidYMid slice"
+                    preserveAspectRatio={
+                      STRIPED_FLAGS.has(code) ? 'none' : 'xMidYMid slice'
+                    }
                   />
                 </pattern>
                 {dotCodes.has(code) && (

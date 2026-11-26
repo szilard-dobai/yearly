@@ -310,6 +310,7 @@ export function getStatsLayout(format: ExportFormat, countryCount: number) {
 
 const MAP_SPEC = {
   story: {
+    maxMapHeight: 700,
     sectionGap: 48,
     legendHeight: 40,
     legendSize: 26,
@@ -329,6 +330,7 @@ const MAP_SPEC = {
     },
   },
   feed: {
+    maxMapHeight: 520,
     sectionGap: 28,
     legendHeight: 32,
     legendSize: 22,
@@ -401,6 +403,10 @@ export function fitFlagGrid(
   return grid!
 }
 
+export function getMapFrameAspect(format: ExportFormat) {
+  return EXPORT_CANVAS[format].width / MAP_SPEC[format].maxMapHeight
+}
+
 export function getMapExportLayout(
   format: ExportFormat,
   countryCount: number,
@@ -409,7 +415,8 @@ export function getMapExportLayout(
 ) {
   const spec = MAP_SPEC[format]
   const box = getExportContentBox(format)
-  const mapHeight = Math.round(box.width / mapAspect)
+  const mapWidth = EXPORT_CANVAS[format].width
+  const mapHeight = Math.round(mapWidth / mapAspect)
   const legendHeight = withLegend ? spec.legendHeight : 0
   const listHeight =
     box.height -
@@ -425,6 +432,7 @@ export function getMapExportLayout(
   return {
     ...spec,
     rowWidth: box.width,
+    mapWidth,
     mapHeight,
     legendHeight,
     listHeight,

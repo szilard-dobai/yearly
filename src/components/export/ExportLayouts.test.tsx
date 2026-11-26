@@ -44,6 +44,12 @@ const mapCountries = [
   { code: 'JP', days: 8 },
 ]
 
+const mapStats = [
+  { label: 'Countries', value: '4' },
+  { label: 'Of the world', value: '2%' },
+  { label: 'Continents', value: '3', unit: 'of 7' },
+]
+
 function manyCountries(count: number) {
   return [
     'FR',
@@ -114,6 +120,7 @@ function layouts(format: ExportFormat): [string, ReactElement][] {
       <MapExportLayout
         key="map"
         map={mapImage}
+        stats={mapStats}
         countries={mapCountries}
         title="2026"
         mode="flags"
@@ -244,6 +251,7 @@ describe('MapExportLayout', () => {
     const { container } = render(
       <MapExportLayout
         map={mapImage}
+        stats={mapStats}
         countries={mapCountries}
         title="All time"
         mode="flags"
@@ -256,7 +264,8 @@ describe('MapExportLayout', () => {
       'img[data-export-map]'
     )
     expect(map?.getAttribute('src')).toBe(mapImage.src)
-    expect(map?.style.width).toBe('952px')
+    expect(map?.style.width).toBe('1080px')
+    expect(map?.style.marginInline).toBe('-64px')
     expect(
       screen.getByRole('heading', { name: 'All time' })
     ).toBeInTheDocument()
@@ -275,6 +284,7 @@ describe('MapExportLayout', () => {
     const { container } = render(
       <MapExportLayout
         map={mapImage}
+        stats={mapStats}
         countries={manyCountries(20)}
         title="2026"
         mode="flags"
@@ -289,10 +299,38 @@ describe('MapExportLayout', () => {
     expect(flagImages(container, 'NZ')).toHaveLength(1)
   })
 
+  it("shows a continent's own numbers", () => {
+    render(
+      <MapExportLayout
+        map={mapImage}
+        stats={[
+          { label: 'Countries', value: '2', unit: 'of 51' },
+          { label: 'Days', value: '14' },
+          { label: 'Trips', value: '2' },
+        ]}
+        countries={mapCountries.slice(0, 2)}
+        title="Europe 2026"
+        mode="flags"
+        format="story"
+        colours={MAP_COLOURS.light}
+      />
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Europe 2026' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('Countries').nextElementSibling).toHaveTextContent(
+      '2of 51'
+    )
+    expect(screen.getByText('Trips')).toBeInTheDocument()
+    expect(screen.queryByText('Australia')).not.toBeInTheDocument()
+  })
+
   it('adds a legend for the days shading', () => {
     render(
       <MapExportLayout
         map={mapImage}
+        stats={mapStats}
         countries={mapCountries}
         title="2026"
         mode="shade"

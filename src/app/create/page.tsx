@@ -76,7 +76,6 @@ import { type DaySelection, toDayKey } from '@/lib/selection'
 import { loadCalendarData, saveCalendarData } from '@/lib/storage'
 import { trackEvent } from '@/lib/tracking'
 import { buildDayMap } from '@/lib/trips'
-import { countriesInScope } from '@/lib/world-map'
 import type { CalendarData } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import type { VideoKind, VideoTheme } from '@/lib/video'
@@ -282,12 +281,9 @@ function Create() {
     [calendarSync.sessionChecked, calendarData.visits, todayKey]
   )
   const [unlockedBadges, setUnlockedBadges] = useState<Badge[]>([])
-  const yearCountries = useMemo(
-    () =>
-      signedIn
-        ? countriesInScope(buildDayMap(calendarData.visits), selectedYear)
-        : [],
-    [signedIn, calendarData.visits, selectedYear]
+  const mapDayMap = useMemo(
+    () => (signedIn ? buildDayMap(calendarData.visits) : null),
+    [signedIn, calendarData.visits]
   )
   const allTimeCountryCount = useMemo(
     () => new Set(calendarData.visits.map((v) => v.countryCode)).size,
@@ -599,15 +595,15 @@ function Create() {
                         calendarData={calendarData}
                         year={selectedYear}
                       />
-                      {signedIn && (
+                      {mapDayMap && (
                         <MapExportButton
                           calendarData={calendarData}
                           previewYear={selectedYear}
                           source="export_card"
-                          countries={yearCountries}
+                          dayMap={mapDayMap}
                           year={selectedYear}
                           mode="flags"
-                          focusCodes={null}
+                          continent={null}
                         />
                       )}
                       <div className="border-t border-white/20 dark:border-white/8 pt-3">

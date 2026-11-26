@@ -2,6 +2,7 @@
  * Tracking event types for analytics
  */
 
+import type { ContinentCode } from '@/lib/continents'
 import type { ExportType } from '@/lib/feedback/types'
 import type { SelectionMethod } from '@/lib/selection'
 import type { TripSummary } from './trip-summary'
@@ -131,7 +132,7 @@ export interface MapExportClickMetadata {
   scope: 'year' | 'all'
   year: number | null
   mode: 'flags' | 'shade'
-  zoomed: boolean
+  continent: ContinentCode | null
   countryCount: number
   format: string
   source: MapExportSource

@@ -11,6 +11,7 @@ import {
   fitStatValueSize,
   getExportContentBox,
   getMapExportLayout,
+  getMapFrameAspect,
   getMonthLayout,
   getRankNameWidth,
   getRankRowSizes,
@@ -386,8 +387,24 @@ describe('getMapExportLayout', () => {
           layout.tileHeight
 
         expect(used).toBe(getExportContentBox(format).height)
-        expect(layout.mapHeight).toBe(Math.round(952 / MAP_ASPECT))
+        expect(layout.mapWidth).toBe(1080)
+        expect(layout.mapHeight).toBe(Math.round(1080 / MAP_ASPECT))
       }
+    }
+  )
+
+  it.each(EXPORT_FORMATS)(
+    'leaves room for the flags under the tallest %s map',
+    (format) => {
+      const layout = getMapExportLayout(
+        format,
+        80,
+        getMapFrameAspect(format),
+        true
+      )
+
+      expect(layout.listHeight).toBeGreaterThan(300)
+      expect(layout.flagGrid.height).toBeLessThanOrEqual(layout.listHeight)
     }
   )
 

@@ -92,6 +92,17 @@ describe('ImagePreviewModal video offer', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('does not offer a video for a map export, since there is no map video', () => {
+    renderModal('map')
+
+    expect(
+      screen.queryByRole('button', { name: /Make it a video/ })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'See it animated' })
+    ).not.toBeInTheDocument()
+  })
+
   it('does not offer a video for a year without trips', () => {
     renderModal('calendar', 2025)
 

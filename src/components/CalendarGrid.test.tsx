@@ -9,14 +9,14 @@ vi.mock('./MonthGrid', () => ({
   default: ({
     year,
     month,
-    visits,
+    countriesByDay,
     selectionStartKey,
     selectionEndKey,
     onSelectMonth,
   }: {
     year: number
     month: number
-    visits: CountryVisit[]
+    countriesByDay: ReadonlyMap<string, string>
     selectionStartKey?: string | null
     selectionEndKey?: string | null
     onSelectMonth?: () => void
@@ -25,7 +25,10 @@ vi.mock('./MonthGrid', () => ({
       data-testid={`month-grid-${month}`}
       data-year={year}
       data-month={month}
-      data-visits-count={visits.length}
+      data-days-count={countriesByDay.size}
+      data-days={[...countriesByDay]
+        .map(([day, codes]) => `${day}:${codes}`)
+        .join(' ')}
       data-selection-start={selectionStartKey ?? ''}
       data-selection-end={selectionEndKey ?? ''}
     >
@@ -128,13 +131,16 @@ describe('CalendarGrid', () => {
       }
     })
 
-    it('passes visits from calendarData to MonthGrid components', () => {
+    it('passes the countries of each day to MonthGrid components', () => {
       renderWithSettings(
         <CalendarGrid year={2024} calendarData={mockCalendarData} />
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
-      expect(monthGrid).toHaveAttribute('data-visits-count', '2')
+      expect(monthGrid).toHaveAttribute(
+        'data-days',
+        '2024-01-15:US 2024-06-20:FR'
+      )
     })
 
     it('passes ordered selection bounds to every month', () => {
@@ -201,10 +207,10 @@ describe('CalendarGrid', () => {
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
-      expect(monthGrid).toHaveAttribute('data-visits-count', '0')
+      expect(monthGrid).toHaveAttribute('data-days-count', '0')
     })
 
-    it('handles large number of visits', () => {
+    it('groups a large number of visits by day', () => {
       const manyVisits: CountryVisit[] = Array.from(
         { length: 100 },
         (_, i) => ({
@@ -223,7 +229,10 @@ describe('CalendarGrid', () => {
       )
 
       const monthGrid = screen.getByTestId('month-grid-0')
-      expect(monthGrid).toHaveAttribute('data-visits-count', '100')
+      const days = new Set(
+        manyVisits.map((v) => `${v.date.getMonth()}-${v.date.getDate()}`)
+      )
+      expect(monthGrid).toHaveAttribute('data-days-count', String(days.size))
     })
 
     it('extracts visits from calendarData correctly', () => {
@@ -347,7 +356,7 @@ describe('CalendarGrid', () => {
       )
 
       let monthGrid = screen.getByTestId('month-grid-0')
-      expect(monthGrid).toHaveAttribute('data-visits-count', '1')
+      expect(monthGrid).toHaveAttribute('data-days', '2024-01-15:US')
 
       const updatedData: CalendarData = {
         visits: [
@@ -367,7 +376,10 @@ describe('CalendarGrid', () => {
       rerender(<CalendarGrid year={2024} calendarData={updatedData} />)
 
       monthGrid = screen.getByTestId('month-grid-0')
-      expect(monthGrid).toHaveAttribute('data-visits-count', '2')
+      expect(monthGrid).toHaveAttribute(
+        'data-days',
+        '2024-01-15:US 2024-01-16:FR'
+      )
     })
   })
 

@@ -1,4 +1,3 @@
-import type { CountryVisit } from '../lib/types'
 import { getMonthData } from '../lib/calendar'
 import { MONTH_NAMES, MONTH_NAMES_SHORT } from '../lib/constants'
 import { useSettings } from '@/lib/contexts/SettingsContext'
@@ -9,7 +8,7 @@ import { Download } from 'lucide-react'
 interface MonthGridProps {
   year: number
   month: number
-  visits: CountryVisit[]
+  countriesByDay: ReadonlyMap<string, string>
   selectionStartKey?: string | null
   selectionEndKey?: string | null
   focusKey?: string | null
@@ -20,7 +19,7 @@ interface MonthGridProps {
 export default function MonthGrid({
   year,
   month,
-  visits,
+  countriesByDay,
   selectionStartKey = null,
   selectionEndKey = null,
   focusKey = null,
@@ -85,7 +84,7 @@ export default function MonthGrid({
                 <DateCell
                   key={dayIndex}
                   date={date}
-                  visits={visits}
+                  countries={key ? countriesByDay.get(key) : undefined}
                   selected={selected}
                   selectionEdge={isStart || isEnd}
                   roundStart={

@@ -55,6 +55,17 @@ export function expandDateRange(startDate: Date, endDate: Date): Date[] {
  * @param visits - Array of all visits
  * @returns Array of visits on that date
  */
+export function countriesByDay(visits: CountryVisit[]): Map<string, string> {
+  const days = new Map<string, string[]>()
+  for (const visit of visits) {
+    const key = toDayKey(visit.date)
+    const codes = days.get(key)
+    if (codes) codes.push(visit.countryCode)
+    else days.set(key, [visit.countryCode])
+  }
+  return new Map([...days].map(([key, codes]) => [key, codes.join(',')]))
+}
+
 export function getVisitsForDate(
   date: Date,
   visits: CountryVisit[]

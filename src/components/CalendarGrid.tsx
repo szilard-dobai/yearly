@@ -1,5 +1,6 @@
 'use client'
 
+import { countriesByDay } from '@/lib/calendar'
 import { useDayGestures } from '@/lib/hooks/useDayGestures'
 import {
   applyTap,
@@ -10,7 +11,7 @@ import {
   type DaySelection,
 } from '@/lib/selection'
 import type { CalendarData } from '@/lib/types'
-import { useRef, type KeyboardEvent } from 'react'
+import { useMemo, useRef, type KeyboardEvent } from 'react'
 import MonthGrid from './MonthGrid'
 
 const ARROW_KEY_OFFSETS: Record<string, number> = {
@@ -42,7 +43,10 @@ export default function CalendarGrid({
   onSelectionChange,
   onMonthExport,
 }: CalendarGridProps) {
-  const visits = calendarData.visits
+  const countries = useMemo(
+    () => countriesByDay(calendarData.visits),
+    [calendarData.visits]
+  )
   const gridRef = useRef<HTMLDivElement>(null)
   const bounds = selection ? getSelectionBounds(selection) : null
   const focusKey = selection?.focus ?? getDefaultFocusKey(year)
@@ -87,7 +91,7 @@ export default function CalendarGrid({
             key={month}
             year={year}
             month={month}
-            visits={visits}
+            countriesByDay={countries}
             selectionStartKey={bounds?.startKey ?? null}
             selectionEndKey={bounds?.endKey ?? null}
             focusKey={focusKey}

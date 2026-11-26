@@ -3,7 +3,9 @@ import atlas from 'world-atlas/countries-50m.json'
 import { describe, expect, it } from 'vitest'
 import { COUNTRIES } from './countries'
 import { CONTINENT_BY_COUNTRY } from './continents'
-import { projectWorld } from './world-map-projection'
+import { geoContains } from 'd3-geo'
+import type { MultiPolygon } from 'geojson'
+import { countryFeatures, projectWorld } from './world-map-projection'
 import {
   codesInContinent,
   continentsOf,
@@ -53,6 +55,24 @@ describe('projectWorld', () => {
     expect(tuvalu.d).toBe('')
     expect(tuvalu.area).toBe(0)
     expect(tuvalu.centroid[0]).toBeGreaterThan(900)
+  })
+
+  it('draws Crimea as part of Ukraine, in one piece with the mainland', () => {
+    const features = countryFeatures(atlas)
+    const ukraine = features.find((f) => f.id === '804')!
+    const russia = features.find((f) => f.id === '643')!
+    const simferopol: [number, number] = [34.1, 44.95]
+
+    expect(geoContains(ukraine, simferopol)).toBe(true)
+    expect(geoContains(russia, simferopol)).toBe(false)
+    expect(geoContains(ukraine, [30.52, 50.45])).toBe(true)
+    expect(geoContains(russia, [37.62, 55.75])).toBe(true)
+    const separateCrimea = (
+      ukraine.geometry as MultiPolygon
+    ).coordinates.filter(([ring]) =>
+      ring.every(([lon, lat]) => lon > 32 && lon < 37 && lat > 44 && lat < 46.5)
+    )
+    expect(separateCrimea).toEqual([])
   })
 
   it('fits the map to 960 wide', () => {

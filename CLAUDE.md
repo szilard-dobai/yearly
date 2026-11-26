@@ -96,7 +96,7 @@ src/
 │   ├── export-canvas.ts      - Export formats, canvas sizes, shared frame and layout maths
 │   ├── export-render.tsx     - Mounts an export layout off-screen and renders it to JPEG
 │   ├── world-map.ts          - Countries and days per year or all time, continents, share of the world, zoom box, dots for tiny countries, map colours; `loadWorld` lazy-loads the outlines
-│   ├── world-map-projection.ts - Projects the world-atlas outlines (no Antarctica, Kosovo by name, Tuvalu as a point); loaded with the outlines
+│   ├── world-map-projection.ts - Projects the world-atlas outlines (no Antarctica, Crimea moved from Russia's outline into Ukraine's, Kosovo by name, Tuvalu as a point); loaded with the outlines
 │   ├── world-map-image.ts    - Draws the map with flat flag fills onto a canvas for the map export
 │   ├── iso-numeric.ts        - ISO 3166 numeric code of each country, to match the world-atlas outlines
 │   ├── emoji.ts              - Flag and emoji image paths, sizes and medal names

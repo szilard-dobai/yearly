@@ -6,11 +6,16 @@ import {
 } from './slack'
 
 describe('getSignUpMethod', () => {
-  it('tells an email code from Google by the request path', () => {
-    expect(getSignUpMethod('/sign-in/email-otp')).toBe('email')
-    expect(getSignUpMethod('/callback/google')).toBe('google')
-    expect(getSignUpMethod('/sign-in/social')).toBeNull()
-    expect(getSignUpMethod(undefined)).toBeNull()
+  it('tells an email code from Google by the route and its provider', () => {
+    expect(getSignUpMethod({ path: '/sign-in/email-otp' })).toBe('email')
+    expect(
+      getSignUpMethod({ path: '/callback/:id', params: { id: 'google' } })
+    ).toBe('google')
+    expect(
+      getSignUpMethod({ path: '/callback/:id', params: { id: 'github' } })
+    ).toBeNull()
+    expect(getSignUpMethod({ path: '/sign-in/social' })).toBeNull()
+    expect(getSignUpMethod(null)).toBeNull()
   })
 })
 

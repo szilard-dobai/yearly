@@ -4,6 +4,7 @@ import { rateLimits, session, user, verification } from '@/lib/db/schema'
 import { createTestDb } from '@/test/db'
 import {
   afterAll,
+  afterEach,
   beforeAll,
   beforeEach,
   describe,
@@ -72,6 +73,11 @@ describe('createAuth', () => {
         deletedUserIds.push(userId)
       },
     })
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.restoreAllMocks()
   })
 
   function post(path: string, body: object, headers: object = HEADERS) {
@@ -238,6 +244,56 @@ describe('createAuth', () => {
       { method: 'email', country: undefined },
       { method: 'email', country: 'RO' },
     ])
+  })
+
+  it('reports a Google sign-up as Google', async () => {
+    vi.stubEnv('GOOGLE_CLIENT_ID', 'google-client-id')
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', 'google-client-secret')
+    auth = createAuth({
+      db,
+      secret: SECRET,
+      sendSignInCode: async () => {},
+      onSignUp: (signUp) => {
+        signUps.push(signUp)
+      },
+    })
+    const idToken = [
+      { alg: 'none', typ: 'JWT' },
+      {
+        sub: 'google-user-1',
+        email: 'ana@example.com',
+        email_verified: true,
+        name: 'Ana',
+      },
+    ]
+      .map((part) => Buffer.from(JSON.stringify(part)).toString('base64url'))
+      .concat('')
+      .join('.')
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+      Response.json({ access_token: 'access-token', id_token: idToken })
+    )
+
+    const start = await post('/sign-in/social', {
+      provider: 'google',
+      callbackURL: '/create',
+    })
+    const { url } = (await start.json()) as { url: string }
+    const state = new URL(url).searchParams.get('state')
+    const callback = await auth.handler(
+      new Request(
+        `http://localhost:3000/api/auth/callback/google?code=google-code&state=${state}`,
+        {
+          headers: {
+            ...HEADERS,
+            'x-vercel-ip-country': 'RO',
+            cookie: sessionCookie(start),
+          },
+        }
+      )
+    )
+
+    expect(callback.headers.get('location')).toBe('/create')
+    expect(signUps).toEqual([{ method: 'google', country: 'RO' }])
   })
 
   it('does not report a sign-up when the code is wrong', async () => {

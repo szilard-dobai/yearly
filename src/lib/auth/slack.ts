@@ -17,9 +17,18 @@ const METHOD_LABELS: Record<SignUpMethod, string> = {
   google: 'Google',
 }
 
-export function getSignUpMethod(path?: string): SignUpMethod | null {
-  if (path === '/sign-in/email-otp') return 'email'
-  if (path === '/callback/google') return 'google'
+type SignUpEndpoint = {
+  path?: string
+  params?: { id?: string }
+}
+
+export function getSignUpMethod(
+  endpoint?: SignUpEndpoint | null
+): SignUpMethod | null {
+  if (endpoint?.path === '/sign-in/email-otp') return 'email'
+  if (endpoint?.path === '/callback/:id' && endpoint.params?.id === 'google') {
+    return 'google'
+  }
   return null
 }
 

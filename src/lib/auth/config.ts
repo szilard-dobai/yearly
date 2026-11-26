@@ -95,7 +95,7 @@ export function createAuth({
         create: {
           after: async (_user, context) => {
             onSignUp?.({
-              method: getSignUpMethod(context?.path),
+              method: getSignUpMethod(context),
               country:
                 context?.headers?.get('x-vercel-ip-country') ?? undefined,
             })

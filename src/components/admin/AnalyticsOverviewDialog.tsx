@@ -1,7 +1,7 @@
 'use client'
 
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
-import { EventToneDot } from '@/components/admin/EventTypeBadge'
+import { EventGroupDot } from '@/components/admin/EventTypeBadge'
 import StatTile from '@/components/admin/StatTile'
 import {
   Dialog,
@@ -270,7 +270,7 @@ function OverviewContent({ stats }: { stats: HighLevelStats }) {
                 key={type}
                 label={getEventLabel(type)}
                 value={count}
-                icon={<EventToneDot type={type} />}
+                icon={<EventGroupDot type={type} />}
                 title={type}
               />
             ))}

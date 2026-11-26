@@ -4,7 +4,7 @@ import ConfirmDeleteButton from '@/components/admin/ConfirmDeleteButton'
 import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
-import { EventToneDot } from '@/components/admin/EventTypeBadge'
+import { EventGroupDot } from '@/components/admin/EventTypeBadge'
 import IdentifierRow from '@/components/admin/IdentifierRow'
 import { Button } from '@/components/ui/button'
 import {
@@ -53,7 +53,7 @@ export default function EventDetailsDialog({
           <div className="min-w-0 space-y-6">
             <DialogHeader>
               <DialogTitle className="flex items-center justify-center gap-2 sm:justify-start">
-                <EventToneDot type={event.type} className="size-2.5" />
+                <EventGroupDot type={event.type} className="size-2.5" />
                 {getEventLabel(event.type)}
               </DialogTitle>
               <DialogDescription className="font-mono text-xs">

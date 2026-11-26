@@ -6,7 +6,9 @@ import CountryFlag from '@/components/admin/CountryFlag'
 import DetailRow from '@/components/admin/DetailRow'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import FeedbackTagList from '@/components/admin/FeedbackTagList'
-import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
+import EventTypeBadge, {
+  EventGroupDot,
+} from '@/components/admin/EventTypeBadge'
 import IdentifierRow from '@/components/admin/IdentifierRow'
 import StarRating, { RATING_LABELS } from '@/components/StarRating'
 import { Button } from '@/components/ui/button'
@@ -386,7 +388,7 @@ function DeviceActivityContent({
                     </li>
                   ) : (
                     <li key={item.event._id} className="relative pl-5">
-                      <EventToneDot
+                      <EventGroupDot
                         type={item.event.type}
                         className="absolute -left-[5px] top-1.5 size-2.5 ring-4 ring-white dark:ring-[#0a0a0a]"
                       />

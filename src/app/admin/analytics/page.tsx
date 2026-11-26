@@ -9,7 +9,9 @@ import AnalyticsOverviewDialog, {
 } from '@/components/admin/AnalyticsOverviewDialog'
 import DeviceTypeIcon from '@/components/admin/DeviceTypeIcon'
 import EventDetailsDialog from '@/components/admin/EventDetailsDialog'
-import EventTypeBadge, { EventToneDot } from '@/components/admin/EventTypeBadge'
+import EventTypeBadge, {
+  EventGroupDot,
+} from '@/components/admin/EventTypeBadge'
 import JourneyFunnelPanel from '@/components/admin/JourneyFunnelPanel'
 import StatTile from '@/components/admin/StatTile'
 import TrafficSourcesPanel from '@/components/admin/TrafficSourcesPanel'
@@ -22,12 +24,16 @@ import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
 import { deleteDeviceActivity, deleteTrackingEvent } from '@/lib/admin/client'
 import {
+  EVENT_GROUP_LABELS,
+  EVENT_TYPES_BY_GROUP,
   formatDateTime,
   formatLocation,
   getCountryName,
@@ -36,10 +42,7 @@ import {
   summarizeMetadata,
 } from '@/lib/admin/format'
 import { useAdminAuth } from '@/lib/hooks/useAdminAuth'
-import {
-  TRACKING_EVENT_TYPES,
-  type StoredTrackingEvent,
-} from '@/lib/tracking/types'
+import type { StoredTrackingEvent } from '@/lib/tracking/types'
 import { cn } from '@/lib/utils'
 import { BarChart3, Loader2, LogOut, RefreshCw, Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -422,11 +425,16 @@ export default function AnalyticsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All types</SelectItem>
-                {TRACKING_EVENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    <EventToneDot type={type} />
-                    {getEventLabel(type)}
-                  </SelectItem>
+                {EVENT_TYPES_BY_GROUP.map(({ group, types }) => (
+                  <SelectGroup key={group}>
+                    <SelectLabel>{EVENT_GROUP_LABELS[group]}</SelectLabel>
+                    {types.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        <EventGroupDot type={type} />
+                        {getEventLabel(type)}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
               </SelectContent>
             </Select>

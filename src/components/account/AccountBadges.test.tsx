@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { render, renderWithSettings, screen } from '@/test/test-utils'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AccountBadges from './AccountBadges'
 import AccountTrips from './AccountTrips'
 
@@ -51,26 +51,46 @@ describe('AccountBadges', () => {
 describe('AccountTrips', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      }
+    )
   })
 
-  it('shows badges once the calendar is synced', async () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('shows the world map and badges once the calendar is synced', async () => {
     runCalendarSync.mockResolvedValue({ pending: false, firstSync: null })
     loadCalendarData.mockReturnValue({
       visits: [{ id: '1', countryCode: 'FR', date: new Date(2026, 2, 10) }],
     })
-    render(<AccountTrips userId="ana" />)
+    renderWithSettings(<AccountTrips userId="ana" />)
 
     expect(screen.queryByText('Badges')).not.toBeInTheDocument()
+    expect(screen.queryByText('World map')).not.toBeInTheDocument()
     expect(await screen.findByText('Badges')).toBeInTheDocument()
     expect(screen.getByText('1/17')).toBeInTheDocument()
+    expect(screen.getByText('World map')).toBeInTheDocument()
+    expect(screen.getByText('Countries').nextElementSibling).toHaveTextContent(
+      '1'
+    )
+    expect(
+      screen.queryByRole('radio', { name: 'All time' })
+    ).not.toBeInTheDocument()
   })
 
   it('leaves badges out when the calendar can’t be reached', async () => {
     runCalendarSync.mockRejectedValue(new Error('offline'))
     vi.spyOn(console, 'error').mockImplementation(() => {})
-    render(<AccountTrips userId="ana" />)
+    renderWithSettings(<AccountTrips userId="ana" />)
 
     await screen.findByText(/couldn't reach your saved trips/)
     expect(screen.queryByText('Badges')).not.toBeInTheDocument()
+    expect(screen.queryByText('World map')).not.toBeInTheDocument()
   })
 })

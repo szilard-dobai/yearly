@@ -6,9 +6,12 @@ import {
   EXPORT_FRAME,
   EXPORT_HEADER_HEIGHT,
   estimateStatValueWidth,
+  fitFlagGrid,
   fitRankNameSize,
   fitStatValueSize,
   getExportContentBox,
+  getMapExportLayout,
+  getMapFrameAspect,
   getMonthLayout,
   getRankNameWidth,
   getRankRowSizes,
@@ -18,6 +21,7 @@ import {
   STATS_TILE_ROWS,
   type ExportFormat,
 } from './export-canvas'
+import { FLAG_WIDTH_EM } from './emoji'
 
 const LONGEST_COUNTRY = 'Saint Vincent and the Grenadines'
 
@@ -331,5 +335,99 @@ describe('fitRankNameSize', () => {
     expect(large.nameSize).toBeGreaterThan(small.nameSize)
     expect(large.flagSize).toBeLessThan(large.height)
     expect(large.medalSize).toBeLessThan(large.height)
+  })
+})
+
+describe('fitFlagGrid', () => {
+  const spec = {
+    minColumns: 4,
+    columnGap: 16,
+    rowGap: 28,
+    maxFlagWidth: 128,
+    nameSize: 24,
+    nameGap: 12,
+    minNamedCell: 120,
+  } as const
+
+  it('uses the largest flags, with names, when they fit', () => {
+    const grid = fitFlagGrid(12, 952, 600, spec)
+
+    expect(grid.columns).toBe(4)
+    expect(grid.named).toBe(true)
+    expect(grid.flagSize * FLAG_WIDTH_EM).toBeCloseTo(128, 0)
+    expect(
+      grid.columns * grid.cellWidth + 3 * grid.columnGap
+    ).toBeLessThanOrEqual(952)
+  })
+
+  it('adds columns until every flag fits, and drops the names when cells get small', () => {
+    const grid = fitFlagGrid(150, 952, 500, spec)
+
+    expect(grid.height).toBeLessThanOrEqual(500)
+    expect(grid.columns).toBeGreaterThan(4)
+    expect(grid.named).toBe(false)
+    expect(grid.flagSize * FLAG_WIDTH_EM).toBeLessThan(128)
+    expect(grid.flagSize * FLAG_WIDTH_EM).toBeLessThanOrEqual(grid.cellWidth)
+  })
+})
+
+describe('getMapExportLayout', () => {
+  const MAP_ASPECT = 960 / 430
+
+  it.each(EXPORT_FORMATS)(
+    'fills the %s content box with the map, list and tiles',
+    (format) => {
+      for (const withLegend of [false, true]) {
+        const layout = getMapExportLayout(format, 10, MAP_ASPECT, withLegend)
+        const used =
+          layout.mapHeight +
+          layout.legendHeight +
+          layout.sectionGap * 2 +
+          layout.listHeight +
+          layout.tileHeight
+
+        expect(used).toBe(getExportContentBox(format).height)
+        expect(layout.mapWidth).toBe(1080)
+        expect(layout.mapHeight).toBe(Math.round(1080 / MAP_ASPECT))
+      }
+    }
+  )
+
+  it.each(EXPORT_FORMATS)(
+    'leaves room for the flags under the tallest %s map',
+    (format) => {
+      const layout = getMapExportLayout(
+        format,
+        80,
+        getMapFrameAspect(format),
+        true
+      )
+
+      expect(layout.listHeight).toBeGreaterThan(300)
+      expect(layout.flagGrid.height).toBeLessThanOrEqual(layout.listHeight)
+    }
+  )
+
+  it('lists a few countries by name and shows many as flags', () => {
+    expect(getMapExportLayout('story', 6, MAP_ASPECT, false).asRows).toBe(true)
+    expect(getMapExportLayout('story', 20, MAP_ASPECT, false).asRows).toBe(
+      false
+    )
+    expect(getMapExportLayout('feed', 4, MAP_ASPECT, false).asRows).toBe(true)
+    expect(getMapExportLayout('feed', 8, MAP_ASPECT, false).asRows).toBe(false)
+  })
+
+  it('keeps the listed rows inside their space', () => {
+    for (const format of EXPORT_FORMATS) {
+      let count = 1
+      while (getMapExportLayout(format, count + 1, MAP_ASPECT, true).asRows) {
+        count++
+      }
+      const layout = getMapExportLayout(format, count, MAP_ASPECT, true)
+
+      expect(
+        count * layout.rowHeight + (count - 1) * layout.rowGap
+      ).toBeLessThanOrEqual(layout.listHeight)
+    }
   })
 })

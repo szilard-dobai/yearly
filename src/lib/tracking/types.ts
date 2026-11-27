@@ -2,6 +2,7 @@
  * Tracking event types for analytics
  */
 
+import type { ContinentCode } from '@/lib/continents'
 import type { ExportType } from '@/lib/feedback/types'
 import type { SelectionMethod } from '@/lib/selection'
 import type { TripSummary } from './trip-summary'
@@ -63,6 +64,9 @@ export const TRACKING_EVENT_TYPES = [
   'badge_unlocked',
   'badges_teaser_click',
   'year_compare_open',
+  'map_view_change',
+  'map_export_click',
+  'map_teaser_click',
 ] as const
 
 export type TrackingEventType = (typeof TRACKING_EVENT_TYPES)[number]
@@ -120,6 +124,18 @@ export type ImageExportClickMetadata = TripSummary
 
 export type ImageDownloadClickMetadata = TripSummary & {
   exportType: ExportType
+}
+
+export type MapExportSource = 'map_card' | 'export_card'
+
+export interface MapExportClickMetadata {
+  scope: 'year' | 'all'
+  year: number | null
+  mode: 'flags' | 'shade'
+  continent: ContinentCode | null
+  countryCount: number
+  format: string
+  source: MapExportSource
 }
 
 export interface MonthlyExportClickMetadata {

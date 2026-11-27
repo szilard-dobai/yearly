@@ -1,3 +1,4 @@
+import { getMapFrameAspect } from '@/lib/export-canvas'
 import { renderExportImage } from '@/lib/export-render'
 import { trackEvent } from '@/lib/tracking'
 import type { CalendarData } from '@/lib/types'
@@ -6,6 +7,9 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useImageExport } from './useImageExport'
+import { renderMapImage } from '@/lib/world-map-image'
+import { MAP_COLOURS } from '@/lib/world-map'
+import { useMapExport } from './useMapExport'
 import { useMonthlyExport } from './useMonthlyExport'
 import { useStatisticsExport } from './useStatisticsExport'
 
@@ -14,6 +18,22 @@ vi.mock('@/lib/export-render', () => ({
     async (_layout: ReactElement, format: string) =>
       `data:image/jpeg;base64,${format}`
   ),
+}))
+
+vi.mock('@/lib/world-map-image', () => ({
+  renderMapImage: vi.fn(async ({ width }: { width: number }) => ({
+    src: 'data:image/png;base64,map',
+    width,
+    height: 426,
+  })),
+}))
+
+vi.mock('@/lib/world-map', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/world-map')>()),
+  loadWorld: vi.fn(async () => ({
+    shapes: [],
+    view: { x: 0, y: 0, width: 960, height: 430 },
+  })),
 }))
 
 vi.mock('@/lib/tracking', () => ({
@@ -122,5 +142,59 @@ describe('export hooks', () => {
       format: 'story',
     })
     expect(result.current.filename).toBe('my-month-june-2026.jpg')
+  })
+
+  it('draws the map in the export theme and records the map export', async () => {
+    localStorage.setItem(
+      SETTINGS_KEY,
+      JSON.stringify({ exportFormat: 'feed', colorScheme: 'dark' })
+    )
+    const { result } = renderHook(
+      () =>
+        useMapExport({
+          dayMap: new Map([
+            ['2025-11-02', ['FR']],
+            ['2026-02-14', ['JP']],
+          ]),
+          year: null,
+          mode: 'shade',
+          continent: 'AS',
+          source: 'map_card',
+        }),
+      { wrapper: TestWrapper }
+    )
+    await waitFor(() => expect(result.current.format).toBe('feed'))
+
+    await act(() => result.current.exportMap())
+
+    expect(renderMapImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        countries: [
+          { code: 'FR', days: 1 },
+          { code: 'JP', days: 1 },
+        ],
+        mode: 'shade',
+        focusCodes: ['JP'],
+        frameAspect: getMapFrameAspect('feed'),
+        colours: MAP_COLOURS.dark,
+        stroke: '#000000',
+        width: 1080,
+        pixelRatio: 2,
+      })
+    )
+    expect(renderedFormats()).toEqual([
+      { layoutFormat: 'feed', format: 'feed' },
+    ])
+    expect(vi.mocked(renderExportImage).mock.calls[0][2]).toBe('dark')
+    expect(trackEvent).toHaveBeenCalledWith('map_export_click', {
+      scope: 'all',
+      year: null,
+      mode: 'shade',
+      continent: 'AS',
+      countryCount: 1,
+      format: 'feed',
+      source: 'map_card',
+    })
+    expect(result.current.filename).toBe('my-map-asia-all-time.jpg')
   })
 })

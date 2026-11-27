@@ -50,10 +50,11 @@ const AnimatedVideoDialog = dynamic(() => import('./AnimatedVideoDialog'), {
   ssr: false,
 })
 
-const VIDEO_OFFER_COPY: Record<ExportType, string> = {
+const VIDEO_OFFER_COPY: Record<ExportType, string | null> = {
   calendar: 'Watch your year fill up, flag by flag.',
   statistics: 'Watch your travel stats count up.',
   monthly: 'Watch your month fill up, flag by flag.',
+  map: null,
 }
 
 interface ImagePreviewModalProps {
@@ -178,11 +179,14 @@ function ImagePreviewContent({
   }, [done])
 
   const isMonthly = exportType === 'monthly'
-  const showVideoOffer = calendarData.visits.some(
-    (v) =>
-      v.date.getFullYear() === year &&
-      (!isMonthly || v.date.getMonth() === month)
-  )
+  const videoOfferCopy = VIDEO_OFFER_COPY[exportType]
+  const showVideoOffer =
+    videoOfferCopy !== null &&
+    calendarData.visits.some(
+      (v) =>
+        v.date.getFullYear() === year &&
+        (!isMonthly || v.date.getMonth() === month)
+    )
 
   const openVideoPreview = (entry: VideoOfferEntry) => {
     trackEvent('animated_video_preview_open', {
@@ -410,7 +414,7 @@ function ImagePreviewContent({
                   </span>
                 </span>
                 <span className="block text-xs text-gray-600 dark:text-zinc-400">
-                  {VIDEO_OFFER_COPY[exportType]}
+                  {videoOfferCopy}
                 </span>
                 <span className="mt-1 flex flex-wrap items-baseline gap-x-1.5 text-xs text-gray-600 dark:text-zinc-400">
                   <FreeVideoPrice

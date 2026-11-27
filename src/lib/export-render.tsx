@@ -23,12 +23,17 @@ interface PlacedImage {
 
 const loadedImages = new Map<string, Promise<HTMLImageElement>>()
 
+function decodeImage(src: string) {
+  const image = new Image()
+  image.src = src
+  return image.decode().then(() => image)
+}
+
 function loadImage(src: string) {
+  if (src.startsWith('data:')) return decodeImage(src)
   let pending = loadedImages.get(src)
   if (!pending) {
-    const image = new Image()
-    image.src = src
-    pending = image.decode().then(() => image)
+    pending = decodeImage(src)
     pending.catch(() => loadedImages.delete(src))
     loadedImages.set(src, pending)
   }

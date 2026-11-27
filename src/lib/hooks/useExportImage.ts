@@ -1,16 +1,20 @@
 import { useCallback, useRef, useState, type ReactElement } from 'react'
+import type { EXPORT_BACKGROUND } from '@/lib/constants'
 import { useSettings, type Settings } from '@/lib/contexts/SettingsContext'
 import type { ExportFormat } from '@/lib/export-canvas'
 import { renderExportImage } from '@/lib/export-render'
 import { useStatusFeedback, type StatusState } from './useStatusFeedback'
 
+export type ExportTheme = keyof typeof EXPORT_BACKGROUND
+
 export interface ExportLayoutOptions {
   format: ExportFormat
   weekStartsOn: Settings['weekStartsOn']
+  theme: ExportTheme
 }
 
 interface UseExportImageOptions {
-  layout: (options: ExportLayoutOptions) => ReactElement
+  layout: (options: ExportLayoutOptions) => ReactElement | Promise<ReactElement>
   label: string
 }
 
@@ -48,14 +52,14 @@ export function useExportImage({
       const request = ++latestRequest.current
       setLoading()
       try {
-        const dataUrl = await renderExportImage(
-          layout({
-            format,
-            weekStartsOn: settings.weekStartsOn,
-          }),
+        const theme = isDarkMode(settings.colorScheme) ? 'dark' : 'light'
+        const element = await layout({
           format,
-          isDarkMode(settings.colorScheme) ? 'dark' : 'light'
-        )
+          weekStartsOn: settings.weekStartsOn,
+          theme,
+        })
+        if (request !== latestRequest.current) return
+        const dataUrl = await renderExportImage(element, format, theme)
         if (request !== latestRequest.current) return
         setImage({ dataUrl, format })
         setPreviewOpen(true)

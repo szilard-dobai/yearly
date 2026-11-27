@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { treatColour, treatSvgColours } from './build-emoji-images.mjs'
+import { svgBox, treatColour, treatSvgColours } from './build-emoji-images.mjs'
 
 describe('treatColour', () => {
   it.each([
@@ -74,5 +74,23 @@ describe('treatSvgColours', () => {
     expect(() =>
       treatSvgColours('<svg><mask id="m"/></svg>', 'mask.svg')
     ).toThrow('mask.svg: <mask> is not handled')
+  })
+})
+
+describe('svgBox', () => {
+  it('reads the flag size from the viewBox, or else from width and height', () => {
+    expect(svgBox('<svg viewBox="0 0 900 600" width="9">', 'a.svg')).toEqual({
+      x: 0,
+      y: 0,
+      width: 900,
+      height: 600,
+    })
+    expect(svgBox('<svg width="640" height="480">', 'b.svg')).toEqual({
+      x: 0,
+      y: 0,
+      width: 640,
+      height: 480,
+    })
+    expect(() => svgBox('<svg>', 'c.svg')).toThrow('c.svg: no size')
   })
 })

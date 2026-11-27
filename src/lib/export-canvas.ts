@@ -1,4 +1,6 @@
 import { getMonthData } from './calendar'
+import { FLAG_ASPECT_RATIO } from './emoji-images'
+import { FLAG_WIDTH_EM } from './emoji'
 
 export const EXPORT_FORMATS = ['story', 'feed'] as const
 
@@ -302,6 +304,143 @@ export function getStatsLayout(format: ExportFormat, countryCount: number) {
     tileContentWidth: (box.width - spec.tileGap) / 2 - tilePadding * 2,
     wideTileContentWidth: box.width - tilePadding * 2,
     tileValueSize: Math.round(Math.min(120, Math.max(56, tileHeight * 0.36))),
+    rank: getRankRowSizes(spec.rowHeight),
+  }
+}
+
+const MAP_SPEC = {
+  story: {
+    maxMapHeight: 700,
+    sectionGap: 48,
+    legendHeight: 40,
+    legendSize: 26,
+    tileGap: 24,
+    tileHeight: 200,
+    tileLabelSize: 30,
+    rowHeight: 96,
+    rowGap: 14,
+    grid: {
+      minColumns: 4,
+      columnGap: 16,
+      rowGap: 28,
+      maxFlagWidth: 128,
+      nameSize: 24,
+      nameGap: 12,
+      minNamedCell: 120,
+    },
+  },
+  feed: {
+    maxMapHeight: 520,
+    sectionGap: 28,
+    legendHeight: 32,
+    legendSize: 22,
+    tileGap: 20,
+    tileHeight: 140,
+    tileLabelSize: 24,
+    rowHeight: 72,
+    rowGap: 10,
+    grid: {
+      minColumns: 5,
+      columnGap: 12,
+      rowGap: 20,
+      maxFlagWidth: 112,
+      nameSize: 20,
+      nameGap: 8,
+      minNamedCell: 110,
+    },
+  },
+} as const
+
+type FlagGridSpec = (typeof MAP_SPEC)[ExportFormat]['grid']
+
+export interface FlagGrid {
+  columns: number
+  cellWidth: number
+  flagSize: number
+  named: boolean
+  nameSize: number
+  nameGap: number
+  columnGap: number
+  rowGap: number
+  height: number
+}
+
+export function fitFlagGrid(
+  count: number,
+  width: number,
+  height: number,
+  spec: FlagGridSpec
+): FlagGrid {
+  let grid: FlagGrid | null = null
+  for (
+    let columns: number = spec.minColumns;
+    columns <= Math.max(count, spec.minColumns);
+    columns++
+  ) {
+    const cellWidth = Math.floor(
+      (width - (columns - 1) * spec.columnGap) / columns
+    )
+    const flagWidth = Math.min(spec.maxFlagWidth, cellWidth * 0.8)
+    const named = cellWidth >= spec.minNamedCell
+    const rowGap = named ? spec.rowGap : spec.columnGap
+    const cellHeight =
+      flagWidth / FLAG_ASPECT_RATIO +
+      (named ? spec.nameGap + Math.ceil(spec.nameSize * 1.25) : 0)
+    const rows = Math.ceil(count / columns)
+    grid = {
+      columns,
+      cellWidth,
+      flagSize: Math.floor(flagWidth / FLAG_WIDTH_EM),
+      named,
+      nameSize: spec.nameSize,
+      nameGap: spec.nameGap,
+      columnGap: spec.columnGap,
+      rowGap,
+      height: rows * cellHeight + (rows - 1) * rowGap,
+    }
+    if (grid.height <= height) return grid
+  }
+  return grid!
+}
+
+export function getMapFrameAspect(format: ExportFormat) {
+  return EXPORT_CANVAS[format].width / MAP_SPEC[format].maxMapHeight
+}
+
+export function getMapExportLayout(
+  format: ExportFormat,
+  countryCount: number,
+  mapAspect: number,
+  withLegend: boolean
+) {
+  const spec = MAP_SPEC[format]
+  const box = getExportContentBox(format)
+  const mapWidth = EXPORT_CANVAS[format].width
+  const mapHeight = Math.round(mapWidth / mapAspect)
+  const legendHeight = withLegend ? spec.legendHeight : 0
+  const listHeight =
+    box.height -
+    mapHeight -
+    legendHeight -
+    spec.tileHeight -
+    spec.sectionGap * 2
+  const rowsThatFit = Math.floor(
+    (listHeight + spec.rowGap) / (spec.rowHeight + spec.rowGap)
+  )
+  const tilePadding = Math.round(spec.tileHeight * 0.16)
+
+  return {
+    ...spec,
+    rowWidth: box.width,
+    mapWidth,
+    mapHeight,
+    legendHeight,
+    listHeight,
+    asRows: countryCount <= rowsThatFit,
+    flagGrid: fitFlagGrid(countryCount, box.width, listHeight, spec.grid),
+    tilePadding,
+    tileContentWidth: (box.width - spec.tileGap * 2) / 3 - tilePadding * 2,
+    tileValueSize: Math.round(spec.tileHeight * 0.4),
     rank: getRankRowSizes(spec.rowHeight),
   }
 }

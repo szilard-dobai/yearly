@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core'
 import { Pool } from 'pg'
 import { withVerifyFullSsl } from './connection-string'
+import { handlePoolErrors } from './pool-errors'
 import * as schema from './schema'
 
 export type Database = PgDatabase<PgQueryResultHKT, typeof schema>
@@ -15,6 +16,7 @@ function createPool() {
   const pool = new Pool({
     connectionString: withVerifyFullSsl(process.env.DATABASE_URL),
   })
+  handlePoolErrors(pool)
   attachDatabasePool(pool)
   return pool
 }
